@@ -16,7 +16,6 @@ import { ChainService } from '@subwallet/extension-base/services/chain-service';
 import { _DEFAULT_MANTA_ZK_CHAIN, _MANTA_ZK_CHAIN_GROUP, _PREDEFINED_SINGLE_MODES } from '@subwallet/extension-base/services/chain-service/constants';
 import { _ChainState, _NetworkUpsertParams, _ValidateCustomAssetRequest } from '@subwallet/extension-base/services/chain-service/types';
 import { _getEvmChainId, _getSubstrateGenesisHash, _getTokenOnChainAssetId, _isAssetFungibleToken, _isChainEnabled, _isChainTestNet, _parseMetadataForSmartContractAsset } from '@subwallet/extension-base/services/chain-service/utils';
-import EarningService from '@subwallet/extension-base/services/earning-service/service';
 import { EventService } from '@subwallet/extension-base/services/event-service';
 import FeeService from '@subwallet/extension-base/services/fee-service/service';
 import { calculateGasFeeParams } from '@subwallet/extension-base/services/fee-service/utils';
@@ -133,7 +132,6 @@ export default class KoniState {
   readonly mintCampaignService: MintCampaignService;
   readonly campaignService: CampaignService;
   readonly buyService: BuyService;
-  readonly earningService: EarningService;
   readonly feeService: FeeService;
 
   // Handle the general status of the extension
@@ -163,7 +161,6 @@ export default class KoniState {
     this.campaignService = new CampaignService(this);
     this.buyService = new BuyService(this);
     this.transactionService = new TransactionService(this);
-    this.earningService = new EarningService(this);
     this.feeService = new FeeService(this);
 
     this.subscription = new KoniSubscription(this, this.dbService);
@@ -318,7 +315,6 @@ export default class KoniState {
     this.eventService.emit('chain.ready', true);
 
     await this.balanceService.init();
-    await this.earningService.init();
 
     this.onReady();
     this.onAccountAdd();
@@ -1693,7 +1689,7 @@ export default class KoniState {
     // Stopping services
     await Promise.all([this.cron.stop(), this.subscription.stop()]);
     await this.pauseAllNetworks(undefined, 'IDLE mode');
-    await Promise.all([this.historyService.stop(), this.priceService.stop(), this.balanceService.stop(), this.earningService.stop()]);
+    await Promise.all([this.historyService.stop(), this.priceService.stop(), this.balanceService.stop()]);
 
     // Complete sleeping
     sleeping.resolve();
@@ -1729,7 +1725,7 @@ export default class KoniState {
     }
 
     // Start services
-    await Promise.all([this.cron.start(), this.subscription.start(), this.historyService.start(), this.priceService.start(), this.balanceService.start(), this.earningService.start()]);
+    await Promise.all([this.cron.start(), this.subscription.start(), this.historyService.start(), this.priceService.start(), this.balanceService.start()]);
 
     // Complete starting
     starting.resolve();
@@ -1802,20 +1798,8 @@ export default class KoniState {
     return await this.cron.reloadNft();
   }
 
-  public async reloadStaking () {
-    await this.earningService.reloadEarning(true);
-
-    return true;
-  }
-
   public async reloadBalance () {
     await this.balanceService.reloadBalance();
-
-    return true;
-  }
-
-  public async reloadCrowdloan () {
-    await this.subscription.reloadCrowdloan();
 
     return true;
   }
@@ -1837,12 +1821,10 @@ export default class KoniState {
 
   public async resetWallet (resetAll: boolean) {
     await this.keyringService.resetWallet(resetAll);
-    await this.earningService.resetYieldPosition();
     await this.balanceService.handleResetBalance(true);
     this.requestService.resetWallet();
     this.transactionService.resetWallet();
     // await this.handleResetBalance(ALL_ACCOUNT_KEY, true);
-    await this.earningService.resetWallet();
     await this.dbService.resetWallet(resetAll);
     this.accountRefStore.set('refList', []);
 

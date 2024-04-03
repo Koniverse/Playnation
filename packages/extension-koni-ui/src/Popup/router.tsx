@@ -7,7 +7,7 @@ import ErrorFallback from '@subwallet/extension-koni-ui/Popup/ErrorFallback';
 import { Root } from '@subwallet/extension-koni-ui/Popup/Root';
 import { i18nPromise } from '@subwallet/extension-koni-ui/utils/common/i18n';
 import React, { ComponentType } from 'react';
-import { createHashRouter, IndexRouteObject, Outlet, useLocation } from 'react-router-dom';
+import { createBrowserRouter, IndexRouteObject, Outlet, useLocation } from 'react-router-dom';
 
 export const lazyLoaderMap: Record<string, LazyLoader> = {};
 
@@ -137,7 +137,7 @@ export function Example () {
 }
 
 // Todo: Create error page
-export const router = createHashRouter([
+export const router = createBrowserRouter([
   {
     path: '/',
     loader: () => i18nPromise,
