@@ -43,7 +43,7 @@ const packages = [
   'extension-dapp',
   'extension-inject',
   'extension-koni',
-  'extension-web-ui'
+  'extension-koni-ui'
 ];
 
 const polkadotDevOptions = require('@polkadot/dev/config/babel-config-webpack.cjs');
@@ -75,7 +75,7 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
       webSocketServer: false,
       historyApiFallback: true,
       compress: true,
-      port: 9000
+      port: 9009
     },
     module: {
       rules: [

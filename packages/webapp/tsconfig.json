@@ -8,6 +8,6 @@
   "references": [
     { "path": "../extension-base" },
     { "path": "../extension-inject" },
-    { "path": "../extension-web-ui" }
+    { "path": "../extension-koni-ui" }
   ]
 }

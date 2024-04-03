@@ -83,6 +83,12 @@ function getLocalStorageItem (key: string, defaultVal: any = undefined) {
 
 // @ts-ignore
 global.chrome.runtime = {
+  // @ts-ignore
+  getManifest: () => {
+    return {
+      version: process.env.PKG_VERSION
+    };
+  },
   lastError: undefined
 };
 
