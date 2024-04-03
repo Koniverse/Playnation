@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { BackgroundExpandView, Layout } from '@subwallet/extension-koni-ui/components';
+import { Layout } from '@subwallet/extension-koni-ui/components';
 import { useDefaultNavigate, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { passPhishingPage } from '@subwallet/extension-koni-ui/messaging';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
@@ -71,7 +71,6 @@ function _PhishingDetected ({ className }: Props): React.ReactElement<Props> {
       >
         {t('I trust this site')}
       </div>
-      <BackgroundExpandView />
     </Layout.WithSubHeaderOnly>
   );
 }

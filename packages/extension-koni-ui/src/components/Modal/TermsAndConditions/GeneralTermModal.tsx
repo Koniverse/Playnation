@@ -117,12 +117,11 @@ export const GeneralTermModal = styled(Component)<Props>(({ theme: { token } }: 
   return {
     '.ant-sw-modal-content': {
       overflow: 'hidden',
-      maxHeight: 600,
       paddingBottom: 0
     },
 
     '.term-body': {
-      maxHeight: 294,
+      maxHeight: '50vh',
       h3: {
         color: token.colorWhite,
         fontSize: token.fontSize,
@@ -135,8 +134,8 @@ export const GeneralTermModal = styled(Component)<Props>(({ theme: { token } }: 
 
       '.term-body-caret-button': {
         position: 'absolute',
-        top: 338,
-        left: 334
+        bottom: 180,
+        right: 16
       },
       display: 'block',
       overflowY: 'scroll',
@@ -163,7 +162,7 @@ export const GeneralTermModal = styled(Component)<Props>(({ theme: { token } }: 
       alignItems: 'center',
       paddingLeft: token.padding,
       paddingRight: token.padding,
-      width: 390,
+      width: '100vw',
       height: 80,
       justifyContent: 'space-between'
 

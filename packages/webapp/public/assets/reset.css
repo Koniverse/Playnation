@@ -612,7 +612,13 @@ div#popup-container {
     top: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-end;
+    width: 100% !important;
+}
+
+.ant-sw-modal-wrap .ant-sw-modal .ant-sw-modal-content {
+  height: auto;
+  max-height: 100%;
 }
 
 .ant-sw-modal .ant-sw-modal-header.ant-sw-modal-header {

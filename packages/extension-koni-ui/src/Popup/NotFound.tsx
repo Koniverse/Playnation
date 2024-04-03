@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { BackgroundExpandView, Layout } from '@subwallet/extension-koni-ui/components';
+import { Layout } from '@subwallet/extension-koni-ui/components';
 import { useDefaultNavigate, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ButtonProps, Icon, PageIcon } from '@subwallet/react-ui';
@@ -47,7 +47,6 @@ function Component ({ className }: Props): React.ReactElement<Props> {
       </div>
       <div className='sub-title h3-text'>{t('Page not found')}</div>
       <div className='h5-text description'>{t('Your website URL is invalid')}</div>
-      <BackgroundExpandView />
     </Layout.Base>
   );
 }

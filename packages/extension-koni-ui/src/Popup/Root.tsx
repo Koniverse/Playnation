@@ -4,7 +4,6 @@
 import { WalletUnlockType } from '@subwallet/extension-base/background/KoniTypes';
 import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
 import { isSameAddress } from '@subwallet/extension-base/utils';
-import { BackgroundExpandView } from '@subwallet/extension-koni-ui/components';
 import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
 import { TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
@@ -239,7 +238,6 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   } else {
     return <MainWrapper className={CN('main-page-container')}>
       {children}
-      <BackgroundExpandView />
     </MainWrapper>;
   }
 }

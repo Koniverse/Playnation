@@ -52,7 +52,6 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
     '.ant-sw-modal': {
       '&, &.ant-sw-qr-scanner': {
         '.ant-sw-modal-content': {
-          width: 390 - token.lineWidth * 2,
           left: token.lineWidth,
           bottom: 0,
           borderBottom: `1px solid ${token.colorBgInput}`
@@ -60,10 +59,7 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       },
 
       '&.modal-full, &.ant-sw-qr-scanner': {
-        '.ant-sw-modal-content': {
-          top: 1,
-          height: 600 - token.lineWidth * 2
-        }
+        '.ant-sw-modal-content': {}
       }
     },
 
