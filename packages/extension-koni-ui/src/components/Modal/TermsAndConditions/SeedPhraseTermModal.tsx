@@ -83,6 +83,7 @@ const Component = ({ className }: Props) => {
     return (
       <Web3Block
         className={'term-box'}
+        key={term}
         leftItem={_leftItem}
         middleItem={_middleItem}
         onClick={onCheckedTerm(term)}
@@ -158,7 +159,6 @@ export const SeedPhraseTermModal = styled(Component)<Props>(({ theme: { token } 
     },
 
     '.term-body': {
-      height: 380,
       display: 'flex',
       flexDirection: 'column',
       gap: token.padding

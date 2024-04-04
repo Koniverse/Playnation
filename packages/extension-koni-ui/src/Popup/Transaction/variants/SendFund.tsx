@@ -141,7 +141,7 @@ function getTokenAvailableDestinations (tokenSlug: string, xcmRefMap: Record<str
     if (xcmRef.srcAsset === tokenSlug) {
       const destinationChain = chainInfoMap[xcmRef.destChain];
 
-      result.push({
+      destinationChain && result.push({
         name: destinationChain.name,
         slug: destinationChain.slug
       });

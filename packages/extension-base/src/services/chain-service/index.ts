@@ -22,6 +22,25 @@ import Web3 from 'web3';
 import { logger as createLogger } from '@polkadot/util/logger';
 import { Logger } from '@polkadot/util/types';
 
+const forceChainInfoMap = (() => {
+  const enableList = [
+    'polkadot',
+    'kusama',
+    'statemint',
+    'statemine',
+    'ethereum',
+    'binance'
+  ];
+
+  return Object.fromEntries(enableList.map((slug) => {
+    return [slug, ChainInfoMap[slug]];
+  }));
+})();
+
+const forceChainAssetMap = Object.fromEntries(Object.entries(ChainAssetMap).filter(([slug, asset]) => {
+  return forceChainInfoMap[asset.originChain];
+}));
+
 export class ChainService {
   private dataMap: _DataMap = {
     chainInfoMap: {},
@@ -54,8 +73,6 @@ export class ChainService {
   private xcmRefMapSubject = new Subject<Record<string, _AssetRef>>();
   private assetLogoMapSubject = new BehaviorSubject<Record<string, string>>(AssetLogoMap);
   private chainLogoMapSubject = new BehaviorSubject<Record<string, string>>(ChainLogoMap);
-  private assetMapPatch: string = JSON.stringify({});
-  private assetLogoPatch: string = JSON.stringify({});
 
   // Todo: Update to new store indexed DB
   private store: AssetSettingStore = new AssetSettingStore();
@@ -649,49 +666,49 @@ export class ChainService {
   }
 
   handleLatestAssetData (latestAssetInfo: Record<string, _ChainAsset> | null, latestAssetLogoMap: Record<string, string> | null) {
-    try {
-      if (latestAssetInfo) {
-        const latestAssetPatch = JSON.stringify(latestAssetInfo);
-
-        if (this.assetMapPatch !== latestAssetPatch) {
-          const assetRegistry = { ...ChainAssetMap, ...latestAssetInfo };
-
-          this.assetMapPatch = latestAssetPatch;
-          this.dataMap.assetRegistry = assetRegistry;
-          this.assetRegistrySubject.next(assetRegistry);
-
-          this.autoEnableTokens()
-            .then(() => {
-              this.eventService.emit('asset.updateState', '');
-            })
-            .catch(console.error);
-        }
-      }
-
-      if (latestAssetLogoMap) {
-        const latestAssetLogoPatch = JSON.stringify(latestAssetLogoMap);
-
-        if (this.assetLogoPatch !== latestAssetLogoPatch) {
-          const logoMap = { ...AssetLogoMap, ...latestAssetLogoMap };
-
-          this.assetLogoPatch = latestAssetLogoPatch;
-          this.assetLogoMapSubject.next(logoMap);
-        }
-      }
-
-      if (latestAssetLogoMap) {
-        const latestAssetLogoPatch = JSON.stringify(latestAssetLogoMap);
-
-        if (this.assetLogoPatch !== latestAssetLogoPatch) {
-          const logoMap = { ...AssetLogoMap, ...latestAssetLogoMap };
-
-          this.assetLogoPatch = latestAssetLogoPatch;
-          this.assetLogoMapSubject.next(logoMap);
-        }
-      }
-    } catch (e) {
-      console.error('Error fetching latest asset data');
-    }
+    // try {
+    //   if (latestAssetInfo) {
+    //     const latestAssetPatch = JSON.stringify(latestAssetInfo);
+    //
+    //     if (this.assetMapPatch !== latestAssetPatch) {
+    //       const assetRegistry = { ...forceChainAssetMap, ...latestAssetInfo };
+    //
+    //       this.assetMapPatch = latestAssetPatch;
+    //       this.dataMap.assetRegistry = assetRegistry;
+    //       this.assetRegistrySubject.next(assetRegistry);
+    //
+    //       this.autoEnableTokens()
+    //         .then(() => {
+    //           this.eventService.emit('asset.updateState', '');
+    //         })
+    //         .catch(console.error);
+    //     }
+    //   }
+    //
+    //   if (latestAssetLogoMap) {
+    //     const latestAssetLogoPatch = JSON.stringify(latestAssetLogoMap);
+    //
+    //     if (this.assetLogoPatch !== latestAssetLogoPatch) {
+    //       const logoMap = { ...AssetLogoMap, ...latestAssetLogoMap };
+    //
+    //       this.assetLogoPatch = latestAssetLogoPatch;
+    //       this.assetLogoMapSubject.next(logoMap);
+    //     }
+    //   }
+    //
+    //   if (latestAssetLogoMap) {
+    //     const latestAssetLogoPatch = JSON.stringify(latestAssetLogoMap);
+    //
+    //     if (this.assetLogoPatch !== latestAssetLogoPatch) {
+    //       const logoMap = { ...AssetLogoMap, ...latestAssetLogoMap };
+    //
+    //       this.assetLogoPatch = latestAssetLogoPatch;
+    //       this.assetLogoMapSubject.next(logoMap);
+    //     }
+    //   }
+    // } catch (e) {
+    //   console.error('Error fetching latest asset data');
+    // }
 
     this.eventService.emit('asset.online.ready', true);
 
@@ -973,7 +990,7 @@ export class ChainService {
 
   private async initChains () {
     const storedChainSettings = await this.dbService.getAllChainStore();
-    const defaultChainInfoMap = ChainInfoMap;
+    const defaultChainInfoMap = forceChainInfoMap;
     const storedChainSettingMap: Record<string, IChain> = {};
 
     storedChainSettings.forEach((chainStoredSetting) => {
@@ -1154,7 +1171,7 @@ export class ChainService {
 
   private async initAssetRegistry (deprecatedCustomChainMap: Record<string, string>) {
     const storedAssetRegistry = await this.dbService.getAllAssetStore();
-    const latestAssetRegistry = ChainAssetMap;
+    const latestAssetRegistry = forceChainAssetMap;
     const availableChains = Object.values(this.dataMap.chainInfoMap)
       .filter((info) => (info.chainStatus === _ChainStatus.ACTIVE))
       .map((chainInfo) => chainInfo.slug);
