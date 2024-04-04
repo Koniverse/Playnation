@@ -6,7 +6,7 @@ import { reloadCron, saveShowBalance } from '@subwallet/extension-koni-ui/messag
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, Number, SwNumberProps, Tag } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { ArrowsClockwise, ArrowsLeftRight, CopySimple, Eye, EyeSlash, PaperPlaneTilt, ShoppingCartSimple } from 'phosphor-react';
+import { ArrowsClockwise, CopySimple, Eye, EyeSlash, PaperPlaneTilt, ShoppingCartSimple } from 'phosphor-react';
 import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
 
@@ -29,7 +29,6 @@ function Component (
     onOpenBuyTokens,
     onOpenReceive,
     onOpenSendFund,
-    onOpenSwap,
     totalChangePercent,
     totalChangeValue,
     totalValue }: Props): React.ReactElement<Props> {
@@ -146,20 +145,6 @@ function Component (
           shape='squircle'
           size={isShrink ? 'xs' : 'sm'}
           tooltip={t('Send tokens')}
-        />
-        <div className={'__button-space'} />
-        <Button
-          icon={(
-            <Icon
-              phosphorIcon={ArrowsLeftRight}
-              size={isShrink ? 'sm' : 'md'}
-              weight={'duotone'}
-            />
-          )}
-          onClick={onOpenSwap}
-          shape='squircle'
-          size={isShrink ? 'xs' : 'sm'}
-          tooltip={t('Swap')}
         />
         <div className={CN('__button-space', { hidden: isShrink })} />
         <Button

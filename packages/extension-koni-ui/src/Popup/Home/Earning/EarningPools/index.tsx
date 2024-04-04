@@ -267,6 +267,7 @@ function Component ({ poolGroup, symbol }: ComponentProps) {
         title={t<string>('{{symbol}} earning options', { replace: { symbol: symbol } })}
       >
         <SwList.Section
+          autoFocusSearch={false}
           actionBtnIcon={<Icon phosphorIcon={FadersHorizontal} />}
           className={'__section-list-container'}
           enableSearchInput

@@ -78,6 +78,7 @@ function Component ({ className = '', id = AccountSelectorModalId, items, onSele
       title={t('Select account')}
     >
       <SwList.Section
+        autoFocusSearch={false}
         enableSearchInput={true}
         list={items}
         ref={sectionRef}

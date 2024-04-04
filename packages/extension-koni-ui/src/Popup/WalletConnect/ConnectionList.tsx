@@ -105,6 +105,7 @@ const Component: React.FC<Props> = (props: Props) => {
         resolve={dataContext.awaitStores(['walletConnect'])}
       >
         <SwList.Section
+          autoFocusSearch={false}
           className='sessions-list'
           displayRow={true}
           enableSearchInput

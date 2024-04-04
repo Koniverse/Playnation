@@ -76,7 +76,12 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     id: ThemeNames.DARK,
     name: 'Dark',
     algorithm: SwReactUI.darkAlgorithm,
-    customTokens: (token) => (token),
+    customTokens: (token) => ({
+      ...token,
+      SelectModal: {
+        disableAutoFocus: true
+      }
+    }),
     generateExtraTokens: (token) => {
       return { ...genDefaultExtraTokens(token) };
     },
@@ -86,7 +91,12 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     id: ThemeNames.LIGHT,
     name: 'Light',
     algorithm: SwReactUI.darkAlgorithm,
-    customTokens: (token) => (token),
+    customTokens: (token) => ({
+      ...token,
+      SelectModal: {
+        disableAutoFocus: true
+      }
+    }),
     generateExtraTokens: (token) => {
       return { ...genDefaultExtraTokens(token) };
     },

@@ -164,6 +164,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         title={t<string>('Your collections')}
       >
         <SwList.Section
+          autoFocusSearch={false}
           className={CN('nft_collection_list__container')}
           displayGrid={true}
           enableSearchInput={true}

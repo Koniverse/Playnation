@@ -229,6 +229,7 @@ const Component: React.FC<ComponentProps> = (props) => {
           title={t('Connected network')}
         >
           <SwList.Section
+            autoFocusSearch={false}
             className='network-list'
             displayRow
             enableSearchInput={true}

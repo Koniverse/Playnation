@@ -137,6 +137,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
               weight={'fill'}
             />
           )}
+          autoFocusSearch={false}
           className={'manage_tokens__container'}
           enableSearchInput={true}
           filterBy={filterFunction}

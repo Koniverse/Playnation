@@ -48,6 +48,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
   return (
     <SwList.Section
+      autoFocusSearch={false}
       className={CN(className)}
       displayRow
       enableSearchInput

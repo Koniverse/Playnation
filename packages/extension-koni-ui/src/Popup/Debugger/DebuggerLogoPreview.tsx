@@ -96,6 +96,7 @@ function Component (props: ThemeProps) {
       >Old</Button>
     </div>
     <SwList.Section
+      autoFocusSearch={false}
       className={'logo-list'}
       displayGrid={true}
       enableSearchInput={true}

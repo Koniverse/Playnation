@@ -157,6 +157,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
               weight={'fill'}
             />
           )}
+          autoFocusSearch={false}
           className={'manage_chains__container'}
           enableSearchInput
           filterBy={filterFunction}

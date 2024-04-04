@@ -91,6 +91,7 @@ function Component ({ address, className = '', items, onSelectItem }: Props): Re
       title={t('Select token')}
     >
       <SwList.Section
+        autoFocusSearch={false}
         enableSearchInput={true}
         list={items}
         ref={sectionRef}

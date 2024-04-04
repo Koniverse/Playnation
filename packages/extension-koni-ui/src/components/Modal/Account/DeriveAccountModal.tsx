@@ -131,6 +131,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
       title={t('Select account')}
     >
       <SwList.Section
+        autoFocusSearch={false}
         displayRow={true}
         enableSearchInput={true}
         list={filtered}

@@ -94,6 +94,7 @@ function Component ({ className = '', id, onCancel, sortedTokenSlugs, tokenBalan
       title={t('Select token')}
     >
       <SwList.Section
+        autoFocusSearch={false}
         displayRow
         enableSearchInput
         list={tokenBalances}

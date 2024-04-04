@@ -302,6 +302,7 @@ function Component ({ className, hasEarningPositions, setEntryView }: Props) {
       >
         <SwList.Section
           actionBtnIcon={<Icon phosphorIcon={FadersHorizontal} />}
+          autoFocusSearch={false}
           className={'__section-list-container'}
           enableSearchInput
           filterBy={filterFunction}

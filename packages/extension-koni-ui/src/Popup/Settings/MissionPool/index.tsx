@@ -182,6 +182,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
       <div className={'__content-wrapper'}>
         <SwList
           actionBtnIcon={<Icon phosphorIcon={FadersHorizontal} />}
+          autoFocusSearch={false}
           className={'__section-list-container'}
           enableSearchInput
           filterBy={filterFunction}

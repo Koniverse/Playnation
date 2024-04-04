@@ -207,6 +207,7 @@ function Component ({ accountAuthType, authInfo, className = '', goBack, origin,
         title={siteName || authInfo.id}
       >
         <SwList.Section
+          autoFocusSearch={false}
           displayRow
           enableSearchInput
           list={accountItems}

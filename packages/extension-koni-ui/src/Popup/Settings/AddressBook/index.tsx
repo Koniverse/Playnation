@@ -209,6 +209,7 @@ const Component: React.FC<Props> = (props: Props) => {
               />
             </Badge>
           )}
+          autoFocusSearch={false}
           displayRow={true}
           enableSearchInput={true}
           groupBy='group'
