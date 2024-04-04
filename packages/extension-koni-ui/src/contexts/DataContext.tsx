@@ -103,6 +103,8 @@ const _DataContext: DataContextType = {
   awaitStores: function (storeNames: StoreName[], renew = false) {
     const key = storeNames.join('-');
 
+    console.log('waiting for stores', storeNames, key, renew);
+
     // Check await cache to avoid rerun many times
     if (!Object.hasOwnProperty.call(this.awaitRequestsCache, key) || renew) {
       const handlers = storeNames.reduce((acc, sName) => {

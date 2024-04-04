@@ -233,7 +233,6 @@ const Component: React.FC<Props> = (props: Props) => {
   return (
     <>
       <SwModal
-        autoFocusSearch={false}
         className={CN(className)}
         id={id}
         onCancel={onClose}
@@ -250,6 +249,7 @@ const Component: React.FC<Props> = (props: Props) => {
               />
             </Badge>
           )}
+          autoFocusSearch={false}
           displayRow={true}
           enableSearchInput={true}
           groupBy='group'

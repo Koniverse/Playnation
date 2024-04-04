@@ -198,9 +198,7 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
 };
 
 module.exports = createConfig({
-  fallback: './src/fallback.ts',
-  webapp: './src/webRunner.ts',
-  main: './src/index.tsx'
+  fallback: ['./src/fallback.ts', './src/webRunner.ts', './src/index.tsx'],
 }, {
   'manta-extension-sdk': './manta-extension-sdk-empty.ts'
 }, true);

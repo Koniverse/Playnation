@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/webapp authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { SWStorage } from './storage';
+import { SWStorage } from '@subwallet/extension-base/storage';
 
 // eslint-disable-next-line header/header
 if (!global.chrome) {

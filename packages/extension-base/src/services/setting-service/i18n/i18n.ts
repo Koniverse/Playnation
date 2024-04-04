@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LANGUAGE } from '@subwallet/extension-base/constants';
-import { SWStorage } from '@subwallet/extension-base/storage';
+import { DEFAULT_LANGUAGE } from '@subwallet/extension-base/services/setting-service/constants';
 import i18next from 'i18next';
 
 import Backend from './Backend';
@@ -17,7 +17,7 @@ i18next
       escapeValue: false
     },
     keySeparator: false,
-    lng: SWStorage.instance.getItem(LANGUAGE) || 'en',
+    lng: localStorage.getItem(LANGUAGE) || DEFAULT_LANGUAGE,
     load: 'languageOnly',
     nsSeparator: false,
     returnEmptyString: false,

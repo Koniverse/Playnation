@@ -1,15 +1,16 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { TelegramUser } from '@subwallet/extension-base/utils/telegram';
 import { AlertBox, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import InfoIcon from '@subwallet/extension-koni-ui/components/Icon/InfoIcon';
+import { DEFAULT_ACCOUNT_TYPES } from '@subwallet/extension-koni-ui/constants';
 import { TERMS_OF_SERVICE_URL } from '@subwallet/extension-koni-ui/constants/common';
 import { REQUEST_CREATE_PASSWORD_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
-import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useFocusFormItem from '@subwallet/extension-koni-ui/hooks/form/useFocusFormItem';
-import { keyringChangeMasterPassword } from '@subwallet/extension-koni-ui/messaging';
+import { createAccountSuriV2, createSeedV2, keyringChangeMasterPassword } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { isNoAccount } from '@subwallet/extension-koni-ui/utils/account/account';
@@ -21,7 +22,7 @@ import { CaretLeft, CheckCircle } from 'phosphor-react';
 import { Callbacks, FieldData, RuleObject } from 'rc-field-form/lib/interface';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 type Props = ThemeProps
@@ -52,7 +53,6 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   const { t } = useTranslation();
   const { activeModal, checkActive, inactiveModal } = useContext(ModalContext);
   const navigate = useNavigate();
-  const previousInfo = useLocation().state as { prevPathname: string, prevState: any };
 
   const { accounts } = useSelector((state: RootState) => state.accountState);
 
@@ -75,12 +75,21 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   const [loading, setLoading] = useState(false);
 
   const onComplete = useCallback(() => {
-    if (previousInfo?.prevPathname) {
-      navigate(previousInfo.prevPathname, { state: previousInfo.prevState as unknown });
-    } else {
-      navigate(DEFAULT_ROUTER_PATH);
-    }
-  }, [navigate, previousInfo?.prevPathname, previousInfo?.prevState]);
+    (async () => {
+      // Create default account
+      const seedPhrase = await createSeedV2(undefined, undefined, DEFAULT_ACCOUNT_TYPES);
+      const accountName = TelegramUser?.username || 'Account 1';
+
+      await createAccountSuriV2({
+        name: accountName,
+        suri: seedPhrase.seed,
+        types: DEFAULT_ACCOUNT_TYPES,
+        isAllowed: true
+      });
+
+      navigate('/home/tokens');
+    })().catch(console.error);
+  }, [navigate]);
 
   const onSubmit: Callbacks<CreatePasswordFormState>['onFinish'] = useCallback((values: CreatePasswordFormState) => {
     const password = values[FormFieldName.PASSWORD];
@@ -140,6 +149,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   return (
     <PageWrapper className={CN(className)}>
       <Layout.WithSubHeaderOnly
+        showBackButton={false}
         rightFooterButton={{
           children: t('Continue'),
           onClick: form.submit,
@@ -164,7 +174,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
             initialValues={{
               [FormFieldName.PASSWORD]: '',
               [FormFieldName.CONFIRM_PASSWORD]: '',
-              [FormFieldName.CONFIRM_CHECKBOX]: ''
+              [FormFieldName.CONFIRM_CHECKBOX]: 'true'
             }}
             name={formName}
             onFieldsChange={onUpdate}

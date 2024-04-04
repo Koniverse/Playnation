@@ -158,7 +158,7 @@ const ResetWalletModal = styled(Component)<Props>(({ theme: { token } }: Props) 
     },
 
     '.footer-button': {
-      width: 172
+      width: '50%'
     }
   };
 });

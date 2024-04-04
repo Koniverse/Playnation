@@ -55,6 +55,7 @@
     "@subwallet/extension-inject": "^1.1.51-1",
     "@subwallet/keyring": "^0.1.3",
     "@subwallet/ui-keyring": "^0.1.3",
+    "@twa-dev/sdk": "^7.0.0",
     "@walletconnect/sign-client": "^2.8.4",
     "@walletconnect/types": "^2.8.4",
     "@walletconnect/utils": "^2.8.4",
