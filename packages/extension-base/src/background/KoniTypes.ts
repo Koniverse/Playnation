@@ -3,7 +3,26 @@
 
 import { _AssetRef, _AssetType, _ChainAsset, _ChainInfo, _FundStatus, _MultiChainAsset } from '@subwallet/chain-list/types';
 import { TransactionError } from '@subwallet/extension-base/background/errors/TransactionError';
-import { AccountAuthType, AccountJson, AddressJson, AuthorizeRequest, ConfirmationRequestBase, RequestAccountList, RequestAccountSubscribe, RequestAccountUnsubscribe, RequestAuthorizeCancel, RequestAuthorizeReject, RequestAuthorizeSubscribe, RequestAuthorizeTab, RequestCurrentAccountAddress, Resolver, ResponseAuthorizeList, ResponseJsonGetAccountInfo, SeedLengths } from '@subwallet/extension-base/background/types';
+import {
+  AccountAuthType,
+  AccountJson,
+  AddressJson,
+  AuthorizeRequest,
+  ConfirmationRequestBase,
+  RequestAccountList,
+  RequestAccountSubscribe,
+  RequestAccountUnsubscribe,
+  RequestAuthorizeCancel,
+  RequestAuthorizeReject,
+  RequestAuthorizeSubscribe,
+  RequestAuthorizeTab,
+  RequestCurrentAccountAddress,
+  Resolver,
+  ResponseAuthorizeList,
+  ResponseJsonGetAccountInfo,
+  ResponseSigning,
+  SeedLengths
+} from '@subwallet/extension-base/background/types';
 import { _CHAIN_VALIDATION_ERROR } from '@subwallet/extension-base/services/chain-service/handler/types';
 import { _ChainState, _EvmApi, _NetworkUpsertParams, _SubstrateApi, _ValidateCustomAssetRequest, _ValidateCustomAssetResponse, EnableChainParams, EnableMultiChainParams } from '@subwallet/extension-base/services/chain-service/types';
 import { AuthUrls } from '@subwallet/extension-base/services/request-service/types';
@@ -26,6 +45,7 @@ import { HexString } from '@polkadot/util/types';
 import { KeypairType } from '@polkadot/util-crypto/types';
 
 import { TransactionWarning } from './warnings/TransactionWarning';
+import {SignerPayloadJSON, SignerPayloadRaw} from "@polkadot/types/types";
 
 export enum RuntimeEnvironment {
   Web = 'Web',
@@ -2512,6 +2532,11 @@ export interface KoniRequestSignatures {
   'pri(database.import)': [string, boolean];
   'pri(database.exportJson)': [null, DexieExportJsonStructure];
   /* Database Service */
+
+  /* Internal Signing */
+  'pri(bytes.sign)': [SignerPayloadRaw, ResponseSigning];
+  'pri(extrinsic.sign)': [SignerPayloadJSON, ResponseSigning];
+  /* Internal Signing */
 }
 
 export interface ApplicationMetadataType {

@@ -27,6 +27,8 @@ export class KeyringService {
     isLocked: false
   });
 
+  getPair = keyring.getPair.bind(keyring);
+
   constructor (private eventService: EventService) {
     this.injected = false;
     this.eventService.waitCryptoReady.then(() => {

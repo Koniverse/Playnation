@@ -4,7 +4,7 @@
 import { TelegramUser } from '@subwallet/extension-base/utils/telegram';
 import { AlertBox, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import InfoIcon from '@subwallet/extension-koni-ui/components/Icon/InfoIcon';
-import { DEFAULT_ACCOUNT_TYPES } from '@subwallet/extension-koni-ui/constants';
+import { SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
 import { TERMS_OF_SERVICE_URL } from '@subwallet/extension-koni-ui/constants/common';
 import { REQUEST_CREATE_PASSWORD_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
@@ -77,13 +77,13 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   const onComplete = useCallback(() => {
     (async () => {
       // Create default account
-      const seedPhrase = await createSeedV2(undefined, undefined, DEFAULT_ACCOUNT_TYPES);
+      const seedPhrase = await createSeedV2(undefined, undefined, [SUBSTRATE_ACCOUNT_TYPE]);
       const accountName = TelegramUser?.username || 'Account 1';
 
       await createAccountSuriV2({
         name: accountName,
         suri: seedPhrase.seed,
-        types: DEFAULT_ACCOUNT_TYPES,
+        types: [SUBSTRATE_ACCOUNT_TYPE],
         isAllowed: true
       });
 
@@ -149,7 +149,6 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   return (
     <PageWrapper className={CN(className)}>
       <Layout.WithSubHeaderOnly
-        showBackButton={false}
         rightFooterButton={{
           children: t('Continue'),
           onClick: form.submit,
@@ -157,6 +156,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
           disabled: isDisabled,
           icon: FooterIcon
         }}
+        showBackButton={false}
         subHeaderIcons={[
           {
             icon: <InfoIcon />,

@@ -5,6 +5,7 @@ import { WalletUnlockType } from '@subwallet/extension-base/background/KoniTypes
 import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
@@ -15,7 +16,7 @@ import useUILock from '@subwallet/extension-koni-ui/hooks/common/useUILock';
 import { subscribeNotifications } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { isNoAccount, removeStorage } from '@subwallet/extension-koni-ui/utils';
+import { isAccountAll, isNoAccount, removeStorage } from '@subwallet/extension-koni-ui/utils';
 import { changeHeaderLogo } from '@subwallet/react-ui';
 import { NotificationProps } from '@subwallet/react-ui/es/notification/NotificationProvider';
 import CN from 'classnames';
@@ -97,6 +98,31 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const noAccount = useMemo(() => isNoAccount(accounts), [accounts]);
   const { isUILocked } = useUILock();
   const needUnlock = isUILocked || (isLocked && unlockType === WalletUnlockType.ALWAYS_REQUIRED);
+
+  const syncAddress = useRef<string | undefined>();
+
+  useEffect(() => {
+    let cancel = false;
+
+    initDataRef.current.then(() => {
+      if (cancel || accounts.length === 0) {
+        return;
+      }
+
+      const currentAddress = currentAccount?.address;
+
+      const targetAddress = (currentAddress && !isAccountAll(currentAddress)) ? currentAddress : accounts[0].address;
+
+      if (targetAddress !== syncAddress.current) {
+        BookaSdk.instance.sync(targetAddress).catch(console.error);
+        syncAddress.current = targetAddress;
+      }
+    }).catch(console.error);
+
+    return () => {
+      cancel = true;
+    };
+  }, [accounts, currentAccount?.address]);
 
   const needMigrate = useMemo(
     () => !!accounts
@@ -182,9 +208,10 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
         redirectTarget = welcomeUrl;
       }
     } else if (pathName === DEFAULT_ROUTER_PATH) {
-      if (hasConfirmations) {
-        openPModal('confirmations');
-      } else if (firstRender.current && currentPage) {
+      // if (hasConfirmations) {
+      //   openPModal('confirmations');
+      // } else
+      if (firstRender.current && currentPage) {
         redirectTarget = currentPage;
       } else {
         redirectTarget = tokenUrl;
@@ -199,9 +226,9 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       } else {
         redirectTarget = DEFAULT_ROUTER_PATH;
       }
-    } else if (hasInternalConfirmations) {
+    } else if ((hasInternalConfirmations || hasConfirmations)) {
       openPModal('confirmations');
-    } else if (!hasInternalConfirmations && isOpenPModal('confirmations')) {
+    } else if (!(hasInternalConfirmations || hasConfirmations) && isOpenPModal('confirmations')) {
       openPModal(null);
     }
 

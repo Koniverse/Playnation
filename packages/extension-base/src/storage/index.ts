@@ -196,7 +196,6 @@ export class SWStorage {
 
         this.cloudStorage.getKeys((err, keys) => {
           err && console.error('Storage sync errors', err, keys);
-          !err && console.error('Storage syncing ', keys);
 
           if (!keys || keys.length === 0) {
             return resolve(true);

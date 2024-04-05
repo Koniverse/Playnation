@@ -23,7 +23,6 @@ import { isEthereumAddress } from '@polkadot/util-crypto';
 import { AccountBriefInfo, AccountCardItem, AccountItemWithName } from '../../../Account';
 import { GeneralEmptyList } from '../../../EmptyList';
 import { ConnectWebsiteModal } from '../ConnectWebsiteModal';
-import SelectAccountFooter from '../SelectAccount/Footer';
 
 type Props = ThemeProps
 
@@ -327,7 +326,6 @@ function Component ({ className }: Props): React.ReactElement<Props> {
       <SelectModal
         background={'default'}
         className={className}
-        footer={<SelectAccountFooter />}
         id={modalId}
         ignoreScrollbarMethod='padding'
         inputWidth={'100%'}

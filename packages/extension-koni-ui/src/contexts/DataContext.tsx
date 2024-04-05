@@ -1,10 +1,12 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { persistor, store, StoreName } from '@subwallet/extension-koni-ui/stores';
 import { getMissionPoolData, subscribeAccountsData, subscribeAddressBook, subscribeAssetLogoMaps, subscribeAssetRegistry, subscribeAssetSettings, subscribeAuthorizeRequests, subscribeAuthUrls, subscribeBalance, subscribeBuyServices, subscribeBuyTokens, subscribeChainInfoMap, subscribeChainLogoMaps, subscribeChainStakingMetadata, subscribeChainStateMap, subscribeChainStatusMap, subscribeConfirmationRequests, subscribeConnectWCRequests, subscribeKeyringState, subscribeMantaPayConfig, subscribeMantaPaySyncingState, subscribeMetadataRequests, subscribeMultiChainAssetMap, subscribeNftCollections, subscribeNftItems, subscribePrice, subscribeProcessingCampaign, subscribeSigningRequests, subscribeStaking, subscribeStakingNominatorMetadata, subscribeStakingReward, subscribeTransactionRequests, subscribeTxHistory, subscribeUiSettings, subscribeWalletConnectSessions, subscribeWCNotSupportRequests, subscribeXcmRefMap } from '@subwallet/extension-koni-ui/stores/utils';
+import { isAccountAll } from '@subwallet/extension-koni-ui/utils';
 import Bowser from 'bowser';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 
@@ -102,8 +104,6 @@ const _DataContext: DataContextType = {
   },
   awaitStores: function (storeNames: StoreName[], renew = false) {
     const key = storeNames.join('-');
-
-    console.log('waiting for stores', storeNames, key, renew);
 
     // Check await cache to avoid rerun many times
     if (!Object.hasOwnProperty.call(this.awaitRequestsCache, key) || renew) {

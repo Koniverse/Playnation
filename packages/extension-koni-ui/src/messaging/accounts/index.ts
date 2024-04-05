@@ -12,3 +12,4 @@ export * from './json';
 export * from './inject';
 export * from './legacy';
 export * from './validate';
+export * from './sign';

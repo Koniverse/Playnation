@@ -10,11 +10,10 @@ import useDeleteAccount from '@subwallet/extension-koni-ui/hooks/account/useDele
 import useGetAccountByAddress from '@subwallet/extension-koni-ui/hooks/account/useGetAccountByAddress';
 import useGetAccountSignModeByAddress from '@subwallet/extension-koni-ui/hooks/account/useGetAccountSignModeByAddress';
 import { useGetMantaPayConfig } from '@subwallet/extension-koni-ui/hooks/account/useGetMantaPayConfig';
-import { useIsMantaPayAvailable } from '@subwallet/extension-koni-ui/hooks/account/useIsMantaPayAvailable';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useUnlockChecker from '@subwallet/extension-koni-ui/hooks/common/useUnlockChecker';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
-import { deriveAccountV3, disableMantaPay, editAccount, enableMantaPay, forgetAccount, windowOpen } from '@subwallet/extension-koni-ui/messaging';
+import { deriveAccountV3, editAccount, enableMantaPay, forgetAccount } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { PhosphorIcon, Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { AccountSignMode } from '@subwallet/extension-koni-ui/types/account';
@@ -22,16 +21,14 @@ import { FormCallbacks, FormFieldData } from '@subwallet/extension-koni-ui/types
 import { toShort } from '@subwallet/extension-koni-ui/utils';
 import { copyToClipboard } from '@subwallet/extension-koni-ui/utils/common/dom';
 import { convertFieldToObject } from '@subwallet/extension-koni-ui/utils/form/form';
-import { BackgroundIcon, Button, Field, Form, Icon, Input, ModalContext, SettingItem, SwAlert, Switch, SwModal } from '@subwallet/react-ui';
+import { BackgroundIcon, Button, Field, Form, Icon, Input, ModalContext, SwAlert, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CircleNotch, CopySimple, Export, Eye, FloppyDiskBack, GitMerge, QrCode, ShieldCheck, Swatches, Trash, User, Wallet, Warning } from 'phosphor-react';
+import { CircleNotch, CopySimple, Export, Eye, FloppyDiskBack, GitMerge, QrCode, Swatches, Trash, User, Wallet, Warning } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
-
-import useIsPopup from '../../hooks/dom/useIsPopup';
 
 type Props = ThemeProps;
 
@@ -144,7 +141,6 @@ const Component: React.FC<Props> = (props: Props) => {
   const dataContext = useContext(DataContext);
 
   const enableMantaPayConfirm = searchParams.get('enableMantaPayConfirm') === 'true';
-  const isPopup = useIsPopup();
 
   const [form] = Form.useForm<DetailFormState>();
 
@@ -192,8 +188,6 @@ const Component: React.FC<Props> = (props: Props) => {
       return false;
     }
   }, [account]);
-
-  const isZkModeAvailable = useIsMantaPayAvailable(account);
 
   const walletNamePrefixIcon = useMemo((): PhosphorIcon => {
     switch (signMode) {
@@ -322,53 +316,6 @@ const Component: React.FC<Props> = (props: Props) => {
       goHome();
     }
   }, [account, goHome, navigate]);
-
-  const onSwitchMantaPay = useCallback((checked: boolean, event: React.MouseEvent<HTMLButtonElement>) => {
-    if (checked) {
-      if (isPopup) {
-        windowOpen({
-          allowedPath: '/accounts/detail',
-          subPath: account ? `/${account.address}` : undefined,
-          params: {
-            enableMantaPayConfirm: 'true'
-          }
-        })
-          .catch(console.warn);
-      } else {
-        handleEnableMantaPay();
-      }
-    } else {
-      if (!zkModeSyncState.isSyncing) {
-        disableMantaPay(account?.address as string)
-          .then((result) => {
-            if (result) {
-              dispatchMantaPayState({ type: MantaPayReducerActionType.INIT, payload: undefined });
-              notify({
-                message: t('ZK assets are hidden as ZK mode is disabled'),
-                type: 'success',
-                duration: 3
-              });
-            } else {
-              notify({
-                message: t('Something went wrong'),
-                type: 'error'
-              });
-            }
-          })
-          .catch(() => {
-            notify({
-              message: t('Something went wrong'),
-              type: 'error'
-            });
-          });
-      } else {
-        notify({
-          message: t('ZK mode is syncing'),
-          type: 'warning'
-        });
-      }
-    }
-  }, [account, handleEnableMantaPay, isPopup, notify, t, zkModeSyncState.isSyncing]);
 
   const onCloseZkModeConfirmation = useCallback(() => {
     if (!mantaPayState.loading) {
@@ -518,29 +465,6 @@ const Component: React.FC<Props> = (props: Props) => {
                 type={zkModeSyncState.progress === 100 ? 'success' : 'warning'}
               />
             )
-          }
-
-          {
-            isZkModeAvailable && (
-              <SettingItem
-                className={CN(`zk-setting ${!zkModeSyncState.isSyncing ? 'zk-sync-margin' : ''}`)}
-                leftItemIcon={(
-                  <BackgroundIcon
-                    backgroundColor={token['green-7']}
-                    phosphorIcon={ShieldCheck}
-                    size='sm'
-                    weight='fill'
-                  />
-                )}
-                name={t('Zk mode')}
-                rightItem={(
-                  <Switch
-                    checked={isZkModeEnabled}
-                    disabled={zkModeSyncState.isSyncing}
-                    onClick={onSwitchMantaPay}
-                  />
-                )}
-              />)
           }
         </div>
 
