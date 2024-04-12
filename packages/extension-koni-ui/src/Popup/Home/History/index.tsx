@@ -716,8 +716,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
             title={t('History')}
           />
 
-          <div className={'__page-background'}></div>
-
           <div className={'__page-tool-area'}>
             {historySelectorsNode}
           </div>
@@ -748,29 +746,12 @@ const History = styled(Component)<Props>(({ theme: { token } }: Props) => {
     display: 'flex',
     flexDirection: 'column',
 
-    '.__page-background': {
-      position: 'relative',
-      zIndex: 1,
-
-      '&:before': {
-        content: '""',
-        display: 'block',
-        height: 190,
-        top: 0,
-        left: 0,
-        right: 0,
-        position: 'absolute',
-        background: 'linear-gradient(180deg, rgba(76, 234, 172, 0.10) 0%, rgba(76, 234, 172, 0.00) 94.17%)'
-      }
-    },
-
     '.__page-tool-area': {
       display: 'flex',
       padding: token.padding,
       paddingTop: 0,
       borderBottomLeftRadius: token.size,
       borderBottomRightRadius: token.size,
-      backgroundColor: token.colorBgDefault,
       gap: token.sizeSM,
       position: 'relative',
       zIndex: 2,

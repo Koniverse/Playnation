@@ -108,7 +108,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const themeItems = useMemo<SelectionItemType[]>(() => {
     return [
       {
-        key: ThemeNames.DARK,
+        key: ThemeNames.LIGHT,
         leftIcon: MoonStars,
         leftIconBgColor: token.colorPrimary,
         title: t('Dark theme')

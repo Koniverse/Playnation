@@ -3,26 +3,7 @@
 
 import { _AssetRef, _AssetType, _ChainAsset, _ChainInfo, _FundStatus, _MultiChainAsset } from '@subwallet/chain-list/types';
 import { TransactionError } from '@subwallet/extension-base/background/errors/TransactionError';
-import {
-  AccountAuthType,
-  AccountJson,
-  AddressJson,
-  AuthorizeRequest,
-  ConfirmationRequestBase,
-  RequestAccountList,
-  RequestAccountSubscribe,
-  RequestAccountUnsubscribe,
-  RequestAuthorizeCancel,
-  RequestAuthorizeReject,
-  RequestAuthorizeSubscribe,
-  RequestAuthorizeTab,
-  RequestCurrentAccountAddress,
-  Resolver,
-  ResponseAuthorizeList,
-  ResponseJsonGetAccountInfo,
-  ResponseSigning,
-  SeedLengths
-} from '@subwallet/extension-base/background/types';
+import { AccountAuthType, AccountJson, AddressJson, AuthorizeRequest, ConfirmationRequestBase, RequestAccountList, RequestAccountSubscribe, RequestAccountUnsubscribe, RequestAuthorizeCancel, RequestAuthorizeReject, RequestAuthorizeSubscribe, RequestAuthorizeTab, RequestCurrentAccountAddress, Resolver, ResponseAuthorizeList, ResponseJsonGetAccountInfo, ResponseSigning, SeedLengths } from '@subwallet/extension-base/background/types';
 import { _CHAIN_VALIDATION_ERROR } from '@subwallet/extension-base/services/chain-service/handler/types';
 import { _ChainState, _EvmApi, _NetworkUpsertParams, _SubstrateApi, _ValidateCustomAssetRequest, _ValidateCustomAssetResponse, EnableChainParams, EnableMultiChainParams } from '@subwallet/extension-base/services/chain-service/types';
 import { AuthUrls } from '@subwallet/extension-base/services/request-service/types';
@@ -40,12 +21,12 @@ import Web3 from 'web3';
 import { RequestArguments, TransactionConfig } from 'web3-core';
 import { JsonRpcPayload, JsonRpcResponse } from 'web3-core-helpers';
 
+import { SignerPayloadJSON, SignerPayloadRaw } from '@polkadot/types/types';
 import { SignerResult } from '@polkadot/types/types/extrinsic';
 import { HexString } from '@polkadot/util/types';
 import { KeypairType } from '@polkadot/util-crypto/types';
 
 import { TransactionWarning } from './warnings/TransactionWarning';
-import {SignerPayloadJSON, SignerPayloadRaw} from "@polkadot/types/types";
 
 export enum RuntimeEnvironment {
   Web = 'Web',
@@ -1094,9 +1075,7 @@ export type RequestSubscribeStaking = null
 export type RequestSubscribeStakingReward = null
 
 export enum ThemeNames {
-  LIGHT = 'light',
-  DARK = 'dark',
-  SUBSPACE = 'subspace'
+  LIGHT = 'light'
 }
 
 export enum NETWORK_ERROR {

@@ -13,6 +13,7 @@ import { useSelector } from 'react-redux';
 import styled, { createGlobalStyle, ThemeProvider as StyledComponentThemeProvider } from 'styled-components';
 
 import { Theme } from '../types';
+import {ThemeNames} from "@subwallet/extension-base/background/KoniTypes";
 
 interface Props {
   children: React.ReactNode;
@@ -256,18 +257,17 @@ const TooltipContainer = styled.div({
 
 export function ThemeProvider ({ children }: ThemeProviderProps): React.ReactElement<ThemeProviderProps> {
   const dataContext = useContext(DataContext);
-  const themeName = useSelector((state: RootState) => state.settings.theme);
   const logoMaps = useSelector((state: RootState) => state.settings.logoMaps);
   const [themeReady, setThemeReady] = useState(false);
 
   const themeConfig = useMemo(() => {
-    const config = SW_THEME_CONFIGS[themeName];
+    const config = SW_THEME_CONFIGS[ThemeNames.LIGHT];
 
     Object.assign(config.logoMap.network, logoMaps.chainLogoMap);
     Object.assign(config.logoMap.symbol, logoMaps.assetLogoMap);
 
     return config;
-  }, [logoMaps, themeName]);
+  }, [logoMaps]);
 
   useEffect(() => {
     dataContext.awaitStores(['settings']).then(() => {

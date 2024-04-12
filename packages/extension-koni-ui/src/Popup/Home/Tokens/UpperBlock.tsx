@@ -196,10 +196,10 @@ export const UpperBlock = styled(Component)<Props>(({ theme: { token } }: Props)
       gap: token.sizeXS,
 
       '.button-change-show-balance': {
-        color: token.colorWhite,
+        color: token.colorTextBase,
 
         '&:hover': {
-          color: token['gray-5']
+          color: token.colorTextSecondary
         }
       },
 

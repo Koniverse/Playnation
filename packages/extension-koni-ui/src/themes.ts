@@ -46,7 +46,7 @@ export interface SwThemeConfig extends ThemeConfig {
 
 function genDefaultExtraTokens (token: AliasToken): ExtraToken {
   return {
-    bodyBackgroundColor: token.colorBgDefault,
+    bodyBackgroundColor: token.colorBgBase,
     logo: subWalletLogo,
     defaultImagePlaceholder,
     tokensScreenSuccessBackgroundColor: 'linear-gradient(180deg, rgba(76, 234, 172, 0.1) 16.47%, rgba(217, 217, 217, 0) 94.17%)',
@@ -72,41 +72,42 @@ const defaultLogoMap: Web3LogoMap = {
 // Todo: i18n for theme name
 // Implement theme from @subwallet/react-ui
 export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
-  [ThemeNames.DARK]: {
-    id: ThemeNames.DARK,
-    name: 'Dark',
-    algorithm: SwReactUI.darkAlgorithm,
-    customTokens: (token) => ({
-      ...token,
-      SelectModal: {
-        disableAutoFocus: true
-      }
-    }),
-    generateExtraTokens: (token) => {
-      return { ...genDefaultExtraTokens(token) };
-    },
-    logoMap: defaultLogoMap
-  },
   [ThemeNames.LIGHT]: {
     id: ThemeNames.LIGHT,
-    name: 'Light',
-    algorithm: SwReactUI.darkAlgorithm,
-    customTokens: (token) => ({
-      ...token,
+    name: 'Dark',
+    algorithm: SwReactUI.defaultAlgorithm,
+    token: {
+      colorPrimary: '#3CA3FC',
+      colorSecondary: '#44D5DE',
+      colorTextBase: '#000000',
+      colorBgBase: '#ffffff',
+      colorBgSecondary: '#EEEEEE',
+      colorSuccess: '#4CEAAC',
+      colorWarning: '#FBC75D',
+      colorError: '#F56036',
+      colorText: '#000000',
+      colorTextLight1: '#111',
+      colorTextLight2: '#222',
+      colorTextLight3: '#333',
+      colorTextLight4: '#444',
+      colorTextLight5: '#555',
+      colorTextLight6: '#666',
+      colorTextLight7: '#777',
+      colorTextLight8: '#888',
+      colorTextLight9: '#999'
+    },
+    components: {
       SelectModal: {
         disableAutoFocus: true
       }
-    }),
+    },
+    customTokens: (token) => (token),
     generateExtraTokens: (token) => {
       return { ...genDefaultExtraTokens(token) };
     },
     logoMap: defaultLogoMap
-  },
-  [ThemeNames.SUBSPACE]: {} as SwThemeConfig
+  }
 };
-
-// Todo: Replace tokens with Subspace color schema
-SW_THEME_CONFIGS[ThemeNames.SUBSPACE] = { ...SW_THEME_CONFIGS[ThemeNames.LIGHT] };
 
 export function generateTheme ({ customTokens,
   generateExtraTokens,

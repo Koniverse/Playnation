@@ -438,7 +438,6 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
   return ({
     '&.settings': {
       height: '100%',
-      backgroundColor: token.colorBgDefault,
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
@@ -466,6 +465,7 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
         display: 'flex',
         alignItems: 'center'
       },
+
 
       '.ant-sw-header-center-part': {
         color: token.colorTextLight1,
@@ -498,16 +498,20 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
         marginTop: token.marginXS
       },
 
+      '.ant-web3-block-left-item': {
+        color: token.colorBgBase
+      },
+
       '.ant-web3-block-right-item': {
         minWidth: 40,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        color: token['gray-4']
+        color: token.colorTextBase
       },
 
       '.__setting-item:hover .ant-web3-block-right-item': {
-        color: token['gray-6']
+        color: token.colorTextSecondary
       },
 
       '.__version': {

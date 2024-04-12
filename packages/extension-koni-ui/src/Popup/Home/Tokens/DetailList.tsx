@@ -319,9 +319,7 @@ function Component (): React.ReactElement {
       ref={containerRef}
     >
       <div
-        className={classNames('__upper-block-wrapper', {
-          '-is-shrink': isShrink
-        })}
+        className={classNames('__upper-block-wrapper')}
         ref={topBlockRef}
       >
         <DetailUpperBlock
@@ -400,7 +398,6 @@ const Tokens = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, tok
 
     '.__upper-block-wrapper': {
       position: 'absolute',
-      backgroundColor: token.colorBgDefault,
       zIndex: 10,
       height: 206,
       paddingTop: 8,
@@ -409,7 +406,6 @@ const Tokens = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, tok
       right: 0,
       display: 'flex',
       alignItems: 'center',
-      backgroundImage: extendToken.tokensScreenInfoBackgroundColor,
       transition: 'opacity, padding-top 0.27s ease',
 
       '&.-is-shrink': {

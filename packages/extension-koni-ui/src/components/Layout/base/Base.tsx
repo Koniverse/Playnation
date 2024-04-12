@@ -154,7 +154,12 @@ const Component = ({ children, className, headerIcons, onBack, showFooter, ...pr
 const Base = styled(Component)<LayoutBaseProps>(({ theme: { token } }: LayoutBaseProps) => ({
   '.ant-sw-tab-bar-container': {
     padding: `${token.paddingXS}px ${token.paddingSM}px ${token.paddingSM}px`,
+    borderRadius: 40,
     alignItems: 'flex-start',
+    width: `calc(100% - ${token.margin * 2}px)`,
+    marginLeft: token.margin,
+    marginBottom: token.margin,
+    backgroundColor: token.colorPrimary,
 
     '.ant-sw-tab-bar-item-label': {
       textAlign: 'center'
