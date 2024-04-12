@@ -2,19 +2,38 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWStorage } from '@subwallet/extension-base/storage';
-import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { TelegramUser, TelegramWebApp } from '@subwallet/extension-base/utils/telegram';
-import { BookaAccount, BookaEvent, BookaEventType, BuyInGameItemResponse, GameSDK, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, Player, PlayResponse, SDKInitParams, Tournament, UseInGameItemResponse } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramUser } from '@subwallet/extension-base/utils/telegram';
+import { BookaAccount, BuyInGameItemResponse, Game, GamePlay, LeaderboardPerson, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
+import { BehaviorSubject } from 'rxjs';
 
 export const BOOKA_API_HOST = 'https://booka-api.koni.studio';
+// export const BOOKA_API_HOST = 'http://localhost:3001';
 const storage = SWStorage.instance;
 
-export class BookaSdk implements GameSDK {
-  private account?: BookaAccount;
-  private accountHandler = createPromiseHandler<BookaAccount>();
-  private EventTypeMap: Record<string, BookaEventType> = {};
+export class BookaSdk {
+  private accountSubject = new BehaviorSubject<BookaAccount | undefined>(undefined);
+  private taskListSubject = new BehaviorSubject<Task[]>([]);
+  private gameListSubject = new BehaviorSubject<Game[]>([]);
+  private currentGamePlaySubject = new BehaviorSubject<GamePlay | undefined>(undefined);
+  private leaderBoardSubject = new BehaviorSubject<LeaderboardPerson[]>([]);
+
+  public get account () {
+    return this.accountSubject.value;
+  }
+
+  public get taskList () {
+    return this.taskListSubject.value;
+  }
+
+  public get gameList () {
+    return this.gameListSubject.value;
+  }
+
+  public get currentGamePlay () {
+    return this.currentGamePlaySubject.value;
+  }
 
   private getRequestHeader () {
     const header: Record<string, string> = {
@@ -55,14 +74,59 @@ export class BookaSdk implements GameSDK {
     }
   }
 
+  private async reloadAccount () {
+    const account = this.account;
+    const newAccountData = await this.getRequest<Omit<BookaAccount, 'token'>>(`${BOOKA_API_HOST}/api/account/get-attribute`);
+
+    if (account && newAccountData) {
+      account.info = newAccountData.info;
+      account.attributes = newAccountData.attributes;
+    }
+
+    this.accountSubject.next(account);
+  }
+
+  subscribeAccount () {
+    return this.accountSubject;
+  }
+
+  async fetchGameList () {
+    const gameList = await this.getRequest<Game[]>(`${BOOKA_API_HOST}/api/game/fetch`);
+
+    if (gameList) {
+      this.gameListSubject.next(gameList);
+    }
+  }
+
+  subscribeGameList () {
+    return this.gameListSubject;
+  }
+
+  async fetchTaskList () {
+    const taskList = await this.getRequest<Task[]>(`${BOOKA_API_HOST}/api/task/history`);
+
+    if (taskList) {
+      this.taskListSubject.next(taskList);
+    }
+  }
+
+  subscribeTaskList () {
+    return this.taskListSubject;
+  }
+
+  async finishTask (taskId: number) {
+    await this.postRequest(`${BOOKA_API_HOST}/api/task/submit`, { taskId });
+
+    await this.fetchTaskList();
+
+    await this.reloadAccount();
+  }
+
   async sync (address: string) {
     const message = `Login as ${TelegramUser?.username || 'booka'}`;
     const signature = await this.requestSignature(address, message);
 
-    if (this.account) {
-      this.account = undefined;
-      this.accountHandler = createPromiseHandler<BookaAccount>();
-    }
+    this.accountSubject.next(undefined);
 
     const syncData = {
       address,
@@ -80,45 +144,10 @@ export class BookaSdk implements GameSDK {
     const account = await this.postRequest<BookaAccount>(`${BOOKA_API_HOST}/api/account/sync`, syncData);
 
     if (account) {
-      this.account = account;
-      this.accountHandler.resolve(account);
+      this.accountSubject.next(account);
 
-      await this.fetchEventTypeMap();
-
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      TelegramWebApp.showConfirm(`Current Point: ${account.attributes.point}. Do you want play game?`, (confirm) => {
-        if (confirm) {
-          (async () => {
-            const game = await this.play('play_booka');
-
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            await this.trackScore(game.gamePlayId, 99);
-
-            TelegramWebApp.showAlert(`Total point: ${this.account?.attributes.point || 0}. Thank you for playing game!`);
-          })().catch(console.error);
-        }
-      });
-    } else {
-      this.accountHandler.reject(new Error('Failed to sync account'));
+      await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchLeaderboard()]);
     }
-  }
-
-  async fetchEventTypeMap () {
-    const eventTypes = await this.getRequest<BookaEventType[]>(`${BOOKA_API_HOST}/api/event/event-types`);
-
-    if (eventTypes) {
-      this.EventTypeMap = [...eventTypes].reduce((acc, eventType) => {
-        acc[eventType.slug] = eventType;
-
-        return acc;
-      }, {} as Record<string, BookaEventType>);
-    } else {
-      this.EventTypeMap = {};
-    }
-
-    console.log('Event Type Map', this.EventTypeMap);
   }
 
   async requestSignature (address: string, message: string): Promise<string> {
@@ -148,86 +177,42 @@ export class BookaSdk implements GameSDK {
     return result.signature;
   }
 
-  buyInGameItem (itemId: string, gameplayId?: string): Promise<BuyInGameItemResponse> {
-    // Implement later
-    return Promise.resolve({
-      receipt: '',
-      item: {
-        id: '',
-        name: '',
-        price: 0
-      }
-    });
-  }
-
-  buyTickets (): Promise<{ balance: number; tickets: number }> {
-    // Implement later
-    return Promise.resolve({ balance: 0, tickets: 0 });
-  }
-
-  exit (confirm: boolean): void {
-    // Implement later
-  }
-
-  exitToListGames (confirm: boolean): void {
-    // Implement later
-  }
-
-  getInGameItems (): Promise<{ items: InGameItem[] }> {
-    // Implement later
-    return Promise.resolve({ items: [] });
-  }
-
-  getLeaderboard (req: GetLeaderboardRequest): Promise<GetLeaderboardResponse> {
-    // Implement later
-    return Promise.resolve({
-      players: []
-    });
-  }
-
-  async getPlayer (): Promise<Player> {
-    const account = await this.accountHandler.promise;
-
-    return {
-      id: account.info.id.toString(),
-      name: `${account.info.firstName || ''} ${account.info.lastName || ''}`,
-      energy: account.attributes.energy,
-      balance: account.attributes.point
-    } as Player;
-  }
-
-  getTournament (): Promise<Tournament | undefined> {
-    // Implement later
-    return Promise.resolve(undefined);
-  }
-
-  getVersion (): string {
-    // Implement later
-    return '0.1';
-  }
-
-  init (params: SDKInitParams): Promise<{ currentTimestamp: string }> {
-    return Promise.resolve({ currentTimestamp: '' });
-  }
-
-  private runningEvent: BookaEvent | undefined;
-
-  async play (game = 'play_booka'): Promise<PlayResponse> {
-    const event = await this.postRequest<BookaEvent>(`${BOOKA_API_HOST}/api/event/join`, {
-      slug: game
+  async playGame (gameId: number): Promise<GamePlay> {
+    const gamePlay = await this.postRequest<GamePlay>(`${BOOKA_API_HOST}/api/game/new-game`, {
+      gameId
     });
 
-    if (!event) {
+    if (!gamePlay) {
       throw new Error('Failed to join event');
     }
 
-    this.runningEvent = event;
+    this.currentGamePlaySubject.next(gamePlay);
 
-    return {
-      gamePlayId: event.id.toString(),
-      token: event.token,
-      remainingTickets: event?.energy
-    } as PlayResponse;
+    return gamePlay;
+  }
+
+  async submitGame (gamePlayId: number, point: number, signature: string) {
+    await this.postRequest<GamePlay>(`${BOOKA_API_HOST}/api/game/submit`, {
+      gamePlayId: gamePlayId,
+      point: point,
+      signature
+    });
+
+    this.currentGamePlaySubject.next(undefined);
+
+    await Promise.all([this.reloadAccount(), this.fetchLeaderboard()]);
+  }
+
+  async fetchLeaderboard () {
+    const leaderBoard = await this.getRequest<LeaderboardPerson[]>(`${BOOKA_API_HOST}/api/game/leader-board`);
+
+    if (leaderBoard) {
+      this.leaderBoardSubject.next(leaderBoard);
+    }
+  }
+
+  subscribeLeaderboard () {
+    return this.leaderBoardSubject;
   }
 
   showLeaderboard (): Promise<void> {
@@ -249,55 +234,15 @@ export class BookaSdk implements GameSDK {
     }
   }
 
-  private async reloadAccount () {
-    const account = await this.getRequest<Omit<BookaAccount, 'token'>>(`${BOOKA_API_HOST}/api/account/get-attribute`);
-
-    if (this.account && account) {
-      this.account.info = account.info;
-      this.account.attributes = account.attributes;
-    }
-  }
-
-  async trackScore (gamePlayId: string, score: number): Promise<void> {
-    const runningEvent = this.runningEvent;
-
-    if (runningEvent && gamePlayId === runningEvent.id.toString()) {
-      // const signature = await this.signResult(runningEvent.id.toString(), runningEvent.token, score);
-      const event = await this.postRequest<BookaEvent>(`${BOOKA_API_HOST}/api/event/submit`, {
-        eventId: runningEvent.id,
-        signature: '0xxxxxxxx',
-        point: score
-      });
-
-      if (!event) {
-        throw new Error('Failed to join event');
-      }
-
-      this.runningEvent = undefined;
-
-      if (event.success) {
-        console.log('Event success', score);
-      }
-    } else {
-      throw new Error('Game not found');
-    }
-
-    await this.reloadAccount();
-  }
-
-  triggerHapticFeedback (type: HapticFeedbackType): Promise<void> {
-    // Implement later
-    return Promise.resolve(undefined);
-  }
-
-  useInGameItem (itemId: string, gamePlayId: string): Promise<UseInGameItemResponse> {
+  buyInGameItem (itemId: string, gameplayId?: string): Promise<BuyInGameItemResponse> {
     // Implement later
     return Promise.resolve({
-      success: true,
-      inventory: [{
-        itemId: '',
-        quantity: 0
-      }]
+      receipt: '',
+      item: {
+        id: '',
+        name: '',
+        price: 0
+      }
     });
   }
 

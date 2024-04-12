@@ -9,7 +9,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { SwScreenLayout } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
-import { Aperture, Clock, Wallet } from 'phosphor-react';
+import { Aperture, Clock, GameController, Wallet } from 'phosphor-react';
 import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -36,6 +36,16 @@ const Component = ({ children, className, headerIcons, onBack, showFooter, ...pr
   const { language } = useSelector((state) => state.settings);
 
   const tabBarItems = useMemo((): Array<Omit<SwTabBarItem, 'onClick'> & { url: string }> => ([
+    {
+      icon: {
+        type: 'phosphor',
+        phosphorIcon: GameController,
+        weight: 'fill'
+      },
+      label: t('Games'),
+      key: 'games',
+      url: '/home/games'
+    },
     {
       icon: {
         type: 'phosphor',

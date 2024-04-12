@@ -33,7 +33,7 @@ export const RouteState = {
 };
 
 const welcomeUrl = '/welcome';
-const tokenUrl = '/home/tokens';
+const tokenUrl = '/home/games';
 const loginUrl = '/keyring/login';
 const phishingUrl = '/phishing-page-detected';
 const createPasswordUrl = '/keyring/create-password';

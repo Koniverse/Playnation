@@ -12,9 +12,9 @@ export interface GameSDK {
   getTournament(): Promise<Tournament | undefined>;
   buyTickets(): Promise<{ balance: number; tickets: number }>;
   /** Call play will cost player 1 ticket and return a token to submit score */
-  play(): Promise<PlayResponse>;
+  play(): Promise<GamePlay>;
   /** Call every time player's score change */
-  trackScore(gamePlayId: string, score: number): Promise<void>;
+  trackScore(gamePlayId: string, score: number, signature: string): Promise<BookaAccount>;
   /** Sign game play result and return signature to submit score */
   signResult(gamePlayId: string, gameToken: string, score: number): Promise<string>;
   showLeaderboard(): Promise<void>;
@@ -24,9 +24,9 @@ export interface GameSDK {
   buyInGameItem(itemId: string, gameplayId?: string): Promise<BuyInGameItemResponse>;
   useInGameItem(itemId: string, gamePlayId: string): Promise<UseInGameItemResponse>;
   /** quit game, close webview */
-  exit(confirm: boolean): void;
+  exit(confirm: boolean): Promise<void>;
   /** quit game and back to list games **/
-  exitToListGames(confirm: boolean): void;
+  exitToListGames(confirm: boolean): Promise<void>;
   triggerHapticFeedback(type: HapticFeedbackType): Promise<void>;
   getVersion(): string;
 }
@@ -37,38 +37,47 @@ export enum EventTypeEnum {
   EVENT = 'EVENT',
 }
 
-export interface BookaEventType {
-  id: number; // id on db
+export interface Game {
+  id: number;
+  contentId: number;
   slug: string;
   name: string;
   description: string;
-  type: EventTypeEnum;
-  requireValidate: boolean;
-  canRepeat: boolean;
-  repeatInterval: number; // in seconds
-
-  startTime: Date;
-  stopTime: Date;
+  url: string;
   icon: string;
   banner: string;
-
-  energy: number;
-  point: number;
-  minPoint: number;
-  maxPoint: number;
+  maxEnergy: number;
+  energyPerGame: number;
+  maxPointPerGame: number;
+  rankDefinition: string;
+  active: boolean;
 }
 
-export interface BookaEvent {
-  id: number;
+export interface Task {
+  id: number; // id on db
+  gameId: number;
+  contentId: number;
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  pointReward: number;
+  itemReward: number;
+
+  status: number;
+}
+
+export interface GamePlay {
+  id: number; // id on db
+  gameId: number;
   accountId: number;
-  eventTypeId: number;
-  startTime: Date;
-  endTime?: Date;
+  gameDataId: number;
   token: string;
+  startTime: Date;
   energy: number;
+  endTime?: Date;
   point?: number;
   success?: boolean;
-  error?: string;
 }
 
 export interface BookaAccount {
@@ -147,6 +156,14 @@ export interface GetLeaderboardRequest {
   limit: number;
   after: string;
   before: string;
+}
+
+export interface LeaderboardPerson {
+  rank: number;
+  id: string;
+  firstName: string;
+  lastName: number;
+  point: number;
 }
 
 export type LeaderboardItem = Player & { rank: number; score: number };
