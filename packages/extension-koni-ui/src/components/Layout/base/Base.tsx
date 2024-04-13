@@ -9,7 +9,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { SwScreenLayout } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
-import { Aperture, Clock, GameController, Wallet } from 'phosphor-react';
+import { GameController, Handshake, Kanban, Target, Wallet } from 'phosphor-react';
 import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -39,6 +39,16 @@ const Component = ({ children, className, headerIcons, onBack, showFooter, ...pr
     {
       icon: {
         type: 'phosphor',
+        phosphorIcon: Wallet,
+        weight: 'fill'
+      },
+      label: t('Wallet'),
+      key: 'tokens',
+      url: '/home/tokens'
+    },
+    {
+      icon: {
+        type: 'phosphor',
         phosphorIcon: GameController,
         weight: 'fill'
       },
@@ -49,23 +59,43 @@ const Component = ({ children, className, headerIcons, onBack, showFooter, ...pr
     {
       icon: {
         type: 'phosphor',
-        phosphorIcon: Wallet,
+        phosphorIcon: Target,
         weight: 'fill'
       },
-      label: t('Tokens'),
-      key: 'tokens',
-      url: '/home/tokens'
+      label: t('Mission'),
+      key: 'mission',
+      url: '/home/mission'
     },
     {
       icon: {
         type: 'phosphor',
-        phosphorIcon: Aperture,
+        phosphorIcon: Kanban,
         weight: 'fill'
       },
-      label: t('NFTs'),
-      key: 'nfts',
-      url: '/home/nfts/collections'
+      label: t('Leaderboard'),
+      key: 'leaderboard',
+      url: '/home/leaderboard'
     },
+    {
+      icon: {
+        type: 'phosphor',
+        phosphorIcon: Handshake,
+        weight: 'fill'
+      },
+      label: t('Invite'),
+      key: 'invite',
+      url: '/home/invite'
+    }
+    // {
+    //   icon: {
+    //     type: 'phosphor',
+    //     phosphorIcon: Aperture,
+    //     weight: 'fill'
+    //   },
+    //   label: t('NFTs'),
+    //   key: 'nfts',
+    //   url: '/home/nfts/collections'
+    // },
     // {
     //   icon: {
     //     type: 'phosphor',
@@ -96,16 +126,16 @@ const Component = ({ children, className, headerIcons, onBack, showFooter, ...pr
     //   key: 'staking',
     //   url: '/home/staking'
     // },
-    {
-      icon: {
-        type: 'phosphor',
-        phosphorIcon: Clock,
-        weight: 'fill'
-      },
-      label: t('History'),
-      key: 'history',
-      url: '/home/history'
-    }
+    // {
+    //   icon: {
+    //     type: 'phosphor',
+    //     phosphorIcon: Clock,
+    //     weight: 'fill'
+    //   },
+    //   label: t('History'),
+    //   key: 'history',
+    //   url: '/home/history'
+    // }
   ]), [t]);
 
   const selectedTab = useMemo((): string => {
@@ -158,7 +188,7 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { token } }: LayoutBas
     alignItems: 'flex-start',
     width: `calc(100% - ${token.margin * 2}px)`,
     marginLeft: token.margin,
-    marginBottom: token.margin,
+    marginBottom: token.marginLG,
     backgroundColor: token.colorPrimary,
 
     '.ant-sw-tab-bar-item-label': {
@@ -168,7 +198,7 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { token } }: LayoutBas
 
   '&.special-language': {
     '.ant-sw-tab-bar-container': {
-      paddingBottom: token.paddingXS,
+      paddingBottom: token.padding,
 
       '.ant-sw-tab-bar-item': {
         gap: token.sizeXXS,

@@ -91,10 +91,25 @@ export class GameApp {
       name: `${account?.info.firstName || ''} ${account?.info.lastName || ''}` || 'Player',
       avatar: 'https://thispersondoesnotexist.com/',
       level: 1,
-      inventory: []
+      inventory: [
+        {
+          itemId: 'MAGNET',
+          quantity: 3
+        },
+        {
+          itemId: 'BOOSTER',
+          quantity: 5
+        },
+        {
+          itemId: 'CUP3',
+          quantity: 3
+        },
+        {
+          itemId: 'CUP5',
+          quantity: 2
+        }
+      ]
     };
-
-    console.log('player', player);
 
     return player;
   }
@@ -102,9 +117,9 @@ export class GameApp {
   onGetTournament (): Tournament {
     const tour: Tournament = {
       id: 'tour1',
-      name: 'tour1',
+      name: 'Tour 01',
       startTime: new Date().toISOString(),
-      endTime: new Date().toISOString(),
+      endTime: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
       entryFee: 0,
       entryTickets: 10,
       prizePool: {
@@ -113,8 +128,6 @@ export class GameApp {
       tickets: 10,
       totalPlayers: 100
     };
-
-    console.log('tournament', tour);
 
     return tour;
   }
@@ -136,12 +149,7 @@ export class GameApp {
     return res;
   }
 
-  async onTrackScore (gameplayId: string, score: number) {
-    if (!this.playingGame) {
-      throw newError('game not started', errorCodes.InvalidRequest);
-    }
-
-    await this.apiSDK.submitGame(this.playingGame.id, score, '0xxx');
+  onTrackScore (gameplayId: string, score: number) {
     console.log('track score', gameplayId, score);
   }
 
@@ -149,7 +157,7 @@ export class GameApp {
     throw newError('not supported', errorCodes.SystemError);
   }
 
-  onBuyInGameItem (itemId: string, gameplayId?: string): BuyInGameItemResponse {
+  onBuyIngameItem (itemId: string, gameplayId?: string): BuyInGameItemResponse {
     console.log('buy item', itemId, gameplayId);
 
     if (!ITEM_MAP[itemId]) {
@@ -164,7 +172,7 @@ export class GameApp {
     return res;
   }
 
-  onUseInGameItem (itemId: string, gameplayId?: string): UseInGameItemResponse {
+  onUseIngameItem (itemId: string, gameplayId?: string): UseInGameItemResponse {
     console.log('use item', itemId, gameplayId);
     const res: UseInGameItemResponse = {
       success: true,
@@ -178,10 +186,14 @@ export class GameApp {
     // Implementation needed
   }
 
-  onSignResult (gamePlayId: string, gameToken: string, score: number) {
-    console.log('sign result', gamePlayId, gameToken, score);
+  async onSignResult (result: {gamePlayId: string, gameToken: string, score: number}) {
+    console.log('sign result', result);
 
-    return 'abc123';
+    if (!this.playingGame) {
+      throw newError('game not started', errorCodes.InvalidRequest);
+    }
+
+    await this.apiSDK.submitGame(this.playingGame.id, result.score, '0xxx');
   }
 
   onShowLeaderboard () {
@@ -227,7 +239,7 @@ export class GameApp {
     try {
       const handleMethod = camelCase('on_' + action);
 
-      // console.log('handleMethod', handleMethod, action, data, requestId);
+      console.log('handleMethod', handleMethod, action, data, requestId);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
       const handler = (this as any)[handleMethod];
 
