@@ -193,7 +193,11 @@ export class GameApp {
       throw newError('game not started', errorCodes.InvalidRequest);
     }
 
-    await this.apiSDK.submitGame(this.playingGame.id, result.score, '0xxx');
+    const signature = '0x0000';
+
+    await this.apiSDK.submitGame(this.playingGame.id, result.score, signature);
+
+    return signature;
   }
 
   onShowLeaderboard () {
