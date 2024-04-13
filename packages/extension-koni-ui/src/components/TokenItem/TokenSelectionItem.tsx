@@ -139,7 +139,7 @@ export const TokenSelectionItem = styled(Component)<Props>(({ theme: { token } }
       fontSize: token.fontSizeHeading5,
       lineHeight: token.lineHeightHeading5,
       fontWeight: token.fontWeightStrong,
-      color: token.colorWhite,
+      color: token.colorTextBase,
 
       '.__token-name': {
         color: token.colorTextTertiary,

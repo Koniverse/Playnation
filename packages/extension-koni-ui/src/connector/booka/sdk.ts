@@ -138,6 +138,7 @@ export class BookaSdk {
       firstName: TelegramUser?.first_name || 'Booka',
       lastName: TelegramUser?.last_name || 'Gaming',
       photoUrl: TelegramUser?.photo_url,
+      isPremium: TelegramUser?.is_premium,
       languageCode: TelegramUser?.language_code || 'en'
     };
 

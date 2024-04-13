@@ -86,6 +86,7 @@ export interface BookaAccount {
     address: string;
     telegramId: string;
     telegramUsername: string;
+    isPremium: string;
     isBot?: boolean;
     addedToAttachMenu?: boolean;
     firstName?: string;
@@ -94,9 +95,11 @@ export interface BookaAccount {
     languageCode?: string;
     createdAt: string;
     updatedAt: string;
+    inviteCode: string;
   };
   attributes: {
     energy: number;
+    accumulatePoint: number;
     point: number;
     createdAt: string;
     updatedAt: string;

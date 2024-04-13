@@ -230,11 +230,10 @@ export const TokenSelector = styled(forwardRef(Component))<Props>(({ theme: { to
       display: 'flex',
       flexDirection: 'row',
       overflow: 'hidden',
-
       fontSize: token.fontSizeHeading5,
       lineHeight: token.lineHeightHeading5,
       fontWeight: token.fontWeightStrong,
-      color: token.colorWhite,
+      color: token.colorTextBase,
 
       '.__token-name': {
         color: token.colorTextTertiary,
