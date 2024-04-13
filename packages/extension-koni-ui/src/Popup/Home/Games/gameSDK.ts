@@ -115,17 +115,26 @@ export class GameApp {
   }
 
   onGetTournament (): Tournament {
+    const account = this.apiSDK.account;
+    const currentGame = this.currentGameInfo;
+
+    if (!account || !currentGame) {
+      throw newError('invalid account or game', errorCodes.SystemError);
+    }
+
+    const tickets = Math.floor(account.attributes.energy / currentGame.energyPerGame);
+
     const tour: Tournament = {
       id: 'tour1',
       name: 'Tour 01',
       startTime: new Date().toISOString(),
       endTime: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
-      entryFee: 0,
+      entryFee: 1,
       entryTickets: 10,
       prizePool: {
         total: 10
       },
-      tickets: 10,
+      tickets: tickets,
       totalPlayers: 100
     };
 
