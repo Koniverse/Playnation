@@ -4,7 +4,7 @@
 import { _ChainConnectionStatus } from '@subwallet/extension-base/services/chain-service/types';
 
 export const DefaultLogosMap: Record<string, string> = {
-  subwallet: '/images/projects/subwallet.png',
+  subwallet: '/images/projects/subwallet-gradient.png',
   parity: '/images/projects/parity.png',
   keystone: '/images/projects/keystone.png',
   ledger: '/images/projects/ledger.png',

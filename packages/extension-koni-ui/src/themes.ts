@@ -94,7 +94,13 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
       colorTextLight6: '#666',
       colorTextLight7: '#777',
       colorTextLight8: '#888',
-      colorTextLight9: '#999'
+      colorTextLight9: '#999',
+      'gray-1': '#EEEEEE',
+      'gray-2': '#DDDDDD',
+      'gray-3': '#CCCCCC',
+      'gray-4': '#BBBBBB',
+      'gray-5': '#AAAAAA',
+      'gray-6': '#999999'
     },
     components: {
       SelectModal: {

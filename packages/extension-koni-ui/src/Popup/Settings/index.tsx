@@ -267,7 +267,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
               width={24}
             />
           ),
-          leftIconBgColor: token['magenta-7'],
+          leftIconBgColor: 'transparent',
           rightIcon: CaretRight,
           title: t('About SubWallet'),
           onClick: () => {

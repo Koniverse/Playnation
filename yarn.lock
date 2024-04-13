@@ -6242,6 +6242,7 @@ __metadata:
     "@types/enzyme": ^3.10.12
     "@types/enzyme-adapter-react-16": ^1.0.6
     "@types/file-saver": ^2.0.5
+    "@types/lodash": ^4.17.0
     "@types/react-copy-to-clipboard": ^5.0.4
     "@types/react-dom": ^18.0.9
     "@types/react-lazy-load-image-component": ^1.5.3
@@ -6262,6 +6263,7 @@ __metadata:
     file-saver: ^2.0.5
     humanize-duration: ^3.31.0
     i18next: ^21.9.2
+    lodash: ^4.17.21
     phosphor-react: ^1.4.1
     querystring: ^0.2.1
     rc-input: ^0.2.2
@@ -6294,6 +6296,7 @@ __metadata:
     sinon-chrome: ^3.0.1
     styled-components: ^5.3.6
     usehooks-ts: ^2.9.1
+    zod: ^3.22.4
   languageName: unknown
   linkType: soft
 
@@ -6982,6 +6985,13 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: e009a2bfb50e90ca9b7c6e8f648f8464067271fd99116f881073fa6fa76dc8d0133181dd65e6614d5fb1220d671d67b0124aef7d97dc02d7e342ab143a47779d
+  languageName: node
+  linkType: hard
+
+"@types/lodash@npm:^4.17.0":
+  version: 4.17.0
+  resolution: "@types/lodash@npm:4.17.0"
+  checksum: 3f98c0b67a93994cbc3403d4fa9dbaf52b0b6bb7f07a764d73875c2dcd5ef91222621bd5bcf8eee7b417a74d175c2f7191b9f595f8603956fd06f0674c0cba93
   languageName: node
   linkType: hard
 
@@ -26931,6 +26941,13 @@ __metadata:
   version: 0.8.15
   resolution: "zen-observable@npm:0.8.15"
   checksum: b7289084bc1fc74a559b7259faa23d3214b14b538a8843d2b001a35e27147833f4107590b1b44bf5bc7f6dfe6f488660d3a3725f268e09b3925b3476153b7821
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.22.4":
+  version: 3.22.4
+  resolution: "zod@npm:3.22.4"
+  checksum: 80bfd7f8039b24fddeb0718a2ec7c02aa9856e4838d6aa4864335a047b6b37a3273b191ef335bf0b2002e5c514ef261ffcda5a589fb084a48c336ffc4cdbab7f
   languageName: node
   linkType: hard
 

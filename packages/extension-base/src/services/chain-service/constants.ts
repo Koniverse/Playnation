@@ -19,7 +19,7 @@ export const _API_OPTIONS_CHAIN_GROUP = {
 export const _PREDEFINED_SINGLE_MODES: Record<string, SingleModeJson> = {
   subspace: {
     networkKeys: ['subspace_gemini_2a', 'subspace_test', 'subspace_gemini_3a'],
-    theme: ThemeNames.SUBSPACE,
+    theme: ThemeNames.LIGHT,
     autoTriggerDomain: 'subspace.network'
   }
 };

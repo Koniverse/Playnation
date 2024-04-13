@@ -27,9 +27,7 @@ const forceChainInfoMap = (() => {
     'polkadot',
     'kusama',
     'statemint',
-    'statemine',
-    'ethereum',
-    'binance'
+    'statemine'
   ];
 
   return Object.fromEntries(enableList.map((slug) => {

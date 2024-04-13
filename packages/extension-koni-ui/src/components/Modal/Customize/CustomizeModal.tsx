@@ -45,7 +45,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           leftItemIcon={
             <BackgroundIcon
               backgroundColor={token['green-6']}
-              iconColor={token.colorTextLight1}
+              iconColor={token.colorBgBase}
               phosphorIcon={Wallet}
               size='sm'
               type='phosphor'

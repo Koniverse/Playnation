@@ -51,7 +51,6 @@ const Welcome = styled(Component)<Props>(({ theme: { token } }: Props) => {
     alignItems: 'center',
 
     '.bg-image': {
-      backgroundImage: 'url("/images/subwallet/welcome-background.png")',
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'top',
       backgroundSize: 'cover',
