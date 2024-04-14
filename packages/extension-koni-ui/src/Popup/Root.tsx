@@ -6,7 +6,6 @@ import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
@@ -79,8 +78,6 @@ function removeLoadingPlaceholder (animation: boolean): void {
   }
 }
 
-const telegramConnector = TelegramConnector.instance;
-
 function DefaultRoute ({ children }: { children: React.ReactNode }): React.ReactElement {
   const dataContext = useContext(DataContext);
   const location = useLocation();
@@ -136,7 +133,6 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   );
 
   useEffect(() => {
-    telegramConnector.autoExpand();
     initDataRef.current.then(() => {
       setDataLoaded(true);
     }).catch(console.error);
