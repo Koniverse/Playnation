@@ -3,8 +3,8 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { TelegramUser, TelegramWebApp } from '@subwallet/extension-base/utils/telegram';
 import { BookaAccount, Game, GamePlay, LeaderboardPerson, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
@@ -13,6 +13,7 @@ export const BOOKA_API_HOST = 'https://booka-api.koni.studio';
 export const BOOKA_WEBAPP_TELEGRAM_BOT = 'BookaGamesBot/swbooka';
 // export const BOOKA_API_HOST = 'http://localhost:3001';
 const storage = SWStorage.instance;
+const telegramConnector = TelegramConnector.instance;
 
 export class BookaSdk {
   private syncHandler = createPromiseHandler<void>();
@@ -133,9 +134,10 @@ export class BookaSdk {
   }
 
   async sync (address: string) {
-    const message = `Login as ${TelegramUser?.username || 'booka'}`;
+    const userInfo = telegramConnector.userInfo;
+    const message = `Login as ${userInfo?.username || 'booka'}`;
     const signature = await this.requestSignature(address, message);
-    const referralCode = TelegramWebApp.initDataUnsafe?.start_param || '';
+    const referralCode = telegramConnector.getStartParam() || '';
 
     this.accountSubject.next(undefined);
 
@@ -143,15 +145,15 @@ export class BookaSdk {
       address,
       signature,
       referralCode,
-      telegramId: TelegramUser?.id || 111,
-      telegramUsername: TelegramUser?.username || 'booka',
-      isBot: !!TelegramUser?.is_bot,
-      addedToAttachMenu: !!TelegramUser?.added_to_attachment_menu,
-      firstName: TelegramUser?.first_name || 'Booka',
-      lastName: TelegramUser?.last_name || 'Gaming',
-      photoUrl: TelegramUser?.photo_url,
-      isPremium: TelegramUser?.is_premium,
-      languageCode: TelegramUser?.language_code || 'en'
+      telegramId: userInfo?.id || 111,
+      telegramUsername: userInfo?.username || 'booka',
+      isBot: !!userInfo?.is_bot,
+      addedToAttachMenu: !!userInfo?.added_to_attachment_menu,
+      firstName: userInfo?.first_name || 'Booka',
+      lastName: userInfo?.last_name || 'Gaming',
+      photoUrl: userInfo?.photo_url,
+      isPremium: userInfo?.is_premium,
+      languageCode: userInfo?.language_code || 'en'
     };
 
     const account = await this.postRequest<BookaAccount>(`${BOOKA_API_HOST}/api/account/sync`, syncData);

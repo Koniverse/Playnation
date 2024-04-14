@@ -1,10 +1,10 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { TelegramUser } from '@subwallet/extension-base/utils/telegram';
 import { AlertBox, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import InfoIcon from '@subwallet/extension-koni-ui/components/Icon/InfoIcon';
-import {DEFAULT_PASSWORD, SUBSTRATE_ACCOUNT_TYPE} from '@subwallet/extension-koni-ui/constants';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { DEFAULT_PASSWORD, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
 import { TERMS_OF_SERVICE_URL } from '@subwallet/extension-koni-ui/constants/common';
 import { REQUEST_CREATE_PASSWORD_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
@@ -48,6 +48,7 @@ const FooterIcon = (
 
 const modalId = 'create-password-instruction-modal';
 const formName = 'create-password-form';
+const telegramConnector = TelegramConnector.instance;
 
 const Component: React.FC<Props> = ({ className }: Props) => {
   const { t } = useTranslation();
@@ -78,7 +79,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
     (async () => {
       // Create default account
       const seedPhrase = await createSeedV2(undefined, undefined, [SUBSTRATE_ACCOUNT_TYPE]);
-      const accountName = TelegramUser?.username || 'Account 1';
+      const accountName = telegramConnector.userInfo?.username || 'Account 1';
 
       await createAccountSuriV2({
         name: accountName,

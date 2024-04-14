@@ -35,7 +35,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     const encodeURL = apiSDK.getInviteURL();
     const inviteURL = `https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent('Join me on PlayNation to earn free energy and point!')}`;
 
-    telegramConnector.openLink(inviteURL);
+    telegramConnector.openTelegramLink(inviteURL);
   }, []);
 
   return <div className={className}>

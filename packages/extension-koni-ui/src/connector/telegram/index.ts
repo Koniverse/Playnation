@@ -23,6 +23,14 @@ export class TelegramConnector {
     console.log('TelegramConnector', this._version, this.supportCloudStorage, this.supportModal, this.supportBasicMethod);
   }
 
+  get userInfo () {
+    return TelegramWebApp.initDataUnsafe?.user;
+  }
+
+  getStartParam () {
+    return TelegramWebApp.initDataUnsafe?.start_param;
+  }
+
   openLink (url: string) {
     if (this.supportBasicMethod) {
       TelegramWebApp.openLink(url);

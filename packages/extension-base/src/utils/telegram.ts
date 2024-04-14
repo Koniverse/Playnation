@@ -4,4 +4,3 @@
 import WebApp from '@twa-dev/sdk';
 
 export const TelegramWebApp = WebApp;
-export const TelegramUser = WebApp.initDataUnsafe.user;
