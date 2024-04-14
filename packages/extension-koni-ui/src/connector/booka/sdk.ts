@@ -85,7 +85,6 @@ export class BookaSdk {
     const newAccountData = await this.getRequest<Omit<BookaAccount, 'token'>>(`${BOOKA_API_HOST}/api/account/get-attribute`);
 
     if (account && newAccountData) {
-      account.info = newAccountData.info;
       account.attributes = newAccountData.attributes;
     }
 
