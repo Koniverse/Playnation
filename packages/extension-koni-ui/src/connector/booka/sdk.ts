@@ -7,17 +7,23 @@ import { BookaAccount, BuyInGameItemResponse, Game, GamePlay, LeaderboardPerson,
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
+import {createPromiseHandler} from "@subwallet/extension-base/utils";
 
 export const BOOKA_API_HOST = 'https://booka-api.koni.studio';
 // export const BOOKA_API_HOST = 'http://localhost:3001';
 const storage = SWStorage.instance;
 
 export class BookaSdk {
+  private syncHandler = createPromiseHandler<void>();
   private accountSubject = new BehaviorSubject<BookaAccount | undefined>(undefined);
   private taskListSubject = new BehaviorSubject<Task[]>([]);
   private gameListSubject = new BehaviorSubject<Game[]>([]);
   private currentGamePlaySubject = new BehaviorSubject<GamePlay | undefined>(undefined);
   private leaderBoardSubject = new BehaviorSubject<LeaderboardPerson[]>([]);
+
+  public get waitForSync () {
+    return this.syncHandler.promise;
+  }
 
   public get account () {
     return this.accountSubject.value;
@@ -148,6 +154,9 @@ export class BookaSdk {
       this.accountSubject.next(account);
 
       await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchLeaderboard()]);
+      this.syncHandler.resolve();
+    } else {
+      throw new Error('Failed to sync account');
     }
   }
 

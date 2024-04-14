@@ -52,6 +52,14 @@ export const ITEM_MAP: Record<string, InGameItem> = {
   }
 };
 
+const InventoryQuantityMap: Record<string, number> = {
+  BOOSTER: 5,
+  MAGNET: 3,
+  CUP1: 3,
+  CUP2: 1,
+  CUP5: 1
+};
+
 export class GameApp {
   private playingGame: GamePlay | undefined;
   private listener = this._onMessage.bind(this);
@@ -91,24 +99,10 @@ export class GameApp {
       name: `${account?.info.firstName || ''} ${account?.info.lastName || ''}` || 'Player',
       avatar: 'https://thispersondoesnotexist.com/',
       level: 1,
-      inventory: [
-        {
-          itemId: 'MAGNET',
-          quantity: 3
-        },
-        {
-          itemId: 'BOOSTER',
-          quantity: 5
-        },
-        {
-          itemId: 'CUP3',
-          quantity: 3
-        },
-        {
-          itemId: 'CUP5',
-          quantity: 2
-        }
-      ]
+      inventory: Object.entries(InventoryQuantityMap).map(([id, quantity]) => ({
+        itemId: id,
+        quantity
+      }))
     };
 
     return player;
@@ -173,6 +167,8 @@ export class GameApp {
       throw newError('invalid item id', errorCodes.InvalidRequest);
     }
 
+    InventoryQuantityMap[itemId] = (InventoryQuantityMap[itemId] || 0) + 1;
+
     const res: BuyInGameItemResponse = {
       receipt: Math.random().toString(),
       item: ITEM_MAP[itemId]
@@ -182,10 +178,20 @@ export class GameApp {
   }
 
   onUseIngameItem (itemId: string, gameplayId?: string): UseInGameItemResponse {
-    console.log('use item', itemId, gameplayId);
+    let success = false;
+    const remaining = InventoryQuantityMap[itemId] || 0;
+
+    if (ITEM_MAP[itemId] && remaining > 0) {
+      success = true;
+      InventoryQuantityMap[itemId] = remaining - 1;
+    }
+
     const res: UseInGameItemResponse = {
-      success: true,
-      inventory: []
+      success,
+      inventory: Object.entries(InventoryQuantityMap).map(([id, quantity]) => ({
+        itemId: id,
+        quantity
+      }))
     };
 
     return res;
@@ -232,6 +238,8 @@ export class GameApp {
   }
 
   private async _onMessage (event: MessageEvent) {
+    await this.apiSDK.waitForSync;
+
     const schema = z.object({
       source: z.enum(['game-sdk']),
       action: z.string().min(1),
