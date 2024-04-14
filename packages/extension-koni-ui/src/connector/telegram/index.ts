@@ -23,6 +23,14 @@ export class TelegramConnector {
     console.log('TelegramConnector', this._version, this.supportCloudStorage, this.supportModal, this.supportBasicMethod);
   }
 
+  autoExpand () {
+    if (this.supportBasicMethod) {
+      if (!TelegramWebApp.isExpanded) {
+        TelegramWebApp.expand();
+      }
+    }
+  }
+
   showConfirmation (message: string, callback: (confirm: boolean) => void) {
     if (this.supportModal) {
       TelegramWebApp.showConfirm(message, callback);

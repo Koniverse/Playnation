@@ -93,17 +93,22 @@ export class GameApp {
   onGetPlayer () {
     const account = this.apiSDK.account;
 
+    console.log('onGetPlayer');
+
     const player: Player = {
-      id: account?.info.telegramUsername || 'player1',
-      balance: account?.attributes.point || 0,
-      name: `${account?.info.firstName || ''} ${account?.info.lastName || ''}` || 'Player',
+      id: account?.info?.telegramUsername || 'player1',
+      balance: account?.attributes?.point || 0,
+      name: `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}` || 'Player',
       avatar: 'https://thispersondoesnotexist.com/',
       level: 1,
-      inventory: Object.entries(InventoryQuantityMap).map(([id, quantity]) => ({
-        itemId: id,
-        quantity
-      }))
+      inventory: Object.entries(InventoryQuantityMap)
+        .map(([id, quantity]) => ({
+          itemId: id,
+          quantity
+        }))
     };
+
+    console.log('GetPlayer', player);
 
     return player;
   }
