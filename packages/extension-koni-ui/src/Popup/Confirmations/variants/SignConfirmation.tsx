@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SigningRequest } from '@subwallet/extension-base/background/types';
-import { AccountItemWithName, ConfirmationGeneralInfo, ViewDetailIcon } from '@subwallet/extension-koni-ui/components';
+import { AccountItemWithName, ViewDetailIcon } from '@subwallet/extension-koni-ui/components';
 import { useOpenDetailModal, useParseSubstrateRequestPayload } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { isSubstrateMessage } from '@subwallet/extension-koni-ui/utils';
@@ -33,10 +33,6 @@ function Component ({ className, request }: Props) {
   return (
     <>
       <div className={CN('confirmation-content', className)}>
-        <ConfirmationGeneralInfo request={request} />
-        <div className='title'>
-          {t('Signature request')}
-        </div>
         <div className='description'>
           {t('You are approving a request with the following account')}
         </div>

@@ -1,23 +1,19 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { PageWrapper, WalletConnect } from '@subwallet/extension-koni-ui/components';
-import { EXTENSION_VERSION, SUPPORT_MAIL, TERMS_OF_SERVICE_URL, TWITTER_URL, WEBSITE_URL, WIKI_URL } from '@subwallet/extension-koni-ui/constants/common';
-import { useSelector } from '@subwallet/extension-koni-ui/hooks';
-import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
+import { PageWrapper } from '@subwallet/extension-koni-ui/components';
+import { EXTENSION_VERSION, SUPPORT_MAIL } from '@subwallet/extension-koni-ui/constants/common';
+import { useNotification, useSelector, useUILock } from '@subwallet/extension-koni-ui/hooks';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
-import useUILock from '@subwallet/extension-koni-ui/hooks/common/useUILock';
 import useIsPopup from '@subwallet/extension-koni-ui/hooks/dom/useIsPopup';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
 import { windowOpen } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { computeStatus, openInNewTab } from '@subwallet/extension-koni-ui/utils';
-import { BackgroundIcon, Button, ButtonProps, Icon, Image, ModalContext, SettingItem, SwHeader, SwIconProps, SwModal } from '@subwallet/react-ui';
-import CN from 'classnames';
-import { ArrowsOut, ArrowSquareOut, Book, BookBookmark, CaretRight, ChatTeardropText, Coin, EnvelopeSimple, FrameCorners, Globe, GlobeHemisphereEast, Lock, Parachute, ShareNetwork, ShieldCheck, X } from 'phosphor-react';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import { computeStatus } from '@subwallet/extension-koni-ui/utils';
+import { BackgroundIcon, Button, ButtonProps, Icon, SettingItem, SwHeader, SwIconProps } from '@subwallet/react-ui';
+import { ArrowsOut, ArrowSquareOut, BookBookmark, CaretRight, Coin, EnvelopeSimple, FrameCorners, GlobeHemisphereEast, Lock, ShareNetwork, ShieldCheck, X } from 'phosphor-react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 
@@ -69,7 +65,7 @@ function generateRightIcon (icon: SwIconProps['phosphorIcon']): React.ReactNode 
   );
 }
 
-const modalId = 'about-subwallet-modal';
+// const modalId = 'about-subwallet-modal';
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const navigate = useNavigate();
@@ -79,7 +75,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const { goHome } = useDefaultNavigate();
   const { t } = useTranslation();
   const [locking, setLocking] = useState(false);
-  const { activeModal, inactiveModal } = useContext(ModalContext);
+  // const { activeModal, inactiveModal } = useContext(ModalContext);
   const { missions } = useSelector((state: RootState) => state.missionPool);
 
   const liveMissionsCount = useMemo(() => {
@@ -144,50 +140,50 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           onClick: () => {
             navigate('/settings/security', { state: true });
           }
-        },
-        {
-          key: 'mission-pools',
-          leftIcon: Parachute,
-          leftIconBgColor: token['cyan-5'],
-          rightIcon: CaretRight,
-          title: t('Mission pools'),
-          onClick: () => {
-            navigate('/settings/mission-pools', { state: true });
-          }
         }
+        // {
+        //   key: 'mission-pools',
+        //   leftIcon: Parachute,
+        //   leftIconBgColor: token['cyan-5'],
+        //   rightIcon: CaretRight,
+        //   title: t('Mission pools'),
+        //   onClick: () => {
+        //     navigate('/settings/mission-pools', { state: true });
+        //   }
+        // }
       ]
     },
-    {
-      key: 'website-access',
-      label: t('Website access'),
-      items: [
-        {
-          key: 'manage-website-access',
-          leftIcon: GlobeHemisphereEast,
-          leftIconBgColor: token['blue-7'],
-          rightIcon: CaretRight,
-          title: t('Manage website access'),
-          onClick: () => {
-            navigate('/settings/dapp-access');
-          }
-        },
-        {
-          key: 'wallet-connect',
-          leftIcon: (
-            <WalletConnect
-              height='1em'
-              width='1em'
-            />
-          ),
-          leftIconBgColor: token['geekblue-6'],
-          rightIcon: CaretRight,
-          title: t('WalletConnect'),
-          onClick: () => {
-            navigate('/wallet-connect/list');
-          }
-        }
-      ]
-    },
+    // {
+    //   key: 'website-access',
+    //   label: t('Website access'),
+    //   items: [
+    //     {
+    //       key: 'manage-website-access',
+    //       leftIcon: GlobeHemisphereEast,
+    //       leftIconBgColor: token['blue-7'],
+    //       rightIcon: CaretRight,
+    //       title: t('Manage website access'),
+    //       onClick: () => {
+    //         navigate('/settings/dapp-access');
+    //       }
+    //     },
+    //     {
+    //       key: 'wallet-connect',
+    //       leftIcon: (
+    //         <WalletConnect
+    //           height='1em'
+    //           width='1em'
+    //         />
+    //       ),
+    //       leftIconBgColor: token['geekblue-6'],
+    //       rightIcon: CaretRight,
+    //       title: t('WalletConnect'),
+    //       onClick: () => {
+    //         navigate('/wallet-connect/list');
+    //       }
+    //     }
+    //   ]
+    // },
     {
       key: 'assets-&-addresses',
       label: t('Assets & addresses'),
@@ -235,85 +231,84 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           rightIcon: ArrowSquareOut,
           title: t('Contact support'),
           onClick: () => {
-            window.open(`${SUPPORT_MAIL}?subject=[Extension - In-app support]`, '_self');
-          }
-        },
-        {
-          key: 'user-manual',
-          leftIcon: Book,
-          leftIconBgColor: token['green-6'],
-          rightIcon: ArrowSquareOut,
-          title: t('User guide'),
-          onClick: openInNewTab(WIKI_URL)
-        },
-        {
-          key: 'request-a-feature',
-          leftIcon: ChatTeardropText,
-          leftIconBgColor: token['magenta-7'],
-          rightIcon: ArrowSquareOut,
-          title: t('Request a feature'),
-          onClick: () => {
-            window.open(`${SUPPORT_MAIL}?subject=[SubWallet In-app Feedback]`, '_self');
-          }
-        },
-        {
-          key: 'about-subwallet',
-          leftIcon: (
-            <Image
-              className='__subwallet-logo'
-              height={24}
-              shape='squircle'
-              src={DefaultLogosMap.subwallet}
-              width={24}
-            />
-          ),
-          leftIconBgColor: 'transparent',
-          rightIcon: CaretRight,
-          title: t('About SubWallet'),
-          onClick: () => {
-            activeModal(modalId);
+            window.open(`${SUPPORT_MAIL}?subject=[Playnation - In-app support]`, '_self');
           }
         }
-
+        // {
+        //   key: 'user-manual',
+        //   leftIcon: Book,
+        //   leftIconBgColor: token['green-6'],
+        //   rightIcon: ArrowSquareOut,
+        //   title: t('User guide'),
+        //   onClick: openInNewTab(WIKI_URL)
+        // },
+        // {
+        //   key: 'request-a-feature',
+        //   leftIcon: ChatTeardropText,
+        //   leftIconBgColor: token['magenta-7'],
+        //   rightIcon: ArrowSquareOut,
+        //   title: t('Request a feature'),
+        //   onClick: () => {
+        //     window.open(`${SUPPORT_MAIL}?subject=[SubWallet In-app Feedback]`, '_self');
+        //   }
+        // },
+        // {
+        //   key: 'about-subwallet',
+        //   leftIcon: (
+        //     <Image
+        //       className='__subwallet-logo'
+        //       height={24}
+        //       shape='squircle'
+        //       src={DefaultLogosMap.subwallet}
+        //       width={24}
+        //     />
+        //   ),
+        //   leftIconBgColor: 'transparent',
+        //   rightIcon: CaretRight,
+        //   title: t('About SubWallet'),
+        //   onClick: () => {
+        //     activeModal(modalId);
+        //   }
+        // }
       ]
     }
-  ]), [activeModal, isPopup, navigate, t, token]);
+  ]), [isPopup, navigate, t, token]);
 
-  const aboutSubwalletType = useMemo<SettingItemType[]>(() => {
-    return [
-      {
-        key: 'website',
-        leftIcon: Globe,
-        rightIcon: ArrowSquareOut,
-        leftIconBgColor: token['purple-7'],
-        title: t('Website'),
-        onClick: openInNewTab(WEBSITE_URL)
-      },
-      {
-        key: 'terms-of-use',
-        leftIcon: BookBookmark,
-        rightIcon: ArrowSquareOut,
-        leftIconBgColor: token['volcano-7'],
-        title: t('Terms of use'),
-        onClick: openInNewTab(TERMS_OF_SERVICE_URL)
-      },
-      {
-        key: 'x',
-        leftIcon: (
-          <Image
-            height={24}
-            shape='squircle'
-            src={DefaultLogosMap.xtwitter}
-            width={24}
-          />
-        ),
-        rightIcon: ArrowSquareOut,
-        leftIconBgColor: token.colorBgSecondary,
-        title: t('X (Twitter)'),
-        onClick: openInNewTab(TWITTER_URL)
-      }
-    ];
-  }, [t, token]);
+  // const aboutSubwalletType = useMemo<SettingItemType[]>(() => {
+  //   return [
+  //     {
+  //       key: 'website',
+  //       leftIcon: Globe,
+  //       rightIcon: ArrowSquareOut,
+  //       leftIconBgColor: token['purple-7'],
+  //       title: t('Website'),
+  //       onClick: openInNewTab(WEBSITE_URL)
+  //     },
+  //     {
+  //       key: 'terms-of-use',
+  //       leftIcon: BookBookmark,
+  //       rightIcon: ArrowSquareOut,
+  //       leftIconBgColor: token['volcano-7'],
+  //       title: t('Terms of use'),
+  //       onClick: openInNewTab(TERMS_OF_SERVICE_URL)
+  //     },
+  //     {
+  //       key: 'x',
+  //       leftIcon: (
+  //         <Image
+  //           height={24}
+  //           shape='squircle'
+  //           src={DefaultLogosMap.xtwitter}
+  //           width={24}
+  //         />
+  //       ),
+  //       rightIcon: ArrowSquareOut,
+  //       leftIconBgColor: token.colorBgSecondary,
+  //       title: t('X (Twitter)'),
+  //       onClick: openInNewTab(TWITTER_URL)
+  //     }
+  //   ];
+  // }, [t, token]);
 
   const headerIcons = useMemo<ButtonProps[]>(() => {
     return [
@@ -331,9 +326,9 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     ];
   }, [goHome]);
 
-  const closeModal = useCallback(() => {
-    inactiveModal(modalId);
-  }, [inactiveModal]);
+  // const closeModal = useCallback(() => {
+  //   inactiveModal(modalId);
+  // }, [inactiveModal]);
 
   return (
     <PageWrapper className={`settings ${className}`}>
@@ -401,34 +396,10 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           </Button>
 
           <div className={'__version'}>
-          SubWallet v {EXTENSION_VERSION}
+          PlayNation v {EXTENSION_VERSION}
           </div>
         </div>
         <Outlet />
-        <SwModal
-          className={CN(className, 'about-subwallet-modal')}
-          id={modalId}
-          onCancel={closeModal}
-          title={t('About SubWallet')}
-        >
-          {aboutSubwalletType.map((item) => (
-            <div
-              className='about-subwallet-item'
-              key={item.key}
-            >
-              <div className=''>
-                <SettingItem
-                  className='__setting-about-item setting-item'
-                  key={item.key}
-                  leftItemIcon={generateLeftIcon(item.leftIconBgColor, item.leftIcon)}
-                  name={item.title}
-                  onPressItem={item.onClick}
-                  rightItem={generateRightIcon(item.rightIcon)}
-                />
-              </div>
-            </div>
-          ))}
-        </SwModal>
       </>
     </PageWrapper>
   );
@@ -465,7 +436,6 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
         display: 'flex',
         alignItems: 'center'
       },
-
 
       '.ant-sw-header-center-part': {
         color: token.colorTextLight1,

@@ -4,7 +4,7 @@
 import { TelegramUser } from '@subwallet/extension-base/utils/telegram';
 import { AlertBox, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import InfoIcon from '@subwallet/extension-koni-ui/components/Icon/InfoIcon';
-import { SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
+import {DEFAULT_PASSWORD, SUBSTRATE_ACCOUNT_TYPE} from '@subwallet/extension-koni-ui/constants';
 import { TERMS_OF_SERVICE_URL } from '@subwallet/extension-koni-ui/constants/common';
 import { REQUEST_CREATE_PASSWORD_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
@@ -143,6 +143,14 @@ const Component: React.FC<Props> = ({ className }: Props) => {
       activeModal(REQUEST_CREATE_PASSWORD_MODAL);
     }
   }, [activeModal, noAccount]);
+
+  useEffect(() => {
+    onSubmit({
+      [FormFieldName.PASSWORD]: DEFAULT_PASSWORD,
+      [FormFieldName.CONFIRM_PASSWORD]: DEFAULT_PASSWORD,
+      [FormFieldName.CONFIRM_CHECKBOX]: true
+    });
+  }, [onSubmit]);
 
   useFocusFormItem(form, FormFieldName.PASSWORD, !checkActive(REQUEST_CREATE_PASSWORD_MODAL));
 
