@@ -1,14 +1,17 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
 import { GameLogo, GamePoint } from '@subwallet/extension-koni-ui/components/Games/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { ReferralRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, Typography } from '@subwallet/react-ui';
+import CN from 'classnames';
 import { UserCirclePlus } from 'phosphor-react';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
@@ -19,6 +22,18 @@ const telegramConnector = TelegramConnector.instance;
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/invite');
   const { t } = useTranslation();
+  const [referralList, setReferralList] = useState<ReferralRecord[]>(apiSDK.referralList);
+
+  useEffect(() => {
+    const referralSub = apiSDK.subscribeReferralList().subscribe((data) => {
+      console.log('referralList', data);
+      setReferralList(data);
+    });
+
+    return () => {
+      referralSub.unsubscribe();
+    };
+  }, []);
 
   const inviteFriend = useCallback(() => {
     const encodeURL = apiSDK.getInviteURL();
@@ -55,6 +70,17 @@ const Component = ({ className }: Props): React.ReactElement => {
         <Typography.Title level={4}>
           {t('Your friends list')}
         </Typography.Title>
+        <div className={'ref-list'}>
+          {referralList.map((item) => (
+            <GameAccount
+              avatar={item.accountInfo.avatar}
+              className={CN('account-info')}
+              info={item.point.toString()}
+              key={item.accountInfo.id}
+              name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
+            />
+          ))}
+        </div>
       </div>
     </div>
     <div className={'invite-footer'}>

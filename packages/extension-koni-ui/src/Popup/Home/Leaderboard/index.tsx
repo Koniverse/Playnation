@@ -18,21 +18,15 @@ const apiSDK = BookaSdk.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/leaderboard');
-  const [account, setAccount] = useState(apiSDK.account);
-  const [leaderBoard, setLeaderBoard] = useState<LeaderboardPerson[]>([]);
+  const [leaderBoard, setLeaderBoard] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
   const { t } = useTranslation();
 
   useEffect(() => {
-    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
-      setAccount(data);
-    });
-
     const leaderBoardSub = apiSDK.subscribeLeaderboard().subscribe((data) => {
       setLeaderBoard(data);
     });
 
     return () => {
-      accountSub.unsubscribe();
       leaderBoardSub.unsubscribe();
     };
   }, []);

@@ -3,14 +3,14 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { BookaAccount, Game, GamePlay, LeaderboardPerson, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { BookaAccount, Game, GamePlay, LeaderboardPerson, ReferralRecord, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-// export const BOOKA_API_HOST = 'https://booka-api.koni.studio';
-export const BOOKA_API_HOST = 'http://localhost:3001';
+export const BOOKA_API_HOST = 'https://booka-api.koni.studio';
+// export const BOOKA_API_HOST = 'http://localhost:3001';
 export const BOOKA_WEBAPP_TELEGRAM_BOT = 'BookaGamesBot/swbooka';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
@@ -22,6 +22,7 @@ export class BookaSdk {
   private gameListSubject = new BehaviorSubject<Game[]>([]);
   private currentGamePlaySubject = new BehaviorSubject<GamePlay | undefined>(undefined);
   private leaderBoardSubject = new BehaviorSubject<LeaderboardPerson[]>([]);
+  private referralListSubject = new BehaviorSubject<ReferralRecord[]>([]);
 
   public get waitForSync () {
     return this.syncHandler.promise;
@@ -37,6 +38,14 @@ export class BookaSdk {
 
   public get gameList () {
     return this.gameListSubject.value;
+  }
+
+  public get leaderBoard () {
+    return this.leaderBoardSubject.value;
+  }
+
+  public get referralList () {
+    return this.referralListSubject.value;
   }
 
   public get currentGamePlay () {
@@ -131,6 +140,20 @@ export class BookaSdk {
 
   getInviteURL (): string {
     return `https://t.me/${BOOKA_WEBAPP_TELEGRAM_BOT}?startapp=${this.account?.info.inviteCode || 'booka'}`;
+  }
+
+  async fetchReferalList () {
+    const refList = await this.getRequest<ReferralRecord[]>(`${BOOKA_API_HOST}/api/account/get-rerferal-logs`);
+
+    if (refList) {
+      this.referralListSubject.next(refList);
+    }
+  }
+
+  subscribeReferralList () {
+    this.fetchReferalList().catch(console.error);
+
+    return this.referralListSubject;
   }
 
   async sync (address: string) {
@@ -230,6 +253,8 @@ export class BookaSdk {
   }
 
   subscribeLeaderboard () {
+    this.fetchLeaderboard().catch(console.error);
+
     return this.leaderBoardSubject;
   }
 
