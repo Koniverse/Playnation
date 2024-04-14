@@ -4,7 +4,7 @@
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
@@ -24,6 +24,12 @@ const Component = ({ className }: Props): React.ReactElement => {
       accountSub.unsubscribe();
     };
   }, []);
+  const urlInvite = useMemo(() => {
+    const url = apiSDK.getUrlInvite();
+
+    return `https://t.me/share/url?url=${url}&text=${encodeURIComponent('Join me on BookaGame to earn free energy and point!')}
+    `;
+  }, [])
 
   return <div className={className}>
     {account && <div>
@@ -33,12 +39,15 @@ const Component = ({ className }: Props): React.ReactElement => {
     </div>}
     <div className={'leader-board'}>
       <h1>Invite Link</h1>
+      <a  href={urlInvite}>
+        Invite
+      </a>
       <h1>Invited History</h1>
     </div>
   </div>;
 };
 
-const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
+const Invite = styled(Component)<ThemeProps>(({theme: {extendToken, token}}: ThemeProps) => {
   return {
 
   };

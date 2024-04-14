@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWStorage } from '@subwallet/extension-base/storage';
-import { TelegramUser } from '@subwallet/extension-base/utils/telegram';
+import {TelegramUser, TelegramWebApp} from '@subwallet/extension-base/utils/telegram';
 import { BookaAccount, BuyInGameItemResponse, Game, GamePlay, LeaderboardPerson, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
 export const BOOKA_API_HOST = 'https://booka-api.koni.studio';
+export const BOOKA_WEBAPP_TELEGRAM_BOT = 'https://t.me/BitGame123Bot/webapp';
 // export const BOOKA_API_HOST = 'http://localhost:3001';
 const storage = SWStorage.instance;
 
@@ -122,15 +123,21 @@ export class BookaSdk {
     await this.reloadAccount();
   }
 
+  getUrlInvite (): string {
+    return `${BOOKA_WEBAPP_TELEGRAM_BOT}?startapp=${this.account?.info.inviteCode || 'booka'}`;
+  }
+
   async sync (address: string) {
     const message = `Login as ${TelegramUser?.username || 'booka'}`;
     const signature = await this.requestSignature(address, message);
+    const referralCode = TelegramWebApp.initDataUnsafe?.start_param || '';
 
     this.accountSubject.next(undefined);
 
     const syncData = {
       address,
       signature,
+      referralCode,
       telegramId: TelegramUser?.id || 111,
       telegramUsername: TelegramUser?.username || 'booka',
       isBot: !!TelegramUser?.is_bot,
