@@ -8,7 +8,7 @@ import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, Typography } from '@subwallet/react-ui';
 import { UserCirclePlus } from 'phosphor-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
@@ -18,18 +18,7 @@ const telegramConnector = TelegramConnector.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/invite');
-  const [account, setAccount] = useState(apiSDK.account);
   const { t } = useTranslation();
-
-  useEffect(() => {
-    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
-      setAccount(data);
-    });
-
-    return () => {
-      accountSub.unsubscribe();
-    };
-  }, []);
 
   const inviteFriend = useCallback(() => {
     const encodeURL = apiSDK.getInviteURL();

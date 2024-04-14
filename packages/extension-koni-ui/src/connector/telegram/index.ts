@@ -5,6 +5,13 @@
 import { TelegramWebApp } from '@subwallet/extension-base/utils/telegram';
 import { PopupParams } from '@twa-dev/types';
 
+export interface TelegramThemeConfig {
+  headerColor: string;
+  headerTextColor: string;
+  backgroundColor: string;
+  textColor: string;
+}
+
 export class TelegramConnector {
   private _version: string;
   private supportCloudStorage: boolean;
@@ -25,6 +32,13 @@ export class TelegramConnector {
 
   get userInfo () {
     return TelegramWebApp.initDataUnsafe?.user;
+  }
+
+  syncTheme (headerColor: string, backgroundColor: string) {
+    if (this.supportBasicMethod) {
+      TelegramWebApp.setHeaderColor(headerColor as `#${string}`);
+      TelegramWebApp.setBackgroundColor(backgroundColor as `#${string}`);
+    }
   }
 
   getStartParam () {

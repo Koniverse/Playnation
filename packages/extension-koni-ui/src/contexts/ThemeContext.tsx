@@ -14,6 +14,7 @@ import styled, { createGlobalStyle, ThemeProvider as StyledComponentThemeProvide
 
 import { Theme } from '../types';
 import {ThemeNames} from "@subwallet/extension-base/background/KoniTypes";
+import {TelegramConnector} from "@subwallet/extension-koni-ui/connector/telegram";
 
 interface Props {
   children: React.ReactNode;
@@ -22,9 +23,12 @@ interface Props {
 
 const { useToken } = reactUiTheme;
 
+const telegramConnector = TelegramConnector.instance;
+
 const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
   const { extendToken, token } = theme as Theme;
 
+  telegramConnector.syncTheme(token.colorBgBase, token.colorBgBase);
   applyPreloadStyle(extendToken.bodyBackgroundColor);
 
   return ({

@@ -1,19 +1,18 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { PageWrapper } from '@subwallet/extension-koni-ui/components';
+import { PageWrapper, ResetWalletModal } from '@subwallet/extension-koni-ui/components';
+import { RESET_WALLET_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { EXTENSION_VERSION, SUPPORT_MAIL } from '@subwallet/extension-koni-ui/constants/common';
-import { useNotification, useSelector, useUILock } from '@subwallet/extension-koni-ui/hooks';
+import { useSelector } from '@subwallet/extension-koni-ui/hooks';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
-import useIsPopup from '@subwallet/extension-koni-ui/hooks/dom/useIsPopup';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
-import { windowOpen } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { computeStatus } from '@subwallet/extension-koni-ui/utils';
-import { BackgroundIcon, Button, ButtonProps, Icon, SettingItem, SwHeader, SwIconProps } from '@subwallet/react-ui';
-import { ArrowsOut, ArrowSquareOut, BookBookmark, CaretRight, Coin, EnvelopeSimple, FrameCorners, GlobeHemisphereEast, Lock, ShareNetwork, ShieldCheck, X } from 'phosphor-react';
-import React, { useCallback, useMemo, useState } from 'react';
+import { BackgroundIcon, Button, ButtonProps, Icon, ModalContext, SettingItem, SwHeader, SwIconProps } from '@subwallet/react-ui';
+import { ArrowCounterClockwise, ArrowSquareOut, BookBookmark, CaretRight, Coin, EnvelopeSimple, GlobeHemisphereEast, ShareNetwork, ShieldCheck, X } from 'phosphor-react';
+import React, { useCallback, useContext, useMemo } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 
@@ -70,57 +69,25 @@ function generateRightIcon (icon: SwIconProps['phosphorIcon']): React.ReactNode 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const navigate = useNavigate();
   const { token } = useTheme() as Theme;
-  const isPopup = useIsPopup();
-  const notify = useNotification();
+
   const { goHome } = useDefaultNavigate();
   const { t } = useTranslation();
-  const [locking, setLocking] = useState(false);
-  // const { activeModal, inactiveModal } = useContext(ModalContext);
+  const { activeModal } = useContext(ModalContext);
   const { missions } = useSelector((state: RootState) => state.missionPool);
 
   const liveMissionsCount = useMemo(() => {
     return missions.filter((item) => computeStatus(item) === 'live').length;
   }, [missions]);
 
-  const { isUILocked, lock, unlock } = useUILock();
-
-  const onLock = useCallback(() => {
-    if (isUILocked) {
-      unlock();
-      goHome();
-    } else {
-      setLocking(true);
-      lock()
-        .then(() => {
-          // goHome(); // with new root logic, not require go home after lock
-        })
-        .catch((e: Error) => {
-          notify({
-            message: e.message,
-            type: 'error'
-          });
-        }).finally(() => {
-          setLocking(false);
-        });
-    }
-  }, [goHome, isUILocked, lock, notify, unlock]);
+  const onReset = useCallback(() => {
+    activeModal(RESET_WALLET_MODAL);
+  }, [activeModal]);
 
   // todo: i18n all titles, labels below
   const SettingGroupItemType = useMemo((): SettingGroupItemType[] => ([
     {
       key: 'general',
       items: [
-        // {
-        //   key: 'expand-view',
-        //   leftIcon: FrameCorners,
-        //   leftIconBgColor: token.colorPrimary,
-        //   rightIcon: ArrowsOut,
-        //   title: t('Expand view'),
-        //   onClick: () => {
-        //     windowOpen({ allowedPath: '/' }).catch(console.error);
-        //   },
-        //   isHidden: !isPopup
-        // },
         {
           key: 'general-settings',
           leftIcon: GlobeHemisphereEast,
@@ -157,16 +124,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     //   key: 'website-access',
     //   label: t('Website access'),
     //   items: [
-    //     {
-    //       key: 'manage-website-access',
-    //       leftIcon: GlobeHemisphereEast,
-    //       leftIconBgColor: token['blue-7'],
-    //       rightIcon: CaretRight,
-    //       title: t('Manage website access'),
-    //       onClick: () => {
-    //         navigate('/settings/dapp-access');
-    //       }
-    //     },
     //     {
     //       key: 'wallet-connect',
     //       leftIcon: (
@@ -383,18 +340,17 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
             block
             icon={
               <Icon
-                phosphorIcon={Lock}
+                phosphorIcon={ArrowCounterClockwise}
                 type='phosphor'
                 weight={'fill'}
               />
             }
-            loading={locking}
-            onClick={onLock}
+            onClick={onReset}
             schema={'secondary'}
           >
-            {t('Lock')}
+            {t('Reset')}
           </Button>
-
+          <ResetWalletModal />
           <div className={'__version'}>
           PlayNation v {EXTENSION_VERSION}
           </div>
