@@ -9,6 +9,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Image, Typography } from '@subwallet/react-ui';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+import GameAccount from "@subwallet/extension-koni-ui/components/Games/GameAccount";
 
 type Props = ThemeProps;
 
@@ -68,11 +69,12 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   return <div className={className}>
-    {account && <div>
-      <h1>Account Information</h1>
-      <p>Energy: {account.attributes.energy}</p>
-      <p>Point: {account.attributes.point}</p>
-    </div>}
+    {account && <GameAccount
+      className={'account-info'}
+      avatar={account.info.photoUrl}
+      info={account.attributes.point.toString()}
+      name={`${account.info.firstName || ''} ${account.info.lastName || ''}`}
+    />}
     {gameList.map((game) => (<div
       className={'game-item'}
       key={game.id}
@@ -102,7 +104,6 @@ const Component = ({ className }: Props): React.ReactElement => {
         <Button
           className={'play-button'}
           onClick={playGame(game)}
-          shape={'round'}
           size={'xs'}
         >Open</Button>
       </div>
@@ -122,6 +123,10 @@ const Component = ({ className }: Props): React.ReactElement => {
 const Games = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     padding: token.padding,
+
+    '.account-info': {
+      marginBottom: token.margin
+    },
 
     '.game-play': {
       position: 'fixed',
@@ -147,7 +152,7 @@ const Games = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
       flexDirection: 'column',
       alignItems: 'center',
       backgroundColor: token['gray-1'],
-      borderRadius: token.borderRadiusLG,
+      borderRadius: token.borderRadius,
       border: 0,
       marginBottom: '10px',
       overflow: 'hidden',

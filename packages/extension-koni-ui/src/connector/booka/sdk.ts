@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWStorage } from '@subwallet/extension-base/storage';
-import {TelegramUser, TelegramWebApp} from '@subwallet/extension-base/utils/telegram';
-import { BookaAccount, BuyInGameItemResponse, Game, GamePlay, LeaderboardPerson, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { createPromiseHandler } from '@subwallet/extension-base/utils';
+import { TelegramUser, TelegramWebApp } from '@subwallet/extension-base/utils/telegram';
+import { BookaAccount, Game, GamePlay, LeaderboardPerson, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
-import {createPromiseHandler} from "@subwallet/extension-base/utils";
 
 export const BOOKA_API_HOST = 'https://booka-api.koni.studio';
-export const BOOKA_WEBAPP_TELEGRAM_BOT = 'https://t.me/BitGame123Bot/webapp';
+export const BOOKA_WEBAPP_TELEGRAM_BOT = 'BookaGamesBot/swbooka';
 // export const BOOKA_API_HOST = 'http://localhost:3001';
 const storage = SWStorage.instance;
 
@@ -128,8 +128,8 @@ export class BookaSdk {
     await this.reloadAccount();
   }
 
-  getUrlInvite (): string {
-    return `${BOOKA_WEBAPP_TELEGRAM_BOT}?startapp=${this.account?.info.inviteCode || 'booka'}`;
+  getInviteURL (): string {
+    return `https://t.me/${BOOKA_WEBAPP_TELEGRAM_BOT}?startapp=${this.account?.info.inviteCode || 'booka'}`;
   }
 
   async sync (address: string) {
@@ -231,16 +231,6 @@ export class BookaSdk {
     return this.leaderBoardSubject;
   }
 
-  showLeaderboard (): Promise<void> {
-    // Implement later
-    return Promise.resolve(undefined);
-  }
-
-  showShop (): Promise<void> {
-    // Implement later
-    return Promise.resolve(undefined);
-  }
-
   async signResult (gamePlayId: string, gameToken: string, score: number): Promise<string> {
     if (this.account) {
       // Implement later
@@ -248,18 +238,6 @@ export class BookaSdk {
     } else {
       throw new Error('Account not found');
     }
-  }
-
-  buyInGameItem (itemId: string, gameplayId?: string): Promise<BuyInGameItemResponse> {
-    // Implement later
-    return Promise.resolve({
-      receipt: '',
-      item: {
-        id: '',
-        name: '',
-        price: 0
-      }
-    });
   }
 
   // Singleton

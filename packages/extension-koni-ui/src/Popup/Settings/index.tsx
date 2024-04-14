@@ -110,17 +110,17 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     {
       key: 'general',
       items: [
-        {
-          key: 'expand-view',
-          leftIcon: FrameCorners,
-          leftIconBgColor: token.colorPrimary,
-          rightIcon: ArrowsOut,
-          title: t('Expand view'),
-          onClick: () => {
-            windowOpen({ allowedPath: '/' }).catch(console.error);
-          },
-          isHidden: !isPopup
-        },
+        // {
+        //   key: 'expand-view',
+        //   leftIcon: FrameCorners,
+        //   leftIconBgColor: token.colorPrimary,
+        //   rightIcon: ArrowsOut,
+        //   title: t('Expand view'),
+        //   onClick: () => {
+        //     windowOpen({ allowedPath: '/' }).catch(console.error);
+        //   },
+        //   isHidden: !isPopup
+        // },
         {
           key: 'general-settings',
           leftIcon: GlobeHemisphereEast,
@@ -272,7 +272,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         // }
       ]
     }
-  ]), [isPopup, navigate, t, token]);
+  ]), [navigate, t, token]);
 
   // const aboutSubwalletType = useMemo<SettingItemType[]>(() => {
   //   return [

@@ -23,6 +23,22 @@ export class TelegramConnector {
     console.log('TelegramConnector', this._version, this.supportCloudStorage, this.supportModal, this.supportBasicMethod);
   }
 
+  openLink (url: string) {
+    if (this.supportBasicMethod) {
+      TelegramWebApp.openLink(url);
+    } else {
+      window.open(url, '_blank');
+    }
+  }
+
+  openTelegramLink (url: string) {
+    if (this.supportBasicMethod) {
+      TelegramWebApp.openTelegramLink(url);
+    } else {
+      window.open(url, '_blank');
+    }
+  }
+
   autoExpand () {
     if (this.supportBasicMethod) {
       if (!TelegramWebApp.isExpanded) {
