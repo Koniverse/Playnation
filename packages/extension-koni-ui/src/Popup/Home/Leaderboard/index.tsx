@@ -60,9 +60,10 @@ const Component = ({ className }: Props): React.ReactElement => {
           key={item.rank}
         >
           <GameAccount
-            className={CN('account-info', { 'current-account': true })}
+            avatar={item.accountInfo.avatar}
+            className={CN('account-info', { 'current-account': item.mine })}
             info={item.point.toString()}
-            name={`${item.firstName || ''} ${item.lastName || ''}`}
+            name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
             prefix={`${item.rank}`}
           />
         </div>))}
@@ -76,7 +77,11 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     padding: token.padding,
 
     '.account-info': {
-      marginBottom: token.marginSM
+      marginBottom: token.marginSM,
+
+      '&.current-account': {
+        outline: `1px solid ${token.colorPrimary}`
+      }
     },
 
     '.leader-board': {

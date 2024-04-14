@@ -3,6 +3,8 @@
 
 import type { ThemeProps } from '../types';
 
+import { ThemeNames } from '@subwallet/extension-base/background/KoniTypes';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import applyPreloadStyle from '@subwallet/extension-koni-ui/preloadStyle';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
@@ -13,8 +15,6 @@ import { useSelector } from 'react-redux';
 import styled, { createGlobalStyle, ThemeProvider as StyledComponentThemeProvider } from 'styled-components';
 
 import { Theme } from '../types';
-import {ThemeNames} from "@subwallet/extension-base/background/KoniTypes";
-import {TelegramConnector} from "@subwallet/extension-koni-ui/connector/telegram";
 
 interface Props {
   children: React.ReactNode;

@@ -90,6 +90,7 @@ export interface AccountPublicInfo {
 
 export interface LeaderboardPerson {
   rank: number;
+  mine: boolean;
   point: number;
   accountInfo: AccountPublicInfo;
 }

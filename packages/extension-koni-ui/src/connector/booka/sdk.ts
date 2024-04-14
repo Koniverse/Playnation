@@ -9,9 +9,9 @@ import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-export const BOOKA_API_HOST = 'https://booka-api.koni.studio';
+// export const BOOKA_API_HOST = 'https://booka-api.koni.studio';
+export const BOOKA_API_HOST = 'http://localhost:3001';
 export const BOOKA_WEBAPP_TELEGRAM_BOT = 'BookaGamesBot/swbooka';
-// export const BOOKA_API_HOST = 'http://localhost:3001';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
 
