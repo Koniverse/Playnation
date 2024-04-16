@@ -46,6 +46,12 @@ export class TelegramConnector {
   }
 
   openLink (url: string) {
+    if (url.startsWith('https://t.me/')) {
+      this.openTelegramLink(url);
+
+      return;
+    }
+
     if (this.supportBasicMethod) {
       TelegramWebApp.openLink(url);
     } else {

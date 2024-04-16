@@ -53,11 +53,13 @@ export const ITEM_MAP: Record<string, InGameItem> = {
 };
 
 const InventoryQuantityMap: Record<string, number> = {
-  BOOSTER: 5,
-  MAGNET: 3,
-  CUP1: 3,
-  CUP2: 1,
-  CUP5: 1
+  BOOSTER: 0,
+  MAGNET: 0,
+  CUP1: 0,
+  CUP2: 0,
+  CUP3: 0,
+  CUP4: 0,
+  CUP5: 0
 };
 
 export class GameApp {
@@ -92,11 +94,10 @@ export class GameApp {
 
   onGetPlayer () {
     const account = this.apiSDK.account;
-
-    console.log('onGetPlayer');
+    const playerId = `${account?.info?.telegramUsername || 'player1'}-${account?.info.id || 0}`;
 
     const player: Player = {
-      id: account?.info?.telegramUsername || 'player1',
+      id: playerId,
       balance: account?.attributes?.point || 0,
       name: `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}` || 'Player',
       avatar: 'https://thispersondoesnotexist.com/',
@@ -182,9 +183,12 @@ export class GameApp {
     return res;
   }
 
-  onUseIngameItem (itemId: string, gameplayId?: string): UseInGameItemResponse {
+  onUseIngameItem (req: {itemId: string, gameplayId?: string }): UseInGameItemResponse {
     let success = false;
+    const { itemId } = req;
     const remaining = InventoryQuantityMap[itemId] || 0;
+
+    console.log('use item', itemId);
 
     if (ITEM_MAP[itemId] && remaining > 0) {
       success = true;

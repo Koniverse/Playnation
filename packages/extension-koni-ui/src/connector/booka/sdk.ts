@@ -9,11 +9,17 @@ import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-export const BOOKA_API_HOST = 'https://booka-api.koni.studio';
+export const BOOKA_API_HOST = 'https://api.playnation.app';
 // export const BOOKA_API_HOST = 'http://localhost:3001';
-export const BOOKA_WEBAPP_TELEGRAM_BOT = 'BookaGamesBot/swbooka';
+export const BOOKA_WEBAPP_TELEGRAM_BOT = 'pngamesbot/playnation';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
+
+const CACHE_KEYS = {
+  account: 'data--account-cache',
+  taskList: 'data--task-list-cache',
+  gameList: 'data--game-list-cache'
+};
 
 export class BookaSdk {
   private syncHandler = createPromiseHandler<void>();
@@ -23,6 +29,40 @@ export class BookaSdk {
   private currentGamePlaySubject = new BehaviorSubject<GamePlay | undefined>(undefined);
   private leaderBoardSubject = new BehaviorSubject<LeaderboardPerson[]>([]);
   private referralListSubject = new BehaviorSubject<ReferralRecord[]>([]);
+
+  constructor () {
+    storage.getItems(Object.values(CACHE_KEYS)).then(([account, tasks, game]) => {
+      if (account) {
+        try {
+          const accountData = JSON.parse(account) as BookaAccount;
+
+          this.accountSubject.next(accountData);
+        } catch (e) {
+          console.error('Failed to parse account data', e);
+        }
+      }
+
+      if (tasks) {
+        try {
+          const taskList = JSON.parse(tasks) as Task[];
+
+          this.taskListSubject.next(taskList);
+        } catch (e) {
+          console.error('Failed to parse task list', e);
+        }
+      }
+
+      if (game) {
+        try {
+          const gameList = JSON.parse(game) as Game[];
+
+          this.gameListSubject.next(gameList);
+        } catch (e) {
+          console.error('Failed to parse game list', e);
+        }
+      }
+    }).catch(console.error);
+  }
 
   public get waitForSync () {
     return this.syncHandler.promise;
@@ -100,6 +140,7 @@ export class BookaSdk {
     }
 
     this.accountSubject.next(account);
+    storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
   }
 
   subscribeAccount () {
@@ -111,6 +152,7 @@ export class BookaSdk {
 
     if (gameList) {
       this.gameListSubject.next(gameList);
+      storage.setItem(CACHE_KEYS.gameList, JSON.stringify(gameList)).catch(console.error);
     }
   }
 
@@ -123,6 +165,7 @@ export class BookaSdk {
 
     if (taskList) {
       this.taskListSubject.next(taskList);
+      storage.setItem(CACHE_KEYS.taskList, JSON.stringify(taskList)).catch(console.error);
     }
   }
 
@@ -183,6 +226,7 @@ export class BookaSdk {
 
     if (account) {
       this.accountSubject.next(account);
+      storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
 
       await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchLeaderboard()]);
       this.syncHandler.resolve();

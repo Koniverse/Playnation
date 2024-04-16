@@ -31,6 +31,8 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, []);
 
+  const filteredLeaderBoard = leaderBoard.filter((item) => item.point > 0);
+
   return <div className={className}>
     <div className={'leader-board'}>
       <div className='board-header'>
@@ -49,7 +51,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         </Typography.Title>
       </div>
       <div className={'leaderboard-list'}>
-        {leaderBoard.map((item) => (<div
+        {filteredLeaderBoard.map((item) => (<div
           className={'leaderboard-item'}
           key={item.rank}
         >

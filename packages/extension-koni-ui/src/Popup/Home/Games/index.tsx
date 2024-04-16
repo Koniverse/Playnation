@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
@@ -9,7 +10,6 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Image, Typography } from '@subwallet/react-ui';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import GameAccount from "@subwallet/extension-koni-ui/components/Games/GameAccount";
 
 type Props = ThemeProps;
 
@@ -70,8 +70,8 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   return <div className={className}>
     {account && <GameAccount
-      className={'account-info'}
       avatar={account.info.photoUrl}
+      className={'account-info'}
       info={account.attributes.point.toString()}
       name={`${account.info.firstName || ''} ${account.info.lastName || ''}`}
     />}
