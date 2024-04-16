@@ -37,7 +37,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   const inviteFriend = useCallback(() => {
     const encodeURL = apiSDK.getInviteURL();
-    const inviteURL = `https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent('Join me on PlayNation to earn free energy and point!')}`;
+    const inviteURL = `https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent('Invite your friend and earn a bonus gift for each friend you bring in!')}`;
 
     telegramConnector.openTelegramLink(inviteURL);
   }, []);

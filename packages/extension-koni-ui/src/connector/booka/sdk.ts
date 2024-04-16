@@ -272,6 +272,9 @@ export class BookaSdk {
 
     this.currentGamePlaySubject.next(gamePlay);
 
+    // Reload account data
+    this.reloadAccount().catch(console.error);
+
     return gamePlay;
   }
 

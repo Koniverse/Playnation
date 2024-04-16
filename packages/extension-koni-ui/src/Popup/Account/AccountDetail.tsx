@@ -23,7 +23,7 @@ import { copyToClipboard } from '@subwallet/extension-koni-ui/utils/common/dom';
 import { convertFieldToObject } from '@subwallet/extension-koni-ui/utils/form/form';
 import { BackgroundIcon, Button, Field, Form, Icon, Input, ModalContext, SwAlert, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CircleNotch, CopySimple, Export, Eye, FloppyDiskBack, GitMerge, QrCode, Swatches, Trash, User, Wallet, Warning } from 'phosphor-react';
+import { CircleNotch, CopySimple, Eye, FloppyDiskBack, QrCode, Swatches, User, Wallet, Warning } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -468,51 +468,6 @@ const Component: React.FC<Props> = (props: Props) => {
           }
         </div>
 
-        <div className={CN('account-detail___action-footer')}>
-          <Button
-            className={CN('account-button')}
-            disabled={deriving || zkModeSyncState.isSyncing || account.isInjected}
-            icon={(
-              <Icon
-                phosphorIcon={Trash}
-                weight='fill'
-              />
-            )}
-            loading={deleting}
-            onClick={onDelete}
-            schema='error'
-          />
-          <Button
-            className={CN('account-button')}
-            disabled={!canDerive || zkModeSyncState.isSyncing || account.isInjected}
-            icon={(
-              <Icon
-                phosphorIcon={GitMerge}
-                weight='fill'
-              />
-            )}
-            loading={deriving}
-            onClick={onDerive}
-            schema='secondary'
-          >
-            {t('Derive')}
-          </Button>
-          <Button
-            className={CN('account-button')}
-            disabled={account.isExternal || deriving || zkModeSyncState.isSyncing || account.isInjected}
-            icon={(
-              <Icon
-                phosphorIcon={Export}
-                weight='fill'
-              />
-            )}
-            onClick={onExport}
-            schema='secondary'
-          >
-            {t('Export')}
-          </Button>
-        </div>
-
         <SwModal
           className={CN('account-detail__zk-mode-confirmation')}
           closable={false}
@@ -724,7 +679,6 @@ const AccountDetail = styled(Component)<Props>(({ theme: { token } }: Props) => 
     },
 
     '.account-detail___action-footer': {
-      backgroundColor: token.colorBgDefault,
       position: 'sticky',
       bottom: 0,
       left: 0,

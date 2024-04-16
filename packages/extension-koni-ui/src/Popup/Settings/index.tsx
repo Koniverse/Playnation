@@ -1,8 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { PageWrapper, ResetWalletModal } from '@subwallet/extension-koni-ui/components';
-import { RESET_WALLET_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { EXTENSION_VERSION, SUPPORT_MAIL } from '@subwallet/extension-koni-ui/constants/common';
 import { useSelector } from '@subwallet/extension-koni-ui/hooks';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
@@ -10,9 +9,9 @@ import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDef
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { computeStatus } from '@subwallet/extension-koni-ui/utils';
-import { BackgroundIcon, Button, ButtonProps, Icon, ModalContext, SettingItem, SwHeader, SwIconProps } from '@subwallet/react-ui';
-import { ArrowCounterClockwise, ArrowSquareOut, BookBookmark, CaretRight, Coin, EnvelopeSimple, GlobeHemisphereEast, ShareNetwork, ShieldCheck, X } from 'phosphor-react';
-import React, { useCallback, useContext, useMemo } from 'react';
+import { BackgroundIcon, ButtonProps, Icon, SettingItem, SwHeader, SwIconProps } from '@subwallet/react-ui';
+import { ArrowSquareOut, BookBookmark, CaretRight, Coin, EnvelopeSimple, GlobeHemisphereEast, ShareNetwork, ShieldCheck, X } from 'phosphor-react';
+import React, { useMemo } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 
@@ -72,16 +71,11 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   const { goHome } = useDefaultNavigate();
   const { t } = useTranslation();
-  const { activeModal } = useContext(ModalContext);
   const { missions } = useSelector((state: RootState) => state.missionPool);
 
   const liveMissionsCount = useMemo(() => {
     return missions.filter((item) => computeStatus(item) === 'live').length;
   }, [missions]);
-
-  const onReset = useCallback(() => {
-    activeModal(RESET_WALLET_MODAL);
-  }, [activeModal]);
 
   // todo: i18n all titles, labels below
   const SettingGroupItemType = useMemo((): SettingGroupItemType[] => ([
@@ -335,22 +329,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
               );
             })
           }
-
-          <Button
-            block
-            icon={
-              <Icon
-                phosphorIcon={ArrowCounterClockwise}
-                type='phosphor'
-                weight={'fill'}
-              />
-            }
-            onClick={onReset}
-            schema={'secondary'}
-          >
-            {t('Reset')}
-          </Button>
-          <ResetWalletModal />
           <div className={'__version'}>
           PlayNation v {EXTENSION_VERSION}
           </div>
