@@ -9,9 +9,8 @@ import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-export const BOOKA_API_HOST = 'https://api.playnation.app';
-// export const BOOKA_API_HOST = 'http://localhost:3001';
-export const BOOKA_WEBAPP_TELEGRAM_BOT = 'pngamesbot/playnation';
+export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://api.playnation.app';
+export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
 
@@ -133,7 +132,7 @@ export class BookaSdk {
 
   private async reloadAccount () {
     const account = this.account;
-    const newAccountData = await this.getRequest<Omit<BookaAccount, 'token'>>(`${BOOKA_API_HOST}/api/account/get-attribute`);
+    const newAccountData = await this.getRequest<Omit<BookaAccount, 'token'>>(`${GAME_API_HOST}/api/account/get-attribute`);
 
     if (account && newAccountData) {
       account.attributes = newAccountData.attributes;
@@ -148,7 +147,7 @@ export class BookaSdk {
   }
 
   async fetchGameList () {
-    const gameList = await this.getRequest<Game[]>(`${BOOKA_API_HOST}/api/game/fetch`);
+    const gameList = await this.getRequest<Game[]>(`${GAME_API_HOST}/api/game/fetch`);
 
     if (gameList) {
       this.gameListSubject.next(gameList);
@@ -161,7 +160,7 @@ export class BookaSdk {
   }
 
   async fetchTaskList () {
-    const taskList = await this.getRequest<Task[]>(`${BOOKA_API_HOST}/api/task/history`);
+    const taskList = await this.getRequest<Task[]>(`${GAME_API_HOST}/api/task/history`);
 
     if (taskList) {
       this.taskListSubject.next(taskList);
@@ -174,7 +173,7 @@ export class BookaSdk {
   }
 
   async finishTask (taskId: number) {
-    await this.postRequest(`${BOOKA_API_HOST}/api/task/submit`, { taskId });
+    await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId });
 
     await this.fetchTaskList();
 
@@ -182,11 +181,11 @@ export class BookaSdk {
   }
 
   getInviteURL (): string {
-    return `https://t.me/${BOOKA_WEBAPP_TELEGRAM_BOT}?startapp=${this.account?.info.inviteCode || 'booka'}`;
+    return `https://t.me/${TELEGRAM_WEBAPP_LINK}?startapp=${this.account?.info.inviteCode || 'booka'}`;
   }
 
   async fetchReferalList () {
-    const refList = await this.getRequest<ReferralRecord[]>(`${BOOKA_API_HOST}/api/account/get-rerferal-logs`);
+    const refList = await this.getRequest<ReferralRecord[]>(`${GAME_API_HOST}/api/account/get-rerferal-logs`);
 
     if (refList) {
       this.referralListSubject.next(refList);
@@ -222,7 +221,7 @@ export class BookaSdk {
       languageCode: userInfo?.language_code || 'en'
     };
 
-    const account = await this.postRequest<BookaAccount>(`${BOOKA_API_HOST}/api/account/sync`, syncData);
+    const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/sync`, syncData);
 
     if (account) {
       this.accountSubject.next(account);
@@ -263,7 +262,7 @@ export class BookaSdk {
   }
 
   async playGame (gameId: number): Promise<GamePlay> {
-    const gamePlay = await this.postRequest<GamePlay>(`${BOOKA_API_HOST}/api/game/new-game`, {
+    const gamePlay = await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/new-game`, {
       gameId
     });
 
@@ -277,7 +276,7 @@ export class BookaSdk {
   }
 
   async submitGame (gamePlayId: number, point: number, signature: string) {
-    await this.postRequest<GamePlay>(`${BOOKA_API_HOST}/api/game/submit`, {
+    await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/submit`, {
       gamePlayId: gamePlayId,
       point: point,
       signature
@@ -289,7 +288,7 @@ export class BookaSdk {
   }
 
   async fetchLeaderboard () {
-    const leaderBoard = await this.getRequest<LeaderboardPerson[]>(`${BOOKA_API_HOST}/api/game/leader-board`);
+    const leaderBoard = await this.getRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`);
 
     if (leaderBoard) {
       this.leaderBoardSubject.next(leaderBoard);

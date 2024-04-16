@@ -1,6 +1,8 @@
 // Copyright 2019-2022 @subwallet/extension-koni authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import EnableAvailGoldberg from '@subwallet/extension-base/services/migration-service/scripts/EnableAvailGoldberg';
+
 import BaseMigrationJob from '../Base';
 
 export const EVERYTIME = '__everytime__';
@@ -30,6 +32,7 @@ export default <Record<string, typeof BaseMigrationJob>>{
   // '1.1.44-01': MigrateAssetSetting,
   // '1.1.45-01': MigrateTransactionHistoryBySymbol,
   // '1.1.46-01': AutoEnableSomeTokens
+  '1.1.51-01': EnableAvailGoldberg
   // [`${EVERYTIME}-1.1.42-02`]: MigrateTransactionHistoryBySymbol
   // [`${EVERYTIME}-1`]: AutoEnableChainsTokens
 };

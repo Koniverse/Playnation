@@ -56,7 +56,9 @@ const _additionalEnv = {
   TRANSAK_TEST_MODE: JSON.stringify(false),
   BANXA_TEST_MODE: JSON.stringify(false),
   INFURA_API_KEY: JSON.stringify(process.env.INFURA_API_KEY),
-  INFURA_API_KEY_SECRET: JSON.stringify(process.env.INFURA_API_KEY_SECRET)
+  INFURA_API_KEY_SECRET: JSON.stringify(process.env.INFURA_API_KEY_SECRET),
+  GAME_API_HOST: JSON.stringify(process.env.GAME_API_HOST),
+  TELEGRAM_WEBAPP_LINK: JSON.stringify(process.env.TELEGRAM_WEBAPP_LINK)
 };
 
 const createConfig = (entry, alias = {}, useSplitChunk = false) => {
