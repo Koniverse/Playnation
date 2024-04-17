@@ -19,3 +19,23 @@ export const formatAmount = (amountData?: AmountData): string => {
 
   return `${displayValue} ${symbol}`;
 };
+
+export function formatInteger (num?: number): string {
+  if (num === undefined) {
+    return '';
+  }
+
+  return num.toLocaleString('de-DE');
+}
+
+export function formatIntegerShort (num?: number): string {
+  if (num === undefined) {
+    return '';
+  }
+
+  if (num >= 100000) {
+    return '100.000+';
+  } else {
+    return formatInteger(num);
+  }
+}

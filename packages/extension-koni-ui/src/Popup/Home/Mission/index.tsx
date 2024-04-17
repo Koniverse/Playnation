@@ -12,6 +12,7 @@ import { Button, Icon, Image, Typography } from '@subwallet/react-ui';
 import { CheckCircle } from 'phosphor-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
+import {formatInteger} from "@subwallet/extension-koni-ui/utils";
 
 type Props = ThemeProps;
 
@@ -67,8 +68,8 @@ const Component = ({ className }: Props): React.ReactElement => {
       {account && <GameAccount
         avatar={account.info.photoUrl}
         className={'account-info'}
-        point={account.attributes.point.toString()}
         name={`${account.info.firstName || ''} ${account.info.lastName || ''}`}
+        point={account.attributes.point}
       />}
       <Typography.Title level={4}>
         {t('Missions')}
@@ -91,7 +92,7 @@ const Component = ({ className }: Props): React.ReactElement => {
             className={'__sub-title'}
             size={'sm'}
           >
-            <GamePoint text={`${task.pointReward}`} />
+            <GamePoint text={`${formatInteger(task.pointReward)}`} />
           </Typography.Text>
         </div>
         {!(task.status && task.status > 0) && <Button
@@ -105,11 +106,11 @@ const Component = ({ className }: Props): React.ReactElement => {
           icon={<Icon
             phosphorIcon={CheckCircle}
             weight={'fill'}
-                />}
+          />}
           loading={taskLoading[task.id]}
           size={'xs'}
           type={'ghost'}
-                                               />}
+        />}
       </div>))}
     </div>
   </div>;

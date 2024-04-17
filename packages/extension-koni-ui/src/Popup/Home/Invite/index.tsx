@@ -4,11 +4,11 @@
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
 import { GameLogo, GamePoint } from '@subwallet/extension-koni-ui/components/Games/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import {BookaAccount, ReferralRecord} from '@subwallet/extension-koni-ui/connector/booka/types';
+import { BookaAccount, ReferralRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { copyToClipboard } from '@subwallet/extension-koni-ui/utils';
+import { copyToClipboard, formatInteger } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { Copy, UserCirclePlus } from 'phosphor-react';
@@ -26,7 +26,7 @@ const rankPointMap: Record<string, number> = {
   silver: 4500,
   gold: 13500,
   platinum: 40500,
-  diamond: 121500,
+  diamond: 121500
 };
 
 const Component = ({ className }: Props): React.ReactElement => {
@@ -77,7 +77,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
     notify({
       key: 'invite-copied',
-      message: t('Copied to clipboard'),
+      message: t('Copied to clipboard')
     });
   }, [notify, t]);
 
@@ -88,10 +88,10 @@ const Component = ({ className }: Props): React.ReactElement => {
           {t('Invite your friends and earn rewards!')}
         </Typography.Title>
         <div
-          className={'task-item'}
+          className={'invite-item'}
         >
           <GameLogo size={40} />
-          <div className='task-title'>
+          <div className='invite-title'>
             <Typography.Title
               className={'__title'}
               level={6}
@@ -100,14 +100,17 @@ const Component = ({ className }: Props): React.ReactElement => {
               className={'__sub-title'}
               size={'sm'}
             >
-              <GamePoint preText={'up to'} text={invitePoint.toString()} />
+              <GamePoint
+                preText={'up to'}
+                text={formatInteger(invitePoint)}
+              />
             </Typography.Text>
           </div>
           <Button
             icon={<Icon
               phosphorIcon={Copy}
               size={'sm'}
-          />}
+            />}
             onClick={copyLink}
             size={'xs'}
             type={'ghost'}
@@ -116,7 +119,7 @@ const Component = ({ className }: Props): React.ReactElement => {
             icon={<Icon
               phosphorIcon={UserCirclePlus}
               size={'sm'}
-          />}
+            />}
             onClick={inviteFriend}
             size={'xs'}
             type={'ghost'}
@@ -132,9 +135,9 @@ const Component = ({ className }: Props): React.ReactElement => {
             <GameAccount
               avatar={item.accountInfo.avatar}
               className={CN('account-info')}
-              point={item.point.toString()}
               key={item.accountInfo.id}
               name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
+              point={item.point}
             />
           ))}
         </div>
@@ -166,7 +169,7 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
       overflow: 'auto'
     },
 
-    '.task-item': {
+    '.invite-item': {
       alignItems: 'center',
       display: 'flex',
       marginBottom: token.marginXS,
@@ -174,17 +177,23 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
       borderRadius: token.borderRadius,
       backgroundColor: token.colorBgSecondary,
 
-      '.task-banner': {
+      '.invite-banner': {
         marginRight: token.marginSM
       },
 
-      '.task-title': {
+      '.invite-title': {
         flex: 1,
         marginLeft: token.marginSM,
 
         '.__title': {
           marginBottom: 0
         }
+      }
+    },
+
+    '.ref-list': {
+      '.account-info': {
+        marginBottom: token.marginXS
       }
     },
 
