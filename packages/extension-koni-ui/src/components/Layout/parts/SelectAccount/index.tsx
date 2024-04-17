@@ -3,51 +3,40 @@
 
 import { AccountJson, CurrentAccountInfo } from '@subwallet/extension-base/background/types';
 import { SimpleQrModal } from '@subwallet/extension-koni-ui/components/Modal';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { DISCONNECT_EXTENSION_MODAL, SELECT_ACCOUNT_MODAL } from '@subwallet/extension-koni-ui/constants';
-import { useDefaultNavigate, useGetCurrentAuth, useGetCurrentTab, useGoBackSelectAccount, useIsPopup, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useDefaultNavigate, useGoBackSelectAccount, useNotification, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { saveCurrentAccountAddress } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { findAccountByAddress, funcSortByName, isAccountAll, searchAccountFunction } from '@subwallet/extension-koni-ui/utils';
-import { BackgroundIcon, ModalContext, SelectModal, Tooltip } from '@subwallet/react-ui';
+import { copyToClipboard, findAccountByAddress, funcSortByName, isAccountAll, searchAccountFunction } from '@subwallet/extension-koni-ui/utils';
+import {Button, Icon, Image, ModalContext, SelectModal} from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Plug, Plugs, PlugsConnected } from 'phosphor-react';
+import { Copy } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { isEthereumAddress } from '@polkadot/util-crypto';
-
 import { AccountBriefInfo, AccountCardItem, AccountItemWithName } from '../../../Account';
 import { GeneralEmptyList } from '../../../EmptyList';
-import { ConnectWebsiteModal } from '../ConnectWebsiteModal';
 
 type Props = ThemeProps
-
-enum ConnectionStatement {
-  NOT_CONNECTED='not-connected',
-  CONNECTED='connected',
-  PARTIAL_CONNECTED='partial-connected',
-  DISCONNECTED='disconnected',
-  BLOCKED='blocked'
-}
-
-const iconMap = {
-  [ConnectionStatement.NOT_CONNECTED]: Plug,
-  [ConnectionStatement.CONNECTED]: PlugsConnected,
-  [ConnectionStatement.PARTIAL_CONNECTED]: PlugsConnected,
-  [ConnectionStatement.DISCONNECTED]: Plugs,
-  [ConnectionStatement.BLOCKED]: Plugs
-};
-
-const ConnectWebsiteId = 'connectWebsiteId';
 
 const renderEmpty = () => <GeneralEmptyList />;
 
 const modalId = SELECT_ACCOUNT_MODAL;
 const simpleQrModalId = 'simple-qr-modal-id';
+const apiSDK = BookaSdk.instance;
+const rankIconMap: Record<string, string> = {
+  iron: '/images/ranks/iron.svg',
+  bronze: '/images/ranks/bronze.svg',
+  silver: '/images/ranks/silver.svg',
+  gold: '/images/ranks/gold.svg',
+  platinum: '/images/ranks/platinum.svg',
+  diamond: '/images/ranks/diamond.svg',
+};
 
 function Component ({ className }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
@@ -55,17 +44,23 @@ function Component ({ className }: Props): React.ReactElement<Props> {
   const navigate = useNavigate();
   const location = useLocation();
   const { goHome } = useDefaultNavigate();
+  const notify = useNotification();
+
+  const [gameAccount, setGameAccount] = useState(apiSDK.account);
 
   const { accounts: _accounts, currentAccount, isAllAccount } = useSelector((state: RootState) => state.accountState);
 
-  const [connected, setConnected] = useState(0);
-  const [canConnect, setCanConnect] = useState(0);
-  const [connectionState, setConnectionState] = useState<ConnectionStatement>(ConnectionStatement.NOT_CONNECTED);
-  const currentTab = useGetCurrentTab();
-  const isCurrentTabFetched = !!currentTab;
-  const currentAuth = useGetCurrentAuth();
-  const isPopup = useIsPopup();
   const [selectedQrAddress, setSelectedQrAddress] = useState<string | undefined>();
+
+  useEffect(() => {
+    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
+      setGameAccount(data);
+    });
+
+    return () => {
+      accountSub.unsubscribe();
+    };
+  }, []);
 
   const accounts = useMemo((): AccountJson[] => {
     const result = [..._accounts].sort(funcSortByName);
@@ -157,6 +152,13 @@ function Component ({ className }: Props): React.ReactElement<Props> {
     activeModal(simpleQrModalId);
   }, [activeModal]);
 
+  const onCopyCurrent = useCallback(() => {
+    copyToClipboard(currentAccount?.address || '');
+    notify({
+      message: t('Copied to clipboard')
+    });
+  }, [currentAccount?.address, notify, t]);
+
   const onQrModalBack = useGoBackSelectAccount(simpleQrModalId);
 
   const renderItem = useCallback((item: AccountJson, _selected: boolean): React.ReactNode => {
@@ -200,128 +202,16 @@ function Component ({ className }: Props): React.ReactElement<Props> {
     );
   }, []);
 
-  useEffect(() => {
-    if (currentAuth) {
-      if (!currentAuth.isAllowed) {
-        setCanConnect(0);
-        setConnected(0);
-        setConnectionState(ConnectionStatement.BLOCKED);
-      } else {
-        const type = currentAuth.accountAuthType;
-        const allowedMap = currentAuth.isAllowedMap;
-
-        const filterType = (address: string) => {
-          if (type === 'both') {
-            return true;
-          }
-
-          const _type = type || 'substrate';
-
-          return _type === 'substrate' ? !isEthereumAddress(address) : isEthereumAddress(address);
-        };
-
-        if (!isAllAccount) {
-          const _allowedMap: Record<string, boolean> = {};
-
-          Object.entries(allowedMap)
-            .filter(([address]) => filterType(address))
-            .forEach(([address, value]) => {
-              _allowedMap[address] = value;
-            });
-
-          const isAllowed = _allowedMap[currentAccount?.address || ''];
-
-          setCanConnect(0);
-          setConnected(0);
-
-          if (isAllowed === undefined) {
-            setConnectionState(ConnectionStatement.NOT_CONNECTED);
-          } else {
-            setConnectionState(isAllowed ? ConnectionStatement.CONNECTED : ConnectionStatement.DISCONNECTED);
-          }
-        } else {
-          const numberAccounts = noAllAccounts.filter(({ address }) => filterType(address)).length;
-          const numberAllowedAccounts = Object.entries(allowedMap)
-            .filter(([address]) => filterType(address))
-            .filter(([, value]) => value)
-            .length;
-
-          setConnected(numberAllowedAccounts);
-          setCanConnect(numberAccounts);
-
-          if (numberAllowedAccounts === 0) {
-            setConnectionState(ConnectionStatement.DISCONNECTED);
-          } else {
-            if (numberAllowedAccounts > 0 && numberAllowedAccounts < numberAccounts) {
-              setConnectionState(ConnectionStatement.PARTIAL_CONNECTED);
-            } else {
-              setConnectionState(ConnectionStatement.CONNECTED);
-            }
-          }
-        }
-      }
-    } else {
-      setCanConnect(0);
-      setConnected(0);
-      setConnectionState(ConnectionStatement.NOT_CONNECTED);
-    }
-  }, [currentAccount?.address, currentAuth, isAllAccount, noAllAccounts]);
-
-  const visibleText = useMemo((): string => {
-    switch (connectionState) {
-      case ConnectionStatement.CONNECTED:
-      // eslint-disable-next-line padding-line-between-statements, no-fallthrough
-      case ConnectionStatement.PARTIAL_CONNECTED:
-        if (isAllAccount) {
-          return t('Connected {{connected}}/{{canConnect}}', { replace: { connected, canConnect } });
-        } else {
-          return t('Connected');
-        }
-
-      case ConnectionStatement.DISCONNECTED:
-        return t('Disconnected');
-
-      case ConnectionStatement.BLOCKED:
-        return t('Blocked');
-
-      case ConnectionStatement.NOT_CONNECTED:
-      default:
-        return t('Not connected');
-    }
-  }, [canConnect, connected, connectionState, isAllAccount, t]);
-
-  const onOpenConnectWebsiteModal = useCallback(() => {
-    if (isCurrentTabFetched) {
-      activeModal(ConnectWebsiteId);
-    }
-  }, [activeModal, isCurrentTabFetched]);
-
-  const onCloseConnectWebsiteModal = useCallback(() => {
-    inactiveModal(ConnectWebsiteId);
-  }, [inactiveModal]);
-
   return (
-    <div className={CN(className, 'container')}>
-      {isPopup && (
-        <Tooltip
-          placement={'bottomLeft'}
-          title={visibleText}
-        >
-          <div
-            className={CN('connect-icon', `-${connectionState}`)}
-            onClick={onOpenConnectWebsiteModal}
-          >
-            <BackgroundIcon
-              backgroundColor='var(--bg-color)'
-              phosphorIcon={iconMap[connectionState]}
-              shape='circle'
-              size='sm'
-              type='phosphor'
-              weight={'fill'}
-            />
-          </div>
-        </Tooltip>
-      )}
+    <div className={CN(className, 'global-account-info')}>
+      <Button
+        icon={<Image
+          src={rankIconMap[gameAccount?.attributes.rank || 'iron']}
+          width={20}
+        />}
+        size={'xs'}
+        type={'ghost'}
+      />
 
       <SelectModal
         background={'default'}
@@ -344,14 +234,16 @@ function Component ({ className }: Props): React.ReactElement<Props> {
         title={t('Select account')}
       />
 
-      <ConnectWebsiteModal
-        authInfo={currentAuth}
-        id={ConnectWebsiteId}
-        isBlocked={connectionState === ConnectionStatement.BLOCKED}
-        isNotConnected={connectionState === ConnectionStatement.NOT_CONNECTED}
-        onCancel={onCloseConnectWebsiteModal}
-        url={currentTab?.url || ''}
+      <Button
+        icon={<Icon
+          phosphorIcon={Copy}
+          size={'xs'}
+        />}
+        onClick={onCopyCurrent}
+        size={'xs'}
+        type={'ghost'}
       />
+
       <SimpleQrModal
         address={selectedQrAddress}
         id={simpleQrModalId}
@@ -365,18 +257,24 @@ const SelectAccount = styled(Component)<Props>(({ theme }) => {
   const { token } = theme as Theme;
 
   return ({
-    '&.container': {
-      paddingLeft: token.sizeSM,
+    '&.global-account-info': {
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'row',
+      marginLeft: 'auto',
+      marginRight: 'auto',
 
       '.ant-select-modal-input-container.ant-select-modal-input-border-round::before': {
         display: 'none'
       },
 
       '.ant-select-modal-input-container.ant-select-modal-input-size-small .ant-select-modal-input-wrapper': {
-        paddingLeft: 0
+        paddingLeft: 1,
+        paddingRight: 1
+      },
+
+      '.ant-select-modal-input-suffix': {
+        display: 'none'
       },
 
       '.ant-select-modal-input-container:hover .account-name': {
@@ -469,27 +367,7 @@ const SelectAccount = styled(Component)<Props>(({ theme }) => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      cursor: 'pointer',
-
-      [`&.-${ConnectionStatement.DISCONNECTED}`]: {
-        '--bg-color': token['gray-3']
-      },
-
-      [`&.-${ConnectionStatement.BLOCKED}`]: {
-        '--bg-color': token.colorError
-      },
-
-      [`&.-${ConnectionStatement.NOT_CONNECTED}`]: {
-        '--bg-color': token['gray-3']
-      },
-
-      [`&.-${ConnectionStatement.CONNECTED}`]: {
-        '--bg-color': token['green-6']
-      },
-
-      [`&.-${ConnectionStatement.PARTIAL_CONNECTED}`]: {
-        '--bg-color': token.colorWarning
-      }
+      cursor: 'pointer'
     }
   });
 });

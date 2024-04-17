@@ -8,7 +8,8 @@ import { Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, Image, Typography } from '@subwallet/react-ui';
+import { Button, Icon, Image, Typography } from '@subwallet/react-ui';
+import { CheckCircle } from 'phosphor-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
@@ -32,7 +33,6 @@ const Component = ({ className }: Props): React.ReactElement => {
         ...prev,
         [taskId]: true
       }));
-      telegramConnector.openLink(task.url);
       apiSDK.finishTask(taskId)
         .finally(() => {
           setTaskLoading((prev) => ({
@@ -41,6 +41,9 @@ const Component = ({ className }: Props): React.ReactElement => {
           }));
         })
         .catch(console.error);
+      setTimeout(() => {
+        telegramConnector.openLink(task.url);
+      }, 100);
     };
   }, []);
 
@@ -62,8 +65,8 @@ const Component = ({ className }: Props): React.ReactElement => {
   return <div className={className}>
     <div className={'task-list'}>
       {account && <GameAccount
-        className={'account-info'}
         avatar={account.info.photoUrl}
+        className={'account-info'}
         info={account.attributes.point.toString()}
         name={`${account.info.firstName || ''} ${account.info.lastName || ''}`}
       />}
@@ -91,13 +94,22 @@ const Component = ({ className }: Props): React.ReactElement => {
             <GamePoint text={` x ${task.pointReward}`} />
           </Typography.Text>
         </div>
-        <Button
+        {!(task.status && task.status > 0) && <Button
           className={'play-button'}
-          disabled={!!(task.status && task.status > 0)}
           loading={taskLoading[task.id]}
           onClick={finishTask(task)}
           size={'xs'}
-        >{t('Go')}</Button>
+        >{t('Go')}</Button>}
+        {!!(task.status && task.status > 0) && <Button
+          className={'checked-button'}
+          icon={<Icon
+            phosphorIcon={CheckCircle}
+            weight={'fill'}
+                />}
+          loading={taskLoading[task.id]}
+          size={'xs'}
+          type={'ghost'}
+                                               />}
       </div>))}
     </div>
   </div>;
@@ -132,8 +144,12 @@ const Mission = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }
           }
         },
 
-        '.play-button': {
+        '.play-button, .checked-button': {
           marginLeft: token.marginSM
+        },
+
+        '.checked-button': {
+          color: token.colorSuccess
         }
       }
     }

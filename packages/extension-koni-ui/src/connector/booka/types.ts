@@ -71,6 +71,7 @@ export interface BookaAccount {
   attributes: {
     energy: number;
     accumulatePoint: number;
+    rank: string;
     point: number;
     createdAt: string;
     updatedAt: string;

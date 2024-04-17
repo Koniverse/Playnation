@@ -57,8 +57,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         <div className={`home home-container ${className}`}>
           <Layout.Home
             onClickSearchIcon={onOpenGlobalSearchToken}
-            showFilterIcon
-            showSearchIcon
+            showGiftIcon
           >
             <Outlet />
           </Layout.Home>

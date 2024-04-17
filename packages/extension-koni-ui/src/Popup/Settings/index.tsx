@@ -10,7 +10,7 @@ import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { computeStatus } from '@subwallet/extension-koni-ui/utils';
 import { BackgroundIcon, ButtonProps, Icon, SettingItem, SwHeader, SwIconProps } from '@subwallet/react-ui';
-import { ArrowSquareOut, BookBookmark, CaretRight, Coin, EnvelopeSimple, GlobeHemisphereEast, ShareNetwork, ShieldCheck, X } from 'phosphor-react';
+import { ArrowSquareOut, BookBookmark, CaretRight, Coin, EnvelopeSimple, GlobeHemisphereEast, ShareNetwork, X } from 'phosphor-react';
 import React, { useMemo } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
@@ -91,17 +91,17 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           onClick: () => {
             navigate('/settings/general');
           }
-        },
-        {
-          key: 'security-settings',
-          leftIcon: ShieldCheck,
-          leftIconBgColor: token['green-6'],
-          rightIcon: CaretRight,
-          title: t('Security settings'),
-          onClick: () => {
-            navigate('/settings/security', { state: true });
-          }
         }
+        // {
+        //   key: 'security-settings',
+        //   leftIcon: ShieldCheck,
+        //   leftIconBgColor: token['green-6'],
+        //   rightIcon: CaretRight,
+        //   title: t('Security settings'),
+        //   onClick: () => {
+        //     navigate('/settings/security', { state: true });
+        //   }
+        // }
         // {
         //   key: 'mission-pools',
         //   leftIcon: Parachute,

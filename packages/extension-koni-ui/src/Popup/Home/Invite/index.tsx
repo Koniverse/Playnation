@@ -6,12 +6,13 @@ import { GameLogo, GamePoint } from '@subwallet/extension-koni-ui/components/Gam
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { ReferralRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { copyToClipboard } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { UserCirclePlus } from 'phosphor-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { Copy, UserCirclePlus } from 'phosphor-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
@@ -23,10 +24,10 @@ const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/invite');
   const { t } = useTranslation();
   const [referralList, setReferralList] = useState<ReferralRecord[]>(apiSDK.referralList);
+  const notify = useNotification();
 
   useEffect(() => {
     const referralSub = apiSDK.subscribeReferralList().subscribe((data) => {
-      console.log('referralList', data);
       setReferralList(data);
     });
 
@@ -35,12 +36,24 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, []);
 
-  const inviteFriend = useCallback(() => {
+  const inviteURL = useMemo(() => {
     const encodeURL = apiSDK.getInviteURL();
-    const inviteURL = `https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent('Invite your friend and earn a bonus gift for each friend you bring in!')}`;
 
-    telegramConnector.openTelegramLink(inviteURL);
+    return `https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent('Invite your friend and earn a bonus gift for each friend you bring in!')}`;
   }, []);
+
+  const inviteFriend = useCallback(() => {
+    telegramConnector.openTelegramLink(inviteURL);
+  }, [inviteURL]);
+
+  const copyLink = useCallback(() => {
+    copyToClipboard(inviteURL);
+
+    notify({
+      key: 'invite-copied',
+      message: t('Copied to clipboard'),
+    });
+  }, [inviteURL, notify, t]);
 
   return <div className={className}>
     <div className={'invite-data'}>
@@ -56,14 +69,32 @@ const Component = ({ className }: Props): React.ReactElement => {
             <Typography.Title
               className={'__title'}
               level={6}
-            >{t('Invite friend')}</Typography.Title>
+            >{t('Invite friend with link')}</Typography.Title>
             <Typography.Text
               className={'__sub-title'}
               size={'sm'}
             >
-              <GamePoint text={' x 100 for you and friend'} />
+              <GamePoint text={' x 100 for you'} />
             </Typography.Text>
           </div>
+          <Button
+            icon={<Icon
+              phosphorIcon={Copy}
+              size={'sm'}
+          />}
+            onClick={copyLink}
+            size={'xs'}
+            type={'ghost'}
+          />
+          <Button
+            icon={<Icon
+              phosphorIcon={UserCirclePlus}
+              size={'sm'}
+                  />}
+            onClick={inviteFriend}
+            size={'xs'}
+            type={'ghost'}
+          />
         </div>
       </div>
       <div className='invite-friends'>
@@ -128,10 +159,6 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
         '.__title': {
           marginBottom: 0
         }
-      },
-
-      '.play-button': {
-        marginLeft: token.marginSM
       }
     },
 
