@@ -150,9 +150,18 @@ export class GameApp {
   async onPlay () {
     this.playingGame = await this.apiSDK.playGame(this.currentGameInfo.id);
 
+    const account = this.apiSDK.account;
+    const currentGame = this.currentGameInfo;
+
+    if (!account || !currentGame) {
+      throw newError('invalid account or game', errorCodes.SystemError);
+    }
+
+    const tickets = Math.floor(account.attributes.energy / currentGame.energyPerGame);
+
     const res: PlayResponse = {
       token: this.playingGame.token,
-      remainingTickets: 9
+      remainingTickets: tickets
     };
 
     return res;

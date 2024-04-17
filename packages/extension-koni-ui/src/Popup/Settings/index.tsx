@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PageWrapper } from '@subwallet/extension-koni-ui/components';
-import { EXTENSION_VERSION, SUPPORT_MAIL } from '@subwallet/extension-koni-ui/constants/common';
+import { GameLogo } from '@subwallet/extension-koni-ui/components/Games/Logo';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { EXTENSION_VERSION, SUPPORT_URL } from '@subwallet/extension-koni-ui/constants/common';
 import { useSelector } from '@subwallet/extension-koni-ui/hooks';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
@@ -36,6 +38,8 @@ type SettingGroupItemType = {
 const isReactNode = (element: unknown): element is React.ReactNode => {
   return React.isValidElement(element);
 };
+
+const telegramConnector = TelegramConnector.instance;
 
 function generateLeftIcon (backgroundColor: string, icon: SwIconProps['phosphorIcon'] | React.ReactNode): React.ReactNode {
   const isNode = isReactNode(icon);
@@ -182,7 +186,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           rightIcon: ArrowSquareOut,
           title: t('Contact support'),
           onClick: () => {
-            window.open(`${SUPPORT_MAIL}?subject=[Playnation - In-app support]`, '_self');
+            telegramConnector.openTelegramLink(SUPPORT_URL);
           }
         }
         // {
@@ -286,7 +290,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       <>
         <SwHeader
           className={'setting-header'}
-          left='logo'
+          left={<GameLogo />}
           onClickLeft={goHome}
           rightButtons={headerIcons}
           showLeftButton={true}

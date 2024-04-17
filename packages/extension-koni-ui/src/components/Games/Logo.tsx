@@ -21,7 +21,7 @@ type GamePointProps = ThemeProps & {
 export function GameLogo ({ className, size = 24 }: GameLogoProps) {
   return <Image
     className={className}
-    shape={'none'}
+    shape={'square'}
     src={'/images/games/logo.svg'}
     width={size}
   />;

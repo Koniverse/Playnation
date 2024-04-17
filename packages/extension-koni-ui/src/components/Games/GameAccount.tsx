@@ -20,7 +20,7 @@ function _GameAccount ({ avatar, className, name, point, pointInLeft, prefix }: 
     {prefix && <span className={'__prefix'}>{prefix}</span>}
     <Image
       className={'__avatar'}
-      shape={'circle'}
+      shape={'square'}
       src={avatar || '/images/games/account-default-avatar.png'}
       width={29}
     />
