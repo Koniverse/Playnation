@@ -4,7 +4,7 @@
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
 import { GameLogo, GamePoint } from '@subwallet/extension-koni-ui/components/Games/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { ReferralRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
+import {BookaAccount, ReferralRecord} from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -20,21 +20,47 @@ type Props = ThemeProps;
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
 
+const rankPointMap: Record<string, number> = {
+  iron: 600,
+  bronze: 1500,
+  silver: 4500,
+  gold: 13500,
+  platinum: 40500,
+  diamond: 121500,
+};
+
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/invite');
   const { t } = useTranslation();
   const [referralList, setReferralList] = useState<ReferralRecord[]>(apiSDK.referralList);
+  const [account, setAcount] = useState<BookaAccount | undefined>(apiSDK.account);
   const notify = useNotification();
 
   useEffect(() => {
+    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
+      setAcount(data);
+    });
+
     const referralSub = apiSDK.subscribeReferralList().subscribe((data) => {
       setReferralList(data);
     });
 
     return () => {
+      accountSub.unsubscribe();
       referralSub.unsubscribe();
     };
   }, []);
+
+  const invitePoint = useMemo(() => {
+    if (!account) {
+      return 0;
+    }
+
+    const rank = account.attributes?.rank || 'iron';
+    const point = rankPointMap[rank] || 0;
+
+    return point;
+  }, [account]);
 
   const inviteURL = useMemo(() => {
     const encodeURL = apiSDK.getInviteURL();
@@ -47,19 +73,19 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [inviteURL]);
 
   const copyLink = useCallback(() => {
-    copyToClipboard(inviteURL);
+    copyToClipboard(apiSDK.getInviteURL());
 
     notify({
       key: 'invite-copied',
       message: t('Copied to clipboard'),
     });
-  }, [inviteURL, notify, t]);
+  }, [notify, t]);
 
   return <div className={className}>
     <div className={'invite-data'}>
       <div className={'invite-reward'}>
         <Typography.Title level={4}>
-          {t('Invite your friends and play together !')}
+          {t('Invite your friends and earn rewards!')}
         </Typography.Title>
         <div
           className={'task-item'}
@@ -74,7 +100,7 @@ const Component = ({ className }: Props): React.ReactElement => {
               className={'__sub-title'}
               size={'sm'}
             >
-              <GamePoint text={' x 100 for you'} />
+              <GamePoint preText={'up to'} text={invitePoint.toString()} />
             </Typography.Text>
           </div>
           <Button
@@ -90,7 +116,7 @@ const Component = ({ className }: Props): React.ReactElement => {
             icon={<Icon
               phosphorIcon={UserCirclePlus}
               size={'sm'}
-                  />}
+          />}
             onClick={inviteFriend}
             size={'xs'}
             type={'ghost'}
@@ -106,7 +132,7 @@ const Component = ({ className }: Props): React.ReactElement => {
             <GameAccount
               avatar={item.accountInfo.avatar}
               className={CN('account-info')}
-              info={item.point.toString()}
+              point={item.point.toString()}
               key={item.accountInfo.id}
               name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
             />

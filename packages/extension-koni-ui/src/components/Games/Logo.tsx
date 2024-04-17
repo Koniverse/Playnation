@@ -13,6 +13,7 @@ type GameLogoProps = {
 
 type GamePointProps = ThemeProps & {
   className?: string;
+  preText?: string;
   text: string;
   size?: number;
 };
@@ -26,8 +27,9 @@ export function GameLogo ({ className, size = 24 }: GameLogoProps) {
   />;
 }
 
-function _GamePoint ({ className, size = 16, text }: GamePointProps) {
+function _GamePoint ({ className, size = 16, text, preText }: GamePointProps) {
   return <div className={className}>
+    {preText && <span className={'pre-text'}>{preText}</span>}
     <Image
       className={'game-point' + (className ? ` ${className}` : '')}
       shape={'none'}
@@ -44,6 +46,10 @@ export const GamePoint = styled(_GamePoint)<GamePointProps>(({ theme: { token } 
     alignItems: 'center',
     fontSize: '14px',
     color: token.colorTextDark4,
+
+    '.pre-text': {
+      marginRight: '3px'
+    },
 
     '.game-point': {
       marginRight: '3px'

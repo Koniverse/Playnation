@@ -10,11 +10,12 @@ type GamePointProps = ThemeProps & {
   className?: string;
   name: string;
   prefix?: string;
-  info?: string;
+  point?: string;
   avatar?: string;
+  pointInLeft?: boolean;
 };
 
-function _GameAccount ({ avatar, className, info, name, prefix }: GamePointProps) {
+function _GameAccount ({ avatar, className, name, point, pointInLeft, prefix }: GamePointProps) {
   return <div className={className}>
     {prefix && <span className={'__prefix'}>{prefix}</span>}
     <Image
@@ -24,11 +25,19 @@ function _GameAccount ({ avatar, className, info, name, prefix }: GamePointProps
       width={29}
     />
     <span className={'__name'}>{name}</span>
-    <span className={'__info'}>{info}</span>
+    <span className={'__point'}>
+      {pointInLeft && point}
+      <Image
+        shape={'none'}
+        src={'/images/games/logo-gradient.svg'}
+        width={16}
+      />
+      {!pointInLeft && point}
+    </span>
   </div>;
 }
 
-export const GameAccount = styled(_GameAccount)<GamePointProps>(({ theme: { token } }: GamePointProps) => {
+export const GameAccount = styled(_GameAccount)<GamePointProps>(({ pointInLeft, theme: { token } }: GamePointProps) => {
   return ({
     display: 'flex',
     alignItems: 'center',
@@ -43,6 +52,17 @@ export const GameAccount = styled(_GameAccount)<GamePointProps>(({ theme: { toke
 
     '.__avatar': {
       marginRight: token.marginXS
+    },
+
+    '.__point': {
+      marginLeft: token.marginXS,
+      display: 'inline-flex',
+      alignItems: 'center',
+
+      img: {
+        marginLeft: pointInLeft ? token.marginXXS : 0,
+        marginRight: pointInLeft ? 0 : token.marginXXS
+      }
     },
 
     '.__name': {

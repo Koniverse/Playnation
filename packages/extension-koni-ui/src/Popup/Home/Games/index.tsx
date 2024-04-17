@@ -72,7 +72,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     {account && <GameAccount
       avatar={account.info.photoUrl}
       className={'account-info'}
-      info={account.attributes.point.toString()}
+      point={account.attributes.point.toString()}
       name={`${account.info.firstName || ''} ${account.info.lastName || ''}`}
     />}
     {gameList.map((game) => (<div

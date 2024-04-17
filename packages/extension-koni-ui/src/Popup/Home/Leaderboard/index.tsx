@@ -58,8 +58,9 @@ const Component = ({ className }: Props): React.ReactElement => {
           <GameAccount
             avatar={item.accountInfo.avatar}
             className={CN('account-info', { 'current-account': item.mine })}
-            info={item.point.toString()}
+            point={item.point.toString()}
             name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
+            pointInLeft={true}
             prefix={`${item.rank}`}
           />
         </div>))}
