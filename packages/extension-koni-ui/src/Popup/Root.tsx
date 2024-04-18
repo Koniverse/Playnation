@@ -10,7 +10,7 @@ import { TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { usePredefinedModal, WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContext';
-import { useGetCurrentPage, useSubscribeLanguage } from '@subwallet/extension-koni-ui/hooks';
+import { useSubscribeLanguage } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useUILock from '@subwallet/extension-koni-ui/hooks/common/useUILock';
 import { subscribeNotifications } from '@subwallet/extension-koni-ui/messaging';
@@ -33,7 +33,8 @@ export const RouteState = {
 };
 
 const welcomeUrl = '/welcome';
-const tokenUrl = '/home/games';
+const gameUrl = '/home/games';
+const tokenUrl = '/home/token';
 const loginUrl = '/keyring/login';
 const phishingUrl = '/phishing-page-detected';
 const createPasswordUrl = '/keyring/create-password';
@@ -86,7 +87,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const [rootLoading, setRootLoading] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
   const initDataRef = useRef<Promise<boolean>>(dataContext.awaitStores(['accountState', 'chainStore', 'assetRegistry', 'requestState', 'settings', 'mantaPay']));
-  const currentPage = useGetCurrentPage();
+  // const currentPage = useGetCurrentPage();
   const firstRender = useRef(true);
 
   useSubscribeLanguage();
@@ -178,6 +179,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
 
   const redirectPath = useMemo<string | null>(() => {
     const pathName = location.pathname;
+    console.log('PATH', pathName);
     let redirectTarget: string | null = null;
 
     // Wait until data loaded
@@ -211,11 +213,13 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       // if (hasConfirmations) {
       //   openPModal('confirmations');
       // } else
-      if (firstRender.current && currentPage) {
-        redirectTarget = currentPage;
-      } else {
-        redirectTarget = tokenUrl;
-      }
+      // if (firstRender.current && currentPage) {
+      //   redirectTarget = currentPage;
+      // } else {
+      //   redirectTarget = gameUrl;
+      // }
+
+      redirectTarget = gameUrl;
     } else if (pathName === loginUrl && !needUnlock) {
       redirectTarget = DEFAULT_ROUTER_PATH;
     } else if (pathName === welcomeUrl && !noAccount) {
@@ -247,7 +251,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     } else {
       return null;
     }
-  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, noAccount, hasInternalConfirmations, isOpenPModal, hasConfirmations, currentPage, openPModal]);
+  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, noAccount, hasInternalConfirmations, isOpenPModal, hasConfirmations, openPModal]);
 
   // Remove transaction persist state
   useEffect(() => {

@@ -4,7 +4,7 @@
 import { AlertBox, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import InfoIcon from '@subwallet/extension-koni-ui/components/Icon/InfoIcon';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { DEFAULT_PASSWORD, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
+import { DEFAULT_HOMEPAGE, DEFAULT_PASSWORD, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
 import { TERMS_OF_SERVICE_URL } from '@subwallet/extension-koni-ui/constants/common';
 import { REQUEST_CREATE_PASSWORD_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
@@ -88,7 +88,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
         isAllowed: true
       });
 
-      navigate('/home/tokens');
+      navigate(DEFAULT_HOMEPAGE);
     })().catch(console.error);
   }, [navigate]);
 

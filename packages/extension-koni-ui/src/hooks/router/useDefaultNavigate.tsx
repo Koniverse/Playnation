@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { CURRENT_PAGE } from '@subwallet/extension-koni-ui/constants';
+import { CURRENT_PAGE, DEFAULT_HOMEPAGE } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
 import { RouteState } from '@subwallet/extension-koni-ui/Popup/Root';
 import { useCallback } from 'react';
@@ -15,7 +15,7 @@ export default function useDefaultNavigate () {
   const goHome = useCallback(
     () => {
       navigate(DEFAULT_ROUTER_PATH);
-      setStorage('/home/tokens');
+      setStorage(DEFAULT_HOMEPAGE);
     },
     [navigate, setStorage]
   );
