@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Layout } from '@subwallet/extension-koni-ui/components';
+import { GameLogo } from '@subwallet/extension-koni-ui/components/Games/Logo';
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ButtonProps, Icon, ModalContext } from '@subwallet/react-ui';
@@ -70,6 +71,7 @@ const Home = ({ children, onClickFilterIcon, onClickSearchIcon, showFilterIcon, 
       icons.push({
         icon: (
           <Icon
+            iconColor={'#ED4062'}
             phosphorIcon={Gift}
             size='md'
           />
@@ -89,7 +91,7 @@ const Home = ({ children, onClickFilterIcon, onClickSearchIcon, showFilterIcon, 
     <Layout.Base
       headerCenter={false}
       headerIcons={headerIcons}
-      headerLeft={'default'}
+      headerLeft={<GameLogo />}
       headerOnClickLeft={onClickListIcon}
       headerPaddingVertical={true}
       showHeader={true}

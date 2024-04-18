@@ -52,12 +52,12 @@ const Component = ({ className }: Props): React.ReactElement => {
       </div>
       <div className={'leaderboard-list'}>
         {filteredLeaderBoard.map((item) => (<div
-          className={'leaderboard-item'}
+          className={CN('leaderboard-item', { 'current-user-item': item.mine })}
           key={item.rank}
         >
           <GameAccount
             avatar={item.accountInfo.avatar}
-            className={CN('account-info', { 'current-account': item.mine })}
+            className={'account-info'}
             isLeaderboard={true}
             name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
             point={item.point}
@@ -73,11 +73,16 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
   return {
     padding: token.padding,
 
-    '.account-info': {
+    '.leaderboard-item': {
       marginBottom: token.marginSM,
 
-      '&.current-account': {
-        outline: `1px solid ${token.colorPrimary}`
+      '&.current-user-item': {
+        position: 'sticky',
+        top: token.marginSM,
+        bottom: token.marginSM,
+        '.account-info': {
+          boxShadow: `0 0 6px ${token.colorPrimary}`
+        }
       }
     },
 

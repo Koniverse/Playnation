@@ -34,7 +34,7 @@ export const RouteState = {
 
 const welcomeUrl = '/welcome';
 const gameUrl = '/home/games';
-const tokenUrl = '/home/token';
+// const tokenUrl = '/home/token';
 const loginUrl = '/keyring/login';
 const phishingUrl = '/phishing-page-detected';
 const createPasswordUrl = '/keyring/create-password';
@@ -179,7 +179,6 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
 
   const redirectPath = useMemo<string | null>(() => {
     const pathName = location.pathname;
-    console.log('PATH', pathName);
     let redirectTarget: string | null = null;
 
     // Wait until data loaded

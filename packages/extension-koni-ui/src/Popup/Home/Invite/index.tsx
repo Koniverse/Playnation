@@ -106,24 +106,19 @@ const Component = ({ className }: Props): React.ReactElement => {
               />
             </Typography.Text>
           </div>
+        </div>
+        <div className={'copy-link-container'}>
           <Button
+            className={'copy-link'}
             icon={<Icon
               phosphorIcon={Copy}
-              size={'sm'}
-            />}
+              size={'md'} />}
             onClick={copyLink}
-            size={'xs'}
+            size={'md'}
             type={'ghost'}
-          />
-          <Button
-            icon={<Icon
-              phosphorIcon={UserCirclePlus}
-              size={'sm'}
-            />}
-            onClick={inviteFriend}
-            size={'xs'}
-            type={'ghost'}
-          />
+          >
+            {t('Copy Invite Link')}
+          </Button>
         </div>
       </div>
       <div className='invite-friends'>
@@ -167,6 +162,15 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
     '.invite-data': {
       flex: 1,
       overflow: 'auto'
+    },
+
+    '.copy-link-container': {
+      textAlign: 'center',
+      marginBottom: token.marginMD,
+
+      '.copy-link': {
+        color: token.colorPrimary
+      }
     },
 
     '.invite-item': {
