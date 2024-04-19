@@ -80,6 +80,7 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
         position: 'sticky',
         top: token.marginSM,
         bottom: token.marginSM,
+        zIndex: 100,
         '.account-info': {
           boxShadow: `0 0 6px ${token.colorPrimary}`
         }
