@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
+import GameEnergy from '@subwallet/extension-koni-ui/components/Games/GameEnergy';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
+import {useSetCurrentPage, useTranslation} from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Image, Typography } from '@subwallet/react-ui';
@@ -21,6 +22,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [gameList, setGameList] = useState<Game[]>(apiSDK.gameList);
   const [account, setAccount] = useState(apiSDK.account);
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
+  const { t} = useTranslation();
 
   const exitGame = useCallback(() => {
     if (gameIframe.current) {
@@ -69,15 +71,21 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   return <div className={className}>
-    {account && <GameAccount
-      avatar={account.info.photoUrl}
-      className={'account-info'}
-      point={account.attributes.point}
-      name={`${account.info.firstName || ''} ${account.info.lastName || ''}`}
-    />}
+    {account && <div className={'account-info'}>
+      <GameAccount
+        avatar={account.info.photoUrl}
+        className={'account-info'}
+        name={`${account.info.firstName || ''} ${account.info.lastName || ''}`}
+        point={account.attributes.point}
+      />
+      <GameEnergy
+        energy={account.attributes.energy}
+        startTime={account.attributes.lastEnergyUpdated}
+      />
+    </div>}
     {gameList.map((game) => (<div
       className={'game-item'}
-      key={game.id}
+      key={`game-${game.id}`}
     >
       <Image
         className={'game-banner'}
@@ -101,18 +109,28 @@ const Component = ({ className }: Props): React.ReactElement => {
             size={'sm'}
           >{game.description}</Typography.Text>
         </div>
-        <Button
-          className={'play-button'}
-          onClick={playGame(game)}
-          size={'xs'}
-        >Open</Button>
+        <div className={'play-area'}>
+          <Button
+            className={'play-button'}
+            onClick={playGame(game)}
+            size={'xs'}
+          >
+            {t('Open')}
+          </Button>
+          <Typography.Text
+            className={'game-energy'}
+            size={'sm'}
+          >
+            {t('{{energy}} energy / game', { energy: game.energyPerGame })}
+          </Typography.Text>
+        </div>
       </div>
     </div>))}
 
     {currentGame && <div className={'game-play'}>
       <iframe
         className={'game-iframe'}
-        key={currentGame.id}
+        key={`gameplay-${currentGame.id}`}
         ref={gameIframe}
         src={currentGame.url}
       />
@@ -181,7 +199,17 @@ const Games = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
       '.__sub-title': {
         color: 'rgba(0, 0, 0, 0.65)'
       }
-    }
+    },
+
+    '.play-area': {
+      textAlign: 'right'
+    },
+
+    '.game-energy': {
+      display: 'block',
+      color: 'rgba(0, 0, 0, 0.65)',
+      borderRadius: token.borderRadius
+    },
   };
 });
 

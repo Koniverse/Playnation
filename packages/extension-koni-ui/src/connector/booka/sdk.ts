@@ -9,7 +9,7 @@ import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-export const GAME_API_HOST = process.env.GAME_API_HOST || 'http://localhost:3001';
+export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'BookaGamesBot/swbooka';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
@@ -261,19 +261,24 @@ export class BookaSdk {
     return result.signature;
   }
 
-  async playGame (gameId: number): Promise<GamePlay> {
+  async playGame (gameId: number, energyUsed: number): Promise<GamePlay> {
     const gamePlay = await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/new-game`, {
       gameId
     });
+
+    // Update account energy
+    const account = this.account;
+
+    if (account) {
+      account.attributes.energy -= energyUsed;
+      this.accountSubject.next(account);
+    }
 
     if (!gamePlay) {
       throw new Error('Failed to join event');
     }
 
     this.currentGamePlaySubject.next(gamePlay);
-
-    // Reload account data
-    await this.reloadAccount();
 
     return gamePlay;
   }
@@ -287,7 +292,7 @@ export class BookaSdk {
 
     this.currentGamePlaySubject.next(undefined);
 
-    await Promise.all([this.reloadAccount(), this.fetchLeaderboard()]);
+    await Promise.all([this.reloadAccount()]);
   }
 
   async fetchLeaderboard () {

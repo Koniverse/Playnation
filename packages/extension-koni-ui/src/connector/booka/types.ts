@@ -73,6 +73,7 @@ export interface BookaAccount {
     accumulatePoint: number;
     rank: string;
     point: number;
+    lastEnergyUpdated: string;
     createdAt: string;
     updatedAt: string;
   },
