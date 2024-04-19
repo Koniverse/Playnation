@@ -5,10 +5,11 @@ import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccou
 import GameEnergy from '@subwallet/extension-koni-ui/components/Games/GameEnergy';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
-import {useSetCurrentPage, useTranslation} from '@subwallet/extension-koni-ui/hooks';
+import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Image, Typography } from '@subwallet/react-ui';
+import CN from 'classnames';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
@@ -16,13 +17,24 @@ type Props = ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 
+function checkComingSoon (game: Game): boolean {
+  if (!game.startTime) {
+    return false;
+  }
+
+  // Check coming soon by start time
+  const gameStartTime = new Date(game.startTime).getTime();
+
+  return gameStartTime > Date.now();
+}
+
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/games');
   const gameIframe = useRef<HTMLIFrameElement>(null);
   const [gameList, setGameList] = useState<Game[]>(apiSDK.gameList);
   const [account, setAccount] = useState(apiSDK.account);
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
-  const { t} = useTranslation();
+  const { t } = useTranslation();
 
   const exitGame = useCallback(() => {
     if (gameIframe.current) {
@@ -84,18 +96,19 @@ const Component = ({ className }: Props): React.ReactElement => {
       />
     </div>}
     {gameList.map((game) => (<div
-      className={'game-item'}
+      className={CN('game-item', { 'coming-soon': checkComingSoon(game) })}
       key={`game-${game.id}`}
     >
-      <Image
-        className={'game-banner'}
-        shape={'square'}
-        src={game.banner}
-        width={'100%'}
-      ></Image>
+      <div className='game-banner'>
+        <Image
+          shape={'square'}
+          src={game.banner}
+          width={'100%'}
+        />
+      </div>
       <div className='game-info'>
         <Image
-          className={'game-banner'}
+          className={'game-icon'}
           src={game.icon}
           width={40}
         />
@@ -103,11 +116,19 @@ const Component = ({ className }: Props): React.ReactElement => {
           <Typography.Title
             className={'__title'}
             level={5}
-          >{game.name}</Typography.Title>
+          >
+            {game.name}
+          </Typography.Title>
           <Typography.Text
             className={'__sub-title'}
             size={'sm'}
           >{game.description}</Typography.Text>
+          <Typography.Title
+            className={'__coming-soon-title'}
+            level={5}
+          >
+            {t('Coming soon')}
+          </Typography.Title>
         </div>
         <div className={'play-area'}>
           <Button
@@ -164,28 +185,15 @@ const Games = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
       }
     },
 
-    '.game-item': {
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      backgroundColor: token['gray-1'],
-      borderRadius: token.borderRadius,
-      border: 0,
-      marginBottom: '10px',
-      overflow: 'hidden',
-
-      '& img': {
-        width: '100%',
-        height: 'auto'
-      }
-    },
-
     '.game-info': {
       display: 'flex',
       alignItems: 'center',
       width: '100%',
       padding: token.padding
+    },
+
+    '.__coming-soon-title': {
+      display: 'none'
     },
 
     '.game-text-info': {
@@ -210,6 +218,48 @@ const Games = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
       color: 'rgba(0, 0, 0, 0.65)',
       borderRadius: token.borderRadius
     },
+
+    '.game-item': {
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      backgroundColor: token['gray-1'],
+      borderRadius: token.borderRadius,
+      border: 0,
+      marginBottom: '10px',
+      overflow: 'hidden',
+
+      '& img': {
+        width: '100%',
+        height: 'auto'
+      },
+
+      '&.coming-soon': {
+        '.game-banner': {
+          overflow: 'hidden',
+          img: {
+            filter: 'blur(8px)'
+          }
+        },
+
+        '.game-text-info': {
+          '.__title, .__sub-title': {
+            display: 'none'
+          },
+
+          '.__coming-soon-title': {
+            display: 'block',
+            marginTop: 0,
+            marginBottom: 0
+          }
+        },
+
+        '.play-area': {
+          display: 'none'
+        }
+      }
+    }
   };
 });
 

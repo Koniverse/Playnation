@@ -34,7 +34,7 @@ const Home = ({ children, onClickFilterIcon, onClickSearchIcon, showFilterIcon, 
   const onOpenGift = useCallback(() => {
     notify({
       key: 'gift',
-      message: t('The airdrop for the first project will be snapshot within the next few weeks, based on your NPS number.'),
+      message: t('The snapshot for the first airdrop will be taken in the next few weeks based on your NPS points'),
       type: 'info',
       duration: 12
     });

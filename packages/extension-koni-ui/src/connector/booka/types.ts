@@ -20,6 +20,8 @@ export interface Game {
   energyPerGame: number;
   maxPointPerGame: number;
   rankDefinition: string;
+  startTime: string | null;
+  endTime: string | null;
   active: boolean;
 }
 
