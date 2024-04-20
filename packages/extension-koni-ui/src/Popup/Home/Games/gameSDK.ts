@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Game, GamePlay } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { BuyInGameItemResponse, ErrorCode, GameError, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, Player, PlayResponse, SDKInitParams, Tournament, UseInGameItemResponse } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
 import { camelCase } from 'lodash';
 import z from 'zod';
@@ -63,7 +63,6 @@ const InventoryQuantityMap: Record<string, number> = {
 };
 
 export class GameApp {
-  private playingGame: GamePlay | undefined;
   private listener = this._onMessage.bind(this);
   private options: GameAppOptions;
   private viewport: HTMLIFrameElement;
@@ -148,7 +147,7 @@ export class GameApp {
   }
 
   async onPlay () {
-    this.playingGame = await this.apiSDK.playGame(this.currentGameInfo.id);
+    const gamePlay = await this.apiSDK.playGame(this.currentGameInfo.id, this.currentGameInfo.energyPerGame);
 
     const account = this.apiSDK.account;
     const currentGame = this.currentGameInfo;
@@ -157,10 +156,10 @@ export class GameApp {
       throw newError('invalid account or game', errorCodes.SystemError);
     }
 
-    const tickets = Math.floor(account.attributes.energy / currentGame.energyPerGame);
+    const tickets = Math.floor(account.attributes.energy) - 1;
 
     const res: PlayResponse = {
-      token: this.playingGame.token,
+      token: gamePlay.token,
       remainingTickets: tickets
     };
 
@@ -220,15 +219,20 @@ export class GameApp {
   }
 
   async onSignResult (result: {gamePlayId: string, gameToken: string, score: number}) {
-    console.log('sign result', result);
+    const currentGame = this.apiSDK.currentGamePlay;
 
-    if (!this.playingGame) {
+    if (!currentGame) {
       throw newError('game not started', errorCodes.InvalidRequest);
     }
 
+    if (currentGame.token !== result.gameToken) {
+      throw newError('invalid game token', errorCodes.InvalidRequest);
+    }
+
+    // Todo: sign result
     const signature = '0x0000';
 
-    await this.apiSDK.submitGame(this.playingGame.id, result.score, signature);
+    await this.apiSDK.submitGame(currentGame.id, result.score, signature);
 
     return signature;
   }
