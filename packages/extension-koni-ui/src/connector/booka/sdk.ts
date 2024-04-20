@@ -160,6 +160,7 @@ export class BookaSdk {
   }
 
   async fetchTaskList () {
+    await this.waitForSync;
     const taskList = await this.getRequest<Task[]>(`${GAME_API_HOST}/api/task/history`);
 
     if (taskList) {
@@ -185,6 +186,7 @@ export class BookaSdk {
   }
 
   async fetchReferalList () {
+    await this.waitForSync;
     const refList = await this.getRequest<ReferralRecord[]>(`${GAME_API_HOST}/api/account/get-rerferal-logs`);
 
     if (refList) {
@@ -226,9 +228,9 @@ export class BookaSdk {
     if (account) {
       this.accountSubject.next(account);
       storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
+      this.syncHandler.resolve();
 
       await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchLeaderboard()]);
-      this.syncHandler.resolve();
     } else {
       throw new Error('Failed to sync account');
     }
@@ -262,6 +264,7 @@ export class BookaSdk {
   }
 
   async playGame (gameId: number, energyUsed: number): Promise<GamePlay> {
+    await this.waitForSync;
     const gamePlay = await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/new-game`, {
       gameId
     });
@@ -296,6 +299,7 @@ export class BookaSdk {
   }
 
   async fetchLeaderboard () {
+    await this.waitForSync;
     const leaderBoard = await this.getRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`);
 
     if (leaderBoard) {
