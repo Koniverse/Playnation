@@ -1,33 +1,26 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { MantaPayEnableMessage } from '@subwallet/extension-base/background/KoniTypes';
-import { detectTranslate } from '@subwallet/extension-base/utils';
-import { CloseIcon, Layout, PageWrapper, ZkModeFooter } from '@subwallet/extension-koni-ui/components';
+import { CloseIcon, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import AccountAvatar from '@subwallet/extension-koni-ui/components/Account/AccountAvatar';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
-import useDeleteAccount from '@subwallet/extension-koni-ui/hooks/account/useDeleteAccount';
 import useGetAccountByAddress from '@subwallet/extension-koni-ui/hooks/account/useGetAccountByAddress';
 import useGetAccountSignModeByAddress from '@subwallet/extension-koni-ui/hooks/account/useGetAccountSignModeByAddress';
-import { useGetMantaPayConfig } from '@subwallet/extension-koni-ui/hooks/account/useGetMantaPayConfig';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
-import useUnlockChecker from '@subwallet/extension-koni-ui/hooks/common/useUnlockChecker';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
-import { deriveAccountV3, editAccount, enableMantaPay, forgetAccount } from '@subwallet/extension-koni-ui/messaging';
-import { RootState } from '@subwallet/extension-koni-ui/stores';
+import { editAccount } from '@subwallet/extension-koni-ui/messaging';
 import { PhosphorIcon, Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { AccountSignMode } from '@subwallet/extension-koni-ui/types/account';
 import { FormCallbacks, FormFieldData } from '@subwallet/extension-koni-ui/types/form';
 import { toShort } from '@subwallet/extension-koni-ui/utils';
 import { copyToClipboard } from '@subwallet/extension-koni-ui/utils/common/dom';
 import { convertFieldToObject } from '@subwallet/extension-koni-ui/utils/form/form';
-import { BackgroundIcon, Button, Field, Form, Icon, Input, ModalContext, SwAlert, SwModal } from '@subwallet/react-ui';
+import { BackgroundIcon, Button, Field, Form, Icon, Input } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CircleNotch, CopySimple, Eye, FloppyDiskBack, QrCode, Swatches, User, Wallet, Warning } from 'phosphor-react';
-import React, { useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { CircleNotch, CopySimple, Export, Eye, FloppyDiskBack, QrCode, Swatches, User, Wallet } from 'phosphor-react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 
 type Props = ThemeProps;
@@ -115,79 +108,26 @@ export const mantaPayReducer = (state: MantaPayState, action: MantaPayReducerAct
   }
 };
 
-const zkModeConfirmationId = 'zkModeConfirmation';
-
-function getZkErrorMessage (error: MantaPayEnableMessage) {
-  if (error === MantaPayEnableMessage.WRONG_PASSWORD) {
-    return detectTranslate('Wrong password');
-  } else if (error === MantaPayEnableMessage.CHAIN_DISCONNECTED) {
-    return detectTranslate('Network is disconnected');
-  }
-
-  return detectTranslate('Some errors occurred. Please try again later');
-}
-
 const Component: React.FC<Props> = (props: Props) => {
   const { className } = props;
 
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { goHome } = useDefaultNavigate();
-  const [searchParams] = useSearchParams();
   const notify = useNotification();
   const { token } = useTheme() as Theme;
   const { accountAddress } = useParams();
-  const { activeModal, inactiveModal } = useContext(ModalContext);
   const dataContext = useContext(DataContext);
-
-  const enableMantaPayConfirm = searchParams.get('enableMantaPayConfirm') === 'true';
 
   const [form] = Form.useForm<DetailFormState>();
 
   const account = useGetAccountByAddress(accountAddress);
-  const deleteAccountAction = useDeleteAccount();
 
   const saveTimeOutRef = useRef<NodeJS.Timer>();
 
-  const [deleting, setDeleting] = useState(false);
-  const [deriving, setDeriving] = useState(false);
   const [saving, setSaving] = useState(false);
-  const checkUnlock = useUnlockChecker();
 
   const signMode = useGetAccountSignModeByAddress(accountAddress);
-
-  const mantaPayConfig = useGetMantaPayConfig(accountAddress || '');
-  const isZkModeEnabled = useMemo(() => {
-    return !!mantaPayConfig && mantaPayConfig.enabled;
-  }, [mantaPayConfig]);
-  const zkModeSyncState = useSelector((state: RootState) => state.mantaPay);
-  const [mantaPayState, dispatchMantaPayState] = useReducer(mantaPayReducer, DEFAULT_MANTA_PAY_STATE);
-
-  const handleEnableMantaPay = useCallback(() => {
-    activeModal(zkModeConfirmationId);
-  }, [activeModal]);
-
-  useEffect(() => {
-    if (enableMantaPayConfirm && !isZkModeEnabled && !zkModeSyncState.isSyncing) {
-      handleEnableMantaPay();
-    }
-  }, [enableMantaPayConfirm, handleEnableMantaPay, isZkModeEnabled, zkModeSyncState.isSyncing]);
-
-  const canDerive = useMemo((): boolean => {
-    if (account) {
-      if (account.isExternal) {
-        return false;
-      } else {
-        if (account.type === 'ethereum') {
-          return !!account.isMasterAccount;
-        } else {
-          return true;
-        }
-      }
-    } else {
-      return false;
-    }
-  }, [account]);
 
   const walletNamePrefixIcon = useMemo((): PhosphorIcon => {
     switch (signMode) {
@@ -203,63 +143,6 @@ const Component: React.FC<Props> = (props: Props) => {
         return User;
     }
   }, [signMode]);
-
-  const onDelete = useCallback(() => {
-    if (account?.address) {
-      deleteAccountAction()
-        .then(() => {
-          setDeleting(true);
-          forgetAccount(account.address)
-            .then(() => {
-              goHome();
-            })
-            .catch((e: Error) => {
-              notify({
-                message: e.message,
-                type: 'error'
-              });
-            })
-            .finally(() => {
-              setDeleting(false);
-            });
-        })
-        .catch((e: Error) => {
-          if (e) {
-            notify({
-              message: e.message,
-              type: 'error'
-            });
-          }
-        });
-    }
-  }, [account?.address, deleteAccountAction, notify, goHome]);
-
-  const onDerive = useCallback(() => {
-    if (!account?.address) {
-      return;
-    }
-
-    checkUnlock().then(() => {
-      setDeriving(true);
-
-      setTimeout(() => {
-        deriveAccountV3({
-          address: account.address
-        }).then(() => {
-          goHome();
-        }).catch((e: Error) => {
-          notify({
-            message: e.message,
-            type: 'error'
-          });
-        }).finally(() => {
-          setDeriving(false);
-        });
-      }, 500);
-    }).catch(() => {
-      // User cancel unlock
-    });
-  }, [account?.address, checkUnlock, goHome, notify]);
 
   const onExport = useCallback(() => {
     if (account?.address) {
@@ -317,40 +200,6 @@ const Component: React.FC<Props> = (props: Props) => {
     }
   }, [account, goHome, navigate]);
 
-  const onCloseZkModeConfirmation = useCallback(() => {
-    if (!mantaPayState.loading) {
-      dispatchMantaPayState({ type: MantaPayReducerActionType.REJECT_ENABLE, payload: undefined });
-      inactiveModal(zkModeConfirmationId);
-    }
-  }, [inactiveModal, mantaPayState.loading]);
-
-  const onOkZkModeConfirmation = useCallback((password: string) => {
-    dispatchMantaPayState({ type: MantaPayReducerActionType.SET_LOADING, payload: true });
-    setTimeout(() => {
-      enableMantaPay({ address: account?.address as string, password })
-        .then((result) => {
-          if (result.success) {
-            inactiveModal(zkModeConfirmationId);
-            dispatchMantaPayState({ type: MantaPayReducerActionType.CONFIRM_ENABLE, payload: undefined });
-          } else {
-            if (result.message !== MantaPayEnableMessage.WRONG_PASSWORD) {
-              notify({
-                type: 'error',
-                message: t(getZkErrorMessage(result.message))
-              });
-            }
-
-            dispatchMantaPayState({ type: MantaPayReducerActionType.SET_ERROR_MESSAGE, payload: t(getZkErrorMessage(result.message)) });
-          }
-        })
-        .catch((e) => {
-          console.error(e);
-
-          dispatchMantaPayState({ type: MantaPayReducerActionType.SYNC_FAIL, payload: undefined });
-        });
-    }, 1000);
-  }, [account?.address, inactiveModal, notify, t]);
-
   if (!account) {
     return null;
   }
@@ -360,15 +209,11 @@ const Component: React.FC<Props> = (props: Props) => {
       className={CN(className)}
       resolve={dataContext.awaitStores(['mantaPay'])}
     >
-      { zkModeSyncState.isSyncing && <div className={'zk-mask'} /> }
-
       <Layout.WithSubHeaderOnly
-        disableBack={deriving || zkModeSyncState.isSyncing}
         subHeaderIcons={[
           {
             icon: <CloseIcon />,
-            onClick: goHome,
-            disabled: deriving || zkModeSyncState.isSyncing
+            onClick: goHome
           }
         ]}
         title={t('Account details')}
@@ -407,7 +252,7 @@ const Component: React.FC<Props> = (props: Props) => {
             >
               <Input
                 className='account-name-input'
-                disabled={deriving || zkModeSyncState.isSyncing || account.isInjected}
+                disabled={account.isInjected}
                 label={t('Account name')}
                 onBlur={form.submit}
                 placeholder={t('Account name')}
@@ -455,51 +300,24 @@ const Component: React.FC<Props> = (props: Props) => {
               )}
             />
           </div>
-
-          {
-            zkModeSyncState.isSyncing && (
-              <SwAlert
-                className={CN('zk-alert-area')}
-                description={zkModeSyncState.progress === 100 ? t('All done, you can go back home') : t('This may take a few minutes. Please keep the app open')}
-                title={zkModeSyncState.progress === 100 ? t('Zk mode is ready') : t('Zk mode is syncing: {{percent}}%', { replace: { percent: zkModeSyncState.progress || '0' } })}
-                type={zkModeSyncState.progress === 100 ? 'success' : 'warning'}
-              />
-            )
-          }
         </div>
 
-        <SwModal
-          className={CN('account-detail__zk-mode-confirmation')}
-          closable={false}
-          footer={(
-            <ZkModeFooter
-              error={mantaPayState.error}
-              loading={mantaPayState.loading}
-              onCancel={onCloseZkModeConfirmation}
-              onOk={onOkZkModeConfirmation}
-            />
-          )}
-          id={zkModeConfirmationId}
-          maskClosable={false}
-          title={t<string>('Enable ZK mode?')}
-          wrapClassName={className}
-        >
-          <div className={'zk-warning__container'}>
-            <div className={'zk-warning__title'}>
+        <div className={CN('account-detail___action-footer')}>
+          <Button
+            className={CN('account-button')}
+            disabled={account.isInjected}
+            icon={(
               <Icon
-                customSize={'20px'}
-                iconColor={token.colorWarning}
-                phosphorIcon={Warning}
-                weight={'bold'}
+                phosphorIcon={Export}
+                weight='fill'
               />
-              <div className={'zk-warning__title-text'}>{t('ZK mode requires data synchronization')}</div>
-            </div>
-
-            <div className={'zk-warning__subtitle'}>
-              {t('Using the app is not advised until synchronization finishes. First-time synchronization can take up to 45 minutes or longer. Proceed?')}
-            </div>
-          </div>
-        </SwModal>
+            )}
+            onClick={onExport}
+            schema='primary'
+          >
+            {t('Export')}
+          </Button>
+        </div>
       </Layout.WithSubHeaderOnly>
     </PageWrapper>
   );
@@ -621,64 +439,12 @@ const AccountDetail = styled(Component)<Props>(({ theme: { token } }: Props) => 
       }
     },
 
-    '.zk-alert-area': {
-      position: 'relative',
-      zIndex: 4,
-      marginTop: token.margin,
-      marginBottom: token.marginXS
-    },
-
-    '.zk-setting': {
-      position: 'relative',
-      zIndex: 4,
-      marginBottom: token.marginXS,
-      gap: token.sizeXS,
-      color: token.colorTextLight1,
-
-      '.ant-web3-block .ant-web3-block-right-item': {
-        marginRight: 0
-      }
-    },
-
-    '.zk-sync-margin': {
-      marginTop: token.margin
-    },
-
-    '.zk_confirmation_modal__footer': {
-      display: 'flex',
-      justifyContent: 'center'
-    },
-
     '.footer__button': {
       flexGrow: 1
     },
 
-    '.zk-warning__title': {
-      display: 'flex',
-      flexDirection: 'row',
-      gap: '8px',
-      justifyContent: 'center',
-      fontSize: token.size,
-      lineHeight: token.lineHeight
-    },
-
-    '.zk-warning__title-text': {
-      color: token.colorWarning,
-      fontWeight: token.headingFontWeight
-    },
-
-    '.zk-warning__subtitle': {
-      display: 'flex',
-      justifyContent: 'center',
-      textAlign: 'justify',
-      marginTop: token.marginMD,
-      paddingLeft: token.padding,
-      paddingRight: token.padding,
-      fontWeight: token.bodyFontWeight,
-      color: token.colorTextTertiary
-    },
-
     '.account-detail___action-footer': {
+      backgroundColor: token.colorBgDefault,
       position: 'sticky',
       bottom: 0,
       left: 0,

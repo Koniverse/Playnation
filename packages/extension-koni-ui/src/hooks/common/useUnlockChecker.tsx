@@ -3,12 +3,12 @@
 
 import { createPromiseHandler } from '@subwallet/extension-base/utils/promise';
 import { UNLOCK_MODAL_ID } from '@subwallet/extension-koni-ui/components/Modal/UnlockModal';
+import { DEFAULT_PASSWORD } from '@subwallet/extension-koni-ui/constants';
+import { keyringUnlock } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ModalContext } from '@subwallet/react-ui';
 import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import {keyringUnlock} from "@subwallet/extension-koni-ui/messaging";
-import {DEFAULT_PASSWORD} from "@subwallet/extension-koni-ui/constants";
 
 export default function useUnlockChecker (): () => Promise<void> {
   const isLocked = useSelector((state: RootState) => state.accountState.isLocked);
