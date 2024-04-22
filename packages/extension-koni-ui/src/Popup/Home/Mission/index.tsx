@@ -8,11 +8,11 @@ import { Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { formatInteger } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, Image, Typography } from '@subwallet/react-ui';
 import { CheckCircle } from 'phosphor-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
-import {formatInteger} from "@subwallet/extension-koni-ui/utils";
 
 type Props = ThemeProps;
 
@@ -63,6 +63,20 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, []);
 
+  const sortedTaskList = useMemo(() => {
+    return taskList.sort((a, b) => {
+      if (a.status === b.status) {
+        return 1;
+      }
+
+      if (a.status < b.status) {
+        return -1;
+      }
+
+      return 0;
+    });
+  }, [taskList]);
+
   return <div className={className}>
     <div className={'task-list'}>
       {account && <GameAccount
@@ -74,7 +88,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       <Typography.Title level={4}>
         {t('Missions')}
       </Typography.Title>
-      {taskList.map((task) => (<div
+      {sortedTaskList.map((task) => (<div
         className={'task-item'}
         key={task.id}
       >
