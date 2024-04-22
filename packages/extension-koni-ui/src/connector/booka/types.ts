@@ -36,8 +36,12 @@ export interface Task {
   icon: string;
   pointReward: number;
   itemReward: number;
+  startTime?: string;
+  endTime?: string;
+  interval?: number;
 
   status: number;
+  completedAt?: string;
 }
 
 export interface GamePlay {
