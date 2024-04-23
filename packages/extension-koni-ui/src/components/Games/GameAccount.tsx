@@ -1,11 +1,12 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { formatInteger, formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
-import { Image } from '@subwallet/react-ui';
-import React from 'react';
+import {ThemeProps} from '@subwallet/extension-koni-ui/types';
+import {formatInteger, formatIntegerShort} from '@subwallet/extension-koni-ui/utils';
+import {Image} from '@subwallet/react-ui';
+import React, {useMemo} from 'react';
 import styled from 'styled-components';
+import {GAME_API_HOST} from "@subwallet/extension-koni-ui/connector/booka/sdk";
 
 type GamePointProps = ThemeProps & {
   className?: string;
@@ -16,15 +17,23 @@ type GamePointProps = ThemeProps & {
   isLeaderboard?: boolean;
 };
 
-function _GameAccount ({ avatar, className, isLeaderboard, name, point, prefix }: GamePointProps) {
+function _GameAccount({avatar, className, isLeaderboard, name, point, prefix}: GamePointProps) {
+  const avatarUrl = useMemo(() => {
+    if (avatar) {
+      return `${GAME_API_HOST}/${avatar}`;
+    }
+    return '/images/games/account-default-avatar.png';
+  }, [avatar]);
   return <div className={className}>
     {prefix && <span className={'__prefix'}>{prefix}</span>}
-    <Image
-      className={'__avatar'}
-      shape={'square'}
-      src={avatar || '/images/games/account-default-avatar.png'}
-      width={29}
-    />
+    <div className={avatar ? '__avatar-item __avatar-item-radius' : '__avatar-item'}>
+      <Image
+        className={'__avatar'}
+        shape={'circle'}
+        src={avatarUrl}
+        width={avatar ? 22 : 29}
+      />
+    </div>
     <span className={'__name'}>{name}</span>
     <span className={'__point'}>
       {isLeaderboard && point && formatIntegerShort(point)}
@@ -38,7 +47,7 @@ function _GameAccount ({ avatar, className, isLeaderboard, name, point, prefix }
   </div>;
 }
 
-export const GameAccount = styled(_GameAccount)<GamePointProps>(({ isLeaderboard, theme: { token } }: GamePointProps) => {
+export const GameAccount = styled(_GameAccount)<GamePointProps>(({isLeaderboard, theme: {token}}: GamePointProps) => {
   return ({
     display: 'flex',
     alignItems: 'center',
@@ -51,8 +60,19 @@ export const GameAccount = styled(_GameAccount)<GamePointProps>(({ isLeaderboard
       marginRight: token.marginXXS
     },
 
-    '.__avatar': {
-      marginRight: token.marginXS
+    '.__avatar-item': {
+      marginRight: token.marginXS,
+    },
+
+    '.__avatar-item-radius': {
+      border: `1px solid ${token.colorPrimary}`,
+      borderRadius: '50%',
+      height: 29,
+      width: 29,
+      background: `${token.colorBgBase}`,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
 
     '.__point': {
