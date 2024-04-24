@@ -110,10 +110,28 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
 
       '.leaderboard-item': {
         marginBottom: token.marginSM,
+        '.account-info': {
+          border: '1px solid transparent'
+        },
 
-        '&:nth-child(1), &:nth-child(2), &:nth-child(3)': {
+        '&:nth-child(1)': {
           '.account-info': {
-            backgroundColor: token['colorWarning-2']
+            border: `1px solid ${token.colorWarning}`,
+            backgroundColor: 'rgba(255, 233, 67, 0.10)'
+          }
+        },
+
+        '&:nth-child(2)': {
+          '.account-info': {
+            border: '1px solid #9BA9BB',
+            backgroundColor: 'rgba(43, 135, 255, 0.10)'
+          }
+        },
+
+        '&:nth-child(3)': {
+          '.account-info': {
+            border: '1px solid #FFBA38',
+            backgroundColor: 'rgba(255, 186, 56, 0.10)'
           }
         }
       }
