@@ -12,7 +12,7 @@ type GameEnergyProps = ThemeProps & {
   energy: number;
 };
 
-const maxEnergy = 1440;
+const maxEnergy = 300;
 const ONE_SECOND = 1000; // 1 second in milliseconds
 const regenSeconds = 60;
 const regenTime = ONE_SECOND * regenSeconds;
