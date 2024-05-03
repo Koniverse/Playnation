@@ -121,7 +121,7 @@ export class GameApp {
       throw newError('invalid account or game', errorCodes.SystemError);
     }
 
-    const tickets = Math.floor(account.attributes.energy / currentGame.energyPerGame);
+    const tickets = Math.floor((account.attributes.energy + 0.3) / currentGame.energyPerGame);
 
     const tour: Tournament = {
       id: 'tour1',
