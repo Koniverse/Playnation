@@ -11,7 +11,7 @@ import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, findAccountByAddress, funcSortByName, isAccountAll, searchAccountFunction } from '@subwallet/extension-koni-ui/utils';
-import {Button, Icon, Image, ModalContext, SelectModal} from '@subwallet/react-ui';
+import { Button, Icon, Image, ModalContext, SelectModal } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { Copy } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -35,7 +35,7 @@ const rankIconMap: Record<string, string> = {
   silver: '/images/ranks/silver.svg',
   gold: '/images/ranks/gold.svg',
   platinum: '/images/ranks/platinum.svg',
-  diamond: '/images/ranks/diamond.svg',
+  diamond: '/images/ranks/diamond.svg'
 };
 
 function Component ({ className }: Props): React.ReactElement<Props> {
@@ -48,7 +48,7 @@ function Component ({ className }: Props): React.ReactElement<Props> {
 
   const [gameAccount, setGameAccount] = useState(apiSDK.account);
 
-  const { accounts: _accounts, currentAccount, isAllAccount } = useSelector((state: RootState) => state.accountState);
+  const { accounts: _accounts, currentAccount } = useSelector((state: RootState) => state.accountState);
 
   const [selectedQrAddress, setSelectedQrAddress] = useState<string | undefined>();
 

@@ -3,7 +3,7 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { BookaAccount, Game, GamePlay, LeaderboardPerson, ReferralRecord, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { BookaAccount, Game, GamePlay, LeaderboardPerson, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
@@ -16,6 +16,7 @@ const telegramConnector = TelegramConnector.instance;
 
 const CACHE_KEYS = {
   account: 'data--account-cache',
+  taskCategoryList: 'data--task-category-list-cache',
   taskList: 'data--task-list-cache',
   gameList: 'data--game-list-cache'
 };
@@ -24,13 +25,14 @@ export class BookaSdk {
   private syncHandler = createPromiseHandler<void>();
   private accountSubject = new BehaviorSubject<BookaAccount | undefined>(undefined);
   private taskListSubject = new BehaviorSubject<Task[]>([]);
+  private taskCategoryListSubject = new BehaviorSubject<TaskCategory[]>([]);
   private gameListSubject = new BehaviorSubject<Game[]>([]);
   private currentGamePlaySubject = new BehaviorSubject<GamePlay | undefined>(undefined);
   private leaderBoardSubject = new BehaviorSubject<LeaderboardPerson[]>([]);
   private referralListSubject = new BehaviorSubject<ReferralRecord[]>([]);
 
   constructor () {
-    storage.getItems(Object.values(CACHE_KEYS)).then(([account, tasks, game]) => {
+    storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game]) => {
       if (account) {
         try {
           const accountData = JSON.parse(account) as BookaAccount;
@@ -38,6 +40,16 @@ export class BookaSdk {
           this.accountSubject.next(accountData);
         } catch (e) {
           console.error('Failed to parse account data', e);
+        }
+      }
+
+      if (taskCategory) {
+        try {
+          const taskCategoryList = JSON.parse(taskCategory) as TaskCategory[];
+
+          this.taskCategoryListSubject.next(taskCategoryList);
+        } catch (e) {
+          console.error('Failed to parse task list', e);
         }
       }
 
@@ -73,6 +85,10 @@ export class BookaSdk {
 
   public get taskList () {
     return this.taskListSubject.value;
+  }
+
+  public get taskCategoryList () {
+    return this.taskCategoryListSubject.value;
   }
 
   public get gameList () {
@@ -159,6 +175,20 @@ export class BookaSdk {
     return this.gameListSubject;
   }
 
+  async fetchTaskCategoryList () {
+    await this.waitForSync;
+    const taskCategoryList = await this.getRequest<TaskCategory[]>(`${GAME_API_HOST}/api/task-category/fetch`);
+
+    if (taskCategoryList) {
+      this.taskCategoryListSubject.next(taskCategoryList);
+      storage.setItem(CACHE_KEYS.taskCategoryList, JSON.stringify(taskCategoryList)).catch(console.error);
+    }
+  }
+
+  subscribeTaskCategoryList () {
+    return this.taskCategoryListSubject;
+  }
+
   async fetchTaskList () {
     await this.waitForSync;
     const taskList = await this.getRequest<Task[]>(`${GAME_API_HOST}/api/task/history`);
@@ -175,6 +205,8 @@ export class BookaSdk {
 
   async finishTask (taskId: number) {
     await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId });
+
+    await this.fetchTaskCategoryList();
 
     await this.fetchTaskList();
 
@@ -230,7 +262,7 @@ export class BookaSdk {
       storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
       this.syncHandler.resolve();
 
-      await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchLeaderboard()]);
+      await Promise.all([this.fetchGameList(), this.fetchTaskCategoryList(), this.fetchTaskList(), this.fetchLeaderboard()]);
     } else {
       throw new Error('Failed to sync account');
     }
