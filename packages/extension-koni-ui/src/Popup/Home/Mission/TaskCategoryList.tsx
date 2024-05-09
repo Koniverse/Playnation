@@ -5,7 +5,8 @@ import { TaskCategory, TaskCategoryInfo } from '@subwallet/extension-koni-ui/con
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { formatInteger } from '@subwallet/extension-koni-ui/utils';
-import { Image, Typography } from '@subwallet/react-ui';
+import { Icon, Image, Typography } from '@subwallet/react-ui';
+import { CaretRight } from 'phosphor-react';
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 
@@ -48,12 +49,18 @@ const Component = ({ className, onClickCategoryItem, taskCategoryInfoMap, taskCa
               src={tc.icon || undefined}
               width={40}
             ></Image>
-            <div>
+            <div className={'task-category-item-content'}>
               <div>{tc.name}</div>
 
               <div>
                 Min point can earn: {formatInteger(taskCategoryInfoMap[tc.id]?.minPoint || 0)}
               </div>
+            </div>
+            <div className={'task-category-item-caret-icon'}>
+              <Icon
+                customSize={'20px'}
+                phosphorIcon={CaretRight}
+              />
             </div>
           </div>
         ))
@@ -76,6 +83,17 @@ export const TaskCategoryList = styled(Component)<ThemeProps>(({ theme: { extend
       padding: token.padding,
       cursor: 'pointer',
       alignItems: 'center'
+    },
+
+    '.task-category-item-content': {
+      flex: 1
+    },
+
+    '.task-category-item-caret-icon': {
+      minWidth: 40,
+      marginRight: -token.marginXS,
+      display: 'flex',
+      justifyContent: 'center'
     },
 
     '.task-category-item + .task-category-item': {
