@@ -25,10 +25,6 @@ const Component = ({ className, currentTaskCategory, onBackToCategoryList, taskC
     const taskList = currentTaskCategory ? taskCategoryInfoMap[currentTaskCategory]?.tasks || [] : [];
 
     return taskList.sort((a, b) => {
-      if (a.status < b.status) {
-        return -1;
-      }
-
       const aDisabled = ((a.startTime && new Date(a.startTime).getTime() > now) || (a.endTime && new Date(a.endTime).getTime() < now));
       const bDisabled = ((b.startTime && new Date(b.startTime).getTime() > now) || (b.endTime && new Date(b.endTime).getTime() < now));
 
@@ -40,7 +36,15 @@ const Component = ({ className, currentTaskCategory, onBackToCategoryList, taskC
         return -1;
       }
 
-      return 0;
+      if (a.status === 0 && b.status !== 0) {
+        return -1;
+      }
+
+      if (a.status !== 0 && b.status === 0) {
+        return 1;
+      }
+
+      return a.status - b.status;
     });
   }, [currentTaskCategory, taskCategoryInfoMap]);
 
