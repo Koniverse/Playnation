@@ -37,12 +37,21 @@ function getTaskCategoryInfoMap (tasks: Task[]): Record<number, TaskCategoryInfo
         tasks: [t]
       };
     } else {
-      // todo: will update case category not start yet
-      if (t.status === 0 && (!t.endTime || now < new Date(t.endTime).getTime())) {
-        result[t.categoryId].minPoint += (t.pointReward || 0);
+      result[t.categoryId].tasks.push(t);
+
+      if (t.completedAt || t.status > 0) {
+        return;
       }
 
-      result[t.categoryId].tasks.push(t);
+      if (t.startTime && (now < new Date(t.startTime).getTime())) {
+        return;
+      }
+
+      if (t.endTime && (now >= new Date(t.endTime).getTime())) {
+        return;
+      }
+
+      result[t.categoryId].minPoint += (t.pointReward || 0);
     }
   });
 
@@ -75,7 +84,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
       taskListUpdaterInterval = setInterval(() => {
         setTaskCategoryInfoMap(getTaskCategoryInfoMap(data));
-      }, 60000);
+      }, 10000);
     });
 
     return () => {
