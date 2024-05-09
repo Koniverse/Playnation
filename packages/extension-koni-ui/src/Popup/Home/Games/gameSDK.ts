@@ -101,6 +101,7 @@ export class GameApp {
       name: `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}` || 'Player',
       avatar: 'https://thispersondoesnotexist.com/',
       level: 1,
+      energy: account?.attributes?.energy || 0,
       inventory: Object.entries(InventoryQuantityMap)
         .map(([id, quantity]) => ({
           itemId: id,
