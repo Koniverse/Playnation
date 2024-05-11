@@ -34,7 +34,6 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
-      console.log(data);
       setAccount(data);
     });
 
@@ -46,12 +45,7 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
   const finishTask = useCallback(async () => {
     const taskId = task.id;
     const onChainType = task.onChainType;
-
-    console.log('finishTask', task);
     const { address } = account?.info || {};
-
-    console.log('finishTask', address);
-
     if (!address) {
       return;
     }
@@ -83,7 +77,7 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
       .catch(console.error);
 
     setTimeout(() => {
-      // task.url && telegramConnector.openLink(task.url);
+      task.url && telegramConnector.openLink(task.url);
     }, 100);
   }, [task.id, task.url]);
 
