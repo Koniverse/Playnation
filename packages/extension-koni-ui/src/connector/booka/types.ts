@@ -25,6 +25,12 @@ export interface Game {
   active: boolean;
 }
 
+export enum TaskHistoryStatus {
+  FAILED = 'failed',
+  CHECKING = 'checking',
+  COMPLETED = 'completed',
+}
+
 export interface Task {
   id: number; // id on db
   contentId: number;
@@ -39,9 +45,10 @@ export interface Task {
   itemReward?: number | null;
   startTime?: string | null;
   endTime?: string | null;
+  onChainType?: string | null;
   interval?: number | null;
 
-  status: number;
+  status: TaskHistoryStatus;
   completedAt?: string;
 }
 

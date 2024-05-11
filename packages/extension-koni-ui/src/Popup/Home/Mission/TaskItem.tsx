@@ -1,18 +1,20 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import CountDown from '@subwallet/extension-koni-ui/components/Common/CountDown';
 import { GamePoint } from '@subwallet/extension-koni-ui/components/Games/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Task } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { Task, TaskHistoryStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { formatInteger } from '@subwallet/extension-koni-ui/utils';
+import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
 import { Button, Icon, Image, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle } from 'phosphor-react';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = {
@@ -24,23 +26,64 @@ const telegramConnector = TelegramConnector.instance;
 
 const _TaskItem = ({ className, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
+  const [account, setAccount] = useState(apiSDK.account);
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
   const completed = !!task.completedAt;
+  const checking = task.status === TaskHistoryStatus.CHECKING;
 
-  const finishTask = useCallback(() => {
+  useEffect(() => {
+    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
+      console.log(data);
+      setAccount(data);
+    });
+
+    return () => {
+      accountSub.unsubscribe();
+    };
+  }, []);
+
+  const finishTask = useCallback(async () => {
     const taskId = task.id;
+    const onChainType = task.onChainType;
+
+    console.log('finishTask', task);
+    const { address } = account?.info || {};
+
+    console.log('finishTask', address);
+
+    if (!address) {
+      return;
+    }
 
     setTaskLoading(true);
+    let res: SWTransactionResponse | null = null;
+    const networkKey = 'alephTest';
 
-    apiSDK.finishTask(taskId)
+    if (onChainType) {
+      res = await actionTaskOnChain(onChainType, 'alephTest', address);
+      if (res && res.errors.length > 0) {
+        setTaskLoading(false);
+
+        return;
+      }
+    }
+
+    let extrinsicHash = '';
+
+    if (res) {
+      extrinsicHash = res.extrinsicHash || '';
+    }
+
+    console.log('finishTask', res);
+    apiSDK.finishTask(taskId, extrinsicHash, networkKey)
       .finally(() => {
         setTaskLoading(false);
       })
       .catch(console.error);
 
     setTimeout(() => {
-      task.url && telegramConnector.openLink(task.url);
+      // task.url && telegramConnector.openLink(task.url);
     }, 100);
   }, [task.id, task.url]);
 
@@ -108,7 +151,7 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
         }
       </Typography.Text>
     </div>
-    {!completed && <Button
+    {!completed && !checking && <Button
       className={'play-button'}
       disabled={isDisabled}
       loading={taskLoading}
@@ -123,6 +166,16 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
         phosphorIcon={CheckCircle}
         weight={'fill'}
       />}
+      size={'xs'}
+      type={'ghost'}
+    />}
+    {checking && <Button
+      className={'checked-button'}
+      icon={<Icon
+        iconColor={'#FFD700'}
+        phosphorIcon={CheckCircle}
+        weight={'fill'}
+            />}
       size={'xs'}
       type={'ghost'}
     />}

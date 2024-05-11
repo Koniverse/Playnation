@@ -203,8 +203,8 @@ export class BookaSdk {
     return this.taskListSubject;
   }
 
-  async finishTask (taskId: number) {
-    await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId });
+  async finishTask (taskId: number, extrinsicHash: string, network: string) {
+    await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId, extrinsicHash, network });
 
     await this.fetchTaskCategoryList();
 

@@ -232,6 +232,7 @@ const Component = function ({ className }: Props) {
         case ExtrinsicType.CROWDLOAN:
         case ExtrinsicType.EVM_EXECUTE:
         case ExtrinsicType.UNKNOWN:
+        case ExtrinsicType.REMARK_WITH_EVENT:
           return t('Transaction confirm');
       }
     } else {
