@@ -425,6 +425,10 @@ export class BookaSdk {
 
     await this.reloadAccount();
   }
+
+  async getEnergyConfig() {
+    await this.getRequest(`${GAME_API_HOST}/api/shop/get-config-buy-energy`);
+  }
   // --- shop
 
   async fetchLeaderboard () {

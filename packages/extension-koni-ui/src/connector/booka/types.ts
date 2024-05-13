@@ -166,3 +166,10 @@ export interface ReferralRecord {
   referralSuccessTime: number;
   accountInfo: AccountPublicInfo;
 }
+
+export interface ConfigBuyEnergy{
+  energyPrice: number,
+  energyBuyLimit: number,
+  maxEnergy: number,
+  energyOneBuy: number
+}

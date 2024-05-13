@@ -5,7 +5,7 @@ import { ShopItem } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
-import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { ThemeProps, ConfigBuyEnergy } from '@subwallet/extension-koni-ui/types';
 import { ShopItemInfo } from '@subwallet/extension-koni-ui/types/shop';
 import { ModalContext, SwModal } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
@@ -96,6 +96,19 @@ const useInventory = useCallback((gameItemId: number) => {
     setBuyLoading(false);
   });
 },[])
+const getConfigBuyEnergy = useCallback(() => {
+  setBuyLoading(true);
+  apiSDK.getEnergyConfig().then((response: ConfigBuyEnergy) => {
+      console.log('getEnergyConfig', response);
+  }).catch((e) => {
+    console.log('buyItem error', e);
+  }).finally(() => {
+    alert('Use inventory success');
+    setBuyLoading(false);
+  });
+  
+},[])
+
 
   return (
     <SwModal
@@ -118,6 +131,7 @@ const useInventory = useCallback((gameItemId: number) => {
       }
       <h1>Hello</h1>
       <button onClick={()=> onBuyEnergy()}>Buy Energy</button>
+      <button onClick={()=> getConfigBuyEnergy()}>Get config buy Energy</button>
       <button onClick={()=> useInventory(17)}> Use Inventory 17</button>
     </SwModal>
   );
