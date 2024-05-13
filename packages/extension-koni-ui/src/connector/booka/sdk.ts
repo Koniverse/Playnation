@@ -9,7 +9,7 @@ import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
+export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api-dev.koni.studio';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'BookaGamesBot/swbooka';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
@@ -389,6 +389,7 @@ export class BookaSdk {
     await this.waitForSync;
 
     const inventoryItemList = await this.getRequest<GameInventoryItem[]>(`${GAME_API_HOST}/api/shop/get-inventory`);
+    console.log(inventoryItemList)
 
     if (inventoryItemList) {
       this.gameInventoryItemListSubject.next(inventoryItemList);
@@ -409,6 +410,21 @@ export class BookaSdk {
     await this.reloadAccount();
   }
 
+  async useInventoryItem(gameItemId: number) {
+    await this.postRequest(`${GAME_API_HOST}/api/shop/use-inventory-item`, { gameItemId });
+
+    await this.fetchGameInventoryItemList();
+
+    await this.fetchGameItemMap();
+
+    await this.reloadAccount();
+  }
+
+  async buyEnergy() {
+    await this.postRequest(`${GAME_API_HOST}/api/shop/buy-energy`, {});
+
+    await this.reloadAccount();
+  }
   // --- shop
 
   async fetchLeaderboard () {

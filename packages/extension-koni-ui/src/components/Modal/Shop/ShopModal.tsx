@@ -77,6 +77,26 @@ function Component ({ className, gameId,
     });
   }, []);
 
+const onBuyEnergy = useCallback(() => {
+  setBuyLoading(true);
+  apiSDK.buyEnergy().catch((e) => {
+    console.log('buyItem error', e);
+  }).finally(() => {
+    alert('Buy energy success');
+    setBuyLoading(false);
+  });
+},[])
+
+const useInventory = useCallback((gameItemId: number) => {
+  setBuyLoading(true);
+  apiSDK.useInventoryItem(gameItemId).catch((e) => {
+    console.log('buyItem error', e);
+  }).finally(() => {
+    alert('Use inventory success');
+    setBuyLoading(false);
+  });
+},[])
+
   return (
     <SwModal
       className={className}
@@ -90,11 +110,15 @@ function Component ({ className, gameId,
             className={'shop-item'}
             key={item.gameItemId}
             {...item}
-            disabled={buyLoading || item.disabled}
+            disabled={false}
             onBuy={onBuy}
           />
+          
         ))
       }
+      <h1>Hello</h1>
+      <button onClick={()=> onBuyEnergy()}>Buy Energy</button>
+      <button onClick={()=> useInventory(17)}> Use Inventory 17</button>
     </SwModal>
   );
 }
