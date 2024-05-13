@@ -11,6 +11,7 @@ import styled from 'styled-components';
 
 type Props = ThemeProps & ShopItemInfo & {
   onBuy: (gameItemId: string, quantity?: number) => void
+  onUse: (gameItemId: string) => void
 };
 
 function Component (props: Props): React.ReactElement<Props> {
@@ -20,11 +21,15 @@ function Component (props: Props): React.ReactElement<Props> {
     gameItemId,
     inventoryQuantity,
     limit,
-    name, onBuy, price } = props;
+    name, onBuy, price, usable, onUse } = props;
 
   const _onBuy = useCallback(() => {
     onBuy(gameItemId, 1);
   }, [gameItemId, onBuy]);
+
+  const _onUse = useCallback(() => {
+    onUse(gameItemId);
+  }, [gameItemId, onUse]);
 
   return (
     <div
@@ -42,7 +47,7 @@ function Component (props: Props): React.ReactElement<Props> {
 
       <div className={'__middle-part'}>
         <div>{name}</div>
-        <div>{description}</div>
+        <div>description: {description}</div>
         {
           !!limit && (
             <div>Limit: {limit}</div>
@@ -58,6 +63,16 @@ function Component (props: Props): React.ReactElement<Props> {
         }
 
       </div>
+
+      {
+        usable && (
+          <Button
+            onClick={_onUse}
+          >
+            Use
+          </Button>
+        )
+      }
 
       <Button
         disabled={disabled}
@@ -75,10 +90,7 @@ const ShopItem = styled(Component)<Props>(({ theme: { token } }: Props) => {
     backgroundColor: token.colorBgSecondary,
     padding: token.paddingSM,
     borderRadius: token.borderRadiusLG,
-
-    '.item-icon': {
-      marginRight: token.marginSM
-    },
+    gap: token.sizeXS,
 
     '.__middle-part': {
       flex: 1

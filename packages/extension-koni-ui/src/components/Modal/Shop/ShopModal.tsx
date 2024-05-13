@@ -25,7 +25,7 @@ function Component ({ className, energyConfig,
   gameId,
   gameInventoryItemList, gameItemMap }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const [buyLoading, setBuyLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { inactiveModal } = useContext(ModalContext);
 
@@ -65,7 +65,8 @@ function Component ({ className, energyConfig,
         itemGroup: gi.itemGroup,
         itemGroupLevel: gi.itemGroupLevel,
         price: gi.price,
-        disabled: disabled || (!!limit && limit > 0 && limit === inventoryQuantity) || (!!gi.itemGroup && inventoryQuantity === 1)
+        disabled: disabled || (!!limit && limit > 0 && limit === inventoryQuantity) || (!!gi.itemGroup && inventoryQuantity === 1),
+        usable: !!inventoryQuantity && inventoryQuantity > 0 && inventoryItemMapByGameItemId[gi.id]?.usable
       };
     };
 
@@ -108,21 +109,31 @@ function Component ({ className, energyConfig,
   }, [energyConfig, gameId, gameInventoryItemList, gameItemMap]);
 
   const onBuy = useCallback((gameItemId: string) => {
-    setBuyLoading(true);
+    setIsLoading(true);
 
     if (gameItemId === 'buy-energy-id') {
       apiSDK.buyEnergy().catch((e) => {
         console.log('buyEnergy error', e);
       }).finally(() => {
-        setBuyLoading(false);
+        setIsLoading(false);
       });
     } else {
       apiSDK.buyItem(+gameItemId).catch((e) => {
         console.log('buyItem error', e);
       }).finally(() => {
-        setBuyLoading(false);
+        setIsLoading(false);
       });
     }
+  }, []);
+
+  const onUse = useCallback((gameItemId: string) => {
+    setIsLoading(true);
+
+    apiSDK.useInventoryItem(+gameItemId).catch((e) => {
+      console.log('onUse error', e);
+    }).finally(() => {
+      setIsLoading(false);
+    });
   }, []);
 
   return (
@@ -138,8 +149,9 @@ function Component ({ className, energyConfig,
             className={'shop-item'}
             key={item.gameItemId}
             {...item}
-            disabled={buyLoading || item.disabled}
+            disabled={isLoading || item.disabled}
             onBuy={onBuy}
+            onUse={onUse}
           />
         ))
       }
