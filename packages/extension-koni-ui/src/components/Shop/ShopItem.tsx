@@ -10,7 +10,7 @@ import React, { useCallback } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & ShopItemInfo & {
-  onBuy: (gameItemId: number, quantity?: number) => void
+  onBuy: (gameItemId: string, quantity?: number) => void
 };
 
 function Component (props: Props): React.ReactElement<Props> {

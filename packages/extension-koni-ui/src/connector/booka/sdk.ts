@@ -417,6 +417,21 @@ export class BookaSdk {
     await this.reloadAccount();
   }
 
+  async useInventoryItem (gameItemId: number) {
+    await this.postRequest(`${GAME_API_HOST}/api/shop/use-inventory-item`, { gameItemId });
+
+    await this.fetchGameInventoryItemList();
+
+    await this.fetchGameItemMap();
+
+    await this.reloadAccount();
+  }
+
+  async buyEnergy () {
+    await this.postRequest(`${GAME_API_HOST}/api/shop/buy-energy`, {});
+
+    await this.reloadAccount();
+  }
   // --- shop
 
   async fetchLeaderboard () {

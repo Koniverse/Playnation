@@ -40,10 +40,8 @@ function Component ({ className, energyConfig,
       result.push({
         gameItemId: 'buy-energy-id',
         name: 'Energy',
-        limit: energyConfig.energyBuyLimit,
         description: '',
-        price: energyConfig.energyPrice,
-        isEnergy: true
+        price: energyConfig.energyPrice
       });
     }
 
@@ -107,15 +105,24 @@ function Component ({ className, energyConfig,
     });
 
     return result;
-  }, [gameId, gameInventoryItemList, gameItemMap]);
+  }, [energyConfig, gameId, gameInventoryItemList, gameItemMap]);
 
-  const onBuy = useCallback((gameItemId: number) => {
+  const onBuy = useCallback((gameItemId: string) => {
     setBuyLoading(true);
-    apiSDK.buyItem(gameItemId).catch((e) => {
-      console.log('buyItem error', e);
-    }).finally(() => {
-      setBuyLoading(false);
-    });
+
+    if (gameItemId === 'buy-energy-id') {
+      apiSDK.buyEnergy().catch((e) => {
+        console.log('buyEnergy error', e);
+      }).finally(() => {
+        setBuyLoading(false);
+      });
+    } else {
+      apiSDK.buyItem(+gameItemId).catch((e) => {
+        console.log('buyItem error', e);
+      }).finally(() => {
+        setBuyLoading(false);
+      });
+    }
   }, []);
 
   return (

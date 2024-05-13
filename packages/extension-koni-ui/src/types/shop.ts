@@ -4,7 +4,6 @@
 export type ShopItemInfo = {
   icon?: string;
   gameItemId: string;
-  isEnergy?: boolean;
   name: string;
   gameId?: number;
   limit?: number;
@@ -14,4 +13,5 @@ export type ShopItemInfo = {
   itemGroupLevel?: number;
   price: number;
   disabled?: boolean;
+  usable?: boolean;
 }
