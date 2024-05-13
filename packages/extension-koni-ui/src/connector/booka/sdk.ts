@@ -203,6 +203,10 @@ export class BookaSdk {
     return this.taskListSubject;
   }
 
+  async completeTask (taskHistoryId: number|undefined) {
+    return await this.postRequest(`${GAME_API_HOST}/api/task/check-complete-task`, { taskHistoryId: taskHistoryId });
+  }
+
   async finishTask (taskId: number, extrinsicHash: string, network: string) {
     await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId, extrinsicHash, network });
 

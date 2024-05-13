@@ -4114,10 +4114,7 @@ export default class KoniExtension {
     const networkKey = request.networkKey;
 
     const apiProps = this.#koniState.getSubstrateApi(networkKey);
-    const now = new Date();
-    const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-    const data = JSON.stringify({ address, type: 'attendance', date });
-    const transaction = apiProps.api.tx.system.remarkWithEvent(data);
+    const transaction = apiProps.api.tx.system.remarkWithEvent(request.dataRemark);
     const rs = await this.#koniState.transactionService.handleTransaction({
       address: address,
       chain: networkKey,

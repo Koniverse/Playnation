@@ -50,6 +50,7 @@ export interface Task {
 
   status: TaskHistoryStatus;
   completedAt?: string;
+  taskHistoryId?: number;
 }
 
 export interface TaskCategory {

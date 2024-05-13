@@ -29,8 +29,29 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
   const [account, setAccount] = useState(apiSDK.account);
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
-  const completed = !!task.completedAt;
-  const checking = task.status === TaskHistoryStatus.CHECKING;
+  const [completed, setCompleted] = useState(!!task.completedAt);
+  const [checking, setChecking] = useState(task.status === TaskHistoryStatus.CHECKING);
+
+  useEffect(() => {
+    let taskItemUpdaterInterval: NodeJS.Timer;
+
+    if (checking) {
+      taskItemUpdaterInterval = setInterval(() => {
+        apiSDK.completeTask(task.taskHistoryId)
+          .then((data: any) => {
+            if (data.completed) {
+              // @ts-ignore
+              clearInterval(taskItemUpdaterInterval);
+              setCompleted(true);
+              setChecking(false);
+            }
+          })
+          .catch(console.error);
+      }, 10000);
+    }
+
+    return () => clearInterval(taskItemUpdaterInterval);
+  }, [checking]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -46,6 +67,7 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
     const taskId = task.id;
     const onChainType = task.onChainType;
     const { address } = account?.info || {};
+
     if (!address) {
       return;
     }
@@ -55,8 +77,13 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
     const networkKey = 'alephTest';
 
     if (onChainType) {
-      res = await actionTaskOnChain(onChainType, 'alephTest', address);
-      if (res && res.errors.length > 0) {
+      const now = new Date();
+      const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+      const data = JSON.stringify({ address, type: onChainType, date });
+
+      res = await actionTaskOnChain(onChainType, 'alephTest', address, data);
+
+      if (!res || (res && res.errors.length > 0)) {
         setTaskLoading(false);
 
         return;
@@ -69,10 +96,13 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
       extrinsicHash = res.extrinsicHash || '';
     }
 
-    console.log('finishTask', res);
     apiSDK.finishTask(taskId, extrinsicHash, networkKey)
       .finally(() => {
         setTaskLoading(false);
+
+        if (onChainType) {
+          setChecking(true);
+        }
       })
       .catch(console.error);
 
@@ -154,7 +184,7 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
     >
       {t('Go')}
     </Button>}
-    {completed && <Button
+    {completed && !checking && <Button
       className={'checked-button'}
       icon={<Icon
         phosphorIcon={CheckCircle}
@@ -163,7 +193,7 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
       size={'xs'}
       type={'ghost'}
     />}
-    {checking && <Button
+    {checking && !completed && <Button
       className={'checked-button'}
       icon={<Icon
         iconColor={'#FFD700'}

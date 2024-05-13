@@ -1125,6 +1125,7 @@ export interface NftTransactionRequest {
 export interface RemarkWithEvent {
   networkKey: string,
   address: string,
+  dataRemark: string
 }
 
 export interface EvmNftTransaction extends ValidateTransactionResponse {
