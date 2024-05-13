@@ -32,8 +32,6 @@ function Component ({ className, gameId,
     inactiveModal(ShopModalId);
   }, [inactiveModal]);
 
-  console.log('gameItemMap', gameItemMap, gameInventoryItemList);
-
   const items = useMemo<ShopItemInfo[]>(() => {
     const result: ShopItemInfo[] = [];
 
@@ -43,24 +41,55 @@ function Component ({ className, gameId,
       inventoryItemMapByGameItemId[i.gameItemId] = i;
     });
 
-    [...Object.values(gameItemMap)].forEach((group) => {
-      group.forEach((gi) => {
-        if ((!gameId && !gi.gameId) || (gameId && gi.gameId === gameId)) {
-          const limit = gi.maxBuy || undefined;
-          const inventoryQuantity = inventoryItemMapByGameItemId[gi.id]?.quantity || undefined;
+    const getShopItem = (gi: GameItem, disabled = false): ShopItemInfo => {
+      const limit = gi.maxBuy || undefined;
+      const inventoryQuantity = inventoryItemMapByGameItemId[gi.id]?.quantity || undefined;
 
-          result.push({
-            gameItemId: gi.id,
-            name: gi.name,
-            gameId: gi.gameId,
-            limit,
-            description: gi.description,
-            inventoryQuantity,
-            itemGroup: gi.itemGroup,
-            itemGroupLevel: gi.itemGroupLevel,
-            price: gi.price,
-            disabled: (!!limit && limit > 0 && limit === inventoryQuantity) || (!!gi.itemGroup && inventoryQuantity === 1)
-          });
+      return {
+        gameItemId: gi.id,
+        name: gi.name,
+        gameId: gi.gameId,
+        limit,
+        description: gi.description,
+        inventoryQuantity,
+        itemGroup: gi.itemGroup,
+        itemGroupLevel: gi.itemGroupLevel,
+        price: gi.price,
+        disabled: disabled || (!!limit && limit > 0 && limit === inventoryQuantity) || (!!gi.itemGroup && inventoryQuantity === 1)
+      };
+    };
+
+    [...Object.keys(gameItemMap)].forEach((groupKey) => {
+      if (groupKey !== 'NO_GROUP' && gameItemMap[groupKey][0]?.effectDuration === -1) {
+        const noQuantityItems = gameItemMap[groupKey].filter((gi) => !inventoryItemMapByGameItemId[gi.id]?.quantity);
+
+        let itemPresentForGroup: GameItem;
+
+        if (noQuantityItems.length) {
+          itemPresentForGroup = noQuantityItems.reduce((item, currentItem) => {
+            return currentItem.itemGroupLevel && item.itemGroupLevel && currentItem.itemGroupLevel < item.itemGroupLevel ? currentItem : item;
+          }, { itemGroupLevel: Number.POSITIVE_INFINITY } as GameItem);
+
+          if (itemPresentForGroup.itemGroupLevel !== Number.POSITIVE_INFINITY) {
+            result.push(getShopItem(itemPresentForGroup));
+          }
+        } else {
+          itemPresentForGroup = gameItemMap[groupKey]
+            .reduce((item, currentItem) => {
+              return currentItem.itemGroupLevel && item.itemGroupLevel && currentItem.itemGroupLevel > item.itemGroupLevel ? currentItem : item;
+            }, { itemGroupLevel: Number.NEGATIVE_INFINITY } as GameItem);
+
+          if (itemPresentForGroup.itemGroupLevel !== Number.NEGATIVE_INFINITY) {
+            result.push(getShopItem(itemPresentForGroup, true));
+          }
+        }
+
+        return;
+      }
+
+      gameItemMap[groupKey].forEach((gi) => {
+        if ((!gameId && !gi.gameId) || (gameId && gi.gameId === gameId)) {
+          result.push(getShopItem(gi));
         }
       });
     });
