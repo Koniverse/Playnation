@@ -6,7 +6,7 @@ import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccou
 import GameEnergy from '@subwallet/extension-koni-ui/components/Games/GameEnergy';
 import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Game, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { EnergyConfig, Game, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -37,6 +37,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/games');
   const gameIframe = useRef<HTMLIFrameElement>(null);
   const [gameList, setGameList] = useState<Game[]>(apiSDK.gameList);
+  const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
   const [gameItemMap, setGameItemMap] = useState<Record<string, GameItem[]>>(apiSDK.gameItemMap);
   const [gameInventoryItemList, setGameInventoryItemList] = useState<GameInventoryItem[]>(apiSDK.gameInventoryItemList);
   const [currentGameShopId, setCurrentGameShopId] = useState<number>();
@@ -92,6 +93,10 @@ const Component = ({ className }: Props): React.ReactElement => {
       setGameList(data);
     });
 
+    const energyConfigSub = apiSDK.subscribeEnergyConfig().subscribe((data) => {
+      setEnergyConfig(data);
+    });
+
     const gameItemMapSub = apiSDK.subscribeGameItemMap().subscribe((data) => {
       setGameItemMap(data);
     });
@@ -102,6 +107,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
     return () => {
       accountSub.unsubscribe();
+      energyConfigSub.unsubscribe();
       gameListSub.unsubscribe();
       gameItemMapSub.unsubscribe();
       gameInventoryItemListSub.unsubscribe();
@@ -118,6 +124,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       />
       <GameEnergy
         energy={account.attributes.energy}
+        maxEnergy={energyConfig?.maxEnergy}
         startTime={account.attributes.lastEnergyUpdated}
       />
 
@@ -211,6 +218,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     </div>}
 
     <ShopModal
+      energyConfig={energyConfig}
       gameId={currentGameShopId}
       gameInventoryItemList={gameInventoryItemList}
       gameItemMap={gameItemMap}

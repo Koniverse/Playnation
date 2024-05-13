@@ -3,7 +3,8 @@
 
 export type ShopItemInfo = {
   icon?: string;
-  gameItemId: number;
+  gameItemId: string;
+  isEnergy?: boolean;
   name: string;
   gameId?: number;
   limit?: number;

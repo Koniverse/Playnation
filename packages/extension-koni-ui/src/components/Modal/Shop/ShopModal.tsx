@@ -3,7 +3,7 @@
 
 import { ShopItem } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { EnergyConfig, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ShopItemInfo } from '@subwallet/extension-koni-ui/types/shop';
@@ -13,6 +13,7 @@ import styled from 'styled-components';
 
 type Props = ThemeProps & {
   gameId?: number;
+  energyConfig?: EnergyConfig;
   gameItemMap: Record<string, GameItem[]>;
   gameInventoryItemList: GameInventoryItem[];
 };
@@ -20,9 +21,9 @@ type Props = ThemeProps & {
 export const ShopModalId = 'ShopModalId';
 const apiSDK = BookaSdk.instance;
 
-function Component ({ className, gameId,
-  gameInventoryItemList,
-  gameItemMap }: Props): React.ReactElement<Props> {
+function Component ({ className, energyConfig,
+  gameId,
+  gameInventoryItemList, gameItemMap }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const [buyLoading, setBuyLoading] = useState<boolean>(false);
 
@@ -35,6 +36,17 @@ function Component ({ className, gameId,
   const items = useMemo<ShopItemInfo[]>(() => {
     const result: ShopItemInfo[] = [];
 
+    if (energyConfig) {
+      result.push({
+        gameItemId: 'buy-energy-id',
+        name: 'Energy',
+        limit: energyConfig.energyBuyLimit,
+        description: '',
+        price: energyConfig.energyPrice,
+        isEnergy: true
+      });
+    }
+
     const inventoryItemMapByGameItemId: Record<number, GameInventoryItem> = {};
 
     gameInventoryItemList.forEach((i) => {
@@ -46,7 +58,7 @@ function Component ({ className, gameId,
       const inventoryQuantity = inventoryItemMapByGameItemId[gi.id]?.quantity || undefined;
 
       return {
-        gameItemId: gi.id,
+        gameItemId: `${gi.id}`,
         name: gi.name,
         gameId: gi.gameId,
         limit,

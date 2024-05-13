@@ -301,7 +301,15 @@ export class BookaSdk {
       storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
       this.syncHandler.resolve();
 
-      await Promise.all([this.fetchGameList(), this.fetchTaskCategoryList(), this.fetchTaskList(), this.fetchLeaderboard(), this.fetchGameItemMap(), this.fetchGameInventoryItemList()]);
+      await Promise.all([
+        this.fetchEnergyConfig(),
+        this.fetchGameList(),
+        this.fetchTaskCategoryList(),
+        this.fetchTaskList(),
+        this.fetchLeaderboard(),
+        this.fetchGameItemMap(),
+        this.fetchGameInventoryItemList()
+      ]);
     } else {
       throw new Error('Failed to sync account');
     }
