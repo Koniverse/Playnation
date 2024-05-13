@@ -3,7 +3,7 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { BookaAccount, Game, GamePlay, LeaderboardPerson, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
@@ -18,7 +18,8 @@ const CACHE_KEYS = {
   account: 'data--account-cache',
   taskCategoryList: 'data--task-category-list-cache',
   taskList: 'data--task-list-cache',
-  gameList: 'data--game-list-cache'
+  gameList: 'data--game-list-cache',
+  energyConfig: 'data--energy-config'
 };
 
 export class BookaSdk {
@@ -30,9 +31,12 @@ export class BookaSdk {
   private currentGamePlaySubject = new BehaviorSubject<GamePlay | undefined>(undefined);
   private leaderBoardSubject = new BehaviorSubject<LeaderboardPerson[]>([]);
   private referralListSubject = new BehaviorSubject<ReferralRecord[]>([]);
+  private gameItemMapSubject = new BehaviorSubject<Record<string, GameItem[]>>({});
+  private gameInventoryItemListSubject = new BehaviorSubject<GameInventoryItem[]>([]);
+  private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
 
   constructor () {
-    storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game]) => {
+    storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game, energyConfig]) => {
       if (account) {
         try {
           const accountData = JSON.parse(account) as BookaAccount;
@@ -72,6 +76,16 @@ export class BookaSdk {
           console.error('Failed to parse game list', e);
         }
       }
+
+      if (energyConfig) {
+        try {
+          const _energyConfig = JSON.parse(energyConfig) as EnergyConfig;
+
+          this.energyConfigSubject.next(_energyConfig);
+        } catch (e) {
+          console.error('Failed to parse energy config', e);
+        }
+      }
     }).catch(console.error);
   }
 
@@ -81,6 +95,10 @@ export class BookaSdk {
 
   public get account () {
     return this.accountSubject.value;
+  }
+
+  public get energyConfig () {
+    return this.energyConfigSubject.value;
   }
 
   public get taskList () {
@@ -93,6 +111,14 @@ export class BookaSdk {
 
   public get gameList () {
     return this.gameListSubject.value;
+  }
+
+  public get gameItemMap () {
+    return this.gameItemMapSubject.value;
+  }
+
+  public get gameInventoryItemList () {
+    return this.gameInventoryItemListSubject.value;
   }
 
   public get leaderBoard () {
@@ -160,6 +186,19 @@ export class BookaSdk {
 
   subscribeAccount () {
     return this.accountSubject;
+  }
+
+  async fetchEnergyConfig () {
+    const energyConfig = await this.getRequest<EnergyConfig>(`${GAME_API_HOST}/api/shop/get-config-buy-energy`);
+
+    if (energyConfig) {
+      this.energyConfigSubject.next(energyConfig);
+      storage.setItem(CACHE_KEYS.energyConfig, JSON.stringify(energyConfig)).catch(console.error);
+    }
+  }
+
+  subscribeEnergyConfig () {
+    return this.energyConfigSubject;
   }
 
   async fetchGameList () {
@@ -329,6 +368,48 @@ export class BookaSdk {
 
     await Promise.all([this.reloadAccount()]);
   }
+
+  // --- shop
+
+  async fetchGameItemMap () {
+    await this.waitForSync;
+
+    const gameItemMap = await this.postRequest<Record<string, GameItem[]>>(`${GAME_API_HOST}/api/shop/list-items`, {});
+
+    if (gameItemMap) {
+      this.gameItemMapSubject.next(gameItemMap);
+    }
+  }
+
+  subscribeGameItemMap () {
+    return this.gameItemMapSubject;
+  }
+
+  async fetchGameInventoryItemList () {
+    await this.waitForSync;
+
+    const inventoryItemList = await this.getRequest<GameInventoryItem[]>(`${GAME_API_HOST}/api/shop/get-inventory`);
+
+    if (inventoryItemList) {
+      this.gameInventoryItemListSubject.next(inventoryItemList);
+    }
+  }
+
+  subscribeGameInventoryItemList () {
+    return this.gameInventoryItemListSubject;
+  }
+
+  async buyItem (gameItemId: number, quantity = 1) {
+    await this.postRequest(`${GAME_API_HOST}/api/shop/buy-item`, { gameItemId, quantity });
+
+    await this.fetchGameInventoryItemList();
+
+    await this.fetchGameItemMap();
+
+    await this.reloadAccount();
+  }
+
+  // --- shop
 
   async fetchLeaderboard () {
     await this.waitForSync;
