@@ -10,7 +10,7 @@ on:
 
 jobs:
   master:
-    if: "! startsWith(github.event.head_commit.message, '[CI Skip]') || github.ref == 'refs/heads/telegram-wallet'"
+    if: "!startsWith(github.event.head_commit.message, '[CI Skip]')"
     name: Deploy Telegram MiniApp 01
     runs-on: ubuntu-22.04
     steps:
