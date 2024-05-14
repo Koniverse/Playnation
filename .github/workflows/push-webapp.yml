@@ -7,9 +7,6 @@ on:
   push:
     branches:
       - telegram-wallet
-      - telegram-dev-01
-      - telegram-dev-02
-      - telegram-dev-03
 
 jobs:
   master:
