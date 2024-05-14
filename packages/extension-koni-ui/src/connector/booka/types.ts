@@ -7,6 +7,46 @@ export enum EventTypeEnum {
   EVENT = 'EVENT',
 }
 
+export interface EnergyConfig {
+  energyPrice: number,
+  energyBuyLimit: number,
+  maxEnergy: number,
+  energyOneBuy: number
+}
+
+export interface GameItem {
+  id: number,
+  contentId: number,
+  gameId: number,
+  slug: string,
+  name: string,
+  description: string,
+  price: number,
+  tokenPrice: number,
+  maxBuy?: number | null,
+  maxBuyDaily: number,
+  itemGroup: string,
+  itemGroupLevel: number,
+  effectDuration: number,
+}
+
+export enum GameInventoryItemStatus {
+  INACTIVE = 'inactive', // After buy item request
+  ACTIVE = 'active', // After validate signature
+  USED = 'used', // After used item
+}
+
+export interface GameInventoryItem {
+  id: number,
+  gameId: number,
+  accountId: number,
+  gameDataId: number,
+  gameItemId: number,
+  quantity: number,
+  usable: boolean,
+  itemId?: number | null
+}
+
 export interface Game {
   id: number;
   contentId: number;
