@@ -14,3 +14,8 @@ export async function signRaw (request: SignerPayloadRaw): Promise<ResponseSigni
 export async function signPayload (request: SignerPayloadJSON): Promise<ResponseSigning> {
   return sendMessage('pri(extrinsic.sign)', request);
 }
+
+export const signer = {
+  signPayload,
+  signRaw
+};
