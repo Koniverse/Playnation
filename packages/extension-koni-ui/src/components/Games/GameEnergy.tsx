@@ -10,14 +10,14 @@ type GameEnergyProps = ThemeProps & {
   className?: string;
   startTime: string;
   energy: number;
+  maxEnergy?: number;
 };
 
-const maxEnergy = 300;
 const ONE_SECOND = 1000; // 1 second in milliseconds
 const regenSeconds = 60;
 const regenTime = ONE_SECOND * regenSeconds;
 
-function _GameEnergy ({ className, energy, startTime }: GameEnergyProps) {
+function _GameEnergy ({ className, energy, maxEnergy, startTime }: GameEnergyProps) {
   const [countdown, setCountdown] = useState<number | undefined>();
   const [currentEnergy, setCurrentEnergy] = useState(energy);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -31,6 +31,10 @@ function _GameEnergy ({ className, energy, startTime }: GameEnergyProps) {
   }, [startTime]);
 
   const updateEnergy = useCallback(() => {
+    if (!maxEnergy) {
+      return;
+    }
+
     const now = Date.now();
     const diff = now - startRegen;
     const recovered = Math.floor(diff / regenTime);
@@ -48,7 +52,7 @@ function _GameEnergy ({ className, energy, startTime }: GameEnergyProps) {
       setCurrentEnergy(recovered + energy);
       setCountdown(remainingTime);
     }
-  }, [energy, startRegen]);
+  }, [energy, maxEnergy, startRegen]);
 
   useEffect(() => {
     intervalRef.current = setInterval(updateEnergy, ONE_SECOND);
@@ -59,6 +63,10 @@ function _GameEnergy ({ className, energy, startTime }: GameEnergyProps) {
       }
     };
   }, [updateEnergy]);
+
+  if (!maxEnergy) {
+    return null;
+  }
 
   return <div className={className}>
     <Progress

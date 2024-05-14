@@ -7,6 +7,46 @@ export enum EventTypeEnum {
   EVENT = 'EVENT',
 }
 
+export interface EnergyConfig {
+  energyPrice: number,
+  energyBuyLimit: number,
+  maxEnergy: number,
+  energyOneBuy: number
+}
+
+export interface GameItem {
+  id: number,
+  contentId: number,
+  gameId: number,
+  slug: string,
+  name: string,
+  description: string,
+  price: number,
+  tokenPrice: number,
+  maxBuy?: number | null,
+  maxBuyDaily: number,
+  itemGroup: string,
+  itemGroupLevel: number,
+  effectDuration: number,
+}
+
+export enum GameInventoryItemStatus {
+  INACTIVE = 'inactive', // After buy item request
+  ACTIVE = 'active', // After validate signature
+  USED = 'used', // After used item
+}
+
+export interface GameInventoryItem {
+  id: number,
+  gameId: number,
+  accountId: number,
+  gameDataId: number,
+  gameItemId: number,
+  quantity: number,
+  usable: boolean,
+  itemId?: number | null
+}
+
 export interface Game {
   id: number;
   contentId: number;
@@ -25,23 +65,49 @@ export interface Game {
   active: boolean;
 }
 
+export enum TaskHistoryStatus {
+  FAILED = 'failed',
+  CHECKING = 'checking',
+  COMPLETED = 'completed',
+}
+
 export interface Task {
   id: number; // id on db
-  gameId: number;
   contentId: number;
-  url: string;
   slug: string;
-  name: string;
-  description: string;
-  icon: string;
-  pointReward: number;
-  itemReward: number;
-  startTime?: string;
-  endTime?: string;
-  interval?: number;
+  gameId?: number | null;
+  categoryId?: number | null;
+  url?: string | null;
+  name?: string | null;
+  description?: string | null;
+  icon?: string | null;
+  pointReward?: number | null;
+  itemReward?: number | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  onChainType?: string | null;
+  interval?: number | null;
 
-  status: number;
+  status: TaskHistoryStatus;
   completedAt?: string;
+  taskHistoryId?: number;
+}
+
+export interface TaskCategory {
+  id: number; // id on db
+  contentId: number;
+  slug: string;
+  name?: string | null;
+  description?: string | null;
+  icon?: string | null;
+  active: boolean;
+  minPoint?: number;
+}
+
+export type TaskCategoryInfo = {
+  id: number;
+  minPoint: number;
+  tasks: Task[];
 }
 
 export interface GamePlay {
