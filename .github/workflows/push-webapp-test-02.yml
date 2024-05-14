@@ -1,4 +1,4 @@
-name: Build WebApp Preview
+name: Build Telegram MiniApp 02
 on:
   pull_request:
     branches:
