@@ -2,14 +2,11 @@ name: Build WebApp Preview
 on:
   pull_request:
     branches:
-      - telegram-wallet
+      - telegram-dev-01
 
   push:
     branches:
-      - telegram-wallet
       - telegram-dev-01
-      - telegram-dev-02
-      - telegram-dev-03
 
 jobs:
   master:
@@ -21,7 +18,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-        token: ${{ secrets.GH_PAT }}
+        token: ${{ secrets.GH_AUTOMATION_TOKEN }}
     - name: Setup Node
       uses: actions/setup-node@v3
       with:
@@ -33,8 +30,8 @@ jobs:
         COINBASE_PAY_ID: ${{ secrets.COINBASE_PAY_ID }}
         NFT_MINTING_HOST: ${{ secrets.NFT_MINTING_HOST }}
         BRANCH_NAME: ${{ github.ref_name }}
-        GAME_API_HOST: ${{ vars.API_DEV_SERVER }}
-        TELEGRAM_WEBAPP_LINK: ${{ vars.TELEGRAM_WEBAPP_LINK }}
+        GAME_API_HOST: ${{ vars.API_DEV_SERVER_1 }}
+        TELEGRAM_WEBAPP_LINK: ${{ vars.TELEGRAM_WEBAPP_LINK_01 }}
       run: |
         yarn install --immutable | grep -v 'YN0013'
         if [ ${{ github.ref_name }} == 'telegram-wallet' ]; then
