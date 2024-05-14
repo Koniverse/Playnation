@@ -2,16 +2,18 @@ name: Build WebApp Preview
 on:
   pull_request:
     branches:
-      - webapp
-      - webapp-dev
+      - telegram-wallet
+
   push:
     branches:
-      - webapp
-      - webapp-dev
+      - telegram-wallet
+      - telegram-dev-01
+      - telegram-dev-02
+      - telegram-dev-03
 
 jobs:
   master:
-    if: "! startsWith(github.event.head_commit.message, '[CI Skip]') || github.ref == 'refs/heads/webapp'"
+    if: "! startsWith(github.event.head_commit.message, '[CI Skip]') || github.ref == 'refs/heads/telegram-wallet'"
     name: Deploy WebApp Preview
     runs-on: ubuntu-22.04
     steps:
@@ -33,7 +35,7 @@ jobs:
         BRANCH_NAME: ${{ github.ref_name }}
       run: |
         yarn install --immutable | grep -v 'YN0013'
-        if [ ${{ github.ref_name }} == 'webapp-dev' ]; then
+        if [ ${{ github.ref_name }} == 'telegram-wallet' ]; then
             yarn run webapp:change-build-number
         fi
         yarn webapp:build
@@ -45,10 +47,10 @@ jobs:
         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         projectName: ${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }}
         gitHubToken: ${{ secrets.GH_AUTOMATION_TOKEN }}
-        branch: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || github.ref_name }}
+        branch: ${{ github.ref_name  }}
         directory: './packages/webapp/build'
         wranglerVersion: '3'
-    - if: "github.ref_name == 'webapp-dev' && github.event_name == 'push'"
+    - if: "github.ref_name == 'telegram-wallet' && github.event_name == 'push'"
       name: Automation Bot
       uses: EndBug/add-and-commit@v9
       with:
