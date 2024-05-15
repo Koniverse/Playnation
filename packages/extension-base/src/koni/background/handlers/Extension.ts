@@ -4112,8 +4112,10 @@ export default class KoniExtension {
   private async remarkWithEvent (request: RemarkWithEvent): Promise<SWTransactionResponse> {
     const address = request.address;
     const networkKey = request.networkKey;
-
     const apiProps = this.#koniState.getSubstrateApi(networkKey);
+    if (!apiProps) {
+      return;
+    }
     const transaction = apiProps.api.tx.system.remarkWithEvent(request.dataRemark);
     const rs = await this.#koniState.transactionService.handleTransaction({
       address: address,
@@ -4124,6 +4126,8 @@ export default class KoniExtension {
       resolveOnDone: true,
       data: {}
     });
+
+    return rs;
 
     return rs;
   }
