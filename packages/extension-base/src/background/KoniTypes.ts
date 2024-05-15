@@ -1075,7 +1075,15 @@ export type RequestSubscribeStaking = null
 export type RequestSubscribeStakingReward = null
 
 export enum ThemeNames {
-  LIGHT = 'light'
+  DEFAULT = 'default',
+  SKY = 'sky',
+  MORNING_SUNNY = 'morning_sunny',
+  SPRING = 'spring',
+  LAVENDER = 'lavender',
+  SUNNY = 'sunny',
+  BEGIE = 'begie',
+  CLOVE = 'clove',
+  AURORA = 'aurora',
 }
 
 export enum NETWORK_ERROR {

@@ -4,7 +4,7 @@
 import { BrowserConfirmationType, LanguageType, ThemeNames, UiSettings, WalletUnlockType } from '@subwallet/extension-base/background/KoniTypes';
 import { TARGET_ENV } from '@subwallet/extension-base/utils';
 
-export const DEFAULT_THEME: ThemeNames = ThemeNames.LIGHT;
+export const DEFAULT_THEME: ThemeNames = ThemeNames.DEFAULT;
 export const DEFAULT_NOTIFICATION_TYPE: BrowserConfirmationType = 'popup';
 export const DEFAULT_AUTO_LOCK_TIME = 15;
 export const DEFAULT_UNLOCK_TYPE: WalletUnlockType = TARGET_ENV === 'extension' ? WalletUnlockType.ALWAYS_REQUIRED : WalletUnlockType.WHEN_NEEDED;

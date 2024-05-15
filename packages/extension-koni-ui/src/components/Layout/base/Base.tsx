@@ -1,12 +1,10 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SwScreenLayoutProps } from '@subwallet/react-ui';
-
 import { LanguageType } from '@subwallet/extension-base/background/KoniTypes';
 import { useDefaultNavigate, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { SwScreenLayout } from '@subwallet/react-ui';
+import { SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
 import { GameController, Handshake, Kanban, Target, Wallet } from 'phosphor-react';

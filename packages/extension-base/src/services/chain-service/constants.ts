@@ -3,7 +3,6 @@
 
 import { _DEFAULT_CHAINS } from '@subwallet/chain-list';
 import { _SubstrateChainType } from '@subwallet/chain-list/types';
-import { SingleModeJson, ThemeNames } from '@subwallet/extension-base/background/KoniTypes';
 
 export const API_AUTO_CONNECT_MS = 3000;
 export const API_CONNECT_TIMEOUT = 30000;
@@ -14,14 +13,6 @@ export const _API_OPTIONS_CHAIN_GROUP = {
   turing: ['turingStaging', 'turing'],
   avail: ['kate'],
   goldberg: ['goldberg_testnet']
-};
-
-export const _PREDEFINED_SINGLE_MODES: Record<string, SingleModeJson> = {
-  subspace: {
-    networkKeys: ['subspace_gemini_2a', 'subspace_test', 'subspace_gemini_3a'],
-    theme: ThemeNames.LIGHT,
-    autoTriggerDomain: 'subspace.network'
-  }
 };
 
 export const _PURE_EVM_CHAINS = ['binance', 'binance_test', 'ethereum', 'ethereum_goerli', 'astarEvm', 'shidenEvm', 'shibuyaEvm', 'crabEvm', 'pangolinEvm', 'cloverEvm', 'boba_rinkeby', 'boba', 'bobabase', 'bobabeam', 'watr_network_evm'];

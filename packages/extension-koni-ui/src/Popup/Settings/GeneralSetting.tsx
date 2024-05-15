@@ -11,7 +11,7 @@ import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { noop } from '@subwallet/extension-koni-ui/utils';
 import { BackgroundIcon, Icon, SelectModal, SettingItem, SwIconProps } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CaretRight, CheckCircle, GlobeHemisphereEast, Image, MoonStars, Sun } from 'phosphor-react';
+import { CaretRight, CheckCircle, GlobeHemisphereEast, Image, PaintBrush } from 'phosphor-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -33,24 +33,32 @@ function renderSelectionItem (item: SelectionItemType, _selected: boolean) {
       className={CN('__selection-item', { 'item-disabled': item.disabled })}
       key={item.key}
       leftItemIcon={
-        <BackgroundIcon
-          backgroundColor={item.leftIconBgColor}
-          phosphorIcon={item.leftIcon}
-          size='sm'
-          type='phosphor'
-          weight='fill'
-        />
+        (
+          <div
+            className={'__left-icon'}
+            style={{ background: item.leftIconBgColor }}
+          >
+            <Icon
+              customSize={'16px'}
+              phosphorIcon={item.leftIcon}
+              type='phosphor'
+              weight='fill'
+            />
+          </div>
+        )
       }
       name={item.title}
       rightItem={
         _selected
-          ? <Icon
-            className='__right-icon'
-            customSize={'20px'}
-            phosphorIcon={CheckCircle}
-            type='phosphor'
-            weight='fill'
-          />
+          ? (
+            <Icon
+              className='__right-icon'
+              customSize={'20px'}
+              phosphorIcon={CheckCircle}
+              type='phosphor'
+              weight='fill'
+            />
+          )
           : null
       }
     />
@@ -88,8 +96,6 @@ type LoadingMap = {
   language: boolean;
   browserConfirmationType: boolean;
 };
-// "TODO: Will be shown when support for the LIGHT theme is implemented."
-const isShowWalletTheme = false;
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
@@ -107,20 +113,61 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const themeItems = useMemo<SelectionItemType[]>(() => {
     return [
       {
-        key: ThemeNames.LIGHT,
-        leftIcon: MoonStars,
-        leftIconBgColor: token.colorPrimary,
-        title: t('Dark theme')
+        key: ThemeNames.DEFAULT,
+        leftIcon: PaintBrush,
+        leftIconBgColor: '#CBF147',
+        title: t('Default')
       },
       {
-        key: ThemeNames.LIGHT,
-        leftIcon: Sun,
-        leftIconBgColor: token.colorPrimary,
-        title: t('Light theme'),
-        disabled: true
+        key: ThemeNames.SKY,
+        leftIcon: PaintBrush,
+        leftIconBgColor: '#C7F0FF',
+        title: t('Sky')
+      },
+      {
+        key: ThemeNames.MORNING_SUNNY,
+        leftIcon: PaintBrush,
+        leftIconBgColor: '#FFF8C4',
+        title: t('Morning sunny')
+      },
+      {
+        key: ThemeNames.SPRING,
+        leftIcon: PaintBrush,
+        leftIconBgColor: '#7EEC79',
+        title: t('Spring')
+      },
+      {
+        key: ThemeNames.LAVENDER,
+        leftIcon: PaintBrush,
+        leftIconBgColor: '#BB9EFF',
+        title: t('Lavender')
+      },
+      {
+        key: ThemeNames.SUNNY,
+        leftIcon: PaintBrush,
+        leftIconBgColor: '#FBCE01',
+        title: t('Sunny')
+      },
+      {
+        key: ThemeNames.BEGIE,
+        leftIcon: PaintBrush,
+        leftIconBgColor: '#EBD7C9',
+        title: t('Begie')
+      },
+      {
+        key: ThemeNames.CLOVE,
+        leftIcon: PaintBrush,
+        leftIconBgColor: 'linear-gradient(117deg, #A2F6C1 9.05%, #CBF147 91.43%)',
+        title: t('Clove')
+      },
+      {
+        key: ThemeNames.AURORA,
+        leftIcon: PaintBrush,
+        leftIconBgColor: 'linear-gradient(117deg, #A2F6C1 9.05%, #9FE3FF 91.43%)',
+        title: t('Aurora')
       }
     ];
-  }, [t, token]);
+  }, [t]);
 
   const languageItems = useMemo<SelectionItemType[]>(() => {
     return languageOptions.map((item) => ({
@@ -157,26 +204,25 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         title={t('General settings')}
       >
         <div className={'__scroll-container'}>
-          {isShowWalletTheme &&
-            <SelectModal
-              background={'default'}
-              className={`__modal ${className}`}
-              customInput={renderModalTrigger({
-                key: 'wallet-theme-trigger',
-                leftIcon: Image,
-                leftIconBgColor: token.colorPrimary,
-                title: t('Wallet theme')
-              })}
-              id='wallet-theme-select-modal'
-              inputWidth={'100%'}
-              itemKey='key'
-              items={themeItems}
-              onSelect={onSelectTheme}
-              renderItem={renderSelectionItem}
-              selected={theme}
-              shape='round'
-              title={t('Wallet theme')}
-            />}
+          <SelectModal
+            background={'default'}
+            className={`__modal ${className}`}
+            customInput={renderModalTrigger({
+              key: 'wallet-theme-trigger',
+              leftIcon: Image,
+              leftIconBgColor: token.colorPrimary,
+              title: t('Wallet theme')
+            })}
+            id='wallet-theme-select-modal'
+            inputWidth={'100%'}
+            itemKey='key'
+            items={themeItems}
+            onSelect={onSelectTheme}
+            renderItem={renderSelectionItem}
+            selected={theme}
+            shape='round'
+            title={t('Wallet theme')}
+          />
 
           <SelectModal
             background={'default'}

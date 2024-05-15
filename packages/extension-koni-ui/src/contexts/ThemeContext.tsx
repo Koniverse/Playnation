@@ -8,7 +8,7 @@ import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegr
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import applyPreloadStyle from '@subwallet/extension-koni-ui/preloadStyle';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
-import { generateTheme, SW_THEME_CONFIGS, SwThemeConfig } from '@subwallet/extension-koni-ui/themes';
+import { generateTheme, getDefaultLogoMap, SW_THEME_CONFIGS, SwThemeConfig } from '@subwallet/extension-koni-ui/themes';
 import { ConfigProvider, theme as reactUiTheme } from '@subwallet/react-ui';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -263,15 +263,20 @@ export function ThemeProvider ({ children }: ThemeProviderProps): React.ReactEle
   const dataContext = useContext(DataContext);
   const logoMaps = useSelector((state: RootState) => state.settings.logoMaps);
   const [themeReady, setThemeReady] = useState(false);
+  const themeName = useSelector((state: RootState) => state.settings.theme);
 
   const themeConfig = useMemo(() => {
-    const config = SW_THEME_CONFIGS[ThemeNames.LIGHT];
+    const config = SW_THEME_CONFIGS[themeName] || SW_THEME_CONFIGS[ThemeNames.DEFAULT];
+
+    config.logoMap = getDefaultLogoMap();
 
     Object.assign(config.logoMap.network, logoMaps.chainLogoMap);
     Object.assign(config.logoMap.symbol, logoMaps.assetLogoMap);
 
+    config.token = config.generateTokens();
+
     return config;
-  }, [logoMaps]);
+  }, [logoMaps.assetLogoMap, logoMaps.chainLogoMap, themeName]);
 
   useEffect(() => {
     dataContext.awaitStores(['settings']).then(() => {

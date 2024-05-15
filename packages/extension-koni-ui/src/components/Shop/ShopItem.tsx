@@ -21,7 +21,7 @@ function Component (props: Props): React.ReactElement<Props> {
     gameItemId,
     inventoryQuantity,
     limit,
-    name, onBuy, price, usable, onUse } = props;
+    name, onBuy, onUse, price, usable } = props;
 
   const _onBuy = useCallback(() => {
     onBuy(gameItemId, 1);
