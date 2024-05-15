@@ -7,7 +7,7 @@ import { GamePoint } from '@subwallet/extension-koni-ui/components/Games/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Task, TaskHistoryStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { formatInteger } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
@@ -22,10 +22,10 @@ type Props = {
 } & ThemeProps;
 
 const apiSDK = BookaSdk.instance;
-const telegramConnector = TelegramConnector.instance;
 
 const _TaskItem = ({ className, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
+  const notify = useNotification();
   const [account, setAccount] = useState(apiSDK.account);
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
@@ -83,8 +83,19 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
 
       res = await actionTaskOnChain(onChainType, 'alephTest', address, data);
 
-      if (!res || (res && res.errors.length > 0)) {
+      if ((res && res.errors.length > 0) || !res) {
         setTaskLoading(false);
+        let message = t(`Network ${networkKey} not enable`);
+        if (res && res.errors.length > 0) {
+          const error = res?.errors[0] || {};
+          // @ts-ignore
+          message = error?.message || '';
+        }
+
+        notify({
+          message: message,
+          type: 'error'
+        });
 
         return;
       }
@@ -102,12 +113,14 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
 
         if (onChainType) {
           setChecking(true);
+        } else {
+          setCompleted(true);
         }
       })
       .catch(console.error);
 
     setTimeout(() => {
-      task.url && telegramConnector.openLink(task.url);
+      // task.url && telegramConnector.openLink(task.url);
     }, 100);
   }, [task.id, task.url]);
 
