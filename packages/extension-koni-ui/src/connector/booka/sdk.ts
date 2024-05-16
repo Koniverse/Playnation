@@ -9,7 +9,7 @@ import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
+export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api-dev.koni.studio';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'BookaGamesBot/swbooka';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
@@ -157,20 +157,26 @@ export class BookaSdk {
       return undefined;
     }
   }
-
-  private async postRequest<T> (url: string, body: any) {
-    const request = await fetch(url, {
-      method: 'POST',
-      headers: this.getRequestHeader(),
-      body: JSON.stringify(body)
-    });
-
-    if (request.status === 200 || request.status === 304) {
-      return (await request.json()) as unknown as T;
-    } else {
-      return undefined;
+  private async postRequest<T>(url: string, body: any): Promise<T> {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: this.getRequestHeader(),
+        body: JSON.stringify(body)
+      });  
+      if (response.status === 200 || response.status === 304) {
+        return (await response.json()) as T;
+      }
+      if (response.status === 400) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.error || 'Bad request');
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    } catch (error) {
+      throw error;
     }
   }
+  
 
   private async reloadAccount () {
     const account = this.account;

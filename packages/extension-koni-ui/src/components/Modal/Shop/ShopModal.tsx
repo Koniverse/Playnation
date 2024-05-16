@@ -4,6 +4,7 @@
 import { ShopItem } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
+import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ShopItemInfo } from '@subwallet/extension-koni-ui/types/shop';
@@ -26,6 +27,7 @@ function Component ({ className, energyConfig,
   gameInventoryItemList, gameItemMap }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const notify = useNotification();
 
   const { inactiveModal } = useContext(ModalContext);
 
@@ -107,33 +109,63 @@ function Component ({ className, energyConfig,
 
     return result;
   }, [energyConfig, gameId, gameInventoryItemList, gameItemMap]);
-
   const onBuy = useCallback((gameItemId: string) => {
     setIsLoading(true);
-
     if (gameItemId === 'buy-energy-id') {
-      apiSDK.buyEnergy().catch((e) => {
-        console.log('buyEnergy error', e);
-      }).finally(() => {
-        setIsLoading(false);
-      });
+      apiSDK.buyEnergy()
+        .then(() => {
+          notify({
+            message: 'Successfully buy Energy',
+            type: 'success'
+          });
+        })
+        .catch((error) => {
+          notify({
+            message: error.message,
+            type: 'error'
+          });
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     } else {
-      apiSDK.buyItem(+gameItemId).catch((e) => {
-        console.log('buyItem error', e);
-      }).finally(() => {
-        setIsLoading(false);
-      });
+      apiSDK.buyItem(+gameItemId)
+        .then(() => {
+          notify({
+            message: 'Successfully buy Item',
+            type: 'success'
+          });
+        })
+        .catch((error) => {
+          notify({
+            message: error.message,
+            type: 'error'
+          });
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   }, []);
 
   const onUse = useCallback((gameItemId: string) => {
     setIsLoading(true);
-
-    apiSDK.useInventoryItem(+gameItemId).catch((e) => {
-      console.log('onUse error', e);
-    }).finally(() => {
-      setIsLoading(false);
-    });
+    apiSDK.useInventoryItem(+gameItemId)
+      .then(() => {
+        notify({
+          message: 'Successfully use item',
+          type: 'success'
+        });
+      })
+      .catch((e) => {
+        console.log('onUse error', e);
+        notify({
+          message: 'Error',
+          type: e.error
+        });
+      }).finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   return (
