@@ -4,11 +4,11 @@
 import { ShopItem } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
+import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ShopItemInfo } from '@subwallet/extension-koni-ui/types/shop';
 import { ModalContext, SwModal } from '@subwallet/react-ui';
-import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
@@ -28,7 +28,6 @@ function Component ({ className, energyConfig,
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const notify = useNotification();
-
 
   const { inactiveModal } = useContext(ModalContext);
 
@@ -114,7 +113,7 @@ function Component ({ className, energyConfig,
     setIsLoading(true);
     if (gameItemId === 'buy-energy-id') {
       apiSDK.buyEnergy()
-        .then((response: any) => {
+        .then(() => {
           notify({
             message: 'Successfully buy Energy',
             type: 'success'
@@ -131,7 +130,7 @@ function Component ({ className, energyConfig,
         });
     } else {
       apiSDK.buyItem(+gameItemId)
-        .then((response: any) => {
+        .then(() => {
           notify({
             message: 'Successfully buy Item',
             type: 'success'
@@ -140,7 +139,7 @@ function Component ({ className, energyConfig,
         .catch((error) => {
           notify({
             message: error.message,
-            type:'error'
+            type: 'error'
           });
         })
         .finally(() => {
@@ -148,27 +147,25 @@ function Component ({ className, energyConfig,
         });
     }
   }, []);
-  
-  
 
   const onUse = useCallback((gameItemId: string) => {
     setIsLoading(true);
     apiSDK.useInventoryItem(+gameItemId)
-    .then((response: any) => {
-      notify({
-        message: 'Successfully use item',
-        type: 'success'
+      .then(() => {
+        notify({
+          message: 'Successfully use item',
+          type: 'success'
+        });
+      })
+      .catch((e) => {
+        console.log('onUse error', e);
+        notify({
+          message: 'Error',
+          type: e.error
+        });
+      }).finally(() => {
+        setIsLoading(false);
       });
-    })
-    .catch((e) => {
-      console.log('onUse error', e);
-      notify({
-        message: "Error",
-        type: e.error,
-      });
-    }).finally(() => {
-      setIsLoading(false);
-    });
   }, []);
 
   return (
