@@ -226,6 +226,16 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
         display: 'block',
         'white-space': 'nowrap'
       }
+    },
+
+    // switcher
+
+    '.ant-switch.ant-switch': {
+      background: extendToken.colorBgSecondary2
+    },
+
+    '.ant-switch.ant-switch.ant-switch-checked': {
+      background: token.colorPrimary
     }
   });
 });
