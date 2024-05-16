@@ -26,7 +26,6 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
-  const [disabled, setDisabled] = useState<boolean>(false);
   const completed = !!task.completedAt;
 
   const finishTask = useCallback(() => {
@@ -39,56 +38,42 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
         setTaskLoading(false);
       })
       .catch(console.error);
+
     setTimeout(() => {
-      telegramConnector.openLink(task.url);
+      task.url && telegramConnector.openLink(task.url);
     }, 100);
   }, [task.id, task.url]);
 
-  const CountDownElement = useCallback(() => {
-    if (completed) {
-      return <></>;
-    }
-
+  const { endTime,
+    isDisabled,
+    isEnd, isInTimeRange,
+    isNotStarted,
+    startTime } = (() => {
     const now = Date.now();
 
-    if (task.startTime) {
-      const startTime = new Date(task.startTime).getTime();
+    const startTime = task.startTime ? new Date(task.startTime).getTime() : undefined;
+    const endTime = task.endTime ? new Date(task.endTime).getTime() : undefined;
+    const isNotStarted = !completed && !!startTime && startTime > now;
+    const isInTimeRange = !completed && !!endTime && endTime > now;
+    const isEnd = !completed && !!endTime && endTime <= now;
 
-      if (startTime > now) {
-        setDisabled(true);
-
-        return <CountDown
-          prefix={t('Begins in ')}
-          targetTime={startTime}
-        />;
-      }
-    }
-
-    if (task.endTime) {
-      const endTime = new Date(task.endTime).getTime();
-
-      if (endTime > now) {
-        return <CountDown
-          prefix={t('Ends in ')}
-          targetTime={endTime}
-        />;
-      } else {
-        setDisabled(true);
-
-        return <span>{t('Ended')}</span>;
-      }
-    }
-
-    return <></>;
-  }, [completed, t, task.endTime, task.startTime]);
+    return {
+      startTime,
+      endTime,
+      isNotStarted,
+      isInTimeRange,
+      isEnd,
+      isDisabled: isNotStarted || isEnd
+    };
+  })();
 
   return <div
-    className={CN(className, { disabled: disabled })}
+    className={CN(className, { disabled: isDisabled })}
     key={task.id}
   >
     <Image
       className={'task-banner'}
-      src={task.icon}
+      src={task.icon || undefined}
       width={40}
     ></Image>
     <div className='task-title'>
@@ -100,13 +85,32 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
         className={'__sub-title'}
         size={'sm'}
       >
-        <GamePoint text={`${formatInteger(task.pointReward)}`} />
-        <CountDownElement />
+        <GamePoint text={`${formatInteger(task.pointReward || 0)}`} />
+
+        {
+          isNotStarted && !!startTime && (
+            <CountDown
+              prefix={t('Begins in ')}
+              targetTime={startTime}
+            />
+          )
+        }
+        {
+          isInTimeRange && !!endTime && (
+            <CountDown
+              prefix={t('Ends in ')}
+              targetTime={endTime}
+            />
+          )
+        }
+        {
+          isEnd && (<span>{t('Ended')}</span>)
+        }
       </Typography.Text>
     </div>
     {!completed && <Button
       className={'play-button'}
-      disabled={disabled}
+      disabled={isDisabled}
       loading={taskLoading}
       onClick={finishTask}
       size={'xs'}

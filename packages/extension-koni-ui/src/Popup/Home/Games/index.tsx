@@ -1,16 +1,19 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { ShopModal } from '@subwallet/extension-koni-ui/components';
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
 import GameEnergy from '@subwallet/extension-koni-ui/components/Games/GameEnergy';
+import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { EnergyConfig, Game, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, Image, Typography } from '@subwallet/react-ui';
+import { Button, Icon, Image, ModalContext, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ShoppingBag } from 'phosphor-react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
@@ -28,10 +31,17 @@ function checkComingSoon (game: Game): boolean {
   return gameStartTime > Date.now();
 }
 
+const shopModalId = ShopModalId;
+
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/games');
   const gameIframe = useRef<HTMLIFrameElement>(null);
   const [gameList, setGameList] = useState<Game[]>(apiSDK.gameList);
+  const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
+  const [gameItemMap, setGameItemMap] = useState<Record<string, GameItem[]>>(apiSDK.gameItemMap);
+  const [gameInventoryItemList, setGameInventoryItemList] = useState<GameInventoryItem[]>(apiSDK.gameInventoryItemList);
+  const [currentGameShopId, setCurrentGameShopId] = useState<number>();
+  const { activeModal } = useContext(ModalContext);
   const [account, setAccount] = useState(apiSDK.account);
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
   const { t } = useTranslation();
@@ -67,6 +77,13 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [exitGame]);
 
+  const onOpenShop = useCallback((gameId?: number) => {
+    return () => {
+      setCurrentGameShopId(gameId);
+      activeModal(shopModalId);
+    };
+  }, [activeModal]);
+
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
       setAccount(data);
@@ -76,9 +93,24 @@ const Component = ({ className }: Props): React.ReactElement => {
       setGameList(data);
     });
 
+    const energyConfigSub = apiSDK.subscribeEnergyConfig().subscribe((data) => {
+      setEnergyConfig(data);
+    });
+
+    const gameItemMapSub = apiSDK.subscribeGameItemMap().subscribe((data) => {
+      setGameItemMap(data);
+    });
+
+    const gameInventoryItemListSub = apiSDK.subscribeGameInventoryItemList().subscribe((data) => {
+      setGameInventoryItemList(data);
+    });
+
     return () => {
       accountSub.unsubscribe();
+      energyConfigSub.unsubscribe();
       gameListSub.unsubscribe();
+      gameItemMapSub.unsubscribe();
+      gameInventoryItemListSub.unsubscribe();
     };
   }, []);
 
@@ -92,7 +124,20 @@ const Component = ({ className }: Props): React.ReactElement => {
       />
       <GameEnergy
         energy={account.attributes.energy}
+        maxEnergy={energyConfig?.maxEnergy}
         startTime={account.attributes.lastEnergyUpdated}
+      />
+
+      <Button
+        icon={(
+          <Icon
+            phosphorIcon={ShoppingBag}
+            size='md'
+          />
+        )}
+        onClick={onOpenShop()}
+        size='xs'
+        type='ghost'
       />
     </div>}
     {gameList.map((game) => (<div
@@ -131,13 +176,28 @@ const Component = ({ className }: Props): React.ReactElement => {
           </Typography.Title>
         </div>
         <div className={'play-area'}>
-          <Button
-            className={'play-button'}
-            onClick={playGame(game)}
-            size={'xs'}
-          >
-            {t('Open')}
-          </Button>
+          <div>
+            <Button
+              icon={(
+                <Icon
+                  phosphorIcon={ShoppingBag}
+                  size='md'
+                />
+              )}
+              onClick={onOpenShop(game.id)}
+              size='xs'
+              type='ghost'
+            />
+
+            <Button
+              className={'play-button'}
+              onClick={playGame(game)}
+              size={'xs'}
+            >
+              {t('Open')}
+            </Button>
+          </div>
+
           <Typography.Text
             className={'game-energy'}
             size={'sm'}
@@ -156,6 +216,13 @@ const Component = ({ className }: Props): React.ReactElement => {
         src={currentGame.url}
       />
     </div>}
+
+    <ShopModal
+      energyConfig={energyConfig}
+      gameId={currentGameShopId}
+      gameInventoryItemList={gameInventoryItemList}
+      gameItemMap={gameItemMap}
+    />
   </div>;
 };
 
