@@ -656,36 +656,6 @@ div#popup-container {
     margin-inline-start: 12px;
 }
 
-.ant-btn-ghost {
-  color: #111;
-}
-.ant-btn-ghost.-schema-header:hover  {
-  color: #222;
-}
-
-.ant-sw-tab-bar-container .ant-sw-tab-bar-item .ant-sw-tab-bar-item-icon,
-.ant-sw-tab-bar-container .ant-sw-tab-bar-item .ant-sw-tab-bar-item-label {
-  color: rgba(255, 255, 255, 0.65)
-}
-.ant-sw-tab-bar-container .ant-sw-tab-bar-item:hover .ant-sw-tab-bar-item-icon,
-.ant-sw-tab-bar-container .ant-sw-tab-bar-item:hover .ant-sw-tab-bar-item-label,
-.ant-sw-tab-bar-container .ant-sw-tab-bar-item.ant-sw-tab-bar-item-active .ant-sw-tab-bar-item-icon,
-.ant-sw-tab-bar-container .ant-sw-tab-bar-item.ant-sw-tab-bar-item-active .ant-sw-tab-bar-item-label {
-  color: rgba(255, 255, 255, 1)
-}
-
-.ant-btn-default.-schema-primary {
-  color: #FFFFFF;
-}
-.ant-btn-default.-schema-primary:hover {
-  color: #FFFFFF;
-}
-
-.ant-btn-default.-schema-primary:disabled {
-  color: #AAAAAA;
-}
-
-
 .ant-sw-list-section .ant-sw-list-wrapper {
   position: relative;
 }

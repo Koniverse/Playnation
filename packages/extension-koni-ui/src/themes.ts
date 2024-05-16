@@ -140,7 +140,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     generateTokens: () => {
       return {
         ...defaultToken,
-        colorPrimary: '#CBF147'
+        colorPrimary: '#CBF147',
+        colorPrimaryHover: '#E5FF73'
       };
     }
   },
@@ -151,7 +152,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     generateTokens: () => {
       return {
         ...defaultToken,
-        colorPrimary: '#C7F0FF'
+        colorPrimary: '#C7F0FF',
+        colorPrimaryHover: '#9FE3FF'
       };
     }
   },
@@ -162,7 +164,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     generateTokens: () => {
       return {
         ...defaultToken,
-        colorPrimary: '#FFF8C4'
+        colorPrimary: '#FFF8C4',
+        colorPrimaryHover: '#FFF8C4'
       };
     }
   },
@@ -173,7 +176,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     generateTokens: () => {
       return {
         ...defaultToken,
-        colorPrimary: '#7EEC79'
+        colorPrimary: '#7EEC79',
+        colorPrimaryHover: '#5DC75B'
       };
     }
   },
@@ -184,7 +188,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     generateTokens: () => {
       return {
         ...defaultToken,
-        colorPrimary: '#BB9EFF'
+        colorPrimary: '#BB9EFF',
+        colorPrimaryHover: '#9773FB'
       };
     }
   },
@@ -195,7 +200,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     generateTokens: () => {
       return {
         ...defaultToken,
-        colorPrimary: '#FBCE01'
+        colorPrimary: '#FBCE01',
+        colorPrimaryHover: '#FFDF29'
       };
     }
   },
@@ -206,7 +212,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     generateTokens: () => {
       return {
         ...defaultToken,
-        colorPrimary: '#EBD7C9'
+        colorPrimary: '#EBD7C9',
+        colorPrimaryHover: '#C4AD9F'
       };
     }
   },
@@ -217,7 +224,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     generateTokens: () => {
       return {
         ...defaultToken,
-        colorPrimary: '#CBF147'
+        colorPrimary: '#CBF147',
+        colorPrimaryHover: '#E5FF73'
       };
     },
     generateExtraTokens: (token: AliasToken) => ({
@@ -232,7 +240,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     generateTokens: () => {
       return {
         ...defaultToken,
-        colorPrimary: '#C7F0FF'
+        colorPrimary: '#C7F0FF',
+        colorPrimaryHover: '#9FE3FF'
       };
     },
     generateExtraTokens: (token: AliasToken) => ({

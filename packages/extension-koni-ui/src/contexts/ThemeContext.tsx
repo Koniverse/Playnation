@@ -228,7 +228,7 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       }
     },
 
-    // switcher
+    // ---switcher
 
     '.ant-switch.ant-switch': {
       background: extendToken.colorBgSecondary2
@@ -238,7 +238,7 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       background: token.colorPrimary
     },
 
-    // switcher
+    // ---checkbox
 
     '.ant-checkbox-checked.ant-checkbox-checked .ant-checkbox-inner': {
       backgroundColor: extendToken.colorBgSecondary2,
@@ -268,6 +268,100 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
 
     '.ant-checkbox.ant-checkbox .ant-checkbox-inner:after': {
       borderColor: token.colorPrimary
+    },
+
+    // ---button
+
+    // primary
+    '.ant-btn-default.ant-btn-default.-schema-primary': {
+      backgroundColor: extendToken.colorBgSecondary2,
+      color: token.colorTextLight1,
+
+      '&:hover': {
+        backgroundColor: extendToken.colorBgHover2
+      },
+
+      '&:active': {
+        backgroundColor: extendToken.colorBgSecondary2
+      },
+
+      '&:disabled': {
+        opacity: 0.4
+      }
+    },
+
+    // primary-2
+    '.ant-btn-default.ant-btn-default.-schema-primary.-primary-2': {
+      color: token.colorPrimary
+    },
+
+    // primary-3
+    '.ant-btn-default.ant-btn-default.-schema-primary.-primary-3': {
+      backgroundColor: token.colorPrimary,
+      color: token.colorTextDark1,
+
+      '&:hover': {
+        backgroundColor: token.colorPrimaryHover
+      },
+
+      '&:active': {
+        backgroundColor: token.colorPrimary
+      }
+    },
+
+    // secondary
+    '.ant-btn-default.ant-btn-default.-schema-secondary': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      color: token.colorTextDark1,
+
+      '&:before': {
+        content: '""',
+        position: 'absolute',
+        inset: 0,
+        borderColor: token.colorTextDark1,
+        borderStyle: 'solid',
+        borderWidth: 1,
+        borderRadius: 'inherit'
+      },
+
+      '&:hover': {
+        color: token.colorTextDark3,
+        backgroundColor: extendToken.colorBgHover3
+      },
+
+      '&:active': {
+        backgroundColor: extendToken.colorBgSecondary1,
+        color: token.colorTextDark1
+      },
+
+      '&:disabled': {
+        opacity: 0.4
+      }
+    },
+
+    // secondary-2
+    '.ant-btn-default.ant-btn-default.-schema-secondary.-secondary-2': {
+      '&:before': {
+        content: '""',
+        display: 'none'
+      }
+    },
+
+    // ghost
+    '.ant-btn-ghost.ant-btn-ghost': {
+      color: token.colorTextDark1,
+
+      '&:hover': {
+        color: token.colorTextDark3
+      },
+
+      '&:active': {
+        color: token.colorTextDark1
+      },
+
+      '&:disabled': {
+        opacity: 0.4
+      }
     }
   });
 });

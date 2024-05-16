@@ -190,7 +190,17 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
     backgroundColor: extendToken.colorBgSecondary2,
 
     '.ant-sw-tab-bar-item': {
-      gap: token.sizeXXS
+      gap: token.sizeXXS,
+
+      '.ant-sw-tab-bar-item-icon, .ant-sw-tab-bar-item-label': {
+        color: token.colorTextLight3
+      }
+    },
+
+    '.ant-sw-tab-bar-item:hover': {
+      '.ant-sw-tab-bar-item-icon, .ant-sw-tab-bar-item-label': {
+        color: token.colorTextLight1
+      }
     },
 
     '.ant-sw-tab-bar-item.ant-sw-tab-bar-item-active': {
