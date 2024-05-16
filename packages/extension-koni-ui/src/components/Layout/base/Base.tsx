@@ -179,7 +179,7 @@ const Component = ({ children, className, headerIcons, onBack, showFooter, ...pr
   );
 };
 
-const Base = styled(Component)<LayoutBaseProps>(({ theme: { token } }: LayoutBaseProps) => ({
+const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token } }: LayoutBaseProps) => ({
   '.ant-sw-tab-bar-container': {
     padding: `${token.paddingXS}px ${token.paddingSM}px ${token.paddingSM}px`,
     borderRadius: 40,
@@ -187,10 +187,22 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { token } }: LayoutBas
     width: `calc(100% - ${token.margin * 2}px)`,
     marginLeft: token.margin,
     marginBottom: token.marginLG,
-    backgroundColor: token.colorPrimary,
+    backgroundColor: extendToken.colorBgSecondary2,
+
+    '.ant-sw-tab-bar-item': {
+      gap: token.sizeXXS
+    },
+
+    '.ant-sw-tab-bar-item.ant-sw-tab-bar-item-active': {
+      '.ant-sw-tab-bar-item-icon, .ant-sw-tab-bar-item-label': {
+        color: token.colorPrimary
+      }
+    },
 
     '.ant-sw-tab-bar-item-label': {
-      textAlign: 'center'
+      textAlign: 'center',
+      fontSize: 10,
+      lineHeight: 1.6
     }
   },
 
