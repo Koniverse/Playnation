@@ -48,7 +48,6 @@ function Component (props: Props): React.ReactElement<Props> {
 
       <div className={'__middle-part'}>
         <div className={'__website-name h5-text'}>{name}</div>
-        <div className={'__website-domain cdescription'}> {description !== null && 'Description: ' + description}</div>
         {
           !!limit && (
             <div>Limit: {limit}</div>
