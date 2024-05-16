@@ -362,6 +362,12 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       '&:disabled': {
         opacity: 0.4
       }
+    },
+
+    // ---process
+
+    '.ant-progress.ant-progress .ant-progress-bg': {
+      backgroundColor: extendToken.colorBgSecondary2
     }
   });
 });
