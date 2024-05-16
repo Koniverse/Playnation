@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LanguageType } from '@subwallet/extension-base/background/KoniTypes';
+import { GameSVG } from '@subwallet/extension-koni-ui/components';
 import { useDefaultNavigate, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
-import { GameController, Handshake, Kanban, Target, Wallet } from 'phosphor-react';
+import { ChartBar, Target, UserCirclePlus, Wallet } from 'phosphor-react';
 import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -46,9 +47,8 @@ const Component = ({ children, className, headerIcons, onBack, showFooter, ...pr
     },
     {
       icon: {
-        type: 'phosphor',
-        phosphorIcon: GameController,
-        weight: 'fill'
+        type: 'customIcon',
+        customIcon: <GameSVG />
       },
       label: t('Games'),
       key: 'games',
@@ -67,7 +67,7 @@ const Component = ({ children, className, headerIcons, onBack, showFooter, ...pr
     {
       icon: {
         type: 'phosphor',
-        phosphorIcon: Kanban,
+        phosphorIcon: ChartBar,
         weight: 'fill'
       },
       label: t('Leaderboard'),
@@ -77,7 +77,7 @@ const Component = ({ children, className, headerIcons, onBack, showFooter, ...pr
     {
       icon: {
         type: 'phosphor',
-        phosphorIcon: Handshake,
+        phosphorIcon: UserCirclePlus,
         weight: 'fill'
       },
       label: t('Invite'),

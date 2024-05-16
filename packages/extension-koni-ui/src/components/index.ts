@@ -14,6 +14,7 @@ export { default as SocialButtonGroup } from './SocialButtonGroup';
 export { default as WordPhrase } from './WordPhrase';
 
 export * from '../contexts';
+export * from './SVG';
 export * from './Common';
 export * from './Account';
 export * from './Avatar';
