@@ -1,8 +1,6 @@
 // Copyright 2019-2022 @subwallet/extension-koni-base authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { _ChainConnectionStatus } from '@subwallet/extension-base/services/chain-service/types';
-
 export const DefaultLogosMap: Record<string, string> = {
   subwallet: '/images/projects/subwallet-gradient.png',
   parity: '/images/projects/parity.png',
@@ -17,7 +15,8 @@ export const DefaultLogosMap: Record<string, string> = {
   banxa: '/images/projects/banxa.png',
   coinbase: '/images/projects/coinbase.png',
   stellaswap: '/images/projects/stellaswap.png',
-  xtwitter: '/images/projects/xtwitter.png'
+  xtwitter: '/images/projects/xtwitter.png',
+  game_background_image: '/images/subwallet/game-background-image.png'
 };
 
 export const IconMap = {

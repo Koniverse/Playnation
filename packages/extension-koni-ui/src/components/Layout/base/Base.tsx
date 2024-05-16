@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LanguageType } from '@subwallet/extension-base/background/KoniTypes';
+import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
 import { GameSVG } from '@subwallet/extension-koni-ui/components';
 import { useDefaultNavigate, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -22,12 +23,13 @@ SwScreenLayoutProps,
 'tabBarItems' | 'footer' | 'headerContent' | 'selectedTabBarItem'
 >, ThemeProps {
   children: React.ReactNode | React.ReactNode[];
+  backgroundStyle?: 'primary' | 'secondary';
   showFooter?: boolean;
 }
 
 const specialLanguages: Array<LanguageType> = ['ja', 'ru'];
 
-const Component = ({ children, className, headerIcons, onBack, showFooter, ...props }: LayoutBaseProps) => {
+const Component = ({ backgroundStyle, children, className, headerIcons, onBack, showFooter, ...props }: LayoutBaseProps) => {
   const navigate = useNavigate();
   const { goHome } = useDefaultNavigate();
   const { pathname } = useLocation();
@@ -163,7 +165,11 @@ const Component = ({ children, className, headerIcons, onBack, showFooter, ...pr
   return (
     <SwScreenLayout
       {...props}
-      className={CN(className, { 'special-language': specialLanguages.includes(language) })}
+      className={CN(className, {
+        'special-language': specialLanguages.includes(language),
+        '-primary-style': backgroundStyle === 'primary',
+        '-secondary-style': backgroundStyle === 'secondary'
+      })}
       footer={showFooter && <Footer />}
       headerContent={props.showHeader && <SelectAccount />}
       headerIcons={headerIcons}
@@ -174,19 +180,54 @@ const Component = ({ children, className, headerIcons, onBack, showFooter, ...pr
         onClick: onSelectTab(item.url)
       }))}
     >
+      {
+        backgroundStyle === 'secondary' && (
+          <img
+            alt='game_background_image'
+            className={'game-background-image'}
+            src={DefaultLogosMap.game_background_image}
+          />
+        )
+      }
+
       {children}
     </SwScreenLayout>
   );
 };
 
 const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token } }: LayoutBaseProps) => ({
+  '&.-primary-style': {
+    background: extendToken.colorBgGradient || token.colorPrimary
+  },
+
+  '&.-secondary-style': {
+    backgroundColor: token.colorBgSecondary,
+
+    '.game-background-image': {
+      position: 'fixed',
+      top: '56%',
+      left: 0,
+      zIndex: 0
+    }
+  },
+
+  '> .ant-sw-screen-layout-header .ant-sw-header-bg-default': {
+    backgroundColor: 'transparent'
+  },
+
+  '> .ant-sw-screen-layout-body': {
+    paddingBottom: 90
+  },
+
   '.ant-sw-tab-bar-container': {
-    padding: `${token.paddingXS}px ${token.paddingSM}px ${token.paddingSM}px`,
+    position: 'fixed',
+    width: 'auto',
+    bottom: 24,
+    left: token.sizeXS,
+    right: token.sizeXS,
+    padding: `9px ${token.padding}px`,
     borderRadius: 40,
     alignItems: 'flex-start',
-    width: `calc(100% - ${token.margin * 2}px)`,
-    marginLeft: token.margin,
-    marginBottom: token.marginLG,
     backgroundColor: extendToken.colorBgSecondary2,
 
     '.ant-sw-tab-bar-item': {

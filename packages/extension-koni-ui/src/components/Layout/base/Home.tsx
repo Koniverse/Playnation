@@ -3,6 +3,7 @@
 
 import { Layout } from '@subwallet/extension-koni-ui/components';
 import { GameLogo } from '@subwallet/extension-koni-ui/components/Games/Logo';
+import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ButtonProps, Icon, ModalContext } from '@subwallet/react-ui';
@@ -19,9 +20,10 @@ type Props = {
   onClickFilterIcon?: () => void;
   onClickSearchIcon?: () => void;
   showTabBar?: boolean
+  backgroundStyle?: LayoutBaseProps['backgroundStyle']
 };
 
-const Home = ({ children, onClickFilterIcon, onClickSearchIcon, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar }: Props) => {
+const Home = ({ backgroundStyle, children, onClickFilterIcon, onClickSearchIcon, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
@@ -89,6 +91,7 @@ const Home = ({ children, onClickFilterIcon, onClickSearchIcon, showFilterIcon, 
 
   return (
     <Layout.Base
+      backgroundStyle={backgroundStyle}
       headerCenter={false}
       headerIcons={headerIcons}
       headerLeft={<GameLogo />}
