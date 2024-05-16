@@ -157,26 +157,25 @@ export class BookaSdk {
       return undefined;
     }
   }
-  private async postRequest<T>(url: string, body: any): Promise<T> {
+
+  private async postRequest<T, U>(url: string, body: U): Promise<T> {
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: this.getRequestHeader(),
-        body: JSON.stringify(body)
-      });  
-      if (response.status === 200 || response.status === 304) {
-        return (await response.json()) as T;
-      }
-      if (response.status === 400) {
-        const errorResponse = await response.json();
+        body: JSON.stringify(body),
+      });
+
+      if (response && response.status === 200  || response.status === 304) {
+        return await response.json();
+      } else {
+        const errorResponse = await response.json() as { error: string };
         throw new Error(errorResponse.error || 'Bad request');
       }
-      throw new Error(`HTTP error! status: ${response.status}`);
     } catch (error) {
       throw error;
     }
   }
-  
 
   private async reloadAccount () {
     const account = this.account;

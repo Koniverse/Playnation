@@ -28,6 +28,7 @@ export interface GameItem {
   itemGroup: string,
   itemGroupLevel: number,
   effectDuration: number,
+  icon?: string
 }
 
 export enum GameInventoryItemStatus {

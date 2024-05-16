@@ -53,7 +53,20 @@ function Component ({ className, energyConfig,
       inventoryItemMapByGameItemId[i.gameItemId] = i;
     });
 
-    const getShopItem = (gi: GameItem, disabled = false): ShopItemInfo => {
+    const getShopItem = (gi: GameItem, disabled = false): {
+      gameId: number;
+      itemGroup: string;
+      usable: false | boolean | undefined;
+      gameItemId: string;
+      itemGroupLevel: number;
+      inventoryQuantity: number | undefined;
+      price: number;
+      name: string;
+      limit: number | undefined;
+      icon: string | undefined;
+      description: string;
+      disabled: boolean
+    } => {
       const limit = gi.maxBuy || undefined;
       const inventoryQuantity = inventoryItemMapByGameItemId[gi.id]?.quantity || undefined;
 
@@ -68,7 +81,8 @@ function Component ({ className, energyConfig,
         itemGroupLevel: gi.itemGroupLevel,
         price: gi.price,
         disabled: disabled || (!!limit && limit > 0 && limit === inventoryQuantity) || (!!gi.itemGroup && inventoryQuantity === 1),
-        usable: !!inventoryQuantity && inventoryQuantity > 0 && inventoryItemMapByGameItemId[gi.id]?.usable
+        usable: !!inventoryQuantity && inventoryQuantity > 0 && inventoryItemMapByGameItemId[gi.id]?.usable,
+        icon: gi.icon
       };
     };
 
@@ -111,6 +125,7 @@ function Component ({ className, energyConfig,
   }, [energyConfig, gameId, gameInventoryItemList, gameItemMap]);
   const onBuy = useCallback((gameItemId: string) => {
     setIsLoading(true);
+
     if (gameItemId === 'buy-energy-id') {
       apiSDK.buyEnergy()
         .then(() => {
@@ -119,7 +134,7 @@ function Component ({ className, energyConfig,
             type: 'success'
           });
         })
-        .catch((error) => {
+        .catch((error: Error) => {
           notify({
             message: error.message,
             type: 'error'
@@ -136,7 +151,7 @@ function Component ({ className, energyConfig,
             type: 'success'
           });
         })
-        .catch((error) => {
+        .catch((error: Error) => {
           notify({
             message: error.message,
             type: 'error'
@@ -157,11 +172,10 @@ function Component ({ className, energyConfig,
           type: 'success'
         });
       })
-      .catch((e) => {
-        console.log('onUse error', e);
+      .catch((e: Error) => {
         notify({
-          message: 'Error',
-          type: e.error
+          message: e.message,
+          type: 'error'
         });
       }).finally(() => {
         setIsLoading(false);
