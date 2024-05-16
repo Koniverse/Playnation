@@ -236,6 +236,38 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
 
     '.ant-switch.ant-switch.ant-switch-checked': {
       background: token.colorPrimary
+    },
+
+    // switcher
+
+    '.ant-checkbox-checked.ant-checkbox-checked .ant-checkbox-inner': {
+      backgroundColor: extendToken.colorBgSecondary2,
+      borderColor: extendToken.colorBgSecondary2
+    },
+
+    '.ant-checkbox-wrapper.ant-checkbox-wrapper:not(.ant-checkbox-wrapper-disabled):hover .ant-checkbox-checked:not(.ant-checkbox-disabled) .ant-checkbox-inner': {
+      backgroundColor: extendToken.colorBgSecondary2
+    },
+
+    '.ant-checkbox-wrapper.ant-checkbox-wrapper:not(.ant-checkbox-wrapper-disabled):hover .ant-checkbox-checked:not(.ant-checkbox-disabled):after': {
+      borderColor: extendToken.colorBgSecondary2
+    },
+
+    '.ant-checkbox-wrapper.ant-checkbox-wrapper:not(.ant-checkbox-wrapper-disabled):hover .ant-checkbox-inner, .ant-checkbox.ant-checkbox:not(.ant-checkbox-disabled):hover .ant-checkbox-inner': {
+      borderColor: extendToken.colorBgSecondary2
+    },
+
+    '.ant-checkbox-wrapper-checked.ant-checkbox-wrapper-checked:not(.ant-checkbox-wrapper-disabled):hover .ant-checkbox-inner, .ant-checkbox-wrapper-checked.ant-checkbox-checked:not(.ant-checkbox-disabled):hover .ant-checkbox-inner': {
+      backgroundColor: extendToken.colorBgSecondary2,
+      borderColor: extendToken.colorBgSecondary2
+    },
+
+    '.ant-checkbox-checked.ant-checkbox-checked:after': {
+      borderColor: extendToken.colorBgSecondary2
+    },
+
+    '.ant-checkbox.ant-checkbox .ant-checkbox-inner:after': {
+      borderColor: token.colorPrimary
     }
   });
 });
