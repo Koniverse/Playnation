@@ -20,10 +20,11 @@ type Props = {
   onClickFilterIcon?: () => void;
   onClickSearchIcon?: () => void;
   showTabBar?: boolean
-  backgroundStyle?: LayoutBaseProps['backgroundStyle']
+  backgroundStyle?: LayoutBaseProps['backgroundStyle'];
+  onTabSelected?: LayoutBaseProps['onTabSelected'];
 };
 
-const Home = ({ backgroundStyle, children, onClickFilterIcon, onClickSearchIcon, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar }: Props) => {
+const Home = ({ backgroundStyle, children, onClickFilterIcon, onClickSearchIcon, onTabSelected, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
@@ -97,6 +98,7 @@ const Home = ({ backgroundStyle, children, onClickFilterIcon, onClickSearchIcon,
       headerLeft={<GameLogo />}
       headerOnClickLeft={onClickListIcon}
       headerPaddingVertical={true}
+      onTabSelected={onTabSelected}
       showHeader={true}
       showLeftButton={true}
       showTabBar={showTabBar ?? true}

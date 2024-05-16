@@ -10,7 +10,7 @@ import { SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
 import { ChartBar, Target, UserCirclePlus, Wallet } from 'phosphor-react';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -25,11 +25,12 @@ SwScreenLayoutProps,
   children: React.ReactNode | React.ReactNode[];
   backgroundStyle?: 'primary' | 'secondary';
   showFooter?: boolean;
+  onTabSelected?: (key: string) => void
 }
 
 const specialLanguages: Array<LanguageType> = ['ja', 'ru'];
 
-const Component = ({ backgroundStyle, children, className, headerIcons, onBack, showFooter, ...props }: LayoutBaseProps) => {
+const Component = ({ backgroundStyle, children, className, headerIcons, onBack, onTabSelected, showFooter, ...props }: LayoutBaseProps) => {
   const navigate = useNavigate();
   const { goHome } = useDefaultNavigate();
   const { pathname } = useLocation();
@@ -161,6 +162,10 @@ const Component = ({ backgroundStyle, children, className, headerIcons, onBack, 
   const defaultOnBack = useCallback(() => {
     goHome();
   }, [goHome]);
+
+  useEffect(() => {
+    onTabSelected?.(selectedTab);
+  }, [onTabSelected, selectedTab]);
 
   return (
     <SwScreenLayout
