@@ -177,6 +177,7 @@ const Component = ({ backgroundStyle, children, className, headerIcons, onBack, 
       {...props}
       className={CN(className, {
         'special-language': specialLanguages.includes(language),
+        '-show-tab-bar': props.showTabBar,
         '-primary-style': backgroundStyle === 'primary',
         '-secondary-style': backgroundStyle === 'secondary'
       })}
@@ -228,7 +229,7 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
     backgroundColor: 'transparent'
   },
 
-  '> .ant-sw-screen-layout-body': {
+  '&.-show-tab-bar > .ant-sw-screen-layout-body': {
     paddingBottom: 90
   },
 

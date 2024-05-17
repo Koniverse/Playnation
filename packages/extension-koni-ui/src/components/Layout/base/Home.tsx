@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Layout } from '@subwallet/extension-koni-ui/components';
-import { GameLogo } from '@subwallet/extension-koni-ui/components/Games/Logo';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
@@ -95,7 +94,7 @@ const Home = ({ backgroundStyle, children, onClickFilterIcon, onClickSearchIcon,
       backgroundStyle={backgroundStyle}
       headerCenter={false}
       headerIcons={headerIcons}
-      headerLeft={<GameLogo />}
+      headerLeft={'default'}
       headerOnClickLeft={onClickListIcon}
       headerPaddingVertical={true}
       onTabSelected={onTabSelected}

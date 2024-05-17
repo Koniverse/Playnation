@@ -196,19 +196,22 @@ function Component ({ className }: Props): React.ReactElement<Props> {
 
   const renderSelectedItem = useCallback((item: AccountJson): React.ReactNode => {
     return (
-      <div className='selected-account'>
-        <AccountBriefInfo account={item} />
-      </div>
+      <AccountBriefInfo
+        account={item}
+        className='selected-account'
+      />
     );
   }, []);
 
   return (
     <div className={CN(className, 'global-account-info')}>
       <Button
-        icon={<Image
-          src={rankIconMap[gameAccount?.attributes.rank || 'iron']}
-          width={20}
-        />}
+        icon={(
+          <Image
+            src={rankIconMap[gameAccount?.attributes.rank || 'iron']}
+            width={20}
+          />
+        )}
         size={'xs'}
         type={'ghost'}
       />
@@ -235,10 +238,14 @@ function Component ({ className }: Props): React.ReactElement<Props> {
       />
 
       <Button
-        icon={<Icon
-          phosphorIcon={Copy}
-          size={'xs'}
-        />}
+        className={'__copy-button'}
+        icon={(
+          <Icon
+            phosphorIcon={Copy}
+            size={'xs'}
+            weight={'fill'}
+          />
+        )}
         onClick={onCopyCurrent}
         size={'xs'}
         type={'ghost'}
@@ -263,14 +270,29 @@ const SelectAccount = styled(Component)<Props>(({ theme }) => {
       flexDirection: 'row',
       marginLeft: 'auto',
       marginRight: 'auto',
+      alignItems: 'center',
+
+      '.account-name.account-name': {
+        fontSize: token.fontSize,
+        lineHeight: token.lineHeight
+      },
+
+      '.ant-select-modal-input-container': {
+        width: 'auto !important',
+        marginLeft: -token.marginXXS,
+        marginRight: -token.marginXXS
+      },
 
       '.ant-select-modal-input-container.ant-select-modal-input-border-round::before': {
         display: 'none'
       },
 
+      '.ant-select-modal-input-container.ant-select-modal-input-bg-default': {
+        backgroundColor: 'transparent'
+      },
+
       '.ant-select-modal-input-container.ant-select-modal-input-size-small .ant-select-modal-input-wrapper': {
-        paddingLeft: 1,
-        paddingRight: 1
+        padding: 0
       },
 
       '.ant-select-modal-input-suffix': {
@@ -278,7 +300,15 @@ const SelectAccount = styled(Component)<Props>(({ theme }) => {
       },
 
       '.ant-select-modal-input-container:hover .account-name': {
-        color: token.colorTextLight3
+        color: token.colorTextDark3
+      },
+
+      '.selected-account': {
+        gap: token.sizeXXS
+      },
+
+      '.__copy-button': {
+        color: token.colorTextDark4
       }
     },
 
@@ -351,13 +381,6 @@ const SelectAccount = styled(Component)<Props>(({ theme }) => {
 
     '.ant-select-modal-input-container': {
       overflow: 'hidden'
-    },
-
-    '.selected-account': {
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8
     },
 
     '.connect-icon': {
