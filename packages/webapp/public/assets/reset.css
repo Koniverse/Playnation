@@ -630,10 +630,6 @@ div#popup-container {
     border-bottom-color: #EEEEEE;
 }
 
-.ant-sw-sub-header-container .ant-sw-sub-header-title-content {
-    color: #111;
-}
-
 .ant-sw-modal .ant-sw-modal-content.ant-sw-modal-content {
     padding-bottom: 0;
     border-bottom: 0;
@@ -724,4 +720,52 @@ div.ant-notification-notice {
 
 .ant-sw-header-container .ant-sw-header-center-part {
   padding-right: 0;
+}
+
+/* setting group */
+
+.setting-group-container {
+  border-radius: 20px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  background-color: #fff;
+}
+
+.setting-group-container > div + div {
+  position: relative;
+  margin-top: 4px;
+}
+
+.setting-group-container > div + div:before {
+  content: '';
+  position: absolute;
+  left: 56px;
+  right: 56px;
+  height: 1px;
+  top: -4px;
+}
+
+.setting-group-item.ant-setting-item {
+  background-color: transparent;
+}
+
+.setting-group-item .ant-web3-block-left-item.ant-web3-block-left-item {
+  padding-right: 12px;
+}
+
+.setting-group-item .ant-web3-block.ant-web3-block {
+  padding-left: 20px;
+  padding-right: 8px;
+  background-color: transparent;
+}
+
+.setting-group-item .ant-web3-block-right-item.ant-web3-block-right-item {
+  margin-right: 0;
+}
+
+.setting-group-item .ant-web3-block-right-item .__right-icon {
+  width: 40px;
+  min-width: 40px;
+  display: flex;
+  justify-content: center;
 }

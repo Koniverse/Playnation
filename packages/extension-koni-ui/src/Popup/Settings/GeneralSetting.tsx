@@ -68,7 +68,7 @@ function renderSelectionItem (item: SelectionItemType, _selected: boolean) {
 function renderModalTrigger (item: SelectionItemType) {
   return (
     <SettingItem
-      className={'__trigger-item setting-item'}
+      className={'__trigger-item setting-group-item'}
       key={item.key}
       leftItemIcon={
         <BackgroundIcon
@@ -205,47 +205,49 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         title={t('General settings')}
       >
         <div className={'__scroll-container'}>
-          <SelectModal
-            background={'default'}
-            className={`__modal ${className}`}
-            customInput={renderModalTrigger({
-              key: 'wallet-theme-trigger',
-              leftIcon: Image,
-              leftIconBgColor: token.colorPrimary,
-              title: t('Wallet theme')
-            })}
-            id='wallet-theme-select-modal'
-            inputWidth={'100%'}
-            itemKey='key'
-            items={themeItems}
-            onSelect={onSelectTheme}
-            renderItem={renderSelectionItem}
-            selected={theme}
-            shape='round'
-            title={t('Wallet theme')}
-          />
+          <div className={'setting-group-container'}>
+            <SelectModal
+              background={'default'}
+              className={`__modal ${className}`}
+              customInput={renderModalTrigger({
+                key: 'wallet-theme-trigger',
+                leftIcon: Image,
+                leftIconBgColor: token.colorPrimary,
+                title: t('Wallet theme')
+              })}
+              id='wallet-theme-select-modal'
+              inputWidth={'100%'}
+              itemKey='key'
+              items={themeItems}
+              onSelect={onSelectTheme}
+              renderItem={renderSelectionItem}
+              selected={theme}
+              shape='round'
+              title={t('Wallet theme')}
+            />
 
-          <SelectModal
-            background={'default'}
-            className={`__modal ${className}`}
-            customInput={renderModalTrigger({
-              key: 'languages-trigger',
-              leftIcon: GlobeHemisphereEast,
-              leftIconBgColor: token['green-6'],
-              title: t('Language')
-            })}
-            disabled={loadingMap.language}
-            id='languages-select-modal'
-            inputWidth={'100%'}
-            itemKey='key'
-            items={languageItems}
-            onSelect={onSelectLanguage}
-            renderItem={renderSelectionItem}
-            selected={_language}
-            shape='round'
-            size='small'
-            title={t('Language')}
-          />
+            <SelectModal
+              background={'default'}
+              className={`__modal ${className}`}
+              customInput={renderModalTrigger({
+                key: 'languages-trigger',
+                leftIcon: GlobeHemisphereEast,
+                leftIconBgColor: token['green-6'],
+                title: t('Language')
+              })}
+              disabled={loadingMap.language}
+              id='languages-select-modal'
+              inputWidth={'100%'}
+              itemKey='key'
+              items={languageItems}
+              onSelect={onSelectLanguage}
+              renderItem={renderSelectionItem}
+              selected={_language}
+              shape='round'
+              size='small'
+              title={t('Language')}
+            />
+          </div>
         </div>
       </Layout.WithSubHeaderOnly>
     </PageWrapper>
@@ -254,19 +256,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
 export const GeneralSetting = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return ({
-    '.ant-web3-block-right-item': {
-      minWidth: 40,
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: -token.marginXS
-    },
-    '.__trigger-item': {
-      height: 52,
-      alignItems: 'center',
-      display: 'flex'
-    },
-
     '.item-disabled': {
       '.ant-setting-item-content': {
         cursor: 'not-allowed',
@@ -303,7 +292,7 @@ export const GeneralSetting = styled(Component)<Props>(({ theme: { token } }: Pr
 
       '.__scroll-container': {
         overflow: 'auto',
-        paddingTop: token.padding,
+        paddingTop: token.paddingXS,
         paddingRight: token.padding,
         paddingLeft: token.padding,
         paddingBottom: token.paddingLG

@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import Footer from '../parts/Footer';
 import SelectAccount from '../parts/SelectAccount';
 
 export interface LayoutBaseProps extends Omit<
@@ -24,13 +23,12 @@ SwScreenLayoutProps,
 >, ThemeProps {
   children: React.ReactNode | React.ReactNode[];
   backgroundStyle?: 'primary' | 'secondary';
-  showFooter?: boolean;
   onTabSelected?: (key: string) => void
 }
 
 const specialLanguages: Array<LanguageType> = ['ja', 'ru'];
 
-const Component = ({ backgroundStyle, children, className, headerIcons, onBack, onTabSelected, showFooter, ...props }: LayoutBaseProps) => {
+const Component = ({ backgroundStyle, children, className, headerIcons, onBack, onTabSelected, ...props }: LayoutBaseProps) => {
   const navigate = useNavigate();
   const { goHome } = useDefaultNavigate();
   const { pathname } = useLocation();
@@ -182,7 +180,15 @@ const Component = ({ backgroundStyle, children, className, headerIcons, onBack, 
         '-primary-style': backgroundStyle === 'primary',
         '-secondary-style': backgroundStyle === 'secondary'
       })}
-      footer={showFooter && <Footer />}
+      footer={
+        backgroundStyle === 'secondary' && (
+          <img
+            alt='game_background_image'
+            className={'game-background-image'}
+            src={DefaultLogosMap.game_background_image}
+          />
+        )
+      }
       headerContent={props.showHeader && <SelectAccount />}
       headerIcons={headerIcons}
       onBack={onBack || defaultOnBack}
@@ -192,16 +198,6 @@ const Component = ({ backgroundStyle, children, className, headerIcons, onBack, 
         onClick: onSelectTab(item.url)
       }))}
     >
-      {
-        backgroundStyle === 'secondary' && (
-          <img
-            alt='game_background_image'
-            className={'game-background-image'}
-            src={DefaultLogosMap.game_background_image}
-          />
-        )
-      }
-
       {children}
     </SwScreenLayout>
   );
@@ -214,6 +210,11 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
 
   '&.-secondary-style': {
     backgroundColor: token.colorBgSecondary,
+
+    '.ant-sw-screen-layout-body': {
+      position: 'relative',
+      zIndex: 1
+    },
 
     '.game-background-image': {
       position: 'fixed',

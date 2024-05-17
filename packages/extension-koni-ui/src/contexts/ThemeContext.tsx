@@ -228,6 +228,12 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       }
     },
 
+    // ---layout
+
+    '.ant-sw-sub-header-container.ant-sw-sub-header-container .ant-sw-sub-header-title-content': {
+      color: token.colorTextDark1
+    },
+
     // ---switcher
 
     '.ant-switch.ant-switch': {
@@ -236,6 +242,24 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
 
     '.ant-switch.ant-switch.ant-switch-checked': {
       background: token.colorPrimary
+    },
+
+    // ---setting group
+
+    '.setting-group-container > div + div:before': {
+      backgroundColor: token.colorBgDivider
+    },
+
+    '.setting-group-item .ant-background-icon': {
+      backgroundColor: `${token.colorPrimary} !important`
+    },
+
+    '.setting-group-item .ant-setting-item-name.ant-setting-item-name': {
+      color: token.colorTextDark1
+    },
+
+    '.setting-group-item .ant-web3-block-right-item .__right-icon': {
+      color: token.colorTextDark2
     },
 
     // ---checkbox

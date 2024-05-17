@@ -4,24 +4,20 @@
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { EXTENSION_VERSION, SUPPORT_URL } from '@subwallet/extension-koni-ui/constants/common';
-import { useSelector } from '@subwallet/extension-koni-ui/hooks';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
-import { RootState } from '@subwallet/extension-koni-ui/stores';
-import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { computeStatus } from '@subwallet/extension-koni-ui/utils';
+import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { BackgroundIcon, Icon, SettingItem, SwIconProps } from '@subwallet/react-ui';
-import { ArrowSquareOut, BookBookmark, CaretRight, Coin, EnvelopeSimple, GlobeHemisphereEast, ShareNetwork } from 'phosphor-react';
+import { ArrowSquareOut, BookBookmark, CaretRight, Coins, GlobeHemisphereEast, Graph, Headset } from 'phosphor-react';
 import React, { useMemo } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 
 type Props = ThemeProps
 
 type SettingItemType = {
   key: string,
   leftIcon: SwIconProps['phosphorIcon'] | React.ReactNode,
-  leftIconBgColor: string,
   rightIcon: SwIconProps['phosphorIcon'],
   title: string,
   onClick?: () => void,
@@ -30,7 +26,6 @@ type SettingItemType = {
 
 type SettingGroupItemType = {
   key: string,
-  label?: string,
   items: SettingItemType[],
 };
 
@@ -40,12 +35,11 @@ const isReactNode = (element: unknown): element is React.ReactNode => {
 
 const telegramConnector = TelegramConnector.instance;
 
-function generateLeftIcon (backgroundColor: string, icon: SwIconProps['phosphorIcon'] | React.ReactNode): React.ReactNode {
+function generateLeftIcon (icon: SwIconProps['phosphorIcon'] | React.ReactNode): React.ReactNode {
   const isNode = isReactNode(icon);
 
   return (
     <BackgroundIcon
-      backgroundColor={backgroundColor}
       customIcon={isNode ? icon : undefined}
       phosphorIcon={isNode ? undefined : icon}
       size='sm'
@@ -70,15 +64,9 @@ function generateRightIcon (icon: SwIconProps['phosphorIcon']): React.ReactNode 
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const navigate = useNavigate();
-  const { token } = useTheme() as Theme;
 
   const { goHome } = useDefaultNavigate();
   const { t } = useTranslation();
-  const { missions } = useSelector((state: RootState) => state.missionPool);
-
-  const liveMissionsCount = useMemo(() => {
-    return missions.filter((item) => computeStatus(item) === 'live').length;
-  }, [missions]);
 
   // todo: i18n all titles, labels below
   const SettingGroupItemType = useMemo((): SettingGroupItemType[] => ([
@@ -88,7 +76,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         {
           key: 'general-settings',
           leftIcon: GlobeHemisphereEast,
-          leftIconBgColor: token['magenta-6'],
           rightIcon: CaretRight,
           title: t('General settings'),
           onClick: () => {
@@ -140,12 +127,10 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     // },
     {
       key: 'assets-&-addresses',
-      label: t('Assets & addresses'),
       items: [
         {
           key: 'manage-networks',
-          leftIcon: ShareNetwork,
-          leftIconBgColor: token['purple-7'],
+          leftIcon: Graph,
           rightIcon: CaretRight,
           title: t('Manage networks'),
           onClick: () => {
@@ -154,8 +139,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         },
         {
           key: 'manage-tokens',
-          leftIcon: Coin,
-          leftIconBgColor: token['gold-6'],
+          leftIcon: Coins,
           rightIcon: CaretRight,
           title: t('Manage tokens'),
           onClick: () => {
@@ -165,7 +149,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         {
           key: 'manage-address-book',
           leftIcon: BookBookmark,
-          leftIconBgColor: token['blue-6'],
           rightIcon: CaretRight,
           title: t('Manage address book'),
           onClick: () => {
@@ -176,12 +159,10 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     },
     {
       key: 'community-&-support',
-      label: t('Community & support'),
       items: [
         {
           key: 'contact-support',
-          leftIcon: EnvelopeSimple,
-          leftIconBgColor: token['geekblue-6'],
+          leftIcon: Headset,
           rightIcon: ArrowSquareOut,
           title: t('Contact support'),
           onClick: () => {
@@ -226,7 +207,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         // }
       ]
     }
-  ]), [navigate, t, token]);
+  ]), [navigate, t]);
 
   // const aboutSubwalletType = useMemo<SettingItemType[]>(() => {
   //   return [
@@ -281,32 +262,25 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
               SettingGroupItemType.map((group) => {
                 return (
                   <div
-                    className={'__group-container'}
+                    className={'__group-container setting-group-container'}
                     key={group.key}
                   >
-                    {!!group.label && (<div className='__group-label'>{group.label}</div>)}
-
-                    <div className={'__group-content'}>
-                      {group.items.map((item) => item.isHidden
-                        ? null
-                        : (
-                          <SettingItem
-                            className={'__setting-item setting-item'}
-                            key={item.key}
-                            leftItemIcon={generateLeftIcon(item.leftIconBgColor, item.leftIcon)}
-                            name={item.title}
-                            onPressItem={item.onClick}
-                            rightItem={
-                              <>
-                                {(item.key === 'mission-pools' && !!liveMissionsCount) && (
-                                  <div className={'__active-count'}>{liveMissionsCount}</div>
-                                )}
-                                {generateRightIcon(item.rightIcon)}
-                              </>
-                            }
-                          />
-                        ))}
-                    </div>
+                    {group.items.map((item) => item.isHidden
+                      ? null
+                      : (
+                        <SettingItem
+                          className={'__setting-item setting-group-item'}
+                          key={item.key}
+                          leftItemIcon={generateLeftIcon(item.leftIcon)}
+                          name={item.title}
+                          onPressItem={item.onClick}
+                          rightItem={
+                            <>
+                              {generateRightIcon(item.rightIcon)}
+                            </>
+                          }
+                        />
+                      ))}
                   </div>
                 );
               })
@@ -331,26 +305,6 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
       flexDirection: 'column',
       overflow: 'hidden',
 
-      '.__active-count': {
-        borderRadius: '50%',
-        color: token.colorWhite,
-        fontSize: token.fontSizeSM,
-        fontWeight: token.bodyFontWeight,
-        lineHeight: token.lineHeightSM,
-        paddingTop: 0,
-        paddingRight: token.paddingXS,
-        paddingLeft: token.paddingXS,
-        paddingBottom: 0,
-        backgroundColor: token.colorError,
-        marginRight: 14
-      },
-
-      '.__setting-item': {
-        height: 52,
-        display: 'flex',
-        alignItems: 'center'
-      },
-
       '.ant-sw-header-center-part': {
         fontSize: token.fontSizeHeading4,
         lineHeight: token.lineHeightHeading4,
@@ -359,65 +313,24 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
 
       '.__scroll-container': {
         overflow: 'auto',
-        paddingTop: token.padding,
+        paddingTop: token.paddingXS,
         paddingRight: token.padding,
         paddingLeft: token.padding,
         paddingBottom: token.paddingLG
       },
 
-      '.__group-label': {
-        color: token.colorTextLight3,
-        fontSize: token.fontSizeSM,
-        lineHeight: token.lineHeightSM,
-        marginBottom: token.marginXS,
-        textTransform: 'uppercase'
-      },
-
-      '.__group-container': {
-        paddingBottom: token.padding
-      },
-
-      '.__setting-item + .__setting-item': {
-        marginTop: token.marginXS
-      },
-
-      '.ant-web3-block-left-item': {
-        color: token.colorBgBase
-      },
-
-      '.ant-web3-block-right-item': {
-        minWidth: 40,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        color: token.colorTextBase
-      },
-
-      '.__setting-item:hover .ant-web3-block-right-item': {
-        color: token.colorTextSecondary
+      '.__group-container + .__group-container': {
+        marginTop: token.margin
       },
 
       '.__version': {
         paddingTop: token.padding,
         textAlign: 'center',
-        color: token.colorTextLight3,
         fontSize: token.size,
         lineHeight: token.lineHeight
       },
       '.__subwallet-logo': {
         borderRadius: '50%'
-      }
-    },
-
-    '&.about-subwallet-modal': {
-      '.__setting-about-item': {
-        marginBottom: 8
-      },
-      '.ant-web3-block-right-item': {
-        display: 'flex',
-        minWidth: 40,
-        justifyContent: 'center',
-        alignContent: 'center'
       }
     }
   });
