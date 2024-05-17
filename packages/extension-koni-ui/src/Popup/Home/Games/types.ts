@@ -80,6 +80,10 @@ export interface InGameItem {
   name: string;
   price: number;
 }
+export interface InGameItemList {
+  items: InGameItem[];
+  success: boolean;
+}
 
 export interface SDKInitParams {
   /** default to latest version */

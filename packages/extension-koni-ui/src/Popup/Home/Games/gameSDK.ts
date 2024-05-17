@@ -3,7 +3,7 @@
 
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { BuyInGameItemResponse, ErrorCode, GameError, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, Player, PlayResponse, SDKInitParams, Tournament, UseInGameItemResponse } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
+import { BuyInGameItemResponse, ErrorCode, GameError, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, InGameItemList, Player, PlayResponse, SDKInitParams, Tournament, UseInGameItemResponse } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
 import { camelCase } from 'lodash';
 import z from 'zod';
 
@@ -14,71 +14,28 @@ export interface GameAppOptions {
   onExit: () => void;
 }
 
-export const ITEM_MAP: Record<string, InGameItem> = {
-  BOOSTER: {
-    id: 'BOOSTER',
-    name: 'Increase Ball Number',
-    price: 100
-  },
-  MAGNET: {
-    id: 'MAGNET',
-    name: 'Magnet',
-    price: 100
-  },
-  CUP1: {
-    id: 'CUP1',
-    name: 'Cup lv 1',
-    price: 10
-  },
-  CUP2: {
-    id: 'CUP2',
-    name: 'Cup lv 2',
-    price: 20
-  },
-  CUP3: {
-    id: 'CUP3',
-    name: 'Cup lv 3',
-    price: 30
-  },
-  CUP4: {
-    id: 'CUP4',
-    name: 'Cup lv 4',
-    price: 40
-  },
-  CUP5: {
-    id: 'CUP5',
-    name: 'Cup lv 5',
-    price: 50
-  }
-};
-
-const InventoryQuantityMap: Record<string, number> = {
-  BOOSTER: 0,
-  MAGNET: 0,
-  CUP1: 0,
-  CUP2: 0,
-  CUP3: 0,
-  CUP4: 0,
-  CUP5: 0
-};
-
 export class GameApp {
   private listener = this._onMessage.bind(this);
   private options: GameAppOptions;
   private viewport: HTMLIFrameElement;
   private apiSDK: BookaSdk;
   private currentGameInfo: Game;
+  private inventoryQuantityMap: Record<string, number> = {};
+  private gameItemInGame: { [key: string]: any } = {};
 
   constructor (options: GameAppOptions) {
     this.options = options;
     this.viewport = options.viewport;
     this.apiSDK = options.apiSDK;
     this.currentGameInfo = options.currentGameInfo;
+    this.inventoryQuantityMap = this.apiSDK.gameInventoryItemInGameList;
+    this.gameItemInGame = this.apiSDK.gameItemInGameList;
   }
 
   start () {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     window.addEventListener('message', this.listener);
+
   }
 
   stop () {
@@ -102,7 +59,7 @@ export class GameApp {
       avatar: 'https://thispersondoesnotexist.com/',
       level: 1,
       energy: account?.attributes?.energy || 0,
-      inventory: Object.entries(InventoryQuantityMap)
+      inventory: Object.entries(this.inventoryQuantityMap)
         .map(([id, quantity]) => ({
           itemId: id,
           quantity
@@ -117,7 +74,6 @@ export class GameApp {
   onGetTournament (): Tournament {
     const account = this.apiSDK.account;
     const currentGame = this.currentGameInfo;
-
     if (!account || !currentGame) {
       throw newError('invalid account or game', errorCodes.SystemError);
     }
@@ -142,8 +98,7 @@ export class GameApp {
   }
 
   onGetIngameItems () {
-    const items: InGameItem[] = Object.values(ITEM_MAP);
-
+    const items: InGameItem[] = Object.values(this.gameItemInGame);
     return { items };
   }
 
@@ -178,15 +133,15 @@ export class GameApp {
   onBuyIngameItem (itemId: string, gameplayId?: string): BuyInGameItemResponse {
     console.log('buy item', itemId, gameplayId);
 
-    if (!ITEM_MAP[itemId]) {
+    if (!this.gameItemInGame[itemId]) {
       throw newError('invalid item id', errorCodes.InvalidRequest);
     }
 
-    InventoryQuantityMap[itemId] = (InventoryQuantityMap[itemId] || 0) + 1;
+    this.inventoryQuantityMap[itemId] = (this.inventoryQuantityMap[itemId] || 0) + 1;
 
     const res: BuyInGameItemResponse = {
       receipt: Math.random().toString(),
-      item: ITEM_MAP[itemId]
+      item: this.gameItemInGame[itemId]
     };
 
     return res;
@@ -195,22 +150,27 @@ export class GameApp {
   onUseIngameItem (req: {itemId: string, gameplayId?: string }): UseInGameItemResponse {
     let success = false;
     const { itemId } = req;
-    const remaining = InventoryQuantityMap[itemId] || 0;
 
-    console.log('use item', itemId);
+    const remaining = this.inventoryQuantityMap[itemId] || 0;
 
-    if (ITEM_MAP[itemId] && remaining > 0) {
+    // find object by itemId, return gameItemId;
+    const gameItemId = this.gameItemInGame[itemId].gameItemId;
+    if (this.gameItemInGame[itemId] && remaining > 0) {
       success = true;
-      InventoryQuantityMap[itemId] = remaining - 1;
+      this.inventoryQuantityMap[itemId] = remaining - 1;
     }
 
     const res: UseInGameItemResponse = {
       success,
-      inventory: Object.entries(InventoryQuantityMap).map(([id, quantity]) => ({
+      inventory: Object.entries(this.inventoryQuantityMap).map(([id, quantity]) => ({
         itemId: id,
         quantity
       }))
     };
+
+    console.log(itemId, res);
+
+    this.apiSDK.useInventoryItem(gameItemId);
 
     return res;
   }

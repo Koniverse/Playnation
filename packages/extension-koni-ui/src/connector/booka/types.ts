@@ -38,15 +38,22 @@ export enum GameInventoryItemStatus {
 }
 
 export interface GameInventoryItem {
-  id: number,
-  gameId: number,
-  accountId: number,
-  gameDataId: number,
-  gameItemId: number,
-  quantity: number,
-  usable: boolean,
-  itemId?: number | null
+  success: boolean,
+  inventory: {
+    id: number,
+    gameId: number,
+    accountId: number,
+    gameDataId: number,
+    gameItemId: number,
+    quantity: number,
+    usable: boolean,
+    itemId?: number | null
+  },
+  inventoryInGame: {
+    [key: string]: number;
+  }
 }
+
 
 export interface Game {
   id: number;
