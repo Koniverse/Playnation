@@ -6,10 +6,10 @@ import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
 import { GameSVG } from '@subwallet/extension-koni-ui/components';
 import { useDefaultNavigate, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
+import { Icon, SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
-import { ChartBar, Target, UserCirclePlus, Wallet } from 'phosphor-react';
+import { ArrowLeft, ChartBar, Target, UserCirclePlus, Wallet } from 'phosphor-react';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -169,6 +169,13 @@ const Component = ({ backgroundStyle, children, className, headerIcons, onBack, 
 
   return (
     <SwScreenLayout
+      subHeaderLeft={(
+        <Icon
+          phosphorIcon={ArrowLeft}
+          size='md'
+          type='phosphor'
+        />
+      )}
       {...props}
       className={CN(className, {
         'special-language': specialLanguages.includes(language),

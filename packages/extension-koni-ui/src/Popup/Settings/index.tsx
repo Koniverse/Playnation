@@ -1,8 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { PageWrapper } from '@subwallet/extension-koni-ui/components';
-import { GameLogo } from '@subwallet/extension-koni-ui/components/Games/Logo';
+import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { EXTENSION_VERSION, SUPPORT_URL } from '@subwallet/extension-koni-ui/constants/common';
 import { useSelector } from '@subwallet/extension-koni-ui/hooks';
@@ -11,8 +10,8 @@ import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDef
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { computeStatus } from '@subwallet/extension-koni-ui/utils';
-import { BackgroundIcon, ButtonProps, Icon, SettingItem, SwHeader, SwIconProps } from '@subwallet/react-ui';
-import { ArrowSquareOut, BookBookmark, CaretRight, Coin, EnvelopeSimple, GlobeHemisphereEast, ShareNetwork, X } from 'phosphor-react';
+import { BackgroundIcon, Icon, SettingItem, SwIconProps } from '@subwallet/react-ui';
+import { ArrowSquareOut, BookBookmark, CaretRight, Coin, EnvelopeSimple, GlobeHemisphereEast, ShareNetwork } from 'phosphor-react';
 import React, { useMemo } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
@@ -265,22 +264,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   //   ];
   // }, [t, token]);
 
-  const headerIcons = useMemo<ButtonProps[]>(() => {
-    return [
-      {
-        icon: (
-          <Icon
-            customSize={'24px'}
-            phosphorIcon={X}
-            type='phosphor'
-            weight={'bold'}
-          />
-        ),
-        onClick: goHome
-      }
-    ];
-  }, [goHome]);
-
   // const closeModal = useCallback(() => {
   //   inactiveModal(modalId);
   // }, [inactiveModal]);
@@ -288,55 +271,52 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   return (
     <PageWrapper className={`settings ${className}`}>
       <>
-        <SwHeader
-          className={'setting-header'}
-          left={<GameLogo />}
-          onClickLeft={goHome}
-          rightButtons={headerIcons}
-          showLeftButton={true}
+        <Layout.WithSubHeaderOnly
+          backgroundStyle={'secondary'}
+          onBack={goHome}
+          title={t('Settings')}
         >
-          {t('Settings')}
-        </SwHeader>
+          <div className={'__scroll-container'}>
+            {
+              SettingGroupItemType.map((group) => {
+                return (
+                  <div
+                    className={'__group-container'}
+                    key={group.key}
+                  >
+                    {!!group.label && (<div className='__group-label'>{group.label}</div>)}
 
-        <div className={'__scroll-container'}>
-          {
-            SettingGroupItemType.map((group) => {
-              return (
-                <div
-                  className={'__group-container'}
-                  key={group.key}
-                >
-                  {!!group.label && (<div className='__group-label'>{group.label}</div>)}
-
-                  <div className={'__group-content'}>
-                    {group.items.map((item) => item.isHidden
-                      ? null
-                      : (
-                        <SettingItem
-                          className={'__setting-item setting-item'}
-                          key={item.key}
-                          leftItemIcon={generateLeftIcon(item.leftIconBgColor, item.leftIcon)}
-                          name={item.title}
-                          onPressItem={item.onClick}
-                          rightItem={
-                            <>
-                              {(item.key === 'mission-pools' && !!liveMissionsCount) && (
-                                <div className={'__active-count'}>{liveMissionsCount}</div>
-                              )}
-                              {generateRightIcon(item.rightIcon)}
-                            </>
-                          }
-                        />
-                      ))}
+                    <div className={'__group-content'}>
+                      {group.items.map((item) => item.isHidden
+                        ? null
+                        : (
+                          <SettingItem
+                            className={'__setting-item setting-item'}
+                            key={item.key}
+                            leftItemIcon={generateLeftIcon(item.leftIconBgColor, item.leftIcon)}
+                            name={item.title}
+                            onPressItem={item.onClick}
+                            rightItem={
+                              <>
+                                {(item.key === 'mission-pools' && !!liveMissionsCount) && (
+                                  <div className={'__active-count'}>{liveMissionsCount}</div>
+                                )}
+                                {generateRightIcon(item.rightIcon)}
+                              </>
+                            }
+                          />
+                        ))}
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          }
-          <div className={'__version'}>
-          PlayNation v {EXTENSION_VERSION}
+                );
+              })
+            }
+            <div className={'__version'}>
+              PlayNation v {EXTENSION_VERSION}
+            </div>
           </div>
-        </div>
+        </Layout.WithSubHeaderOnly>
+
         <Outlet />
       </>
     </PageWrapper>
@@ -350,6 +330,7 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
+
       '.__active-count': {
         borderRadius: '50%',
         color: token.colorWhite,
@@ -364,11 +345,6 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
         marginRight: 14
       },
 
-      '.ant-sw-header-container': {
-        paddingTop: token.padding,
-        paddingBottom: token.padding,
-        backgroundColor: token.colorBgDefault
-      },
       '.__setting-item': {
         height: 52,
         display: 'flex',
@@ -376,7 +352,6 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
       },
 
       '.ant-sw-header-center-part': {
-        color: token.colorTextLight1,
         fontSize: token.fontSizeHeading4,
         lineHeight: token.lineHeightHeading4,
         fontWeight: token.headingFontWeight
@@ -433,6 +408,7 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
         borderRadius: '50%'
       }
     },
+
     '&.about-subwallet-modal': {
       '.__setting-about-item': {
         marginBottom: 8

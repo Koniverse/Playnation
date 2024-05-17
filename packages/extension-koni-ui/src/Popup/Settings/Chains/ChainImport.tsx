@@ -275,6 +275,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   return (
     <PageWrapper className={`chain_import ${className}`}>
       <Layout.WithSubHeaderOnly
+        backgroundStyle={'secondary'}
         leftFooterButton={{
           onClick: onBack,
           children: t('Cancel')

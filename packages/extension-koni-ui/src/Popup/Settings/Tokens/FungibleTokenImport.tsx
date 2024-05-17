@@ -248,6 +248,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       resolve={dataContext.awaitStores(['assetRegistry'])}
     >
       <Layout.WithSubHeaderOnly
+        backgroundStyle={'secondary'}
         onBack={goBack}
         rightFooterButton={{
           block: true,

@@ -200,6 +200,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   return (
     <PageWrapper className={`general-setting ${className}`}>
       <Layout.WithSubHeaderOnly
+        backgroundStyle={'secondary'}
         onBack={goBack}
         title={t('General settings')}
       >

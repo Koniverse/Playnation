@@ -194,6 +194,7 @@ const Component: React.FC<Props> = (props: Props) => {
   return (
     <PageWrapper className={CN(className)}>
       <Layout.WithSubHeaderOnly
+        backgroundStyle={'secondary'}
         onBack={goBack}
         subHeaderIcons={subHeaderIcons}
         title={t('Manage address book')}

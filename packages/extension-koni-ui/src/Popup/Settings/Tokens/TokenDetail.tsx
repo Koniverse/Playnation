@@ -212,6 +212,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       resolve={dataContext.awaitStores(['assetRegistry'])}
     >
       <Layout.Base
+        backgroundStyle={'secondary'}
         leftFooterButton={leftFooterButtonProps()}
         onBack={goBack}
         rightFooterButton={rightFooterButtonProps()}

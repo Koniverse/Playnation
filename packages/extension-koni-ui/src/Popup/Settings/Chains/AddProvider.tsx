@@ -248,6 +248,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       resolve={dataContext.awaitStores(['chainStore'])}
     >
       <Layout.Base
+        backgroundStyle={'secondary'}
         leftFooterButton={{
           onClick: onCancel,
           children: t('Cancel')
