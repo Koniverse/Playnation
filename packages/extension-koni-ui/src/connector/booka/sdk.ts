@@ -10,7 +10,7 @@ import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
+export const GAME_API_HOST = process.env.GAME_API_HOST || 'http://localhost:3001';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'BookaGamesBot/swbooka';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
@@ -34,8 +34,8 @@ export class BookaSdk {
   private referralListSubject = new BehaviorSubject<ReferralRecord[]>([]);
   private gameItemMapSubject = new BehaviorSubject<Record<string, GameItem[]>>({});
   private gameInventoryItemListSubject = new BehaviorSubject<GameInventoryItem[]>([]);
-  private gameInventoryItemInGame = new BehaviorSubject<GameInventoryItem['inventoryInGame']>([]);
-  private gameItemInGame = new BehaviorSubject<InGameItem>([]);;
+  private gameInventoryItemInGame = new BehaviorSubject<GameInventoryItem['inventoryInGame']>({});
+  private gameItemInGame = new BehaviorSubject<Partial<Record<string, InGameItem>>>({});;
   private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
 
   constructor () {
@@ -121,7 +121,6 @@ export class BookaSdk {
   }
 
 public get gameItemInGameList() {
-  console.log(this.gameItemInGame.value)
   return this.gameItemInGame.value;
 }
 
