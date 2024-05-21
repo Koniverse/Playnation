@@ -769,3 +769,10 @@ div.ant-notification-notice {
   display: flex;
   justify-content: center;
 }
+
+/* button */
+
+.ant-btn.ant-btn >.anticon + span,
+.ant-btn.ant-btn > span + .anticon {
+  margin-inline-start: 4px
+}

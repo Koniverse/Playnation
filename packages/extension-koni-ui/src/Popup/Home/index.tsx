@@ -106,6 +106,16 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
           height: '100%'
         }
       }
+    },
+
+    '&.invitation-screen-wrapper': {
+      '.ant-sw-screen-layout-body': {
+        paddingBottom: 56,
+
+        '> div': {
+          height: '100%'
+        }
+      }
     }
   });
 });

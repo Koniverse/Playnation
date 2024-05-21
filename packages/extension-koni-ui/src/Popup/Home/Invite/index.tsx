@@ -1,18 +1,20 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
+import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
-import { GameLogo, GamePoint } from '@subwallet/extension-koni-ui/components/Games/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, ReferralRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { copyToClipboard, formatInteger } from '@subwallet/extension-koni-ui/utils';
-import { Button, Icon, Typography } from '@subwallet/react-ui';
+import { copyToClipboard, formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
+import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Copy, UserCirclePlus } from 'phosphor-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Copy, UserPlus } from 'phosphor-react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
@@ -33,12 +35,13 @@ const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/invite');
   const { t } = useTranslation();
   const [referralList, setReferralList] = useState<ReferralRecord[]>(apiSDK.referralList);
-  const [account, setAcount] = useState<BookaAccount | undefined>(apiSDK.account);
+  const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
+  const { setContainerClass } = useContext(HomeContext);
   const notify = useNotification();
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
-      setAcount(data);
+      setAccount(data);
     });
 
     const referralSub = apiSDK.subscribeReferralList().subscribe((data) => {
@@ -57,9 +60,8 @@ const Component = ({ className }: Props): React.ReactElement => {
     }
 
     const rank = account.attributes?.rank || 'iron';
-    const point = rankPointMap[rank] || 0;
 
-    return point;
+    return rankPointMap[rank] || 0;
   }, [account]);
 
   const inviteURL = useMemo(() => {
@@ -81,130 +83,238 @@ const Component = ({ className }: Props): React.ReactElement => {
     });
   }, [notify, t]);
 
-  return <div className={className}>
-    <div className={'invite-data'}>
-      <div className={'invite-reward'}>
-        <Typography.Title level={4}>
-          {t('Invite your friends and earn rewards!')}
-        </Typography.Title>
-        <div
-          className={'invite-item'}
-        >
-          <GameLogo size={40} />
-          <div className='invite-title'>
-            <Typography.Title
-              className={'__title'}
-              level={6}
-            >{t('Invite friend with link')}</Typography.Title>
-            <Typography.Text
-              className={'__sub-title'}
-              size={'sm'}
-            >
-              <GamePoint
-                preText={'up to'}
-                text={formatInteger(invitePoint)}
-              />
-            </Typography.Text>
+  useEffect(() => {
+    setContainerClass('invitation-screen-wrapper');
+
+    return () => {
+      setContainerClass(undefined);
+    };
+  }, [setContainerClass]);
+
+  return (
+    <div className={className}>
+      <div className='account-info-area'>
+        <GameAccountAvatar
+          avatarPath={account?.info.photoUrl || undefined}
+          className={'account-avatar'}
+          hasBoxShadow
+          size={5}
+        />
+        <div className='account-point'>
+          <div className='account-point-value'>
+            {formatIntegerShort(account?.attributes.point || 0)}
           </div>
+          <img
+            alt={'token'}
+            className='account-point-token'
+            src={DefaultLogosMap.token_icon}
+          />
         </div>
-        <div className={'copy-link-container'}>
+
+        <div className='friend-count'>
+          {referralList.length} {t('Friends')}
+        </div>
+      </div>
+
+      <div className='invitation-area'>
+        <div className='invitation-text'>
+          {t('Invite your friends and play together !')}
+        </div>
+
+        <div className='invitation-reward'>
+          {t('Up to')} {formatIntegerShort(invitePoint)}
+
+          <img
+            alt='token'
+            className={'invitation-reward-token'}
+            src={DefaultLogosMap.token_icon}
+          />
+        </div>
+
+        <div className='invitation-buttons'>
           <Button
-            className={'copy-link'}
-            icon={<Icon
-              phosphorIcon={Copy}
-              size={'md'} />}
-            onClick={copyLink}
-            size={'md'}
-            type={'ghost'}
+            block={true}
+            icon={(
+              <Icon
+                customSize={'20px'}
+                phosphorIcon={UserPlus}
+              />
+            )}
+            onClick={inviteFriend}
+            schema={'primary'}
+            shape={'round'}
+            size={'xs'}
           >
-            {t('Copy Invite Link')}
+            {t('Invite now')}
+          </Button>
+
+          <Button
+            block={true}
+            icon={(
+              <Icon
+                customSize={'20px'}
+                phosphorIcon={Copy}
+                weight={'fill'}
+              />
+            )}
+            onClick={copyLink}
+            schema={'secondary'}
+            shape={'round'}
+            size={'xs'}
+          >
+            {t('Copy Link')}
           </Button>
         </div>
       </div>
-      <div className='invite-friends'>
-        <Typography.Title level={4}>
-          {t('Your friends list')}
-        </Typography.Title>
-        <div className={'ref-list'}>
-          {referralList.map((item) => (
-            <GameAccount
-              avatar={item.accountInfo.avatar}
-              className={CN('account-info')}
-              key={item.accountInfo.id}
-              name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
-              point={item.point}
-            />
-          ))}
-        </div>
-      </div>
+
+      {
+        !!referralList.length && (
+          <div className={'friend-list-area'}>
+            <div className={'friend-list-title'}>
+              {t('Your friends list')}
+            </div>
+
+            <div className={'friend-list-scroller'}>
+              {referralList.map((item, index) => (
+                <GameAccount
+                  avatar={item.accountInfo.avatar}
+                  className={CN('friend-item')}
+                  key={`${item.accountInfo.id}-${index}`}
+                  name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
+                  point={item.point}
+                />
+              ))}
+            </div>
+          </div>
+        )
+      }
     </div>
-    <div className={'invite-footer'}>
-      <Button
-        icon={<Icon
-          phosphorIcon={UserCirclePlus}
-          size={'lg'}
-        />}
-        onClick={inviteFriend}
-      >
-        {t('Invite Friends')}
-      </Button>
-    </div>
-  </div>;
+  );
 };
 
 const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    height: '100%',
-    padding: token.padding,
+    overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
+    paddingLeft: token.paddingXS,
+    paddingRight: token.paddingXS,
 
-    '.invite-data': {
-      flex: 1,
-      overflow: 'auto'
-    },
-
-    '.copy-link-container': {
-      textAlign: 'center',
-      marginBottom: token.marginMD,
-
-      '.copy-link': {
-        color: token.colorPrimary
-      }
-    },
-
-    '.invite-item': {
-      alignItems: 'center',
+    '.account-info-area': {
       display: 'flex',
-      marginBottom: token.marginXS,
-      padding: token.paddingSM,
-      borderRadius: token.borderRadius,
-      backgroundColor: token.colorBgSecondary,
-
-      '.invite-banner': {
-        marginRight: token.marginSM
-      },
-
-      '.invite-title': {
-        flex: 1,
-        marginLeft: token.marginSM,
-
-        '.__title': {
-          marginBottom: 0
-        }
-      }
+      flexDirection: 'column',
+      alignItems: 'center',
+      paddingTop: token.paddingXXS,
+      paddingBottom: token.padding
     },
 
-    '.ref-list': {
-      '.account-info': {
-        marginBottom: token.marginXS
-      }
+    '.account-avatar': {
+      marginBottom: token.marginXS
     },
 
-    '.invite-footer': {
-      '.ant-btn': {
-        width: '100%'
-      }
+    '.account-point': {
+      display: 'flex',
+      gap: token.sizeXXS,
+      alignItems: 'center',
+      marginBottom: token.margin
+    },
+
+    '.account-point-value': {
+      color: token.colorTextDark2,
+      fontSize: token.fontSize,
+      lineHeight: token.lineHeight,
+      fontWeight: token.headingFontWeight
+    },
+
+    '.account-point-token': {
+      minWidth: 20,
+      height: 20
+    },
+
+    '.friend-count': {
+      color: token.colorTextDark1,
+      fontSize: token.fontSizeHeading3,
+      lineHeight: token.lineHeightHeading3,
+      fontWeight: token.headingFontWeight,
+      overflow: 'hidden',
+      'white-space': 'nowrap',
+      textOverflow: 'ellipsis',
+      textAlign: 'center',
+      paddingTop: token.paddingXXS,
+      paddingBottom: token.paddingXXS,
+      paddingLeft: token.padding,
+      paddingRight: token.padding
+    },
+
+    '.invitation-area': {
+      backgroundColor: token.colorWhite,
+      borderRadius: 20,
+      padding: token.padding,
+      marginBottom: token.margin
+    },
+
+    '.invitation-text': {
+      color: token.colorTextDark1,
+      fontSize: token.fontSizeLG,
+      lineHeight: token.lineHeightLG,
+      fontWeight: token.headingFontWeight,
+      textAlign: 'center',
+      marginBottom: token.marginXS
+    },
+
+    '.invitation-reward': {
+      color: token.colorTextDark3,
+      fontSize: token.fontSize,
+      lineHeight: token.lineHeight,
+      verticalAlign: 'baseline',
+      textAlign: 'center',
+      marginBottom: 22
+    },
+
+    '.invitation-reward-token': {
+      display: 'inline-block',
+      width: 20,
+      height: 20,
+      marginLeft: token.marginXXS
+    },
+
+    '.invitation-buttons': {
+      display: 'flex',
+      gap: token.sizeSM
+    },
+
+    '.friend-list-area': {
+      backgroundColor: token.colorWhite,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingTop: token.paddingXS,
+      paddingBottom: 34,
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden'
+    },
+
+    '.friend-list-title': {
+      minHeight: 40,
+      display: 'flex',
+      alignItems: 'center',
+      fontSize: token.fontSizeLG,
+      lineHeight: token.lineHeightLG,
+      paddingLeft: 24,
+      paddingRight: 24,
+      fontWeight: token.headingFontWeight,
+      marginBottom: token.marginXS
+    },
+
+    '.friend-list-scroller': {
+      overflow: 'auto',
+      paddingLeft: token.padding,
+      paddingRight: token.padding
+    },
+
+    '.friend-item': {
+      marginBottom: token.marginXS
     }
   };
 });
