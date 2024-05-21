@@ -3,3 +3,4 @@
 
 export { default as CollapsiblePanel } from './CollapsiblePanel';
 export { default as InstructionItem } from './InstructionItem';
+export { default as TabGroup } from './TabGroup';

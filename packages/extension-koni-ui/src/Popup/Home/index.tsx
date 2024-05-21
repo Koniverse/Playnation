@@ -10,6 +10,7 @@ import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType,
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';
+import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Outlet } from 'react-router';
@@ -25,6 +26,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const tokenGroupStructure = useTokenGroup(chainsByAccountType);
   const accountBalance = useAccountBalance(tokenGroupStructure.tokenGroupMap);
   const currentAccount = useSelector((state: RootState) => state.accountState.currentAccount);
+  const [containerClass, setContainerClass] = useState<string | undefined>();
 
   const mantaPayConfig = useGetMantaPayConfig(currentAccount?.address);
   const isZkModeSyncing = useSelector((state: RootState) => state.mantaPay.isSyncing);
@@ -65,10 +67,11 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     <>
       <HomeContext.Provider value={{
         tokenGroupStructure,
-        accountBalance
+        accountBalance,
+        setContainerClass
       }}
       >
-        <div className={`home home-container ${className}`}>
+        <div className={CN('home', 'home-container', className, containerClass)}>
           <Layout.Home
             backgroundStyle={backgroundStyle}
             onClickSearchIcon={onOpenGlobalSearchToken}
@@ -93,7 +96,17 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
 const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return ({
-    height: '100%'
+    height: '100%',
+
+    '&.leaderboard-screen-wrapper': {
+      '.ant-sw-screen-layout-body': {
+        paddingBottom: 0,
+
+        '> div': {
+          height: '100%'
+        }
+      }
+    }
   });
 });
 

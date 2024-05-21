@@ -26,6 +26,7 @@ export interface ExtraToken {
   colorBgSecondary1: string;
   colorBgSecondary2: string;
   colorBgSecondary3: string;
+  colorBgTranslucent: string;
   colorBgHover1: string;
   colorBgHover2: string;
   colorBgHover3: string;
@@ -63,6 +64,7 @@ function genDefaultExtraTokens (token: AliasToken): ExtraToken {
     colorBgSecondary1: '#fff',
     colorBgSecondary2: '#1F1F23',
     colorBgSecondary3: '#f0f0f0',
+    colorBgTranslucent: 'rgba(31, 31, 35, 0.12)',
     colorBgHover1: 'rgba(255, 255, 255, 0.85)',
     colorBgHover2: 'rgba(31, 31, 35, 0.85)',
     colorBgHover3: 'rgba(31, 31, 35, 0.06)',

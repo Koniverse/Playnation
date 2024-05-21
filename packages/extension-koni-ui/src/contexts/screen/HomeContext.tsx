@@ -22,5 +22,8 @@ export const HomeContext = React.createContext<HomeContextType>({
     tokenGroupMap: {},
     sortedTokenGroups: [],
     sortedTokenSlugs: []
-  }
+  },
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setContainerClass: () => {}
 });
