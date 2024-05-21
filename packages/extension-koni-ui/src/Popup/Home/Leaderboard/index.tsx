@@ -6,7 +6,8 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Icon, Typography } from '@subwallet/react-ui';
+import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
+import { Button, Icon, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { Trophy } from 'phosphor-react';
 import React, { useEffect, useState } from 'react';
@@ -20,16 +21,21 @@ const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/leaderboard');
   const [leaderBoard, setLeaderBoard] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
   const { t } = useTranslation();
+  const listButton = [
+    { name: t('Weekly'), key: 'weekly' }, { name: t('Monthly'), key: 'monthly' }, { name: t('Yearly'), key: 'yearly' }
+  ];
+  const [buttonCurrent, setButtonCurrent] = useState('weekly');
 
   useEffect(() => {
-    const leaderBoardSub = apiSDK.subscribeLeaderboard().subscribe((data) => {
+    const { end, start } = calculateStartAndEnd(buttonCurrent);
+    const leaderBoardSub = apiSDK.subscribeLeaderboard(start, end, 1, 100).subscribe((data) => {
       setLeaderBoard(data);
     });
 
     return () => {
       leaderBoardSub.unsubscribe();
     };
-  }, []);
+  }, [buttonCurrent]);
 
   const filteredLeaderBoard = leaderBoard.filter((item) => item.point > 0);
 
@@ -50,6 +56,20 @@ const Component = ({ className }: Props): React.ReactElement => {
           {t('Top Ranking')}
         </Typography.Title>
       </div>
+      <div className={'leaderboard-tab'}>
+        {listButton.map((item) => (
+          <Button
+            block={true}
+            className={buttonCurrent === item.key ? 'button-default' : ''}
+            key={item.key}
+            onClick={() => setButtonCurrent(item.key)}
+            size={'xs'}
+          >
+            {item.name}
+          </Button>
+        ))}
+      </div>
+
       <div className={'leaderboard-list'}>
         {filteredLeaderBoard.map((item) => (<div
           className={CN('leaderboard-item', { 'current-user-item': item.mine })}
@@ -134,6 +154,19 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
             backgroundColor: 'rgba(255, 186, 56, 0.10)'
           }
         }
+      },
+      '.leaderboard-tab': {
+        padding: '6px 10px 6px 10px',
+        gap: 12,
+        borderRadius: '24px 0px 0px 0px',
+        marginBottom: token.margin,
+        display: 'flex',
+        '.button-default': {
+          backgroundColor: token.colorWhite,
+          color: token.colorTextBase,
+          border: `1px solid ${token.colorTextBase}`
+        }
+
       }
     }
   };
