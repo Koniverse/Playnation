@@ -1,11 +1,11 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GAME_API_HOST } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
-import React, { useMemo } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 type GamePointProps = ThemeProps & {
@@ -17,24 +17,13 @@ type GamePointProps = ThemeProps & {
 };
 
 function Component ({ avatar, className, name, point, prefix }: GamePointProps) {
-  const avatarUrl = useMemo(() => {
-    if (avatar) {
-      return `${GAME_API_HOST}/${avatar}`;
-    }
-
-    return '/images/games/default-avatar.png';
-  }, [avatar]);
-
   return (
     <div className={CN(className)}>
       {prefix && <span className={'__prefix'}>{prefix}</span>}
-      <div className={'__avatar'}>
-        <img
-          alt={'avatar'}
-          className={'__avatar-image'}
-          src={avatarUrl}
-        />
-      </div>
+      <GameAccountAvatar
+        avatarPath={avatar}
+        className={'__avatar'}
+      />
       <span className={'__name'}>{name}</span>
       <span className={'__point'}>
         {formatIntegerShort(point)}
@@ -63,23 +52,7 @@ export const GameAccount = styled(Component)<GamePointProps>(({ theme: { token }
     },
 
     '.__avatar': {
-      marginRight: token.marginXS,
-      width: 28,
-      height: 28,
-      minWidth: 28,
-      border: `1px solid ${token.colorBgBorder}`,
-      padding: 2,
-      borderRadius: '100%',
-      backgroundColor: token.colorWhite
-    },
-
-    '.__avatar-image': {
-      border: `1px solid ${token.colorBgBorder}`,
-      display: 'block',
-      borderRadius: '100%',
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover'
+      marginRight: token.marginXS
     },
 
     '.__name': {

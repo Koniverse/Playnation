@@ -1,12 +1,12 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GAME_API_HOST } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
 import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
-import React, { useMemo } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & LeaderboardPerson & {
@@ -14,14 +14,6 @@ type Props = ThemeProps & LeaderboardPerson & {
 };
 
 const Component = ({ accountInfo, className, isFirst, point, rank }: Props): React.ReactElement => {
-  const avatarUrl = useMemo(() => {
-    if (accountInfo.avatar) {
-      return `${GAME_API_HOST}/${accountInfo.avatar}`;
-    }
-
-    return '/images/games/default-avatar.png';
-  }, [accountInfo.avatar]);
-
   return (
     <div className={CN(
       className, {
@@ -32,13 +24,12 @@ const Component = ({ accountInfo, className, isFirst, point, rank }: Props): Rea
         {rank}
       </div>
 
-      <div className='__avatar'>
-        <img
-          alt={'avatar'}
-          className={'__avatar-image'}
-          src={avatarUrl}
-        />
-      </div>
+      <GameAccountAvatar
+        avatarPath={accountInfo.avatar}
+        className={'__avatar'}
+        hasBoxShadow
+        size={isFirst ? 7 : 5}
+      />
 
       <div className={'__account-name'}>
         {`${accountInfo.firstName || ''} ${accountInfo.lastName || ''}`}
@@ -62,39 +53,15 @@ export const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendTo
     },
 
     '.__avatar': {
-      width: 80,
-      height: 80,
-      minWidth: 80,
-      border: `2px solid ${token.colorBgBorder}`,
-      padding: 6,
-      borderRadius: '100%',
-      boxShadow: '2px 4px 0px 0px rgba(31, 31, 35, 0.40)',
-      backgroundColor: token.colorWhite,
       marginLeft: 'auto',
       marginRight: 'auto',
       marginBottom: token.marginXS
-    },
-
-    '.__avatar-image': {
-      border: `2px solid ${token.colorBgBorder}`,
-      display: 'block',
-      borderRadius: '100%',
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover'
     },
 
     '&.-is-first ': {
       '.__rank': {
         fontSize: token.fontSizeHeading4,
         lineHeight: token.lineHeightHeading4
-      },
-
-      '.__avatar': {
-        width: 112,
-        height: 112,
-        minWidth: 112,
-        padding: 8
       }
     },
 

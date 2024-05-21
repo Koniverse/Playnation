@@ -227,7 +227,6 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
         'white-space': 'nowrap'
       }
     },
-
     // ---layout
 
     '.ant-sw-sub-header-container.ant-sw-sub-header-container .ant-sw-sub-header-title-content': {

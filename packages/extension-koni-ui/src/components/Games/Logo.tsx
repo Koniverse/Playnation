@@ -19,15 +19,15 @@ type GamePointProps = ThemeProps & {
 };
 
 export function GameLogo ({ className, size = 24 }: GameLogoProps) {
-  return <Image
+  return (<Image
     className={className}
     shape={'square'}
     src={'/images/games/logo.svg'}
     width={size}
-  />;
+  />);
 }
 
-function _GamePoint ({ className, size = 16, text, preText }: GamePointProps) {
+function _GamePoint ({ className, preText, size = 16, text }: GamePointProps) {
   return <div className={className}>
     {preText && <span className={'pre-text'}>{preText}</span>}
     <Image

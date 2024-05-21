@@ -33,3 +33,4 @@ export * from './StakingItem';
 export * from './TokenItem';
 export * from './WalletConnect';
 export * from './Shop';
+export * from './Games';
