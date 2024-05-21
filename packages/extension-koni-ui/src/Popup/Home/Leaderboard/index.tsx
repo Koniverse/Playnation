@@ -87,6 +87,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           !!filteredLeaderBoard[1] && (
             <TopAccountItem
               {...filteredLeaderBoard[1]}
+              rank={2}
             />
           )
         }
@@ -97,6 +98,7 @@ const Component = ({ className }: Props): React.ReactElement => {
             <TopAccountItem
               {...filteredLeaderBoard[0]}
               isFirst
+              rank={1}
             />
           )
         }
@@ -106,21 +108,29 @@ const Component = ({ className }: Props): React.ReactElement => {
           !!filteredLeaderBoard[2] && (
             <TopAccountItem
               {...filteredLeaderBoard[2]}
+              rank={3}
             />
           )
         }
       </div>
     </div>
+
     <div className={'leaderboard-container'}>
       {filteredLeaderBoard.length >= 3 && filteredLeaderBoard.slice(3).map((item) => (
-        <GameAccount
-          avatar={item.accountInfo.avatar}
-          className={CN('leaderboard-item')}
+        <div
+          className={CN('leaderboard-item-wrapper', {
+            '-is-sticky': item.mine
+          })}
           key={item.rank}
-          name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
-          point={item.point}
-          prefix={`${item.rank}`}
-        />
+        >
+          <GameAccount
+            avatar={item.accountInfo.avatar}
+            className={CN('leaderboard-item')}
+            name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
+            point={item.point}
+            prefix={`${item.rank}`}
+          />
+        </div>
       ))}
     </div>
   </div>;
@@ -160,16 +170,26 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
       paddingRight: token.paddingXS
     },
 
-    '.leaderboard-item': {
-      marginBottom: token.marginXS,
+    '.leaderboard-item-wrapper': {
+      marginBottom: token.marginXS
+    },
 
-      '&.current-user-item': {
-        position: 'sticky',
-        top: token.marginSM,
-        bottom: token.marginSM,
-        zIndex: 100,
-        '.account-info': {
-          boxShadow: `0 0 6px ${token.colorPrimary}`
+    '.leaderboard-item-wrapper.-is-sticky': {
+      position: 'sticky',
+      bottom: token.size,
+      zIndex: 100,
+
+      '.leaderboard-item': {
+        position: 'relative',
+        backgroundColor: token.colorPrimary,
+
+        '&:before': {
+          inset: 0,
+          borderRadius: 40,
+          display: 'block',
+          position: 'absolute',
+          content: '""',
+          border: `1px solid ${token.colorBgBorder}`
         }
       }
     },
