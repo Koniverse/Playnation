@@ -39,24 +39,33 @@ const Component = ({ className }: Props): React.ReactElement => {
   const sortedTaskList = useMemo(() => {
     const now = Date.now();
 
-    return taskList.sort((a, b) => {
-      if (a.status < b.status) {
-        return -1;
-      }
+    return taskList
+      .filter((task) => {
+        // Filter out the task that ended more than 1 day ago
+        if (!task.completedAt && task.endTime && new Date(task.endTime).getTime() < now) {
+          return false;
+        } else {
+          return true;
+        }
+      })
+      .sort((a, b) => {
+        if (a.status < b.status) {
+          return -1;
+        }
 
-      const aDisabled = ((a.startTime && new Date(a.startTime).getTime() > now) || (a.endTime && new Date(a.endTime).getTime() < now));
-      const bDisabled = ((b.startTime && new Date(b.startTime).getTime() > now) || (b.endTime && new Date(b.endTime).getTime() < now));
+        const aDisabled = ((a.startTime && new Date(a.startTime).getTime() > now) || (a.endTime && new Date(a.endTime).getTime() < now));
+        const bDisabled = ((b.startTime && new Date(b.startTime).getTime() > now) || (b.endTime && new Date(b.endTime).getTime() < now));
 
-      if (aDisabled && !bDisabled) {
-        return 1;
-      }
+        if (aDisabled && !bDisabled) {
+          return 1;
+        }
 
-      if (!aDisabled && bDisabled) {
-        return -1;
-      }
+        if (!aDisabled && bDisabled) {
+          return -1;
+        }
 
-      return 0;
-    });
+        return 0;
+      });
   }, [taskList]);
 
   return <div className={className}>
@@ -70,7 +79,10 @@ const Component = ({ className }: Props): React.ReactElement => {
       <Typography.Title level={4}>
         {t('Missions')}
       </Typography.Title>
-      {sortedTaskList.map((task) => (<TaskItem key={task.id} task={task} />))}
+      {sortedTaskList.map((task) => (<TaskItem
+        key={task.id}
+        task={task}
+      />))}
     </div>
   </div>;
 };
