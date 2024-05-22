@@ -18,7 +18,7 @@ type Props = ThemeProps & {
   taskCategory: TaskCategory | undefined;
 };
 
-const Component = ({ className, currentTaskCategory, onBackToCategoryList, actionReloadPoint, taskCategory, taskCategoryInfoMap }: Props): React.ReactElement => {
+const Component = ({ actionReloadPoint, className, currentTaskCategory, onBackToCategoryList, taskCategory, taskCategoryInfoMap }: Props): React.ReactElement => {
   const { t } = useTranslation();
 
   const sortedTaskList = useMemo(() => {
@@ -27,35 +27,35 @@ const Component = ({ className, currentTaskCategory, onBackToCategoryList, actio
     const taskList = currentTaskCategory ? taskCategoryInfoMap[currentTaskCategory]?.tasks || [] : [];
 
     return taskList.filter((task) => {
-        // Filter out the task that ended more than 1 day ago
-        if (!task.completedAt && task.endTime && new Date(task.endTime).getTime() < now) {
-          return false;
-        } else {
-          return true;
-        }
-      })
+      // Filter out the task that ended more than 1 day ago
+      if (!task.completedAt && task.endTime && new Date(task.endTime).getTime() < now) {
+        return false;
+      } else {
+        return true;
+      }
+    })
       .sort((a, b) => {
-      const aDisabled = ((a.startTime && new Date(a.startTime).getTime() > now) || (a.endTime && new Date(a.endTime).getTime() < now));
-      const bDisabled = ((b.startTime && new Date(b.startTime).getTime() > now) || (b.endTime && new Date(b.endTime).getTime() < now));
+        const aDisabled = ((a.startTime && new Date(a.startTime).getTime() > now) || (a.endTime && new Date(a.endTime).getTime() < now));
+        const bDisabled = ((b.startTime && new Date(b.startTime).getTime() > now) || (b.endTime && new Date(b.endTime).getTime() < now));
 
-      if (aDisabled && !bDisabled) {
-        return 1;
-      }
+        if (aDisabled && !bDisabled) {
+          return 1;
+        }
 
-      if (!aDisabled && bDisabled) {
-        return -1;
-      }
+        if (!aDisabled && bDisabled) {
+          return -1;
+        }
 
-      if (a.status === 0 && b.status !== 0) {
-        return -1;
-      }
+        if (a.status === 0 && b.status !== 0) {
+          return -1;
+        }
 
-      if (a.status !== 0 && b.status === 0) {
-        return 1;
-      }
+        if (a.status !== 0 && b.status === 0) {
+          return 1;
+        }
 
-      return a.status - b.status;
-    });
+        return a.status - b.status;
+      });
   }, [currentTaskCategory, taskCategoryInfoMap]);
 
   return (
@@ -79,8 +79,8 @@ const Component = ({ className, currentTaskCategory, onBackToCategoryList, actio
 
       {sortedTaskList.map((task) => (
         <TaskItem
-          key={task.id}
           actionReloadPoint={actionReloadPoint}
+          key={task.id}
           task={task}
         />
       ))}
