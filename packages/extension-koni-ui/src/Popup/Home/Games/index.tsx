@@ -5,6 +5,7 @@ import { GameAccountBlock, GameCardItem, ShopModal } from '@subwallet/extension-
 import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig, Game, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -28,6 +29,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { activeModal } = useContext(ModalContext);
   const [account, setAccount] = useState(apiSDK.account);
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
+  const { setContainerClass } = useContext(HomeContext);
 
   const exitGame = useCallback(() => {
     if (gameIframe.current) {
@@ -98,13 +100,22 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, []);
 
+  useEffect(() => {
+    setContainerClass('game-screen-wrapper');
+
+    return () => {
+      setContainerClass(undefined);
+    };
+  }, [setContainerClass]);
+
   return (
     <div className={className}>
-
-      <GameAccountBlock
-        accountInfo={account}
-        maxEnergy={energyConfig?.maxEnergy}
-      />
+      <div className='game-account-block-wrapper'>
+        <GameAccountBlock
+          accountInfo={account}
+          maxEnergy={energyConfig?.maxEnergy}
+        />
+      </div>
 
       <div className='game-card-list-container'>
         {
@@ -140,10 +151,22 @@ const Component = ({ className }: Props): React.ReactElement => {
 
 const Games = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    padding: token.padding,
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
 
-    '.account-info': {
-      marginBottom: token.margin
+    '.game-account-block-wrapper': {
+      paddingLeft: token.sizeXS,
+      paddingRight: token.sizeXS,
+      paddingBottom: token.padding
+    },
+
+    '.game-card-list-container': {
+      flex: 1,
+      overflow: 'auto',
+      paddingLeft: token.sizeXS,
+      paddingRight: token.sizeXS,
+      paddingBottom: 34
     },
 
     '.game-card-item': {
