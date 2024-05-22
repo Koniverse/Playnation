@@ -1,17 +1,16 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ShopModal } from '@subwallet/extension-koni-ui/components';
+import { GameCardItem, ShopModal } from '@subwallet/extension-koni-ui/components';
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
 import GameEnergy from '@subwallet/extension-koni-ui/components/Games/GameEnergy';
 import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig, Game, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, Icon, Image, ModalContext, Typography } from '@subwallet/react-ui';
-import CN from 'classnames';
+import { Button, Icon, ModalContext } from '@subwallet/react-ui';
 import { ShoppingBag } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
@@ -19,18 +18,6 @@ import styled from 'styled-components';
 type Props = ThemeProps;
 
 const apiSDK = BookaSdk.instance;
-
-function checkComingSoon (game: Game): boolean {
-  if (!game.startTime) {
-    return false;
-  }
-
-  // Check coming soon by start time
-  const gameStartTime = new Date(game.startTime).getTime();
-
-  return gameStartTime > Date.now();
-}
-
 const shopModalId = ShopModalId;
 
 const Component = ({ className }: Props): React.ReactElement => {
@@ -44,7 +31,6 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { activeModal } = useContext(ModalContext);
   const [account, setAccount] = useState(apiSDK.account);
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
-  const { t } = useTranslation();
 
   const exitGame = useCallback(() => {
     if (gameIframe.current) {
@@ -114,116 +100,64 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, []);
 
-  return <div className={className}>
-    {account && <div className={'account-info'}>
-      <GameAccount
-        avatar={account.info.photoUrl}
-        className={'account-info'}
-        name={`${account.info.firstName || ''} ${account.info.lastName || ''}`}
-        point={account.attributes.point}
-      />
-      <GameEnergy
-        energy={account.attributes.energy}
-        maxEnergy={energyConfig?.maxEnergy}
-        startTime={account.attributes.lastEnergyUpdated}
-      />
+  return (
+    <div className={className}>
+      {account && <div className={'account-info'}>
+        <GameAccount
+          avatar={account.info.photoUrl}
+          className={'account-info'}
+          name={`${account.info.firstName || ''} ${account.info.lastName || ''}`}
+          point={account.attributes.point}
+        />
+        <GameEnergy
+          energy={account.attributes.energy}
+          maxEnergy={energyConfig?.maxEnergy}
+          startTime={account.attributes.lastEnergyUpdated}
+        />
 
-      <Button
-        icon={(
-          <Icon
-            phosphorIcon={ShoppingBag}
-            size='md'
-          />
-        )}
-        onClick={onOpenShop()}
-        size='xs'
-        type='ghost'
-      />
-    </div>}
-    {gameList.map((game) => (<div
-      className={CN('game-item', { 'coming-soon': checkComingSoon(game) })}
-      key={`game-${game.id}`}
-    >
-      <div className='game-banner'>
-        <Image
-          shape={'square'}
-          src={game.banner}
-          width={'100%'}
-        />
-      </div>
-      <div className='game-info'>
-        <Image
-          className={'game-icon'}
-          src={game.icon}
-          width={40}
-        />
-        <div className={'game-text-info'}>
-          <Typography.Title
-            className={'__title'}
-            level={5}
-          >
-            {game.name}
-          </Typography.Title>
-          <Typography.Text
-            className={'__sub-title'}
-            size={'sm'}
-          >{game.description}</Typography.Text>
-          <Typography.Title
-            className={'__coming-soon-title'}
-            level={5}
-          >
-            {t('Coming soon')}
-          </Typography.Title>
-        </div>
-        <div className={'play-area'}>
-          <div>
-            <Button
-              icon={(
-                <Icon
-                  phosphorIcon={ShoppingBag}
-                  size='md'
-                />
-              )}
-              onClick={onOpenShop(game.id)}
-              size='xs'
-              type='ghost'
+        <Button
+          icon={(
+            <Icon
+              phosphorIcon={ShoppingBag}
+              size='md'
             />
+          )}
+          onClick={onOpenShop()}
+          size='xs'
+          type='ghost'
+        />
+      </div>}
 
-            <Button
-              className={'play-button'}
-              onClick={playGame(game)}
-              size={'xs'}
-            >
-              {t('Open')}
-            </Button>
-          </div>
-
-          <Typography.Text
-            className={'game-energy'}
-            size={'sm'}
-          >
-            {t('{{energy}} energy / game', { energy: game.energyPerGame })}
-          </Typography.Text>
-        </div>
+      <div className='game-card-list-container'>
+        {
+          gameList.map((g) => (
+            <GameCardItem
+              className={'game-card-item'}
+              item={g}
+              key={g.id}
+              onPlay={playGame(g)}
+            />
+          ))
+        }
       </div>
-    </div>))}
 
-    {currentGame && <div className={'game-play'}>
-      <iframe
-        className={'game-iframe'}
-        key={`gameplay-${currentGame.id}`}
-        ref={gameIframe}
-        src={currentGame.url}
+      {currentGame && <div className={'game-play'}>
+        <iframe
+          className={'game-iframe'}
+          key={`gameplay-${currentGame.id}`}
+          ref={gameIframe}
+          src={currentGame.url}
+        />
+      </div>}
+
+      <ShopModal
+        energyConfig={energyConfig}
+        gameId={currentGameShopId}
+        gameInventoryItemList={gameInventoryItemList}
+        gameItemMap={gameItemMap}
       />
-    </div>}
-
-    <ShopModal
-      energyConfig={energyConfig}
-      gameId={currentGameShopId}
-      gameInventoryItemList={gameInventoryItemList}
-      gameItemMap={gameItemMap}
-    />
-  </div>;
+    </div>
+  );
 };
 
 const Games = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
@@ -232,6 +166,10 @@ const Games = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
 
     '.account-info': {
       marginBottom: token.margin
+    },
+
+    '.game-card-item': {
+      marginBottom: token.marginSM
     },
 
     '.game-play': {
@@ -252,80 +190,10 @@ const Games = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
       }
     },
 
-    '.game-info': {
-      display: 'flex',
-      alignItems: 'center',
-      width: '100%',
-      padding: token.padding
-    },
-
-    '.__coming-soon-title': {
-      display: 'none'
-    },
-
-    '.game-text-info': {
-      flex: 1,
-      marginLeft: token.marginXS,
-
-      '.__title': {
-        marginBottom: 0
-      },
-
-      '.__sub-title': {
-        color: 'rgba(0, 0, 0, 0.65)'
-      }
-    },
-
-    '.play-area': {
-      textAlign: 'right'
-    },
-
     '.game-energy': {
       display: 'block',
       color: 'rgba(0, 0, 0, 0.65)',
       borderRadius: token.borderRadius
-    },
-
-    '.game-item': {
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      backgroundColor: token['gray-1'],
-      borderRadius: token.borderRadius,
-      border: 0,
-      marginBottom: '10px',
-      overflow: 'hidden',
-
-      '& img': {
-        width: '100%',
-        height: 'auto'
-      },
-
-      '&.coming-soon': {
-        '.game-banner': {
-          overflow: 'hidden',
-          img: {
-            filter: 'blur(8px)'
-          }
-        },
-
-        '.game-text-info': {
-          '.__title, .__sub-title': {
-            display: 'none'
-          },
-
-          '.__coming-soon-title': {
-            display: 'block',
-            marginTop: 0,
-            marginBottom: 0
-          }
-        },
-
-        '.play-area': {
-          display: 'none'
-        }
-      }
     }
   };
 });

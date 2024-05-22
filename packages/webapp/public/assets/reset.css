@@ -772,6 +772,10 @@ div.ant-notification-notice {
 
 /* button */
 
+.ant-btn.ant-btn {
+  font-weight: 500;
+}
+
 .ant-btn.ant-btn >.anticon + span,
 .ant-btn.ant-btn > span + .anticon {
   margin-inline-start: 4px
