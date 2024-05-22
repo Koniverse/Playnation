@@ -1,17 +1,14 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GameCardItem, ShopModal } from '@subwallet/extension-koni-ui/components';
-import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
-import GameEnergy from '@subwallet/extension-koni-ui/components/Games/GameEnergy';
+import { GameAccountBlock, GameCardItem, ShopModal } from '@subwallet/extension-koni-ui/components';
 import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig, Game, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, Icon, ModalContext } from '@subwallet/react-ui';
-import { ShoppingBag } from 'phosphor-react';
+import { ModalContext } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
@@ -63,6 +60,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [exitGame]);
 
+  // @ts-ignore
   const onOpenShop = useCallback((gameId?: number) => {
     return () => {
       setCurrentGameShopId(gameId);
@@ -102,31 +100,11 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   return (
     <div className={className}>
-      {account && <div className={'account-info'}>
-        <GameAccount
-          avatar={account.info.photoUrl}
-          className={'account-info'}
-          name={`${account.info.firstName || ''} ${account.info.lastName || ''}`}
-          point={account.attributes.point}
-        />
-        <GameEnergy
-          energy={account.attributes.energy}
-          maxEnergy={energyConfig?.maxEnergy}
-          startTime={account.attributes.lastEnergyUpdated}
-        />
 
-        <Button
-          icon={(
-            <Icon
-              phosphorIcon={ShoppingBag}
-              size='md'
-            />
-          )}
-          onClick={onOpenShop()}
-          size='xs'
-          type='ghost'
-        />
-      </div>}
+      <GameAccountBlock
+        accountInfo={account}
+        maxEnergy={energyConfig?.maxEnergy}
+      />
 
       <div className='game-card-list-container'>
         {
