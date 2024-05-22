@@ -71,7 +71,6 @@ const Component = (): React.ReactElement => {
           setTimeout(() => {
             if (topBlockRef.current) {
               topBlockRef.current.style.opacity = '1';
-              topBlockRef.current.style.paddingTop = '32px';
             }
           }, 100);
         }
@@ -92,7 +91,6 @@ const Component = (): React.ReactElement => {
           setTimeout(() => {
             if (topBlockRef.current) {
               topBlockRef.current.style.opacity = '1';
-              topBlockRef.current.style.paddingTop = '32px';
             }
           }, 100);
         }
@@ -304,7 +302,6 @@ const Tokens = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, tok
 
     '.tokens-screen-container': {
       height: '100%',
-      color: token.colorTextLight1,
       fontSize: token.fontSizeLG,
       position: 'relative',
       display: 'flex',
@@ -321,14 +318,11 @@ const Tokens = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, tok
 
     '.__upper-block-wrapper': {
       position: 'absolute',
-      paddingTop: '32px',
       height: 210,
       zIndex: 10,
       top: 0,
       left: 0,
       width: '100%',
-      display: 'flex',
-      alignItems: 'center',
       transition: 'opacity, padding-top 0.27s ease',
 
       '&.-is-shrink': {
