@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { TaskCategoryInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TaskCategory, TaskCategoryInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import TaskItem from '@subwallet/extension-koni-ui/Popup/Home/Mission/TaskItem';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -14,9 +14,11 @@ type Props = ThemeProps & {
   currentTaskCategory?: number;
   taskCategoryInfoMap: Record<number, TaskCategoryInfo>;
   onBackToCategoryList: VoidFunction;
+  actionReloadPoint: VoidFunction;
+  taskCategory: TaskCategory | undefined;
 };
 
-const Component = ({ className, currentTaskCategory, onBackToCategoryList, taskCategoryInfoMap }: Props): React.ReactElement => {
+const Component = ({ className, currentTaskCategory, onBackToCategoryList, actionReloadPoint, taskCategory, taskCategoryInfoMap }: Props): React.ReactElement => {
   const { t } = useTranslation();
 
   const sortedTaskList = useMemo(() => {
@@ -63,13 +65,14 @@ const Component = ({ className, currentTaskCategory, onBackToCategoryList, taskC
         />
 
         <Typography.Title level={4}>
-          {t('Missions')}
+          {taskCategory ? taskCategory.name : t('Missions')}
         </Typography.Title>
       </div>
 
       {sortedTaskList.map((task) => (
         <TaskItem
           key={task.id}
+          actionReloadPoint={actionReloadPoint}
           task={task}
         />
       ))}

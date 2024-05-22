@@ -16,13 +16,14 @@ import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = {
-  task: Task
+  task: Task,
+  actionReloadPoint: VoidFunction;
 } & ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
 
-const _TaskItem = ({ className, task }: Props): React.ReactElement => {
+const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
@@ -36,6 +37,7 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
     apiSDK.finishTask(taskId)
       .finally(() => {
         setTaskLoading(false);
+        actionReloadPoint();
       })
       .catch(console.error);
 

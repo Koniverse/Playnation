@@ -65,12 +65,26 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [account, setAccount] = useState(apiSDK.account);
   const [currentViewMode, setCurrentViewMode] = useState<ViewMode>(ViewMode.CATEGORY_LIST);
   const [currentTaskCategory, setCurrentTaskCategory] = useState<number | undefined>();
+  const [taskCategory, setTaskCategory] = useState<TaskCategory | undefined>();
+  const [reloadAccount, setReloadAccount] = useState<number>(0);
+  const [point, setPoint] = useState(account?.attributes.point || 0);
+
+  const actionReloadPoint = useCallback(() => {
+    setReloadAccount(reloadAccount + 1);
+  }, [reloadAccount]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
       setAccount(data);
+      setPoint(data?.attributes.point || 0);
     });
 
+    return () => {
+      accountSub.unsubscribe();
+    };
+  }, [reloadAccount]);
+
+  useEffect(() => {
     const taskCategoryListSub = apiSDK.subscribeTaskCategoryList().subscribe((data) => {
       setTaskCategoryList(data);
     });
@@ -88,7 +102,6 @@ const Component = ({ className }: Props): React.ReactElement => {
     });
 
     return () => {
-      accountSub.unsubscribe();
       taskCategoryListSub.unsubscribe();
       taskListSub.unsubscribe();
       clearInterval(taskListUpdaterInterval);
@@ -98,6 +111,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const onClickCategoryItem = useCallback((categoryId: number) => {
     setCurrentViewMode(ViewMode.TASK_LIST);
     setCurrentTaskCategory(categoryId);
+    setTaskCategory(taskCategoryList.find((tc) => tc.id === categoryId));
   }, []);
 
   const onBackToCategoryList = useCallback(() => {
@@ -112,7 +126,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           avatar={account.info.photoUrl}
           className={'account-info'}
           name={`${account.info.firstName || ''} ${account.info.lastName || ''}`}
-          point={account.attributes.point}
+          point={point}
         />
       )}
 
@@ -131,6 +145,8 @@ const Component = ({ className }: Props): React.ReactElement => {
           <TaskList
             currentTaskCategory={currentTaskCategory}
             onBackToCategoryList={onBackToCategoryList}
+            taskCategory={taskCategory}
+            actionReloadPoint={actionReloadPoint}
             taskCategoryInfoMap={taskCategoryInfoMap}
           />
         )
