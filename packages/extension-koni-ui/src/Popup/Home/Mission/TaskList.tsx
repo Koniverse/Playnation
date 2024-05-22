@@ -26,7 +26,15 @@ const Component = ({ className, currentTaskCategory, onBackToCategoryList, actio
 
     const taskList = currentTaskCategory ? taskCategoryInfoMap[currentTaskCategory]?.tasks || [] : [];
 
-    return taskList.sort((a, b) => {
+    return taskList.filter((task) => {
+        // Filter out the task that ended more than 1 day ago
+        if (!task.completedAt && task.endTime && new Date(task.endTime).getTime() < now) {
+          return false;
+        } else {
+          return true;
+        }
+      })
+      .sort((a, b) => {
       const aDisabled = ((a.startTime && new Date(a.startTime).getTime() > now) || (a.endTime && new Date(a.endTime).getTime() < now));
       const bDisabled = ((b.startTime && new Date(b.startTime).getTime() > now) || (b.endTime && new Date(b.endTime).getTime() < now));
 
