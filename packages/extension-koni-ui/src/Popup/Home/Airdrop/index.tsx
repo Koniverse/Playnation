@@ -1,81 +1,148 @@
+// Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { AirdropCampaignRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Typography } from '@subwallet/react-ui';
-import React from 'react';
+import { Image, Typography } from '@subwallet/react-ui';
+import CN from 'classnames';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
 
-const Component = ({ className }: Props): React.ReactElement => {
+const apiSDK = BookaSdk.instance;
+
+const formatDate = (date: string | number | Date) => {
+  return new Date(date).toISOString().split('T')[0];
+};
+
+const AirdropComponent: React.FC<Props> = ({ className }) => {
   useSetCurrentPage('/home/airdrop');
-  const { t } = useTranslation();
+  const [airdropCampaign, setAirdropCampaign] = useState<AirdropCampaignRecord[]>([]);
+
+  useEffect(() => {
+    const subscription = apiSDK.subscribeAirdropCampaign().subscribe((data) => {
+      setAirdropCampaign(data);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const renderContent = () => {
+    if (!airdropCampaign.length) {
+      return null;
+    }
+
+    return (
+      <div>
+        {airdropCampaign.map((item: AirdropCampaignRecord) => (
+          <div
+            className={CN('game-item')}
+            key={`game-${item.id}`}
+          >
+            <div className='game-banner'>
+              <Image
+                shape={'square'}
+                src={item.banner}
+                width={'100%'}
+              />
+            </div>
+            <div className='game-info'>
+              <div className={'game-text-info'}>
+                <Typography.Title
+                  className={'__title'}
+                  level={5}
+                >
+                  {item.name}
+                </Typography.Title>
+                <Typography.Text
+                  className={'__sub-title'}
+                  size={'sm'}
+                >
+                  <strong>Method:</strong> {item.method}
+                </Typography.Text>
+                <br />
+                <Typography.Text
+                  className={'__sub-title'}
+                  size={'sm'}
+                >
+                  <strong>Token:</strong> {item.total_tokens} {item.symbol} - {item.network}
+                </Typography.Text>
+              </div>
+              <div className={'play-area'}>
+                <Typography.Text
+                  className={'game-energy'}
+                  size={'sm'}
+                >
+                  <strong>Start:</strong> {formatDate(item.start)} - <strong>End:</strong> {formatDate(item.end)}
+                </Typography.Text>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className={className}>
-      <div className='invite-data'>
-        <div className='invite-friends text-center'>
-          <Typography.Title level={2} className='title'>
-            {t('Airdrop Coming Soon')}
-          </Typography.Title>
-          <div className='description'>
-            <Typography.Text className='paragraph'>
-              {t('We are excited to announce our upcoming airdrop event!')}
-            </Typography.Text>
-            <Typography.Text className='paragraph'>
-              {t('This is a special opportunity for our community to earn rewards and participate in the growth of our platform.')}
-            </Typography.Text>
-            <Typography.Text className='paragraph'>
-              {t('Stay tuned for more details on how to participate, the eligibility criteria, and the rewards you can earn. Make sure to follow us on social media and keep an eye on your email for the latest updates.')}
-            </Typography.Text>
-            <Typography.Text className='paragraph'>
-              {t('Thank you for being a valued member of our community. We look forward to your participation in this exciting event!')}
-            </Typography.Text>
-          </div>
-        </div>
-      </div>
+      <div className='invite-data'>{renderContent()}</div>
     </div>
   );
 };
 
-const Airdrop = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => ({
-  height: '100%',
-  padding: token.paddingLG,
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: token.colorBgContainer,
-  '.invite-data': {
-    flex: 1,
-    overflow: 'auto',
+const Airdrop = styled(AirdropComponent)<ThemeProps>(({ theme: { token } }: ThemeProps) => ({
+  padding: token.padding,
+
+  '.game-item': {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: token['gray-1'],
+    borderRadius: token.borderRadius,
+    border: 0,
+    marginBottom: '10px',
+    overflow: 'hidden',
+
+    '& img': {
+      width: '100%',
+      height: 'auto'
+    }
+  },
+
+  '.game-info': {
+    display: 'flex',
+    alignItems: 'center',
     width: '100%',
-    maxWidth: '800px',
-    padding: token.paddingLG,
-    borderRadius: token.borderRadiusLG,
-    boxShadow: token.boxShadow
+    padding: token.padding
   },
-  '.invite-friends': {
-    textAlign: 'center',
-    padding: token.padding,
-  },
-  '.title': {
-    marginBottom: token.marginLG,
-    color: token.colorPrimary,
-  },
-  '.description': {
-    marginTop: token.marginMD,
-    color: token.colorTextSecondary,
-    lineHeight: '1.8',
-    textAlign: 'left',
-    '> *:not(:last-child)': {
-      marginBottom: token.marginSM,
+
+  '.game-text-info': {
+    flex: 1,
+    marginLeft: token.marginXS,
+
+    '.__title': {
+      marginBottom: 0
     },
+
+    '.__sub-title': {
+      color: 'rgba(0, 0, 0, 0.65)'
+    }
   },
-  '.paragraph': {
-    marginBottom: token.marginMD,
-    fontSize: token.fontSizeLG,
+
+  '.play-area': {
+    textAlign: 'right'
+  },
+
+  '.game-energy': {
+    display: 'block',
+    color: 'rgba(0, 0, 0, 0.65)',
+    borderRadius: token.borderRadius
   }
 }));
 

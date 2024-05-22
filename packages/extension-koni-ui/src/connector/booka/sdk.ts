@@ -3,7 +3,7 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { BookaAccount, Game, GamePlay, LeaderboardPerson, ReferralRecord, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AirdropCampaignRecord, BookaAccount, Game, GamePlay, LeaderboardPerson, ReferralRecord, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
@@ -28,6 +28,7 @@ export class BookaSdk {
   private currentGamePlaySubject = new BehaviorSubject<GamePlay | undefined>(undefined);
   private leaderBoardSubject = new BehaviorSubject<LeaderboardPerson[]>([]);
   private referralListSubject = new BehaviorSubject<ReferralRecord[]>([]);
+  private airdropCampaign = new BehaviorSubject<AirdropCampaignRecord[]>([]);
 
   constructor () {
     storage.getItems(Object.values(CACHE_KEYS)).then(([account, tasks, game]) => {
@@ -230,7 +231,7 @@ export class BookaSdk {
       storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
       this.syncHandler.resolve();
 
-      await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchLeaderboard()]);
+      await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchLeaderboard(), this.fetchAirdropCampaign()]);
     } else {
       throw new Error('Failed to sync account');
     }
@@ -320,6 +321,18 @@ export class BookaSdk {
     } else {
       throw new Error('Account not found');
     }
+  }
+
+  async fetchAirdropCampaign () {
+    const airdropCampaignResponse = await this.getRequest<AirdropCampaignRecord[]>(`${GAME_API_HOST}/api/airdrop/list-airdrop-campaign`);
+
+    if (airdropCampaignResponse) {
+      this.airdropCampaign.next(airdropCampaignResponse);
+    }
+  }
+
+  subscribeAirdropCampaign () {
+    return this.airdropCampaign;
   }
 
   // Singleton
