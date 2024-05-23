@@ -3,9 +3,9 @@
 
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AirdropCampaignRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import {  Image, Typography } from '@subwallet/react-ui';
+import { Image, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
@@ -21,7 +21,6 @@ const formatDate = (date: string | number | Date) => {
 const AirdropComponent: React.FC<Props> = ({ className }) => {
   useSetCurrentPage('/home/airdrop');
   const [airdropCampaign, setAirdropCampaign] = useState<AirdropCampaignRecord[]>([]);
-  const { t } = useTranslation();
 
   useEffect(() => {
     const subscription = apiSDK.subscribeAirdropCampaign().subscribe((data) => {
