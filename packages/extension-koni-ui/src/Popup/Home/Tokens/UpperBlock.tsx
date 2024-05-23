@@ -2,13 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { GameEnergyBar } from '@subwallet/extension-koni-ui/components';
-import { useSelector, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { EnergyConfig } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { useGetEnergyInfo, useSelector, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { reloadCron, saveShowBalance } from '@subwallet/extension-koni-ui/messaging';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, Number, SwNumberProps, Tag } from '@subwallet/react-ui';
 import { ArrowsClockwise, CopySimple, Eye, EyeSlash, Lightning, PaperPlaneTilt, ShoppingCartSimple } from 'phosphor-react';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
@@ -23,6 +25,8 @@ type Props = ThemeProps & {
   onOpenSwap: () => void;
 };
 
+const apiSDK = BookaSdk.instance;
+
 function Component (
   { className = '',
     isPriceDecrease,
@@ -36,6 +40,14 @@ function Component (
   const { t } = useTranslation();
   const { isShowBalance } = useSelector((state) => state.settings);
   const [reloading, setReloading] = useState(false);
+  const [account, setAccount] = useState(apiSDK.account);
+  const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
+
+  const { currentEnergy } = useGetEnergyInfo({
+    startTime: account?.attributes.lastEnergyUpdated,
+    energy: account?.attributes.energy,
+    maxEnergy: energyConfig?.maxEnergy
+  });
 
   const onChangeShowBalance = useCallback(() => {
     saveShowBalance(!isShowBalance).catch(console.error);
@@ -48,6 +60,21 @@ function Component (
       .finally(() => {
         setReloading(false);
       });
+  }, []);
+
+  useEffect(() => {
+    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
+      setAccount(data);
+    });
+
+    const energyConfigSub = apiSDK.subscribeEnergyConfig().subscribe((data) => {
+      setEnergyConfig(data);
+    });
+
+    return () => {
+      accountSub.unsubscribe();
+      energyConfigSub.unsubscribe();
+    };
   }, []);
 
   return (
@@ -83,10 +110,10 @@ function Component (
                   weight={'fill'}
                 />
 
-                <span>{formatIntegerShort(500)}</span>
+                <span>{formatIntegerShort(currentEnergy || 0)}</span>
               </span>
               <span className='__max-energy-value'>
-              /{formatIntegerShort(1000)}
+              /{formatIntegerShort(energyConfig?.maxEnergy || 0)}
               </span>
             </div>
           )
@@ -159,17 +186,17 @@ function Component (
                   weight={'fill'}
                 />
 
-                <span>{formatIntegerShort(500)}</span>
+                <span>{formatIntegerShort(currentEnergy || 0)}</span>
               </span>
               <span className='__max-energy-value'>
-              /{formatIntegerShort(1000)}
+              /{formatIntegerShort(energyConfig?.maxEnergy || 0)}
               </span>
             </div>
 
             <GameEnergyBar
               className={'__game-energy-bar'}
-              currentEnergy={500}
-              maxEnergy={1000}
+              currentEnergy={currentEnergy}
+              maxEnergy={energyConfig?.maxEnergy}
             />
           </div>
         </>

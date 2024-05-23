@@ -6,7 +6,7 @@ import { AccountSelectorModal } from '@subwallet/extension-koni-ui/components/Mo
 import ReceiveQrModal from '@subwallet/extension-koni-ui/components/Modal/ReceiveModal/ReceiveQrModal';
 import { TokensSelectorModal } from '@subwallet/extension-koni-ui/components/Modal/ReceiveModal/TokensSelectorModal';
 import { TokenGroupBalanceItem } from '@subwallet/extension-koni-ui/components/TokenItem/TokenGroupBalanceItem';
-import { DEFAULT_TRANSFER_PARAMS, TRANSFER_TRANSACTION } from '@subwallet/extension-koni-ui/constants';
+import { CUSTOMIZE_MODAL, DEFAULT_TRANSFER_PARAMS, TRANSFER_TRANSACTION } from '@subwallet/extension-koni-ui/constants';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
@@ -18,9 +18,9 @@ import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps, TransferParams } from '@subwallet/extension-koni-ui/types';
 import { TokenBalanceItemType } from '@subwallet/extension-koni-ui/types/balance';
 import { isAccountAll, openInNewTab, sortTokenByValue } from '@subwallet/extension-koni-ui/utils';
-import { Button, Icon, SwAlert } from '@subwallet/react-ui';
+import { Button, Icon, ModalContext, SwAlert } from '@subwallet/react-ui';
 import classNames from 'classnames';
-import { Coins, FadersHorizontal } from 'phosphor-react';
+import { Coins, FadersHorizontal, MagnifyingGlass } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -29,9 +29,12 @@ import { useLocalStorage } from 'usehooks-ts';
 
 type Props = ThemeProps;
 
+const GlobalSearchTokenModalId = 'globalSearchToken';
+
 const Component = (): React.ReactElement => {
   useSetCurrentPage('/home/tokens');
   const { t } = useTranslation();
+  const { activeModal } = useContext(ModalContext);
   const [isShrink, setIsShrink] = useState<boolean>(false);
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,7 +75,7 @@ const Component = (): React.ReactElement => {
             if (topBlockRef.current) {
               topBlockRef.current.style.opacity = '1';
             }
-          }, 100);
+          }, 50);
         }
 
         return true;
@@ -92,7 +95,7 @@ const Component = (): React.ReactElement => {
             if (topBlockRef.current) {
               topBlockRef.current.style.opacity = '1';
             }
-          }, 100);
+          }, 50);
         }
 
         return false;
@@ -178,6 +181,14 @@ const Component = (): React.ReactElement => {
     return result.sort(sortTokenByValue);
   }, [sortedTokenGroups, tokenGroupBalanceMap]);
 
+  const onOpenGlobalSearchToken = useCallback(() => {
+    activeModal(GlobalSearchTokenModalId);
+  }, [activeModal]);
+
+  const onOpenCustomizeModal = useCallback(() => {
+    activeModal(CUSTOMIZE_MODAL);
+  }, [activeModal]);
+
   useEffect(() => {
     window.addEventListener('resize', handleResize);
 
@@ -210,6 +221,35 @@ const Component = (): React.ReactElement => {
           totalChangeValue={totalBalanceInfo.change.value}
           totalValue={totalBalanceInfo.convertedValue}
         />
+
+        <div className='token-action-bar'>
+          <div className='token-action-bar-label'>
+            {t('Token')}
+          </div>
+
+          <Button
+            icon={(
+              <Icon
+                customSize={'24px'}
+                phosphorIcon={FadersHorizontal}
+              />
+            )}
+            onClick={onOpenCustomizeModal}
+            size={'xs'}
+            type={'ghost'}
+          />
+          <Button
+            icon={(
+              <Icon
+                customSize={'24px'}
+                phosphorIcon={MagnifyingGlass}
+              />
+            )}
+            onClick={onOpenGlobalSearchToken}
+            size={'xs'}
+            type={'ghost'}
+          />
+        </div>
       </div>
       <div
         className={'__scroll-container'}
@@ -248,7 +288,12 @@ const Component = (): React.ReactElement => {
         }
         <div className={'__scroll-footer'}>
           <Button
-            icon={<Icon phosphorIcon={FadersHorizontal} />}
+            icon={(
+              <Icon
+                customSize={'24px'}
+                phosphorIcon={FadersHorizontal}
+              />
+            )}
             onClick={onClickManageToken}
             size={'xs'}
             type={'ghost'}
@@ -308,25 +353,44 @@ const Tokens = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, tok
       flexDirection: 'column',
       overflowY: 'auto',
       overflowX: 'hidden',
-      paddingTop: 210
+      paddingTop: 310
+    },
+
+    '.token-action-bar': {
+      display: 'flex',
+      alignItems: 'center',
+      paddingTop: token.paddingSM
+    },
+
+    '.token-action-bar-label': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.padding,
+      fontSize: token.fontSizeLG,
+      lineHeight: token.lineHeightLG,
+      fontWeight: token.headingFontWeight,
+      flex: 1
     },
 
     '.__scroll-container': {
-      paddingLeft: token.size,
-      paddingRight: token.size
+      paddingTop: token.paddingXXS,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
     },
 
     '.__upper-block-wrapper': {
       position: 'absolute',
-      height: 210,
+      height: 310,
       zIndex: 10,
       top: 0,
       left: 0,
       width: '100%',
-      transition: 'opacity, padding-top 0.27s ease',
+      transition: 'opacity 0.1s, padding-top 0.27s ease, height 0.1s ease',
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
+      backgroundColor: token.colorWhite,
 
       '&.-is-shrink': {
-        height: 104
+        height: 218
       },
 
       '&.-decrease': {
@@ -345,7 +409,7 @@ const Tokens = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, tok
     },
 
     '.token-group-balance-item': {
-      marginBottom: token.sizeXS
+      marginBottom: token.sizeXXS
     },
 
     '.__upper-block-wrapper.-is-shrink': {

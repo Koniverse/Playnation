@@ -54,6 +54,7 @@ function Component (
                   decimal={0}
                   decimalOpacity={0.45}
                   hide={!isShowBalance}
+                  intOpacity={0.85}
                   value={total.value}
                 />
                 <Number
@@ -94,20 +95,37 @@ function Component (
   );
 }
 
-export const TokenGroupBalanceItem = styled(Component)<Props>(({ theme: { token } }: Props) => {
+export const TokenGroupBalanceItem = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
+    '.ant-balance-item': {
+      backgroundColor: extendToken.colorBgSecondary1,
+
+      '.ant-balance-item-name': {
+        color: token.colorTextDark2
+      }
+    },
+
+    '.ant-balance-item:hover': {
+      backgroundColor: token.colorBgSecondary
+    },
+
     '.ant-web3-block': {
-      padding: 12
+      padding: token.paddingSM,
+      paddingRight: token.paddingXS
     },
 
     '.ant-number .ant-typography': {
       fontSize: 'inherit !important',
+      color: 'inherit !important',
+      fontWeight: 'inherit !important',
       lineHeight: 'inherit'
     },
 
     '.__value': {
       lineHeight: token.lineHeightLG,
-      fontSize: token.fontSizeLG
+      fontSize: token.fontSizeLG,
+      fontWeight: token.headingFontWeight,
+      color: token.colorTextDark1
     },
 
     '.__converted-value': {
@@ -118,13 +136,14 @@ export const TokenGroupBalanceItem = styled(Component)<Props>(({ theme: { token 
     '.ant-web3-block-middle-item': {
       '.ant-number': {
         fontSize: token.fontSizeSM,
-        lineHeight: token.lineHeightSM
+        lineHeight: token.lineHeightSM,
+        color: token.colorSuccess
       }
     },
 
     '&.-price-decrease .ant-web3-block-middle-item': {
-      '.ant-number .ant-typography': {
-        color: `${token.colorError} !important`
+      '.ant-number': {
+        color: token.colorError
       }
     },
 
@@ -135,16 +154,13 @@ export const TokenGroupBalanceItem = styled(Component)<Props>(({ theme: { token 
     '.ant-image-img': {
       height: 'auto !important'
     },
+
     '.__icon-wrapper': {
       width: 40,
+      marginLeft: token.marginXXS,
       display: 'flex',
       justifyContent: 'center',
-      color: token.colorTextLight4
-    },
-    '.ant-balance-item-content:hover': {
-      '.__icon-wrapper': {
-        color: token.colorTextLight2
-      }
+      color: token.colorTextDark2
     }
   });
 });
