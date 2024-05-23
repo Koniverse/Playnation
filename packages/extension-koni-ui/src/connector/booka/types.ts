@@ -174,3 +174,25 @@ export interface ReferralRecord {
   referralSuccessTime: number;
   accountInfo: AccountPublicInfo;
 }
+
+export interface AirdropCampaignRecord {
+  id: number;
+  name: string;
+  icon: string;
+  banner: string;
+  start_snapshot: Date;
+  end_snapshot: Date;
+  start_claim: Date;
+  end_claim: Date;
+  eligibility_date: Date;
+  network: string;
+  total_tokens: number;
+  symbol: string;
+  decimal: number;
+  method: string;
+  raffle_count: number;
+  eligibility_criteria: JSON;
+  status: string;
+  start: Date,
+  end: Date
+}

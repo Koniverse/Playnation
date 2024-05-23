@@ -3,10 +3,10 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
-import { BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AirdropCampaignRecord, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
+import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
@@ -35,8 +35,9 @@ export class BookaSdk {
   private gameItemMapSubject = new BehaviorSubject<Record<string, GameItem[]>>({});
   private gameInventoryItemListSubject = new BehaviorSubject<GameInventoryItem[]>([]);
   private gameInventoryItemInGame = new BehaviorSubject<GameInventoryItem['inventoryInGame']>({});
-  private gameItemInGame = new BehaviorSubject<Partial<Record<string, InGameItem>>>({});;
+  private gameItemInGame = new BehaviorSubject<Partial<Record<string, InGameItem>>>({});
   private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
+  private airdropCampaign = new BehaviorSubject<AirdropCampaignRecord[]>([]);
 
   constructor () {
     storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game, energyConfig]) => {
@@ -120,9 +121,9 @@ export class BookaSdk {
     return this.gameItemMapSubject.value;
   }
 
-public get gameItemInGameList() {
-  return this.gameItemInGame.value;
-}
+  public get gameItemInGameList () {
+    return this.gameItemInGame.value;
+  }
 
   public get gameInventoryItemList () {
     return this.gameInventoryItemListSubject.value;
@@ -324,6 +325,7 @@ public get gameItemInGameList() {
         this.fetchGameInventoryItemList(),
         this.fetchGameItemInGameList()
       ]);
+      await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchLeaderboard(), this.fetchAirdropCampaign()]);
     } else {
       throw new Error('Failed to sync account');
     }
@@ -406,19 +408,20 @@ public get gameItemInGameList() {
   subscribeGameItemMap () {
     return this.gameItemMapSubject;
   }
-  async fetchGameInventoryItemList() {
+
+  async fetchGameInventoryItemList () {
     await this.waitForSync;
-  
-    const inventoryResponse  = await this.getRequest<{ success: boolean; inventory: GameInventoryItem[], inventoryInGame: GameInventoryItem['inventoryInGame'] }>(`${GAME_API_HOST}/api/shop/get-inventory`);
-  
+
+    const inventoryResponse = await this.getRequest<{ success: boolean; inventory: GameInventoryItem[], inventoryInGame: GameInventoryItem['inventoryInGame'] }>(`${GAME_API_HOST}/api/shop/get-inventory`);
+
     if (inventoryResponse && inventoryResponse.success) {
       const inventoryItemList = inventoryResponse.inventory;
       const gameInventoryItemInGame = inventoryResponse.inventoryInGame;
+
       this.gameInventoryItemListSubject.next(inventoryItemList);
       this.gameInventoryItemInGame.next(gameInventoryItemInGame);
     }
   }
-  
 
   subscribeGameInventoryItemList () {
     return this.gameInventoryItemListSubject;
@@ -451,8 +454,9 @@ public get gameItemInGameList() {
   }
 
   async fetchGameItemInGameList () {
-    const gameItem = await this.getRequest<{ success: boolean, items:any }>(`${GAME_API_HOST}/api/shop/get-item-in-game`);
-    if(gameItem) {
+    const gameItem = await this.getRequest<{ success: boolean, items: any }>(`${GAME_API_HOST}/api/shop/get-item-in-game`);
+
+    if (gameItem) {
       console.log('gameItem', gameItem);
       this.gameItemInGame.next(gameItem.items);
     }
@@ -481,6 +485,18 @@ public get gameItemInGameList() {
     } else {
       throw new Error('Account not found');
     }
+  }
+
+  async fetchAirdropCampaign () {
+    const airdropCampaignResponse = await this.getRequest<AirdropCampaignRecord[]>(`${GAME_API_HOST}/api/airdrop/list-airdrop-campaign`);
+
+    if (airdropCampaignResponse) {
+      this.airdropCampaign.next(airdropCampaignResponse);
+    }
+  }
+
+  subscribeAirdropCampaign () {
+    return this.airdropCampaign;
   }
 
   // Singleton
