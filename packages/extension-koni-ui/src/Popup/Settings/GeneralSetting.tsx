@@ -11,7 +11,7 @@ import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { noop } from '@subwallet/extension-koni-ui/utils';
 import { BackgroundIcon, Icon, SelectModal, SettingItem, SwIconProps } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CaretRight, CheckCircle, GlobeHemisphereEast, Image, PaintBrush } from 'phosphor-react';
+import { CaretRight, CheckCircle, GlobeHemisphereEast, Image, Swatches } from 'phosphor-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -114,55 +114,55 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     return [
       {
         key: ThemeNames.DEFAULT,
-        leftIcon: PaintBrush,
+        leftIcon: Swatches,
         leftIconBgColor: '#CBF147',
         title: t('Default')
       },
       {
         key: ThemeNames.SKY,
-        leftIcon: PaintBrush,
+        leftIcon: Swatches,
         leftIconBgColor: '#C7F0FF',
         title: t('Sky')
       },
       {
         key: ThemeNames.MORNING_SUNNY,
-        leftIcon: PaintBrush,
+        leftIcon: Swatches,
         leftIconBgColor: '#FFF8C4',
         title: t('Morning sunny')
       },
       {
         key: ThemeNames.SPRING,
-        leftIcon: PaintBrush,
+        leftIcon: Swatches,
         leftIconBgColor: '#7EEC79',
         title: t('Spring')
       },
       {
         key: ThemeNames.LAVENDER,
-        leftIcon: PaintBrush,
+        leftIcon: Swatches,
         leftIconBgColor: '#BB9EFF',
         title: t('Lavender')
       },
       {
         key: ThemeNames.SUNNY,
-        leftIcon: PaintBrush,
+        leftIcon: Swatches,
         leftIconBgColor: '#FBCE01',
         title: t('Sunny')
       },
       {
         key: ThemeNames.BEGIE,
-        leftIcon: PaintBrush,
+        leftIcon: Swatches,
         leftIconBgColor: '#EBD7C9',
         title: t('Begie')
       },
       {
         key: ThemeNames.CLOVE,
-        leftIcon: PaintBrush,
+        leftIcon: Swatches,
         leftIconBgColor: 'linear-gradient(117deg, #A2F6C1 9.05%, #CBF147 91.43%)',
         title: t('Clove')
       },
       {
         key: ThemeNames.AURORA,
-        leftIcon: PaintBrush,
+        leftIcon: Swatches,
         leftIconBgColor: 'linear-gradient(117deg, #A2F6C1 9.05%, #9FE3FF 91.43%)',
         title: t('Aurora')
       }
@@ -173,7 +173,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     return languageOptions.map((item) => ({
       key: item.value,
       leftIcon: GlobeHemisphereEast,
-      leftIconBgColor: token['green-6'],
+      leftIconBgColor: token.colorPrimary,
       title: item.text,
       disabled: !ENABLE_LANGUAGES.includes(item.value)
     }));
@@ -208,7 +208,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           <div className={'setting-group-container'}>
             <SelectModal
               background={'default'}
-              className={`__modal ${className}`}
+              className={CN(`__modal ${className}`, '-secondary-theme')}
               customInput={renderModalTrigger({
                 key: 'wallet-theme-trigger',
                 leftIcon: Image,
@@ -228,7 +228,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
             <SelectModal
               background={'default'}
-              className={`__modal ${className}`}
+              className={CN(`__modal ${className}`, '-secondary-theme')}
               customInput={renderModalTrigger({
                 key: 'languages-trigger',
                 leftIcon: GlobeHemisphereEast,
@@ -254,12 +254,11 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   );
 }
 
-export const GeneralSetting = styled(Component)<Props>(({ theme: { token } }: Props) => {
+export const GeneralSetting = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '.item-disabled': {
       '.ant-setting-item-content': {
-        cursor: 'not-allowed',
-        backgroundColor: `${token.colorBgSecondary} !important`
+        cursor: 'not-allowed'
       }
     },
 
@@ -302,6 +301,57 @@ export const GeneralSetting = styled(Component)<Props>(({ theme: { token } }: Pr
     '&.__modal': {
       '.__selection-item .ant-web3-block-right-item': {
         color: token.colorSuccess
+      },
+
+      '.ant-sw-list-section .ant-sw-list-wrapper': {
+        flexBasis: 'auto',
+        paddingRight: token.paddingXS,
+        paddingLeft: token.paddingXS
+      },
+
+      '.ant-select-modal-item': {
+        marginBottom: token.marginXXS
+      },
+
+      '.ant-sw-list': {
+        borderRadius: 20,
+        backgroundColor: token.colorWhite,
+        paddingTop: token.paddingXS,
+        paddingRight: token.paddingXS,
+        paddingLeft: token.paddingXS,
+        paddingBottom: token.paddingXXS
+      },
+
+      '.ant-setting-item': {
+        overflow: 'hidden',
+        backgroundColor: extendToken.colorBgSecondary1,
+        borderRadius: 40,
+
+        '.__left-icon': {
+          minWidth: 24,
+          height: 24,
+          borderRadius: 24,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        },
+
+        '.ant-web3-block-left-item': {
+          paddingRight: token.paddingSM
+        },
+
+        '.ant-setting-item-name': {
+          color: token.colorTextDark2
+        },
+
+        '.ant-setting-item-content': {
+          paddingRight: token.paddingXS
+        },
+
+        '.__right-icon': {
+          minWidth: 40,
+          justifyContent: 'center'
+        }
       }
     }
   });

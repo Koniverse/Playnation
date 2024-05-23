@@ -166,8 +166,7 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
 
     '.item-disabled': {
       opacity: 0.4,
-      cursor: 'not-allowed !important',
-      backgroundColor: `${token.colorBgSecondary} !important`
+      cursor: 'not-allowed !important'
     },
 
     '.mb-0': {
