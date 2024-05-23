@@ -321,9 +321,9 @@ export class BookaSdk {
         this.fetchTaskCategoryList(),
         this.fetchTaskList(),
         this.fetchLeaderboard(),
-        this.fetchGameItemMap(),
-        this.fetchGameInventoryItemList(),
-        this.fetchGameItemInGameList()
+        // this.fetchGameItemMap(),
+        // this.fetchGameInventoryItemList(),
+        // this.fetchGameItemInGameList()
       ]);
       await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchLeaderboard(), this.fetchAirdropCampaign()]);
     } else {
