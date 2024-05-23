@@ -1,15 +1,17 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { EnergyConfig } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { useGetEnergyInfo, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { saveShowBalance } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, Number } from '@subwallet/react-ui';
 import { SwNumberProps } from '@subwallet/react-ui/es/number';
-import CN from 'classnames';
-import { CaretLeft, CopySimple, PaperPlaneTilt, ShoppingCartSimple } from 'phosphor-react';
-import React, { useCallback } from 'react';
+import { CopySimple, Eye, EyeSlash, Lightning, PaperPlaneTilt, ShoppingCartSimple } from 'phosphor-react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -18,48 +20,93 @@ type Props = ThemeProps & {
   symbol: string;
   isSupportBuyTokens: boolean;
   isShrink: boolean;
-  onClickBack: () => void;
   onOpenSendFund: () => void;
   onOpenBuyTokens: () => void;
   onOpenReceive: () => void;
   onOpenSwap: () => void;
 };
 
+const apiSDK = BookaSdk.instance;
+
 function Component (
   { balanceValue,
     className = '',
     isShrink,
     isSupportBuyTokens,
-    onClickBack,
     onOpenBuyTokens,
     onOpenReceive,
     onOpenSendFund,
     symbol }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const { isShowBalance } = useSelector((state: RootState) => state.settings);
+  const [account, setAccount] = useState(apiSDK.account);
+  const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
+
+  const { currentEnergy } = useGetEnergyInfo({
+    startTime: account?.attributes.lastEnergyUpdated,
+    energy: account?.attributes.energy,
+    maxEnergy: energyConfig?.maxEnergy
+  });
 
   const onChangeShowBalance = useCallback(() => {
     saveShowBalance(!isShowBalance).catch(console.error);
   }, [isShowBalance]);
 
+  useEffect(() => {
+    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
+      setAccount(data);
+    });
+
+    const energyConfigSub = apiSDK.subscribeEnergyConfig().subscribe((data) => {
+      setEnergyConfig(data);
+    });
+
+    return () => {
+      accountSub.unsubscribe();
+      energyConfigSub.unsubscribe();
+    };
+  }, []);
+
   return (
     <div className={`tokens-upper-block ${className} ${isShrink ? '-shrink' : ''}`}>
-      <div className='__top'>
-        <Button
-          className={'__back-button'}
-          icon={
+      <div className='__top-part'>
+        <div className={'__balance-label-wrapper'}>
+          <div className='__balance-label'>
+            {symbol} {t('balance')}
+          </div>
+
+          <Button
+            className='button-change-show-balance'
+            icon={(
+              <Icon
+                customSize={'20px'}
+                phosphorIcon={!isShowBalance ? Eye : EyeSlash}
+              />
+            )}
+            onClick={onChangeShowBalance}
+            size='xs'
+            tooltip={isShowBalance ? t('Hide balance') : t('Show balance')}
+            type='ghost'
+          />
+        </div>
+
+        <div className='__energy-info'>
+          <span className='__current-energy-value'>
             <Icon
-              customSize={'24px'}
-              phosphorIcon={CaretLeft}
+              customSize={'12px'}
+              phosphorIcon={Lightning}
+              weight={'fill'}
             />
-          }
-          onClick={onClickBack}
-          size={'xs'}
-          type={'ghost'}
-        />
-        <div className={'__token-display'}>{t('Token')}: {symbol}</div>
+
+            <span>{formatIntegerShort(currentEnergy || 0)}</span>
+          </span>
+          <span className='__max-energy-value'>
+              /{formatIntegerShort(energyConfig?.maxEnergy || 0)}
+          </span>
+        </div>
       </div>
-      <div className='__bottom'>
+
+      <div className='__balance-value-container'>
         <div
           className='__balance-value-wrapper'
           onClick={isShrink ? onChangeShowBalance : undefined}
@@ -70,56 +117,63 @@ function Component (
             decimalOpacity={0.45}
             hide={!isShowBalance}
             prefix='$'
-            size={38}
             subFloatNumber
             value={balanceValue}
           />
         </div>
-        <div className={'__action-button-container'}>
-          <Button
-            icon={(
-              <Icon
-                phosphorIcon={CopySimple}
-                size={isShrink ? 'sm' : 'md'}
-                weight={'duotone'}
-              />
-            )}
-            onClick={onOpenReceive}
-            shape='squircle'
-            size={isShrink ? 'xs' : 'sm'}
-            tooltip={t('Get address')}
-          />
-          <div className={'__button-space'} />
-          <Button
-            icon={(
-              <Icon
-                phosphorIcon={PaperPlaneTilt}
-                size={isShrink ? 'sm' : 'md'}
-                weight={'duotone'}
-              />
-            )}
-            onClick={onOpenSendFund}
-            shape='squircle'
-            size={isShrink ? 'xs' : 'sm'}
-            tooltip={t('Send tokens')}
-          />
-          <div className={CN('__button-space', { hidden: isShrink })} />
-          <Button
-            className={CN({ hidden: isShrink })}
-            disabled={!isSupportBuyTokens}
-            icon={(
-              <Icon
-                phosphorIcon={ShoppingCartSimple}
-                size={isShrink ? 'sm' : 'md'}
-                weight={'duotone'}
-              />
-            )}
-            onClick={onOpenBuyTokens}
-            shape='squircle'
-            size={isShrink ? 'xs' : 'sm'}
-            tooltip={t('Buy token')}
-          />
-        </div>
+      </div>
+
+      <div className={'__action-button-container'}>
+        <Button
+          block={true}
+          icon={(
+            <Icon
+              customSize={'20px'}
+              phosphorIcon={CopySimple}
+              weight={'fill'}
+            />
+          )}
+          onClick={onOpenReceive}
+          shape='round'
+          size={'xs'}
+        >
+          {t('Receive')}
+        </Button>
+
+        <Button
+          block={true}
+          icon={(
+            <Icon
+              customSize={'20px'}
+              phosphorIcon={PaperPlaneTilt}
+              weight={'fill'}
+            />
+          )}
+          onClick={onOpenSendFund}
+          schema={'secondary'}
+          shape='round'
+          size={'xs'}
+        >
+          {t('Send')}
+        </Button>
+
+        <Button
+          block={true}
+          disabled={!isSupportBuyTokens}
+          icon={
+            <Icon
+              customSize={'20px'}
+              phosphorIcon={ShoppingCartSimple}
+              weight={'fill'}
+            />
+          }
+          onClick={onOpenBuyTokens}
+          schema={'secondary'}
+          shape='round'
+          size={'xs'}
+        >
+          {t('Buy')}
+        </Button>
       </div>
     </div>
   );
@@ -127,91 +181,69 @@ function Component (
 
 export const DetailUpperBlock = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return ({
-    padding: '0px 8px 24px 8px',
-    display: 'flex',
-    flexDirection: 'column',
+    backgroundColor: token.colorPrimary,
+    padding: '8px 16px 20px 16px',
+    borderRadius: 20,
 
-    '.__top': {
+    '.__top-part': {
       display: 'flex',
-      marginBottom: 16,
+      justifyContent: 'space-between',
       alignItems: 'center'
     },
 
-    '.__token-display': {
-      textAlign: 'center',
-      flex: 1,
-      fontSize: token.fontSizeHeading4,
-      lineHeight: token.lineHeightHeading4,
-      marginRight: 40
+    '.__balance-label-wrapper': {
+      display: 'flex',
+      alignItems: 'center',
+      gap: token.sizeXS
     },
 
-    '.ant-btn': {
-      transition: 'width, height, padding 0s'
+    '.__balance-label': {
+      fontSize: token.fontSize,
+      lineHeight: token.lineHeight,
+      fontWeight: token.headingFontWeight,
+      color: token.colorTextDark2
     },
 
-    '.__back-button': {
-      color: token.colorTextLight1,
+    '.__energy-info': {
+      fontSize: token.fontSizeSM,
+      lineHeight: token.lineHeightSM
+    },
 
-      '&:hover': {
-        color: token.colorTextLight3
-      },
+    '.__current-energy-value': {
+      fontWeight: token.headingFontWeight,
+      color: token.colorTextDark2
+    },
 
-      '&:active': {
-        color: token.colorTextLight4
-      }
+    '.__max-energy-value': {
+      color: token.colorTextDark3
     },
 
     '.__balance-value': {
-      textAlign: 'center',
-      padding: '0px 8px',
-      lineHeight: token.lineHeightHeading1,
-      fontSize: token.fontSizeHeading1,
       whiteSpace: 'nowrap',
       overflow: 'hidden',
+      fontWeight: token.headingFontWeight,
+      marginBottom: token.margin,
 
       '.ant-typography': {
-        lineHeight: 'inherit'
+        fontWeight: 'inherit !important'
+      },
+
+      '.ant-number-prefix, .ant-number-integer, .ant-number-hide-content': {
+        fontSize: '32px !important',
+        lineHeight: '1.3125 !important',
+        color: `${token.colorTextDark1} !important`
+      },
+
+      '.ant-number-decimal': {
+        fontSize: `${token.fontSizeHeading3}px !important`,
+        lineHeight: `${token.lineHeightHeading3} !important`,
+        color: `${token.colorTextDark3} !important`
       }
     },
 
     '.__action-button-container': {
       display: 'flex',
-      justifyContent: 'center',
-      padding: '24px 8px 0 8px'
-    },
-
-    '.__button-space': {
-      width: token.size
-    },
-
-    '&.-shrink': {
-      '.__bottom': {
-        display: 'flex'
-      },
-
-      '.__balance-value-wrapper': {
-        flex: 1
-      },
-
-      '.__balance-value': {
-        textAlign: 'left',
-        lineHeight: token.lineHeightHeading2,
-        fontSize: token.fontSizeHeading2,
-        cursor: 'pointer',
-        width: 'fit-content',
-
-        '.ant-number-prefix, .ant-number-integer, .ant-number-hide-content': {
-          fontSize: 'inherit !important'
-        }
-      },
-
-      '.__action-button-container': {
-        paddingTop: 0
-      },
-
-      '.__button-space': {
-        width: token.sizeXS
-      }
+      gap: token.sizeSM
     }
   });
 });

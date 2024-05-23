@@ -391,10 +391,6 @@ const Tokens = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, tok
 
       '&.-is-shrink': {
         height: 218
-      },
-
-      '&.-decrease': {
-
       }
     },
 

@@ -130,7 +130,8 @@ export const TokenGroupBalanceItem = styled(Component)<Props>(({ theme: { extend
 
     '.__converted-value': {
       lineHeight: token.lineHeightSM,
-      fontSize: token.fontSizeSM
+      fontSize: token.fontSizeSM,
+      color: token.colorTextDark1
     },
 
     '.ant-web3-block-middle-item': {

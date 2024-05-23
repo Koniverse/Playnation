@@ -291,7 +291,7 @@ export const UpperBlock = styled(Component)<Props>(({ theme: { token } }: Props)
         fontWeight: 'inherit !important'
       },
 
-      '.ant-number-prefix, .ant-number-integer': {
+      '.ant-number-prefix, .ant-number-integer, .ant-number-hide-content': {
         fontSize: '32px !important',
         lineHeight: '1.3125 !important',
         color: `${token.colorTextDark1} !important`

@@ -6,19 +6,20 @@ import { AccountSelectorModal } from '@subwallet/extension-koni-ui/components/Mo
 import ReceiveQrModal from '@subwallet/extension-koni-ui/components/Modal/ReceiveModal/ReceiveQrModal';
 import { TokensSelectorModal } from '@subwallet/extension-koni-ui/components/Modal/ReceiveModal/TokensSelectorModal';
 import { TokenBalanceDetailItem } from '@subwallet/extension-koni-ui/components/TokenItem/TokenBalanceDetailItem';
-import { DEFAULT_TRANSFER_PARAMS, TRANSFER_TRANSACTION } from '@subwallet/extension-koni-ui/constants';
+import { CUSTOMIZE_MODAL, DEFAULT_TRANSFER_PARAMS, TRANSFER_TRANSACTION } from '@subwallet/extension-koni-ui/constants';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
-import { useDefaultNavigate, useNavigateOnChangeAccount, useNotification, useReceiveQR, useSelector } from '@subwallet/extension-koni-ui/hooks';
+import { useNavigateOnChangeAccount, useNotification, useReceiveQR, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { DetailModal } from '@subwallet/extension-koni-ui/Popup/Home/Tokens/DetailModal';
 import { DetailUpperBlock } from '@subwallet/extension-koni-ui/Popup/Home/Tokens/DetailUpperBlock';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { BuyTokenInfo, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { TokenBalanceItemType } from '@subwallet/extension-koni-ui/types/balance';
 import { getAccountType, isAccountAll, openInNewTab, sortTokenByValue } from '@subwallet/extension-koni-ui/utils';
-import { ModalContext } from '@subwallet/react-ui';
+import { Button, Icon, ModalContext } from '@subwallet/react-ui';
 import { SwNumberProps } from '@subwallet/react-ui/es/number';
 import classNames from 'classnames';
+import { CaretLeft, FadersHorizontal, MagnifyingGlass } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -45,6 +46,7 @@ function WrapperComponent ({ className = '' }: ThemeProps): React.ReactElement<P
   );
 }
 
+const GlobalSearchTokenModalId = 'globalSearchToken';
 const TokenDetailModalId = 'tokenDetailModalId';
 
 function Component (): React.ReactElement {
@@ -53,7 +55,6 @@ function Component (): React.ReactElement {
   const notify = useNotification();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { goHome } = useDefaultNavigate();
 
   const { activeModal, inactiveModal } = useContext(ModalContext);
   const { accountBalance: { tokenBalanceMap, tokenGroupBalanceMap }, tokenGroupStructure: { tokenGroupMap } } = useContext(HomeContext);
@@ -175,10 +176,9 @@ function Component (): React.ReactElement {
 
           setTimeout(() => {
             if (topBlockRef.current) {
-              topBlockRef.current.style.paddingTop = '8px';
               topBlockRef.current.style.opacity = '1';
             }
-          }, 100);
+          }, 50);
         }
 
         return true;
@@ -197,7 +197,7 @@ function Component (): React.ReactElement {
             if (topBlockRef.current) {
               topBlockRef.current.style.opacity = '1';
             }
-          }, 100);
+          }, 50);
         }
 
         return false;
@@ -286,6 +286,18 @@ function Component (): React.ReactElement {
     openInNewTab('https://web.subwallet.app/redirect-handler/swap')();
   }, []);
 
+  const goHome = useCallback(() => {
+    navigate('/home/tokens');
+  }, [navigate]);
+
+  const onOpenGlobalSearchToken = useCallback(() => {
+    activeModal(GlobalSearchTokenModalId);
+  }, [activeModal]);
+
+  const onOpenCustomizeModal = useCallback(() => {
+    activeModal(CUSTOMIZE_MODAL);
+  }, [activeModal]);
+
   useEffect(() => {
     if (currentTokenInfo) {
       activeModal(TokenDetailModalId);
@@ -327,13 +339,53 @@ function Component (): React.ReactElement {
           className={'__static-block'}
           isShrink={isShrink}
           isSupportBuyTokens={!!buyInfos.length}
-          onClickBack={goHome}
           onOpenBuyTokens={onOpenBuyTokens}
           onOpenReceive={onOpenReceive}
           onOpenSendFund={onOpenSendFund}
           onOpenSwap={onOpenSwap}
           symbol={symbol}
         />
+
+        <div className='token-action-bar'>
+          <Button
+            icon={(
+              <Icon
+                customSize={'24px'}
+                phosphorIcon={CaretLeft}
+              />
+            )}
+            onClick={goHome}
+            size={'xs'}
+            type={'ghost'}
+          />
+
+          <div className='token-action-bar-label'>
+            {t('Token')}
+          </div>
+
+          <Button
+            icon={(
+              <Icon
+                customSize={'24px'}
+                phosphorIcon={FadersHorizontal}
+              />
+            )}
+            onClick={onOpenCustomizeModal}
+            size={'xs'}
+            type={'ghost'}
+          />
+          <Button
+            icon={(
+              <Icon
+                customSize={'24px'}
+                phosphorIcon={MagnifyingGlass}
+              />
+            )}
+            onClick={onOpenGlobalSearchToken}
+            size={'xs'}
+            type={'ghost'}
+          />
+        </div>
       </div>
       <div
         className={'__scroll-container'}
@@ -382,35 +434,45 @@ const Tokens = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, tok
     '.token-detail-container': {
       height: '100%',
       overflow: 'auto',
-      color: token.colorTextLight1,
       fontSize: token.fontSizeLG,
       position: 'relative',
       display: 'flex',
       flexDirection: 'column',
-      paddingTop: 206
+      paddingTop: 218
+    },
+
+    '.token-action-bar': {
+      display: 'flex',
+      alignItems: 'center',
+      paddingTop: token.paddingSM
+    },
+
+    '.token-action-bar-label': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.padding,
+      fontSize: token.fontSizeLG,
+      lineHeight: token.lineHeightLG,
+      fontWeight: token.headingFontWeight,
+      flex: 1
     },
 
     '.__scroll-container': {
-      flex: 1,
-      paddingLeft: token.size,
-      paddingRight: token.size
+      paddingTop: token.paddingXXS,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
     },
 
     '.__upper-block-wrapper': {
       position: 'absolute',
       zIndex: 10,
-      height: 206,
-      paddingTop: 8,
+      height: 218,
       top: 0,
       left: 0,
       right: 0,
-      display: 'flex',
-      alignItems: 'center',
-      transition: 'opacity, padding-top 0.27s ease',
-
-      '&.-is-shrink': {
-        height: 128
-      }
+      transition: 'opacity 0.1s, padding-top 0.27s ease, height 0.1s ease',
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
+      backgroundColor: token.colorWhite
     },
 
     '.tokens-upper-block': {

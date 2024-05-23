@@ -62,6 +62,7 @@ function Component (
                   decimal={0}
                   decimalOpacity={0.45}
                   hide={!isShowBalance}
+                  intOpacity={0.85}
                   value={total.value}
                 />
                 <Number
@@ -105,25 +106,43 @@ function Component (
   );
 }
 
-export const TokenBalanceDetailItem = styled(Component)<Props>(({ theme: { token } }: Props) => {
+export const TokenBalanceDetailItem = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
+    '.ant-balance-item': {
+      backgroundColor: extendToken.colorBgSecondary1,
+
+      '.ant-balance-item-name': {
+        color: token.colorTextDark2
+      }
+    },
+
+    '.ant-balance-item:hover': {
+      backgroundColor: token.colorBgSecondary
+    },
+
     '.ant-web3-block': {
-      padding: 12
+      padding: token.paddingSM,
+      paddingRight: token.paddingXS
     },
 
     '.ant-number .ant-typography': {
       fontSize: 'inherit !important',
+      color: 'inherit !important',
+      fontWeight: 'inherit !important',
       lineHeight: 'inherit'
     },
 
     '.__value': {
       lineHeight: token.lineHeightLG,
-      fontSize: token.fontSizeLG
+      fontSize: token.fontSizeLG,
+      fontWeight: token.headingFontWeight,
+      color: token.colorTextDark1
     },
 
     '.__converted-value': {
       lineHeight: token.lineHeightSM,
-      fontSize: token.fontSizeSM
+      fontSize: token.fontSizeSM,
+      color: token.colorTextDark1
     },
 
     '.ant-web3-block-middle-item': {
@@ -131,7 +150,7 @@ export const TokenBalanceDetailItem = styled(Component)<Props>(({ theme: { token
     },
 
     '.__chain-name': {
-      color: token.colorTextLight4,
+      color: token.colorTextDark4,
       fontSize: token.fontSizeSM,
       lineHeight: token.lineHeightSM,
       overflow: 'hidden',
@@ -146,18 +165,15 @@ export const TokenBalanceDetailItem = styled(Component)<Props>(({ theme: { token
     '.ant-image-img': {
       height: 'auto !important'
     },
+
     '.__icon-wrapper': {
       width: 40,
       height: 40,
+      marginLeft: token.marginXXS,
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      color: token.colorTextLight4
-    },
-    '.ant-balance-item-content:hover': {
-      '.__icon-wrapper': {
-        color: token.colorTextLight2
-      }
+      color: token.colorTextDark2
     }
   });
 });
