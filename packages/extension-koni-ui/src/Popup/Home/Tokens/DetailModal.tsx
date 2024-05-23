@@ -151,7 +151,7 @@ function Component ({ className = '', currentTokenInfo, id, onCancel, tokenBalan
 
   return (
     <SwModal
-      className={CN(className, { 'fix-height': isAllAccount })}
+      className={CN(className, '-secondary-theme', { 'fix-height': isAllAccount })}
       id={id}
       onCancel={onCancel}
       title={t('Token details')}
@@ -251,7 +251,9 @@ export const DetailModal = styled(Component)<Props>(({ theme: { token } }: Props
     '.ant-sw-modal-body': {
       overflow: 'hidden',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      paddingRight: token.paddingXS,
+      paddingLeft: token.paddingXS
     },
 
     '.content-container': {
@@ -260,9 +262,9 @@ export const DetailModal = styled(Component)<Props>(({ theme: { token } }: Props
     },
 
     '.__container': {
-      borderRadius: token.borderRadiusLG,
-      backgroundColor: token.colorBgSecondary,
-      padding: '12px 12px 4px'
+      borderRadius: 20,
+      backgroundColor: token.colorWhite,
+      padding: '16px 20px 4px'
     },
 
     '.__row': {
@@ -273,6 +275,14 @@ export const DetailModal = styled(Component)<Props>(({ theme: { token } }: Props
 
     '.__label': {
       paddingRight: token.paddingSM
+    },
+
+    '.__value': {
+      color: token.colorTextDark1,
+
+      '.ant-typography': {
+        color: 'inherit !important'
+      }
     }
   });
 });

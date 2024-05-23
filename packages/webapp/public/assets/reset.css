@@ -633,9 +633,6 @@ div#popup-container {
 .ant-sw-modal .ant-sw-modal-content.ant-sw-modal-content {
     padding-bottom: 0;
     border-bottom: 0;
-    background: #FFFFFF;
-    box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.25);
-    border-radius: 8px;
 }
 
 .ant-sw-modal .ant-sw-header-container-center .ant-sw-header-center-part {
@@ -650,6 +647,37 @@ div#popup-container {
 
 .ant-sw-modal .ant-sw-modal-footer .ant-btn + .ant-btn:not(.ant-dropdown-trigger) {
     margin-inline-start: 12px;
+}
+
+.ant-sw-modal-root .ant-sw-modal-mask.ant-sw-modal-mask {
+  background-color: rgba(31, 31, 35, 0.65);
+  backdrop-filter: blur(6px);
+}
+
+.ant-sw-modal .ant-sw-modal-header.ant-sw-modal-header {
+  border-bottom: 0
+}
+
+.ant-sw-modal .ant-sw-modal-body.ant-sw-modal-body {
+  padding-top: 0;
+}
+
+.ant-sw-modal .ant-sw-modal-content.ant-sw-modal-content {
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -8px 8px 0 rgba(0, 0, 0, 0.25);
+}
+
+.ant-sw-modal.-full-size .ant-sw-modal-content.ant-sw-modal-content {
+  border-radius: 0;
+  height: 100%;
+}
+
+.ant-sw-modal.-light-theme .ant-sw-modal-content.ant-sw-modal-content {
+  background-color: #fff;
+}
+
+.ant-sw-modal.-secondary-theme .ant-sw-modal-content.ant-sw-modal-content {
+  background-color: #f0f0f0;
 }
 
 .ant-sw-list-section .ant-sw-list-wrapper {
