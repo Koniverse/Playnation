@@ -1,41 +1,124 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import CountDown from '@subwallet/extension-koni-ui/components/Common/CountDown';
 import { GamePoint } from '@subwallet/extension-koni-ui/components/Games/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Task } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { Task, TaskHistoryStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { formatInteger } from '@subwallet/extension-koni-ui/utils';
+import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
 import { Button, Icon, Image, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle } from 'phosphor-react';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = {
-  task: Task
+  task: Task,
+  actionReloadPoint: VoidFunction;
 } & ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
-
-const _TaskItem = ({ className, task }: Props): React.ReactElement => {
+const _TaskItem = ({ className, task, actionReloadPoint }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
+  const notify = useNotification();
+  const [account, setAccount] = useState(apiSDK.account);
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
-  const completed = !!task.completedAt;
+  const [completed, setCompleted] = useState(!!task.completedAt);
+  const [checking, setChecking] = useState(task.status === TaskHistoryStatus.CHECKING);
 
-  const finishTask = useCallback(() => {
+  useEffect(() => {
+    let taskItemUpdaterInterval: NodeJS.Timer;
+
+    if (checking) {
+      taskItemUpdaterInterval = setInterval(() => {
+        apiSDK.completeTask(task.taskHistoryId)
+          .then((data: boolean) => {
+            if (data) {
+              // @ts-ignore
+              clearInterval(taskItemUpdaterInterval);
+              setCompleted(true);
+              setChecking(false);
+              actionReloadPoint();
+            }
+          })
+          .catch(console.error);
+      }, 10000);
+    }
+
+    return () => clearInterval(taskItemUpdaterInterval);
+  }, [checking]);
+
+  useEffect(() => {
+    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
+      setAccount(data);
+    });
+
+    return () => {
+      accountSub.unsubscribe();
+    };
+  }, []);
+
+  const finishTask = useCallback(async () => {
     const taskId = task.id;
+    const onChainType = task.onChainType;
+    const { address } = account?.info || {};
+
+    if (!address) {
+      return;
+    }
 
     setTaskLoading(true);
+    let res: SWTransactionResponse | null = null;
+    const networkKey = 'alephTest';
 
-    apiSDK.finishTask(taskId)
+    if (onChainType) {
+      const now = new Date();
+      const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+      const data = JSON.stringify({ address, type: onChainType, date });
+
+      res = await actionTaskOnChain(onChainType, 'alephTest', address, data);
+
+      if ((res && res.errors.length > 0) || !res) {
+        setTaskLoading(false);
+        let message = t(`Network ${networkKey} not enable`);
+        if (res && res.errors.length > 0) {
+          const error = res?.errors[0] || {};
+          // @ts-ignore
+          message = error?.message || '';
+        }
+
+        notify({
+          message: message,
+          type: 'error'
+        });
+
+        return;
+      }
+    }
+
+    let extrinsicHash = '';
+
+    if (res) {
+      extrinsicHash = res.extrinsicHash || '';
+    }
+
+    apiSDK.finishTask(taskId, extrinsicHash, networkKey)
       .finally(() => {
         setTaskLoading(false);
+
+        if (onChainType) {
+          setChecking(true);
+        } else {
+          setCompleted(true);
+          actionReloadPoint();
+        }
       })
       .catch(console.error);
 
@@ -108,7 +191,7 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
         }
       </Typography.Text>
     </div>
-    {!completed && <Button
+    {!completed && !checking && <Button
       className={'play-button'}
       disabled={isDisabled}
       loading={taskLoading}
@@ -117,12 +200,22 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
     >
       {t('Go')}
     </Button>}
-    {completed && <Button
+    {completed && !checking && <Button
       className={'checked-button'}
       icon={<Icon
         phosphorIcon={CheckCircle}
         weight={'fill'}
       />}
+      size={'xs'}
+      type={'ghost'}
+    />}
+    {checking && !completed && <Button
+      className={'checked-button'}
+      icon={<Icon
+        iconColor={'#FFD700'}
+        phosphorIcon={CheckCircle}
+        weight={'fill'}
+            />}
       size={'xs'}
       type={'ghost'}
     />}

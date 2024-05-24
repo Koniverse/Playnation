@@ -506,7 +506,8 @@ export enum ExtrinsicType {
   TOKEN_APPROVE = 'evm.token_approve',
 
   EVM_EXECUTE = 'evm.execute',
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
+  REMARK_WITH_EVENT = 'remark_with_event'
 }
 
 export interface ExtrinsicDataTypeMap {
@@ -1127,6 +1128,12 @@ export interface NftTransactionRequest {
   nftItemName?: string, // Use for confirmation view only
   params: Record<string, any>,
   nftItem: NftItem
+}
+
+export interface RemarkWithEvent {
+  networkKey: string,
+  address: string,
+  dataRemark: string
 }
 
 export interface EvmNftTransaction extends ValidateTransactionResponse {
