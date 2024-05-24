@@ -242,6 +242,35 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       background: token.colorPrimary
     },
 
+    // input
+    '.ant-input-container:not(.-disabled):not(.-status-warning):not(.-status-error):not(.-status-success.-display-success-status)': {
+      '&:hover': {
+        '--webkit-autofill-border-color': token.colorPrimary,
+
+        '&:before': {
+          borderColor: token.colorPrimary
+        }
+      },
+
+      '&:focus-within': {
+        '--webkit-autofill-border-color': token.colorPrimaryActive,
+
+        '&:before': {
+          borderColor: token.colorPrimaryActive
+        }
+      }
+    },
+
+    // selectModal
+
+    '.ant-select-modal-input-container:not(.-disabled):not(.-status-warning):not(.-status-error):not(.-status-success.-display-success-status)': {
+      '&:hover, &.ant-select-modal-input-focus': {
+        '&::before': {
+          borderColor: token.colorPrimaryActive
+        }
+      }
+    },
+
     // ---setting group
 
     '.setting-group-container > div + div:before': {

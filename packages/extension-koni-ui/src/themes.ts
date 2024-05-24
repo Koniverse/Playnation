@@ -143,7 +143,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
       return {
         ...defaultToken,
         colorPrimary: '#CBF147',
-        colorPrimaryHover: '#E5FF73'
+        colorPrimaryHover: '#E5FF73',
+        colorPrimaryActive: '#A5CC31'
       };
     }
   },
@@ -155,7 +156,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
       return {
         ...defaultToken,
         colorPrimary: '#C7F0FF',
-        colorPrimaryHover: '#9FE3FF'
+        colorPrimaryHover: '#9FE3FF',
+        colorPrimaryActive: '#7CBAD9'
       };
     }
   },
@@ -167,7 +169,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
       return {
         ...defaultToken,
         colorPrimary: '#FFF8C4',
-        colorPrimaryHover: '#FFF8C4'
+        colorPrimaryHover: '#FFF8C4',
+        colorPrimaryActive: '#D9CB7C'
       };
     }
   },
@@ -179,7 +182,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
       return {
         ...defaultToken,
         colorPrimary: '#7EEC79',
-        colorPrimaryHover: '#5DC75B'
+        colorPrimaryHover: '#5DC75B',
+        colorPrimaryActive: '#42A143'
       };
     }
   },
@@ -191,7 +195,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
       return {
         ...defaultToken,
         colorPrimary: '#BB9EFF',
-        colorPrimaryHover: '#9773FB'
+        colorPrimaryHover: '#9773FB',
+        colorPrimaryActive: '#7457D4'
       };
     }
   },
@@ -203,7 +208,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
       return {
         ...defaultToken,
         colorPrimary: '#FBCE01',
-        colorPrimaryHover: '#FFDF29'
+        colorPrimaryHover: '#FFDF29',
+        colorPrimaryActive: '#D4A600'
       };
     }
   },
@@ -215,7 +221,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
       return {
         ...defaultToken,
         colorPrimary: '#EBD7C9',
-        colorPrimaryHover: '#C4AD9F'
+        colorPrimaryHover: '#C4AD9F',
+        colorPrimaryActive: '#786055'
       };
     }
   },
@@ -227,7 +234,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
       return {
         ...defaultToken,
         colorPrimary: '#CBF147',
-        colorPrimaryHover: '#E5FF73'
+        colorPrimaryHover: '#E5FF73',
+        colorPrimaryActive: '#A5CC31'
       };
     },
     generateExtraTokens: (token: AliasToken) => ({
@@ -243,7 +251,8 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
       return {
         ...defaultToken,
         colorPrimary: '#C7F0FF',
-        colorPrimaryHover: '#9FE3FF'
+        colorPrimaryHover: '#9FE3FF',
+        colorPrimaryActive: '#7CBAD9'
       };
     },
     generateExtraTokens: (token: AliasToken) => ({
