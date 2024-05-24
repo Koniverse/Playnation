@@ -1,4 +1,4 @@
-name: Build WebApp Preview
+name: Build Telegram MiniApp
 on:
   pull_request:
     branches:
@@ -10,15 +10,15 @@ on:
 
 jobs:
   master:
-    if: "! startsWith(github.event.head_commit.message, '[CI Skip]') || github.ref == 'refs/heads/telegram-wallet'"
-    name: Deploy WebApp Preview
+    if: "!startsWith(github.event.head_commit.message, '[CI Skip]')"
+    name: Deploy Telegram MiniApp
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-        token: ${{ secrets.GH_PAT }}
+        token: ${{ secrets.GH_AUTOMATION_TOKEN }}
     - name: Setup Node
       uses: actions/setup-node@v3
       with:

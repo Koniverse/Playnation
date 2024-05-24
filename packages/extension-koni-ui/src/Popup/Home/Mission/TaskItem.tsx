@@ -18,12 +18,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = {
-  task: Task
+  task: Task,
+  actionReloadPoint: VoidFunction;
 } & ThemeProps;
 
 const apiSDK = BookaSdk.instance;
-
-const _TaskItem = ({ className, task }: Props): React.ReactElement => {
+const telegramConnector = TelegramConnector.instance;
+const _TaskItem = ({ className, task, actionReloadPoint }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const notify = useNotification();
   const [account, setAccount] = useState(apiSDK.account);
@@ -38,12 +39,13 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
     if (checking) {
       taskItemUpdaterInterval = setInterval(() => {
         apiSDK.completeTask(task.taskHistoryId)
-          .then((data: any) => {
-            if (data.completed) {
+          .then((data: boolean) => {
+            if (data) {
               // @ts-ignore
               clearInterval(taskItemUpdaterInterval);
               setCompleted(true);
               setChecking(false);
+              actionReloadPoint();
             }
           })
           .catch(console.error);
@@ -115,12 +117,13 @@ const _TaskItem = ({ className, task }: Props): React.ReactElement => {
           setChecking(true);
         } else {
           setCompleted(true);
+          actionReloadPoint();
         }
       })
       .catch(console.error);
 
     setTimeout(() => {
-      // task.url && telegramConnector.openLink(task.url);
+      task.url && telegramConnector.openLink(task.url);
     }, 100);
   }, [task.id, task.url]);
 
