@@ -2,16 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
-import CountDown from '@subwallet/extension-koni-ui/components/Common/CountDown';
-import { GamePoint } from '@subwallet/extension-koni-ui/components/Games/Logo';
+import { GamePoint } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Task, TaskHistoryStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { formatInteger } from '@subwallet/extension-koni-ui/utils';
+import { customFormatDate, formatInteger } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
-import { Button, Icon, Image, Typography } from '@subwallet/react-ui';
+import { Button, Icon, Image } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle } from 'phosphor-react';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -24,7 +23,8 @@ type Props = {
 
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
-const _TaskItem = ({ className, task, actionReloadPoint }: Props): React.ReactElement => {
+
+const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const notify = useNotification();
   const [account, setAccount] = useState(apiSDK.account);
@@ -53,7 +53,7 @@ const _TaskItem = ({ className, task, actionReloadPoint }: Props): React.ReactEl
     }
 
     return () => clearInterval(taskItemUpdaterInterval);
-  }, [checking]);
+  }, [actionReloadPoint, checking, task.taskHistoryId]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -65,71 +65,75 @@ const _TaskItem = ({ className, task, actionReloadPoint }: Props): React.ReactEl
     };
   }, []);
 
-  const finishTask = useCallback(async () => {
-    const taskId = task.id;
-    const onChainType = task.onChainType;
-    const { address } = account?.info || {};
+  const finishTask = useCallback(() => {
+    (async () => {
+      const taskId = task.id;
+      const onChainType = task.onChainType;
+      const { address } = account?.info || {};
 
-    if (!address) {
-      return;
-    }
-
-    setTaskLoading(true);
-    let res: SWTransactionResponse | null = null;
-    const networkKey = 'alephTest';
-
-    if (onChainType) {
-      const now = new Date();
-      const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-      const data = JSON.stringify({ address, type: onChainType, date });
-
-      res = await actionTaskOnChain(onChainType, 'alephTest', address, data);
-
-      if ((res && res.errors.length > 0) || !res) {
-        setTaskLoading(false);
-        let message = t(`Network ${networkKey} not enable`);
-        if (res && res.errors.length > 0) {
-          const error = res?.errors[0] || {};
-          // @ts-ignore
-          message = error?.message || '';
-        }
-
-        notify({
-          message: message,
-          type: 'error'
-        });
-
+      if (!address) {
         return;
       }
-    }
 
-    let extrinsicHash = '';
+      setTaskLoading(true);
+      let res: SWTransactionResponse | null = null;
+      const networkKey = 'alephTest';
 
-    if (res) {
-      extrinsicHash = res.extrinsicHash || '';
-    }
+      if (onChainType) {
+        const now = new Date();
+        const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+        const data = JSON.stringify({ address, type: onChainType, date });
 
-    apiSDK.finishTask(taskId, extrinsicHash, networkKey)
-      .finally(() => {
-        setTaskLoading(false);
+        res = await actionTaskOnChain(onChainType, 'alephTest', address, data);
 
-        if (onChainType) {
-          setChecking(true);
-        } else {
-          setCompleted(true);
-          actionReloadPoint();
+        if ((res && res.errors.length > 0) || !res) {
+          setTaskLoading(false);
+          let message = t(`Network ${networkKey} not enable`);
+
+          if (res && res.errors.length > 0) {
+            const error = res?.errors[0] || {};
+
+            // @ts-ignore
+            message = error?.message || '';
+          }
+
+          notify({
+            message: message,
+            type: 'error'
+          });
+
+          return;
         }
-      })
-      .catch(console.error);
+      }
 
-    setTimeout(() => {
-      task.url && telegramConnector.openLink(task.url);
-    }, 100);
-  }, [task.id, task.url]);
+      let extrinsicHash = '';
+
+      if (res) {
+        extrinsicHash = res.extrinsicHash || '';
+      }
+
+      apiSDK.finishTask(taskId, extrinsicHash, networkKey)
+        .finally(() => {
+          setTaskLoading(false);
+
+          if (onChainType) {
+            setChecking(true);
+          } else {
+            setCompleted(true);
+            actionReloadPoint();
+          }
+        })
+        .catch(console.error);
+
+      setTimeout(() => {
+        task.url && telegramConnector.openLink(task.url);
+      }, 100);
+    })().catch(console.error);
+  }, [account?.info, actionReloadPoint, notify, t, task.id, task.onChainType, task.url]);
 
   const { endTime,
     isDisabled,
-    isEnd, isInTimeRange,
+    isInTimeRange,
     isNotStarted,
     startTime } = (() => {
     const now = Date.now();
@@ -145,118 +149,143 @@ const _TaskItem = ({ className, task, actionReloadPoint }: Props): React.ReactEl
       endTime,
       isNotStarted,
       isInTimeRange,
+      // @ts-ignore
       isEnd,
       isDisabled: isNotStarted || isEnd
     };
   })();
 
-  return <div
-    className={CN(className, { disabled: isDisabled })}
-    key={task.id}
-  >
-    <Image
-      className={'task-banner'}
-      src={task.icon || undefined}
-      width={40}
-    ></Image>
-    <div className='task-title'>
-      <Typography.Title
-        className={'__title'}
-        level={6}
-      >{task.name}</Typography.Title>
-      <Typography.Text
-        className={'__sub-title'}
-        size={'sm'}
-      >
-        <GamePoint text={`${formatInteger(task.pointReward || 0)}`} />
+  const renderTaskDate = () => {
+    const now = Date.now();
+
+    let content: string | undefined;
+
+    if (isNotStarted && !!startTime && startTime < now) {
+      content = `${t('Begins at')} ${customFormatDate(startTime, '#hhhh#:#mm# - #DD#/#MM#/#YYYY#')}`;
+    } else if (isInTimeRange && !!endTime && endTime > now) {
+      content = `${t('Ends at')} ${customFormatDate(endTime, '#hhhh#:#mm# - #DD#/#MM#/#YYYY#')}`;
+    }
+
+    if (content) {
+      return (
+        <div className='__task-date'>
+         content
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <div
+      className={CN(className, { disabled: isDisabled })}
+      key={task.id}
+    >
+      <div className='__left-part'>
+        <Image
+          className={'__task-banner'}
+          src={task.icon || undefined}
+          width={40}
+        />
+      </div>
+
+      <div className='__mid-part'>
+        <div className='__min-part-line-1'>
+          <div className='__task-name'>
+            {task.name}
+          </div>
+        </div>
+        <div className='__min-part-line-2'>
+          <GamePoint
+            className={'__game-point'}
+            point={`${formatInteger(task.pointReward || 0)}`}
+          />
+
+          {renderTaskDate()}
+        </div>
+      </div>
+
+      <div className='__right-part'>
+        {!completed && (
+          <Button
+            disabled={checking || isDisabled}
+            loading={checking || taskLoading}
+            onClick={finishTask}
+            shape={'round'}
+            size={'xs'}
+          >
+            {t('Go')}
+          </Button>
+        )}
 
         {
-          isNotStarted && !!startTime && (
-            <CountDown
-              prefix={t('Begins in ')}
-              targetTime={startTime}
+          completed && (
+            <Icon
+              className={'background-icon -size-4 -primary-2'}
+              phosphorIcon={CheckCircle}
+              weight={'fill'}
             />
           )
         }
-        {
-          isInTimeRange && !!endTime && (
-            <CountDown
-              prefix={t('Ends in ')}
-              targetTime={endTime}
-            />
-          )
-        }
-        {
-          isEnd && (<span>{t('Ended')}</span>)
-        }
-      </Typography.Text>
+      </div>
     </div>
-    {!completed && !checking && <Button
-      className={'play-button'}
-      disabled={isDisabled}
-      loading={taskLoading}
-      onClick={finishTask}
-      size={'xs'}
-    >
-      {t('Go')}
-    </Button>}
-    {completed && !checking && <Button
-      className={'checked-button'}
-      icon={<Icon
-        phosphorIcon={CheckCircle}
-        weight={'fill'}
-      />}
-      size={'xs'}
-      type={'ghost'}
-    />}
-    {checking && !completed && <Button
-      className={'checked-button'}
-      icon={<Icon
-        iconColor={'#FFD700'}
-        phosphorIcon={CheckCircle}
-        weight={'fill'}
-            />}
-      size={'xs'}
-      type={'ghost'}
-    />}
-  </div>;
+  );
 };
 
 const TaskItem = styled(_TaskItem)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
-  return { alignItems: 'center',
+  return {
+    alignItems: 'center',
     display: 'flex',
-    marginBottom: token.marginXS,
     padding: token.paddingSM,
     borderRadius: token.borderRadius,
-    backgroundColor: token.colorBgSecondary,
 
     '&.disabled': {
       opacity: 0.6
     },
 
-    '.task-banner': {
-      marginRight: token.marginSM
+    '.__mid-part': {
+      flex: 1
     },
 
-    '.task-title': {
-      flex: 1,
+    '.__task-banner': {
+      marginRight: token.marginXS
+    },
 
-      '.__title': {
-        marginBottom: 0
-      },
+    '.__min-part-line-1': {
 
-      '.__sub-title': {
-        color: token.colorTextDark4
+    },
+
+    '.__min-part-line-2': {
+      display: 'flex',
+      alignItems: 'center'
+    },
+
+    '.__task-name': {
+      color: token.colorTextDark2,
+      fontWeight: token.headingFontWeight,
+      fontSize: token.fontSize,
+      lineHeight: token.lineHeight
+    },
+
+    '.__task-date': {
+      display: 'flex',
+      fontSize: 10,
+      lineHeight: '16px',
+      fontWeight: token.headingFontWeight,
+      color: token.colorTextDark3,
+      paddingLeft: token.paddingXS,
+      alignItems: 'center',
+
+      '&:before': {
+        content: '""',
+        marginRight: token.marginXS,
+        backgroundColor: token.colorTextDark4,
+        height: 12,
+        width: 1
       }
-    },
-
-    '.play-button, .checked-button': {
-      marginLeft: token.marginSM
-    },
-
-    '.checked-button': {
-      color: token.colorSuccess
-    } };
+    }
+  };
 });
 
 export default TaskItem;

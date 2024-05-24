@@ -419,6 +419,20 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
 
     '.ant-progress.ant-progress .ant-progress-bg': {
       backgroundColor: extendToken.colorBgSecondary2
+    },
+
+    // background icon
+
+    '.background-icon': {
+      '&.-primary-1': {
+        color: token.colorPrimary,
+        backgroundColor: extendToken.colorBgSecondary2
+      },
+
+      '&.-primary-2': {
+        color: token.colorTextDark1,
+        backgroundColor: token.colorPrimary
+      }
     }
   });
 });

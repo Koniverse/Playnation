@@ -101,12 +101,11 @@ export interface TaskCategory {
   description?: string | null;
   icon?: string | null;
   active: boolean;
-  minPoint?: number;
 }
 
 export type TaskCategoryInfo = {
   id: number;
-  minPoint: number;
+  completeCount: number;
   tasks: Task[];
 }
 

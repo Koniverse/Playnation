@@ -5,107 +5,93 @@ import { TaskCategory, TaskCategoryInfo } from '@subwallet/extension-koni-ui/con
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import TaskItem from '@subwallet/extension-koni-ui/Popup/Home/Mission/TaskItem';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, Icon, Typography } from '@subwallet/react-ui';
-import { CaretLeft } from 'phosphor-react';
-import React, { useMemo } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
-  currentTaskCategory?: number;
+  taskCategoryMap: Record<number, TaskCategory>;
   taskCategoryInfoMap: Record<number, TaskCategoryInfo>;
-  onBackToCategoryList: VoidFunction;
   actionReloadPoint: VoidFunction;
-  taskCategory: TaskCategory | undefined;
 };
 
-const Component = ({ actionReloadPoint, className, currentTaskCategory, onBackToCategoryList, taskCategory, taskCategoryInfoMap }: Props): React.ReactElement => {
+const Component = ({ actionReloadPoint, className, taskCategoryInfoMap, taskCategoryMap }: Props): React.ReactElement => {
   const { t } = useTranslation();
-
-  const sortedTaskList = useMemo(() => {
-    const now = Date.now();
-
-    const taskList = currentTaskCategory ? taskCategoryInfoMap[currentTaskCategory]?.tasks || [] : [];
-
-    return taskList.filter((task) => {
-      // Filter out the task that ended more than 1 day ago
-      if (!task.completedAt && task.endTime && new Date(task.endTime).getTime() < now) {
-        return false;
-      } else {
-        return true;
-      }
-    })
-      .sort((a, b) => {
-        const aDisabled = ((a.startTime && new Date(a.startTime).getTime() > now) || (a.endTime && new Date(a.endTime).getTime() < now));
-        const bDisabled = ((b.startTime && new Date(b.startTime).getTime() > now) || (b.endTime && new Date(b.endTime).getTime() < now));
-
-        if (aDisabled && !bDisabled) {
-          return 1;
-        }
-
-        if (!aDisabled && bDisabled) {
-          return -1;
-        }
-
-        if (a.status === 0 && b.status !== 0) {
-          return -1;
-        }
-
-        if (a.status !== 0 && b.status === 0) {
-          return 1;
-        }
-
-        return a.status - b.status;
-      });
-  }, [currentTaskCategory, taskCategoryInfoMap]);
 
   return (
     <div className={className}>
-      <div className={'__list-header'}>
-        <Button
-          icon={(
-            <Icon
-              phosphorIcon={CaretLeft}
-            />
-          )}
-          onClick={onBackToCategoryList}
-          size='xs'
-          type='ghost'
-        />
+      {
+        Object.values(taskCategoryInfoMap).map((tci) => (
+          <div
+            className={'__task-category-item'}
+            key={tci.id}
+          >
+            <div className='__task-category-info'>
+              <div className='__task-category-name'>
+                {taskCategoryMap[tci.id]?.name}
+              </div>
 
-        <Typography.Title level={4}>
-          {taskCategory ? taskCategory.name : t('Missions')}
-        </Typography.Title>
-      </div>
-
-      {sortedTaskList.map((task) => (
-        <TaskItem
-          actionReloadPoint={actionReloadPoint}
-          key={task.id}
-          task={task}
-        />
-      ))}
+              <div className='__complete-missions'>
+                {`${tci.completeCount}/${tci.tasks.length}`} {t('mission')}
+              </div>
+            </div>
+            <div className='__tasks-container'>
+              {
+                tci.tasks.map((t) => (
+                  <TaskItem
+                    actionReloadPoint={actionReloadPoint}
+                    className={'__task-item'}
+                    key={t.id}
+                    task={t}
+                  />
+                ))
+              }
+            </div>
+          </div>
+        ))
+      }
     </div>
   );
 };
 
 export const TaskList = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    '.__list-header': {
-      display: 'flex',
-      alignItems: 'center',
-      marginBottom: token.marginXS,
-
-      '.ant-typography': {
-        marginBottom: 0
-      }
+    '.__task-category-item': {
+      marginBottom: token.marginXS
     },
 
-    '.task-list': {
-      padding: token.padding,
+    '.__tasks-container': {
+      backgroundColor: token.colorWhite,
+      borderRadius: 20,
+      paddingTop: token.paddingXXS,
+      paddingBottom: token.paddingXXS
+    },
 
-      '.account-info': {
-        marginBottom: token.marginSM
-      }
+    '.__task-category-info': {
+      color: token.colorTextDark1,
+      display: 'flex',
+      gap: token.sizeXS,
+      overflow: 'hidden',
+      paddingLeft: token.paddingSM,
+      paddingRight: token.paddingSM,
+      marginBottom: token.marginXS
+    },
+
+    '.__task-category-name': {
+      fontSize: token.fontSizeLG,
+      flex: 1,
+      textOverflow: 'ellipsis',
+      overflow: 'hidden',
+      'white-space': 'nowrap',
+      fontWeight: token.headingFontWeight
+    },
+
+    '.__complete-missions': {
+      fontSize: token.fontSize,
+      lineHeight: token.lineHeight
+    },
+
+    '.__task-item + .__task-item': {
+      marginTop: token.marginXXS
     }
   };
 });

@@ -1,24 +1,28 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
+import { GameAccountBlock } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Task, TaskCategory, TaskCategoryInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { EnergyConfig, Task, TaskCategory, TaskCategoryInfo, TaskHistoryStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { TaskList } from '@subwallet/extension-koni-ui/Popup/Home/Mission/TaskList';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
-
-import { TaskCategoryList } from './TaskCategoryList';
 
 type Props = ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 
-enum ViewMode {
-  CATEGORY_LIST = 'category_list',
-  TASK_LIST = 'task_list',
+function getTaskCategoryMap (taskCategories: TaskCategory[]): Record<number, TaskCategory> {
+  const result: Record<number, TaskCategory> = {};
+
+  taskCategories.forEach((tc) => {
+    result[tc.id] = tc;
+  });
+
+  return result;
 }
 
 function getTaskCategoryInfoMap (tasks: Task[]): Record<number, TaskCategoryInfo> {
@@ -33,26 +37,45 @@ function getTaskCategoryInfoMap (tasks: Task[]): Record<number, TaskCategoryInfo
     if (!result[t.categoryId]) {
       result[t.categoryId] = {
         id: t.categoryId,
-        minPoint: t.pointReward || 0,
-        tasks: [t]
+        completeCount: 0,
+        tasks: []
       };
-    } else {
-      result[t.categoryId].tasks.push(t);
-
-      if (t.completedAt || t.status > 0) {
-        return;
-      }
-
-      if (t.startTime && (now < new Date(t.startTime).getTime())) {
-        return;
-      }
-
-      if (t.endTime && (now >= new Date(t.endTime).getTime())) {
-        return;
-      }
-
-      result[t.categoryId].minPoint += (t.pointReward || 0);
     }
+
+    if (!t.completedAt && t.endTime && new Date(t.endTime).getTime() < now) {
+      return;
+    }
+
+    if (t.completedAt) {
+      result[t.categoryId].completeCount = result[t.categoryId].completeCount + 1;
+    }
+
+    result[t.categoryId].tasks.push(t);
+  });
+
+  Object.values(result).forEach((tci) => {
+    tci.tasks.sort((a, b) => {
+      const aDisabled = ((a.startTime && new Date(a.startTime).getTime() > now) || (a.endTime && new Date(a.endTime).getTime() < now));
+      const bDisabled = ((b.startTime && new Date(b.startTime).getTime() > now) || (b.endTime && new Date(b.endTime).getTime() < now));
+
+      if (aDisabled && !bDisabled) {
+        return 1;
+      }
+
+      if (!aDisabled && bDisabled) {
+        return -1;
+      }
+
+      if (a.status === TaskHistoryStatus.COMPLETED && b.status !== TaskHistoryStatus.COMPLETED) {
+        return 1;
+      }
+
+      if (a.status !== TaskHistoryStatus.COMPLETED && b.status === TaskHistoryStatus.COMPLETED) {
+        return -1;
+      }
+
+      return 0;
+    });
   });
 
   return result;
@@ -60,14 +83,12 @@ function getTaskCategoryInfoMap (tasks: Task[]): Record<number, TaskCategoryInfo
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
-  const [taskCategoryList, setTaskCategoryList] = useState<TaskCategory[]>(apiSDK.taskCategoryList);
-  const [taskCategoryInfoMap, setTaskCategoryInfoMap] = useState<Record<number, TaskCategoryInfo>>(getTaskCategoryInfoMap(apiSDK.taskList));
+  const [taskCategoryMap, setTaskCategoryMap] = useState<Record<number, TaskCategory>>({});
+  const [taskCategoryInfoMap, setTaskCategoryInfoMap] = useState<Record<number, TaskCategoryInfo>>({});
   const [account, setAccount] = useState(apiSDK.account);
-  const [currentViewMode, setCurrentViewMode] = useState<ViewMode>(ViewMode.CATEGORY_LIST);
-  const [currentTaskCategory, setCurrentTaskCategory] = useState<number | undefined>();
-  const [taskCategory, setTaskCategory] = useState<TaskCategory | undefined>();
+  const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
   const [reloadAccount, setReloadAccount] = useState<number>(0);
-  const [point, setPoint] = useState(account?.attributes.point || 0);
+  const { setContainerClass } = useContext(HomeContext);
 
   const actionReloadPoint = useCallback(() => {
     setReloadAccount(reloadAccount + 1);
@@ -76,17 +97,24 @@ const Component = ({ className }: Props): React.ReactElement => {
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
       setAccount(data);
-      setPoint(data?.attributes.point || 0);
+    });
+
+    const energyConfigSub = apiSDK.subscribeEnergyConfig().subscribe((data) => {
+      setEnergyConfig(data);
     });
 
     return () => {
       accountSub.unsubscribe();
+      energyConfigSub.unsubscribe();
     };
   }, [reloadAccount]);
 
   useEffect(() => {
+    setTaskCategoryMap(getTaskCategoryMap(apiSDK.taskCategoryList));
+    setTaskCategoryInfoMap(getTaskCategoryInfoMap(apiSDK.taskList));
+
     const taskCategoryListSub = apiSDK.subscribeTaskCategoryList().subscribe((data) => {
-      setTaskCategoryList(data);
+      setTaskCategoryMap(getTaskCategoryMap(data));
     });
 
     let taskListUpdaterInterval: NodeJS.Timer;
@@ -108,61 +136,51 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, []);
 
-  const onClickCategoryItem = useCallback((categoryId: number) => {
-    setCurrentViewMode(ViewMode.TASK_LIST);
-    setCurrentTaskCategory(categoryId);
-    setTaskCategory(taskCategoryList.find((tc) => tc.id === categoryId));
-  }, []);
+  useEffect(() => {
+    setContainerClass('mission-screen-wrapper');
 
-  const onBackToCategoryList = useCallback(() => {
-    setCurrentViewMode(ViewMode.CATEGORY_LIST);
-    setCurrentTaskCategory(undefined);
-  }, []);
+    return () => {
+      setContainerClass(undefined);
+    };
+  }, [setContainerClass]);
 
-  return <div className={className}>
-    <div className={'task-list'}>
-      {account && (
-        <GameAccount
-          avatar={account.info.photoUrl}
-          className={'account-info'}
-          name={`${account.info.firstName || ''} ${account.info.lastName || ''}`}
-          point={point}
+  return (
+    <div className={className}>
+      <div className='game-account-block-wrapper'>
+        <GameAccountBlock
+          accountInfo={account}
+          maxEnergy={energyConfig?.maxEnergy}
         />
-      )}
+      </div>
 
-      {
-        currentViewMode === ViewMode.CATEGORY_LIST && (
-          <TaskCategoryList
-            onClickCategoryItem={onClickCategoryItem}
-            taskCategoryInfoMap={taskCategoryInfoMap}
-            taskCategoryList={taskCategoryList}
-          />
-        )
-      }
-
-      {
-        currentViewMode === ViewMode.TASK_LIST && (
-          <TaskList
-            currentTaskCategory={currentTaskCategory}
-            onBackToCategoryList={onBackToCategoryList}
-            taskCategory={taskCategory}
-            actionReloadPoint={actionReloadPoint}
-            taskCategoryInfoMap={taskCategoryInfoMap}
-          />
-        )
-      }
+      <div className={'task-list-container'}>
+        <TaskList
+          actionReloadPoint={actionReloadPoint}
+          taskCategoryInfoMap={taskCategoryInfoMap}
+          taskCategoryMap={taskCategoryMap}
+        />
+      </div>
     </div>
-  </div>;
+  );
 };
 
 const Mission = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    '.task-list': {
-      padding: token.padding,
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
 
-      '.account-info': {
-        marginBottom: token.marginSM
-      }
+    '.game-account-block-wrapper': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
+      paddingBottom: token.paddingSM
+    },
+
+    '.task-list-container': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
+      overflow: 'auto',
+      paddingBottom: 34
     }
   };
 });

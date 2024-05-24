@@ -808,3 +808,41 @@ div.ant-notification-notice {
 .ant-btn.ant-btn > span + .anticon {
   margin-inline-start: 4px
 }
+
+/* icon */
+.background-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100%;
+}
+
+.background-icon.-size-1 {
+  font-size: 8px;
+  min-width: 12px;
+  height: 12px;
+}
+
+.background-icon.-size-2 {
+  font-size: 10px;
+  min-width: 16px;
+  height: 16px;
+}
+
+.background-icon.-size-3 {
+  font-size: 16px;
+  min-width: 24px;
+  height: 24px;
+}
+
+.background-icon.-size-4 {
+  font-size: 20px;
+  min-width: 32px;
+  height: 32px;
+}
+
+.background-icon.-size-5 {
+  font-size: 24px;
+  min-width: 40px;
+  height: 40px;
+}
