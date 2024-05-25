@@ -236,6 +236,19 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       borderRadius: 26
     },
 
+    '.ant-field-container.ant-field-container.ant-field-bg-default.ant-field-with-label': {
+      borderRadius: 20,
+      paddingTop: token.paddingXXS,
+
+      '.ant-field-label, .ant-field-wrapper': {
+        paddingLeft: token.padding
+      }
+    },
+
+    '.ant-field-container.ant-field-container .ant-field-label': {
+      color: token.colorTextDark2
+    },
+
     '.ant-field-container.ant-field-container .ant-field-wrapper .ant-field-content-wrapper .ant-field-content': {
       color: token.colorTextDark2
     },
@@ -304,7 +317,8 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
     },
 
     '.ant-input-container.ant-input-container.-disabled .ant-input': {
-      '--webkit-autofill-text-color': token.colorTextDark3
+      '--webkit-autofill-text-color': token.colorTextDark3,
+      color: token.colorTextDark3
     },
 
     '.ant-input-container.ant-input-container:not(.-disabled):not(.-status-warning):not(.-status-error):not(.-status-success.-display-success-status)': {
