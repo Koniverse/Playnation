@@ -46,6 +46,7 @@ function Component (props: Props): React.ReactElement<Props> {
           />
         }
         onClick={onApplyFilter}
+        shape={'round'}
       >
         {applyFilterButtonTitle || t('Apply filter')}
       </Button>

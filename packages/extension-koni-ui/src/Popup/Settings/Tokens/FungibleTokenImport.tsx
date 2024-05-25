@@ -259,6 +259,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
               weight='fill'
             />
           ),
+          shape: 'round',
           loading,
           onClick: form.submit,
           children: t('Import token')
@@ -381,17 +382,13 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 const FungibleTokenImport = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return ({
     '.import_token__container': {
-      paddingTop: token.padding,
+      paddingTop: token.paddingXXS,
       marginLeft: token.margin,
       marginRight: token.margin
     },
 
     '.import_token__selected_option': {
       color: token.colorTextHeading
-    },
-
-    '.ant-field-container.ant-field-size-medium .ant-field-wrapper': {
-      padding: token.paddingSM
     },
 
     '.token_import__selected_option': {

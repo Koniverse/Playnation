@@ -200,41 +200,6 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       }
     },
 
-    '.ant-field-container.ant-field-container.ant-field-bg-default': {
-      backgroundColor: token.colorBgInput,
-      borderRadius: 26
-    },
-
-    '.ant-field-container.ant-field-container .ant-field-wrapper .ant-field-content-wrapper .ant-field-content': {
-      color: token.colorTextDark2
-    },
-
-    '.ant-field-container.ant-field-placeholder.ant-field-placeholder .ant-field-wrapper .ant-field-content-wrapper .ant-field-content': {
-      color: token.colorTextDark4
-    },
-
-    '.ant-select-modal-input-container.ant-select-modal-input-container.ant-select-modal-input-bg-default': {
-      backgroundColor: token.colorBgInput,
-      borderRadius: 26,
-
-      '&:before': {
-        borderRadius: 26,
-        pointerEvents: 'none'
-      }
-    },
-
-    '.ant-input-affix-wrapper': {
-      overflow: 'hidden',
-
-      '.ant-input': {
-        overflow: 'hidden'
-      },
-
-      '.ant-input-suffix>span:last-child:empty': {
-        marginRight: token.marginXS
-      }
-    },
-
     '.ant-tooltip-placement-bottom, .ant-tooltip-placement-bottomLeft, .ant-tooltip-placement-bottomRight': {
       '.ant-tooltip-arrow': {
         top: 1
@@ -266,6 +231,31 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
     },
 
     // input
+    '.ant-field-container.ant-field-container.ant-field-bg-default': {
+      backgroundColor: token.colorBgInput,
+      borderRadius: 26
+    },
+
+    '.ant-field-container.ant-field-container .ant-field-wrapper .ant-field-content-wrapper .ant-field-content': {
+      color: token.colorTextDark2
+    },
+
+    '.ant-field-container.ant-field-placeholder.ant-field-placeholder .ant-field-wrapper .ant-field-content-wrapper .ant-field-content': {
+      color: token.colorTextDark4
+    },
+
+    '.ant-input-affix-wrapper': {
+      overflow: 'hidden',
+
+      '.ant-input': {
+        overflow: 'hidden'
+      },
+
+      '.ant-input-suffix>span:last-child:empty': {
+        marginRight: token.marginXS
+      }
+    },
+
     '.ant-input-container.ant-input-container': {
       color: token.colorTextDark2,
       backgroundColor: token.colorBgInput,
@@ -274,6 +264,20 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       '&:before': {
         borderRadius: 26
       }
+    },
+
+    '.ant-input-container.ant-input-container.-has-label': {
+      borderRadius: 20,
+      paddingTop: token.paddingXXS,
+
+      '&:before': {
+        borderRadius: 20
+      }
+    },
+
+    '.ant-input-container.ant-input-container.-has-label .ant-input-label': {
+      color: token.colorTextDark2,
+      paddingLeft: token.padding
     },
 
     '.ant-input-container.ant-input-container .ant-input-affix-wrapper': {
@@ -322,6 +326,38 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
     },
 
     // selectModal
+    '.ant-select-modal-input-container.ant-select-modal-input-container .ant-select-modal-input-placeholder': {
+      color: token.colorTextDark3
+    },
+
+    '.ant-select-modal-input-container.ant-select-modal-input-container .ant-select-modal-input-label': {
+      color: token.colorTextDark2
+    },
+
+    '.ant-select-modal-input-container.ant-select-modal-input-container.ant-select-modal-input-bg-default': {
+      backgroundColor: token.colorBgInput,
+      borderRadius: 26,
+
+      '&:before': {
+        borderRadius: 26,
+        pointerEvents: 'none'
+      }
+    },
+
+    '.ant-select-modal-input-container.ant-select-modal-input-container.ant-select-modal-input-bg-default.ant-select-modal-input-with-label': {
+      borderRadius: 20,
+      paddingTop: token.paddingXXS,
+
+      '&:before': {
+        borderRadius: 20
+      }
+    },
+
+    '.ant-select-modal-input-container.ant-select-modal-input-container.ant-select-modal-input-with-label': {
+      '.ant-select-modal-input-label, .ant-select-modal-input-wrapper': {
+        paddingLeft: token.padding
+      }
+    },
 
     '.ant-select-modal-input-container:not(.-disabled):not(.-status-warning):not(.-status-error):not(.-status-success.-display-success-status)': {
       '&:hover, &.ant-select-modal-input-focus': {
@@ -346,6 +382,10 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
     },
 
     '.setting-group-item .ant-web3-block-right-item .__right-icon': {
+      color: token.colorTextDark2
+    },
+
+    '.ant-setting-item.ant-setting-item .ant-setting-item-name': {
       color: token.colorTextDark2
     },
 
