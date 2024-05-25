@@ -251,7 +251,9 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         backgroundStyle={'secondary'}
         leftFooterButton={{
           onClick: onCancel,
-          children: t('Cancel')
+          className: 'ant-sw-screen-layout-footer-left-button -secondary-2',
+          children: t('Cancel'),
+          shape: 'round'
         }}
         onBack={onBack}
         rightFooterButton={{
@@ -259,7 +261,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           disabled: isSubmitDisabled(),
           loading: loading,
           onClick: onSubmit,
-          children: t('Save')
+          children: t('Save'),
+          shape: 'round'
         }}
         showBackButton={true}
         showSubHeader={true}
@@ -359,14 +362,15 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 const AddProvider = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return ({
     '.add_provider__container': {
-      padding: token.padding
+      padding: token.padding,
+      paddingTop: token.paddingXXS
     },
 
     '.description': {
       padding: token.padding,
       paddingTop: 0,
       textAlign: 'center',
-      color: token.colorTextDescription,
+      color: token.colorTextDark2,
       fontSize: token.fontSizeHeading6,
       lineHeight: token.lineHeightHeading6
     },
