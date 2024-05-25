@@ -700,8 +700,6 @@ div#popup-container {
 }
 
 .ant-sw-list-section .ant-sw-list-wrapper .empty-list {
-  position: absolute;
-  inset: 0;
   margin-bottom: 0;
 }
 

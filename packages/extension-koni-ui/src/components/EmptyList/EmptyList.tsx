@@ -1,12 +1,12 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, ButtonProps, PageIcon } from '@subwallet/react-ui';
+import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { Button, ButtonProps, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { IconProps } from 'phosphor-react';
 import React from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 
 interface Props extends ThemeProps {
   phosphorIcon?: React.ForwardRefExoticComponent<IconProps & React.RefAttributes<SVGSVGElement>>,
@@ -17,18 +17,18 @@ interface Props extends ThemeProps {
 
 const Component: React.FC<Props> = (props: Props) => {
   const { buttonProps, className, emptyMessage, emptyTitle, phosphorIcon } = props;
-  const { token } = useTheme() as Theme;
 
   return (
     <div className={CN(className, 'empty-list')}>
       <div className={'empty_icon_wrapper'}>
-        <PageIcon
-          color={token['gray-4']}
-          iconProps={{
-            phosphorIcon,
-            weight: 'fill'
-          }}
-        />
+
+        <div className='empty_icon'>
+          <Icon
+            customSize={'60px'}
+            phosphorIcon={phosphorIcon}
+            weight={'fill'}
+          />
+        </div>
       </div>
 
       <div className={'empty_text_container'}>
@@ -47,17 +47,27 @@ const Component: React.FC<Props> = (props: Props) => {
   );
 };
 
-const EmptyList = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const EmptyList = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
     overflow: 'hidden',
-    marginTop: 48,
+    padding: '32px 16px',
     display: 'flex',
     flexWrap: 'wrap',
-    gap: token.padding,
     flexDirection: 'column',
     alignContent: 'center',
     position: 'relative',
     zIndex: 2,
+
+    '.empty_icon': {
+      width: 104,
+      height: 104,
+      borderRadius: '100%',
+      background: extendToken?.colorBgGradient || token.colorPrimary,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: token.colorTextDark1
+    },
 
     '.empty_text_container': {
       display: 'flex',
@@ -71,28 +81,31 @@ const EmptyList = styled(Component)<Props>(({ theme: { token } }: Props) => {
     '.empty_title': {
       fontWeight: token.headingFontWeight,
       textAlign: 'center',
-      fontSize: token.fontSizeLG,
-      lineHeight: token.lineHeightLG,
-      color: token.colorText
+      fontSize: token.fontSizeHeading4,
+      lineHeight: token.lineHeightHeading4,
+      color: token.colorTextDark1,
+      marginBottom: token.marginSM
     },
 
     '.empty_subtitle': {
       textAlign: 'center',
-      color: token.colorTextTertiary,
-      fontSize: token.fontSizeHeading6,
-      lineHeight: token.lineHeightHeading6
+      color: token.colorTextDark4,
+      fontSize: token.fontSize,
+      lineHeight: token.lineHeight
     },
 
     '.empty_icon_wrapper': {
       display: 'flex',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      marginBottom: token.margin
     },
 
     '.button-container': {
       display: 'flex',
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      marginTop: token.marginSM
     }
   };
 });
