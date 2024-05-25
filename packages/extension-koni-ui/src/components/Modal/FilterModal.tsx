@@ -84,7 +84,7 @@ function Component (props: Props): React.ReactElement<Props> {
   );
 }
 
-export const FilterModal = styled(Component)<Props>(({ theme: { token } }: Props) => {
+export const FilterModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '.ant-sw-modal-body': {
       paddingBottom: token.paddingXS
@@ -95,11 +95,19 @@ export const FilterModal = styled(Component)<Props>(({ theme: { token } }: Props
     },
 
     '.__option-item': {
-      display: 'flex'
+      display: 'flex',
+      paddingTop: token.paddingXS,
+      paddingBottom: token.paddingXS
+    },
+
+    '.__options-container': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      padding: '8px 16px',
+      borderRadius: 20
     },
 
     '.__option-item + .__option-item': {
-      marginTop: token.sizeLG
+      marginTop: token.marginXXS
     },
 
     '.ant-checkbox-wrapper': {
