@@ -145,7 +145,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           gridGap={'14px'}
           list={assetItems}
           minColumnWidth={'172px'}
-          mode={'boxed'}
           onClickActionBtn={openFilterModal}
           renderItem={renderTokenItem}
           renderWhenEmpty={renderEmpty}
@@ -168,30 +167,50 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   );
 }
 
-const ManageTokens = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const ManageTokens = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '.ant-sw-screen-layout-body': {
       display: 'flex'
-    },
-
-    '.ant-sw-list-wrapper.ant-sw-list-wrapper:before': {
-      zIndex: 0,
-      borderRadius: token.borderRadiusLG
-    },
-
-    '.ant-sw-list-section.-boxed-mode .ant-sw-list': {
-      paddingLeft: token.padding,
-      paddingTop: token.paddingXS,
-      paddingBottom: token.paddingXS
     },
 
     '.ant-sw-list-section.-boxed-mode .ant-sw-list.-ignore-scrollbar': {
       paddingRight: token.padding + 6
     },
 
-    '.ant-network-item.-with-divider': {
+    '.ant-sw-list-search-input': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
+    },
+
+    '.ant-sw-list-wrapper': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
+    },
+
+    '.ant-sw-list-section': {
+      paddingTop: token.paddingXXS
+    },
+
+    '.ant-sw-list': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      padding: token.paddingXS,
+      borderRadius: 20
+    },
+
+    '.ant-network-item + .ant-network-item': {
+      marginTop: token.marginXXS,
       position: 'relative',
-      zIndex: 1
+      zIndex: 1,
+
+      '&:before': {
+        content: '""',
+        position: 'absolute',
+        left: 64,
+        right: 48,
+        height: 1,
+        top: -token.marginXXS,
+        backgroundColor: token.colorBgDivider
+      }
     },
 
     '&__inner': {
@@ -201,17 +220,13 @@ const ManageTokens = styled(Component)<Props>(({ theme: { token } }: Props) => {
     },
 
     '.manage_tokens__container': {
-      paddingTop: token.padding,
-      paddingBottom: token.paddingSM,
+      paddingTop: token.paddingXXS,
+      paddingBottom: 24,
       flex: 1,
 
       'button + button': {
         marginLeft: token.marginXS
       }
-    },
-
-    '.manage_tokens__right_item_container': {
-      marginRight: -token.marginXXS
     }
   });
 });

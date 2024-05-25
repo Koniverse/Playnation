@@ -42,24 +42,30 @@ const Component: React.FC<Props> = (props: Props) => {
       subName={''}
       subNetworkKey={tokenInfo.originChain}
       symbol={tokenInfo.slug.toLowerCase()}
-      withDivider={true}
+      withDivider={false}
     />
   );
 };
 
 const TokenToggleItem = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return {
+    backgroundColor: 'transparent',
+
     '.ant-web3-block': {
       cursor: 'default',
-      padding: `${token.padding - 2}px ${token.paddingSM}px ${token.paddingXS - 2}px`,
+      padding: `${token.paddingXS}px 0 ${token.paddingXS}px ${token.paddingSM}px`,
 
       '.ant-web3-block-right-item': {
-        marginRight: `-${token.padding + 2}px`
+        marginRight: 0
       }
     },
 
     '.ant-logo': {
       marginRight: token.marginXXS
+    },
+
+    '.ant-network-item-name': {
+      color: token.colorTextDark2
     },
 
     '.-sub-logo .ant-image-img': {

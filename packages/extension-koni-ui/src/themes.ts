@@ -100,6 +100,7 @@ const defaultToken: Partial<AliasToken> = {
   colorText: '#1F1F23',
   colorBgBorder: '#1F1F23',
   colorBgDivider: 'rgba(31, 31, 35, 0.12)',
+  colorBgInput: '#fff',
   borderRadius: 8,
   colorTextDark1: '#1F1F23',
   colorTextDark2: 'rgba(31, 31, 35, 0.85)',

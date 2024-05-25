@@ -327,6 +327,10 @@ export const GeneralSetting = styled(Component)<Props>(({ theme: { extendToken, 
         backgroundColor: extendToken.colorBgSecondary1,
         borderRadius: 40,
 
+        '.ant-web3-block.ant-web3-block:hover': {
+          backgroundColor: token.colorBgSecondary
+        },
+
         '.__left-icon': {
           minWidth: 24,
           height: 24,
