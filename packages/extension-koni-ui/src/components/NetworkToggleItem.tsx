@@ -35,29 +35,44 @@ const Component: React.FC<Props> = (props: Props) => {
         showDetailNavigation={true}
       />}
       subSymbol={connectSymbol}
-      withDivider={true}
     />
   );
 };
 
 const NetworkToggleItem = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return {
+    backgroundColor: 'transparent',
+
     '.ant-web3-block': {
       cursor: 'default',
-      padding: `${token.padding - 2}px ${token.paddingSM}px ${token.paddingXS - 2}px`,
+      padding: `${token.paddingXS}px 0 ${token.paddingXS}px ${token.paddingSM}px`,
 
       '.ant-web3-block-right-item': {
-        marginRight: `-${token.padding + 2}px`
+        marginRight: 0
       }
     },
 
     '.ant-logo': {
-      marginRight: token.marginXXS
+      marginRight: token.marginXXS,
+
+      '.ant-squircle, .ant-squircle .ant-image-img': {
+        width: '24px !important',
+        height: '24px !important'
+      }
+    },
+
+    '.-sub-logo.-sub-logo': {
+      bottom: 0,
+      right: 0
     },
 
     '.-sub-logo .ant-image-img': {
-      width: `${token.size}px !important`,
-      height: `${token.size}px !important`
+      width: `${token.sizeSM}px !important`,
+      height: `${token.sizeSM}px !important`
+    },
+
+    '.ant-network-item-name': {
+      color: token.colorTextDark2
     },
 
     '.manage_tokens__right_item_container': {

@@ -620,8 +620,9 @@ div#popup-container {
     width: 100% !important;
 }
 
-.ant-sw-modal-wrap .ant-sw-modal .ant-sw-modal-content {
+.ant-sw-modal .ant-sw-modal-content.ant-sw-modal-content {
   height: auto;
+  margin-top: 24px;
   max-height: 100%;
 }
 
@@ -670,6 +671,7 @@ div#popup-container {
 .ant-sw-modal.-full-size .ant-sw-modal-content.ant-sw-modal-content {
   border-radius: 0;
   height: 100%;
+  margin-top: 0;
 }
 
 .ant-sw-modal.-light-theme .ant-sw-modal-content.ant-sw-modal-content {

@@ -163,7 +163,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           enableSearchInput
           filterBy={filterFunction}
           list={chainInfoList}
-          mode={'boxed'}
           onClickActionBtn={openFilterModal}
           ref={sectionRef}
           renderItem={renderChainItem}
@@ -187,30 +186,50 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   );
 }
 
-const ManageChains = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const ManageChains = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '.ant-sw-screen-layout-body': {
       display: 'flex'
-    },
-
-    '.ant-sw-list-wrapper.ant-sw-list-wrapper:before': {
-      zIndex: 0,
-      borderRadius: token.borderRadiusLG
-    },
-
-    '.ant-sw-list-section.-boxed-mode .ant-sw-list': {
-      paddingLeft: token.padding,
-      paddingTop: token.paddingXS,
-      paddingBottom: token.paddingXS
     },
 
     '.ant-sw-list-section.-boxed-mode .ant-sw-list.-ignore-scrollbar': {
       paddingRight: token.padding + 6
     },
 
-    '.ant-network-item.-with-divider': {
+    '.ant-sw-list-search-input': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
+    },
+
+    '.ant-sw-list-wrapper': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
+    },
+
+    '.ant-sw-list-section': {
+      paddingTop: token.paddingXXS
+    },
+
+    '.ant-sw-list': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      padding: token.paddingXS,
+      borderRadius: 20
+    },
+
+    '.ant-network-item + .ant-network-item': {
+      marginTop: token.marginXXS,
       position: 'relative',
-      zIndex: 1
+      zIndex: 1,
+
+      '&:before': {
+        content: '""',
+        position: 'absolute',
+        left: 64,
+        right: 48,
+        height: 1,
+        top: -token.marginXXS,
+        backgroundColor: token.colorBgDivider
+      }
     },
 
     '&__inner': {
@@ -220,8 +239,8 @@ const ManageChains = styled(Component)<Props>(({ theme: { token } }: Props) => {
     },
 
     '.manage_chains__container': {
-      paddingTop: token.padding,
-      paddingBottom: token.paddingSM,
+      paddingTop: token.paddingXXS,
+      paddingBottom: 24,
       flex: 1
     },
 
@@ -231,11 +250,6 @@ const ManageChains = styled(Component)<Props>(({ theme: { token } }: Props) => {
       'button + button': {
         marginLeft: token.marginXS
       }
-    },
-
-    '.ant-web3-block .ant-web3-block-middle-item': {
-      width: 190,
-      overflow: 'hidden'
     },
 
     '.ant-network-item-name': {
