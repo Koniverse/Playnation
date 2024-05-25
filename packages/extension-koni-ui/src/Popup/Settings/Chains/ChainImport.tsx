@@ -278,12 +278,15 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         backgroundStyle={'secondary'}
         leftFooterButton={{
           onClick: onBack,
-          children: t('Cancel')
+          className: 'ant-sw-screen-layout-footer-left-button -secondary-2',
+          children: t('Cancel'),
+          shape: 'round'
         }}
         onBack={onBack}
         rightFooterButton={{
           block: true,
           disabled: isSubmitDisabled(),
+          shape: 'round',
           icon: (
             <Icon
               phosphorIcon={FloppyDiskBack}
@@ -423,14 +426,14 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 const ChainImport = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return ({
     '.chain_import__header_info': {
-      color: token.colorTextTertiary,
+      color: token.colorTextDark2,
       fontSize: token.fontSizeHeading6,
       lineHeight: token.lineHeightHeading6,
       fontWeight: token.bodyFontWeight,
       width: '100%',
       textAlign: 'center',
       marginBottom: token.margin,
-      marginTop: 22
+      marginTop: 4
     },
 
     '.chain_import__container': {

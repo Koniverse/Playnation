@@ -243,6 +243,16 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
     },
 
     // input
+    '.ant-input-container.ant-input-container': {
+      color: token.colorTextDark2,
+      backgroundColor: token.colorBgInput,
+      borderRadius: 26,
+
+      '&:before': {
+        borderRadius: 26
+      }
+    },
+
     '.ant-input-container.ant-input-container .ant-input-affix-wrapper': {
       paddingLeft: token.padding
     },
@@ -255,7 +265,22 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       color: token.colorTextDark1
     },
 
-    '.ant-input-container:not(.-disabled):not(.-status-warning):not(.-status-error):not(.-status-success.-display-success-status)': {
+    '.ant-input-container.ant-input-container .ant-input:-webkit-autofill': {
+      '--webkit-autofill-border-color': 'transparent',
+      borderWidth: 0,
+      '--webkit-autofill-background-color': token.colorBgInput,
+      '--webkit-autofill-text-color': token.colorTextDark2
+    },
+
+    '.ant-input-container.ant-input-container .ant-input:-internal-autofill-selected': {
+      color: 'fieldtext !important'
+    },
+
+    '.ant-input-container.ant-input-container.-disabled .ant-input': {
+      '--webkit-autofill-text-color': token.colorTextDark3
+    },
+
+    '.ant-input-container.ant-input-container:not(.-disabled):not(.-status-warning):not(.-status-error):not(.-status-success.-display-success-status)': {
       '&:hover': {
         '--webkit-autofill-border-color': token.colorPrimary,
 
@@ -271,19 +296,6 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
           borderColor: token.colorPrimaryActive
         }
       }
-    },
-
-    '.ant-input-search.ant-input-search': {
-      backgroundColor: token.colorBgInput,
-      borderRadius: 26,
-
-      '&:before': {
-        borderRadius: 26
-      }
-    },
-
-    '.ant-sw-list-section .ant-sw-list-action-btn.ant-sw-list-action-btn': {
-      right: 8
     },
 
     // selectModal

@@ -546,6 +546,19 @@ div#popup-container {
     display: none;
 }
 
+/* S - input */
+
+.ant-input-container.ant-input-container:before {
+  pointer-events: none;
+  z-index: 3;
+}
+
+.ant-sw-list-section .ant-sw-list-action-btn.ant-sw-list-action-btn {
+  right: 8px
+}
+
+/* E - input */
+
 .ant-table {
     background: transparent !important;
 }
