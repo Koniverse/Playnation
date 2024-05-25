@@ -156,7 +156,7 @@ export const TokenSelectionItem = styled(Component)<Props>(({ theme: { token } }
     },
 
     '.__chain-name': {
-      color: token.colorTextLight4,
+      color: token.colorTextDark4,
       fontSize: token.fontSizeSM,
       lineHeight: token.lineHeightSM
     },

@@ -85,7 +85,6 @@ function Component (
                   intOpacity={0.45}
                   prefix='$'
                   size={12}
-
                   unitOpacity={0.45}
                   value={total.convertedValue}
                 />
@@ -125,15 +124,18 @@ export const TokenBalanceSelectionItem = styled(Component)<Props>(({ theme: { to
 
     '.ant-number .ant-typography': {
       fontSize: 'inherit !important',
+      color: 'inherit !important',
       lineHeight: 'inherit'
     },
 
     '.__value': {
+      color: token.colorTextDark1,
       lineHeight: token.lineHeightLG,
       fontSize: token.fontSizeLG
     },
 
     '.__converted-value': {
+      color: token.colorTextDark1,
       lineHeight: token.lineHeightSM,
       fontSize: token.fontSizeSM
     },
@@ -168,7 +170,7 @@ export const TokenBalanceSelectionItem = styled(Component)<Props>(({ theme: { to
     },
 
     '.__chain-name': {
-      color: token.colorTextLight4,
+      color: token.colorTextDark4,
       fontSize: token.fontSizeSM,
       lineHeight: token.lineHeightSM,
       overflow: 'hidden',
