@@ -200,6 +200,29 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       }
     },
 
+    '.ant-field-container.ant-field-container.ant-field-bg-default': {
+      backgroundColor: token.colorBgInput,
+      borderRadius: 26
+    },
+
+    '.ant-field-container.ant-field-container .ant-field-wrapper .ant-field-content-wrapper .ant-field-content': {
+      color: token.colorTextDark2
+    },
+
+    '.ant-field-container.ant-field-placeholder.ant-field-placeholder .ant-field-wrapper .ant-field-content-wrapper .ant-field-content': {
+      color: token.colorTextDark4
+    },
+
+    '.ant-select-modal-input-container.ant-select-modal-input-container.ant-select-modal-input-bg-default': {
+      backgroundColor: token.colorBgInput,
+      borderRadius: 26,
+
+      '&:before': {
+        borderRadius: 26,
+        pointerEvents: 'none'
+      }
+    },
+
     '.ant-input-affix-wrapper': {
       overflow: 'hidden',
 

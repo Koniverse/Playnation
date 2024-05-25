@@ -123,7 +123,7 @@ const Component = (props: Props, ref: ForwardedRef<InputRef>): React.ReactElemen
 export const ProviderSelector = styled(forwardRef(Component))<Props>(({ theme: { token } }: Props) => {
   return ({
     '.provider_selector__selected_label': {
-      color: token.colorTextLight1,
+      color: token.colorTextDark2,
       whiteSpace: 'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis'

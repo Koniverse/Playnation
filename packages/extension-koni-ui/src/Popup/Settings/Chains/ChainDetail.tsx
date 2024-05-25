@@ -279,6 +279,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
               weight={'fill'}
             />
           ),
+          shape: 'round',
           loading: loading,
           onClick: onSubmit,
           children: t('Save')
@@ -442,7 +443,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 const ChainDetail = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return ({
     '.chain_detail__container': {
-      marginTop: 22,
+      marginTop: 4,
       marginRight: token.margin,
       marginLeft: token.margin
     },
@@ -463,15 +464,8 @@ const ChainDetail = styled(Component)<Props>(({ theme: { token } }: Props) => {
 
     '.ant-form-item': {
       marginBottom: 0
-    },
-
-    '.ant-field-container .ant-field-wrapper .ant-field-content-wrapper .ant-field-content': {
-      color: token.colorTextLight5
-    },
-
-    '.chain_detail__provider_url .ant-field-wrapper .ant-field-content-wrapper .ant-field-content': {
-      color: token.colorTextLight1
     }
+
   });
 });
 
