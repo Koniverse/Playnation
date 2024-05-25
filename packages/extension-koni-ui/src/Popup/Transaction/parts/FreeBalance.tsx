@@ -89,7 +89,7 @@ const FreeBalance = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return {
     display: 'flex',
     flexWrap: 'wrap',
-    color: token.colorTextTertiary,
+    color: token.colorTextDark2,
 
     '.__label': {
       marginRight: 3

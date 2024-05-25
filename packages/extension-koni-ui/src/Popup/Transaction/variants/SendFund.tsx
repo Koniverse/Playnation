@@ -674,7 +674,7 @@ const _SendFund = ({ className = '' }: Props): React.ReactElement<Props> => {
   return (
     <>
       <TransactionContent className={CN(`${className} -transaction-content`)}>
-        <div className={'__brief common-text text-light-4 text-center'}>
+        <div className={'__brief common-text text-center'}>
           {t('You are performing a transfer of a fungible token')}
         </div>
 
@@ -800,6 +800,7 @@ const _SendFund = ({ className = '' }: Props): React.ReactElement<Props> => {
           loading={loading}
           onClick={checkAction(onPreSubmit, extrinsicType)}
           schema={isTransferAll ? 'warning' : undefined}
+          shape={'round'}
         >
           {isTransferAll ? t('Transfer all') : t('Transfer')}
         </Button>

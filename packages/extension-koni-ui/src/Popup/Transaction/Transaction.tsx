@@ -148,6 +148,7 @@ function Component ({ className }: Props) {
   return (
     <>
       <Layout.Home
+        backgroundStyle={'primary'}
         showFilterIcon
         showTabBar={false}
       >

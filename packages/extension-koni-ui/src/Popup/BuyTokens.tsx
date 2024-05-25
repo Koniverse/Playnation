@@ -358,6 +358,7 @@ function Component ({ className }: Props) {
 
   return (
     <Layout.Home
+      backgroundStyle={'primary'}
       showFilterIcon
       showTabBar={false}
     >
@@ -434,6 +435,7 @@ function Component ({ className }: Props) {
             )}
             loading={loading}
             onClick={onClickNext}
+            shape={'round'}
           >
             {t('Buy now')}
           </Button>
@@ -452,6 +454,7 @@ function Component ({ className }: Props) {
                 )}
                 onClick={onReject}
                 schema={'secondary'}
+                shape={'round'}
               >
                 {t('Cancel')}
               </Button>
@@ -562,7 +565,7 @@ const BuyTokens = styled(Component)<Props>(({ theme: { token } }: Props) => {
     '.__note': {
       paddingTop: token.paddingXXS,
       paddingBottom: token.padding,
-      color: token.colorTextLight5,
+      color: token.colorTextDark4,
       textAlign: 'center'
     },
 
