@@ -88,7 +88,7 @@ export const CustomizeModal = styled(Component)<Props>(({ theme: { token } }: Pr
     '.__group-label': {
       paddingLeft: token.padding,
       paddingRight: token.padding,
-      color: token.colorTextLight3,
+      color: token.colorTextDark3,
       textTransform: 'uppercase',
       fontSize: token.fontSizeSM,
       lineHeight: token.lineHeightSM,

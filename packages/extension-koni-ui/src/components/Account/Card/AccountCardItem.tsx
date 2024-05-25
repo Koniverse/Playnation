@@ -266,7 +266,7 @@ const AccountCardItem = styled(Component)<_AccountCardItem>(({ theme }) => {
     },
     '.__item-name': {
       fontSize: token.fontSizeLG,
-      color: token.colorTextLight1,
+      color: token.colorTextDark2,
       lineHeight: token.lineHeightLG,
       textOverflow: 'ellipsis',
       overflow: 'hidden',
@@ -274,7 +274,7 @@ const AccountCardItem = styled(Component)<_AccountCardItem>(({ theme }) => {
     },
     '.__item-address': {
       fontSize: token.fontSizeSM,
-      color: token.colorTextLight4,
+      color: token.colorTextDark4,
       lineHeight: token.lineHeightSM,
       textOverflow: 'ellipsis',
       overflow: 'hidden',

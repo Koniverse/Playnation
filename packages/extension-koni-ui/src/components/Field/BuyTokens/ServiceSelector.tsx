@@ -155,10 +155,6 @@ export const ServiceSelector = styled(forwardRef(Component))<Props>(({ theme: { 
     },
 
     '&.service-selector-input': {
-      '.ant-select-modal-input-wrapper': {
-        paddingLeft: token.paddingSM
-      },
-
       '.__selected-item': {
         display: 'flex',
         color: token.colorTextLight1,

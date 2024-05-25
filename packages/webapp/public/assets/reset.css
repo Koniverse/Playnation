@@ -681,10 +681,22 @@ div#popup-container {
   box-shadow: 0 -8px 8px 0 rgba(0, 0, 0, 0.25);
 }
 
+.ant-sw-modal.ant-sw-modal {
+  padding-top: 24px;
+}
+
+.ant-sw-modal.ant-sw-modal.-full-size {
+  padding-top: 0;
+}
+
 .ant-sw-modal.-full-size .ant-sw-modal-content.ant-sw-modal-content {
   border-radius: 0;
   height: 100%;
   margin-top: 0;
+}
+
+.ant-sw-modal .ant-sw-modal-content.ant-sw-modal-content {
+  background-color: #f0f0f0;
 }
 
 .ant-sw-modal.-light-theme .ant-sw-modal-content.ant-sw-modal-content {

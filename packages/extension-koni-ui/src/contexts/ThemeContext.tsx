@@ -547,6 +547,10 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
         color: token.colorTextDark1,
         backgroundColor: token.colorPrimary
       }
+    },
+
+    '.ant-network-item.ant-network-item .ant-network-item-name': {
+      color: token.colorTextDark2
     }
   });
 });
