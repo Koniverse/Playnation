@@ -54,7 +54,6 @@ export interface GameInventoryItem {
   }
 }
 
-
 export interface Game {
   id: number;
   contentId: number;
@@ -174,8 +173,12 @@ export interface ReferralRecord {
   referralSuccessTime: number;
   accountInfo: AccountPublicInfo;
 }
-
-export interface AirdropCampaignRecord {
+export enum AirdropCampaignStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  CANCELED = 'CANCELED',
+}
+export interface AirdropCampaign {
   id: number;
   name: string;
   icon: string;
@@ -184,15 +187,17 @@ export interface AirdropCampaignRecord {
   end_snapshot: Date;
   start_claim: Date;
   end_claim: Date;
-  eligibility_date: Date;
   network: string;
   total_tokens: number;
   symbol: string;
   decimal: number;
   method: string;
   raffle_count: number;
-  eligibility_criteria: JSON;
+  tokenDistributions: JSON;
+  npsDistributions: JSON;
+  start: Date;
+  end: Date;
   status: string;
-  start: Date,
-  end: Date
+  createdAt: Date;
+  updatedAt: Date;
 }
