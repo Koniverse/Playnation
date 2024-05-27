@@ -10,6 +10,7 @@ import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeCo
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { TopAccountItem } from '@subwallet/extension-koni-ui/Popup/Home/Leaderboard/TopAccountItem';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
 import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
@@ -53,14 +54,15 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   useEffect(() => {
-    const leaderBoardSub = apiSDK.subscribeLeaderboard().subscribe((data) => {
+    const { end, start } = calculateStartAndEnd(selectedTab);
+    const leaderBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
       setLeaderBoard(data);
     });
 
     return () => {
       leaderBoardSub.unsubscribe();
     };
-  }, []);
+  }, [selectedTab]);
 
   const filteredLeaderBoard = leaderBoard.filter((item) => item.point > 0);
 

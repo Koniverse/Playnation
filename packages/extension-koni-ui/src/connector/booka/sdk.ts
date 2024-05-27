@@ -448,17 +448,22 @@ export class BookaSdk {
   }
   // --- shop
 
-  async fetchLeaderboard () {
+  async fetchLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all' ) {
     await this.waitForSync;
-    const leaderBoard = await this.getRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`);
+    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, {
+      startDate,
+      endDate,
+      gameId,
+      limit,
+      type});
 
     if (leaderBoard) {
       this.leaderBoardSubject.next(leaderBoard);
     }
   }
 
-  subscribeLeaderboard () {
-    this.fetchLeaderboard().catch(console.error);
+  subscribeLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all' ) {
+    this.fetchLeaderboard(startDate, endDate, gameId, limit, type).catch(console.error);
 
     return this.leaderBoardSubject;
   }
