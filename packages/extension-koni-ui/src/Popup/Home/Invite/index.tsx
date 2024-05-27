@@ -7,6 +7,7 @@ import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccou
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, ReferralRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { rankPointMap } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -21,15 +22,6 @@ type Props = ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
-
-const rankPointMap: Record<string, number> = {
-  iron: 600,
-  bronze: 1500,
-  silver: 4500,
-  gold: 13500,
-  platinum: 40500,
-  diamond: 121500
-};
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/invite');

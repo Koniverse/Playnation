@@ -4,7 +4,7 @@
 import { AccountJson, CurrentAccountInfo } from '@subwallet/extension-base/background/types';
 import { SimpleQrModal } from '@subwallet/extension-koni-ui/components/Modal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { DISCONNECT_EXTENSION_MODAL, SELECT_ACCOUNT_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { DISCONNECT_EXTENSION_MODAL, SELECT_ACCOUNT_MODAL, smallRankIconMap } from '@subwallet/extension-koni-ui/constants';
 import { useDefaultNavigate, useGoBackSelectAccount, useNotification, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { saveCurrentAccountAddress } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
@@ -29,14 +29,6 @@ const renderEmpty = () => <GeneralEmptyList />;
 const modalId = SELECT_ACCOUNT_MODAL;
 const simpleQrModalId = 'simple-qr-modal-id';
 const apiSDK = BookaSdk.instance;
-const rankIconMap: Record<string, string> = {
-  iron: '/images/ranks/iron.svg',
-  bronze: '/images/ranks/bronze.svg',
-  silver: '/images/ranks/silver.svg',
-  gold: '/images/ranks/gold.svg',
-  platinum: '/images/ranks/platinum.svg',
-  diamond: '/images/ranks/diamond.svg'
-};
 
 function Component ({ className }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
@@ -208,7 +200,7 @@ function Component ({ className }: Props): React.ReactElement<Props> {
       <Button
         icon={(
           <Image
-            src={rankIconMap[gameAccount?.attributes.rank || 'iron']}
+            src={smallRankIconMap[gameAccount?.attributes.rank || 'iron']}
             width={20}
           />
         )}
