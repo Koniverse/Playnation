@@ -94,10 +94,12 @@ export class GameApp {
   onGetPlayer () {
     const account = this.apiSDK.account;
     const playerId = `${account?.info?.telegramUsername || 'player1'}-${account?.info.id || 0}`;
+    const gameData = (account?.gameData || []).find((item) => item.gameId === this.currentGameInfo.id);
+    const point = gameData?.point || account?.attributes?.point || 0;
 
     const player: Player = {
       id: playerId,
-      balance: account?.attributes?.point || 0,
+      balance: point,
       name: `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}` || 'Player',
       avatar: 'https://thispersondoesnotexist.com/',
       level: 1,

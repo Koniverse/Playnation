@@ -178,6 +178,8 @@ export class BookaSdk {
 
     if (account && newAccountData) {
       account.attributes = newAccountData.attributes;
+      // @ts-ignore
+      account.gameData = newAccountData.gameData;
     }
 
     this.accountSubject.next(account);

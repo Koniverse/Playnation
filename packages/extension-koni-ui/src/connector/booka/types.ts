@@ -122,6 +122,15 @@ export interface GamePlay {
   success?: boolean;
 }
 
+export interface GameData {
+  id: number; // id on db
+  gameId: number;
+  accountId: number;
+  point: number;
+  level: number;
+  rank: number;
+}
+
 export interface BookaAccount {
   info: {
     id: number;
@@ -148,6 +157,7 @@ export interface BookaAccount {
     createdAt: string;
     updatedAt: string;
   },
+  gameData: GameData[];
   token: string;
 }
 
