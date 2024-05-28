@@ -73,7 +73,6 @@ const Crowdloans = new LazyLoader('Crowdloans', () => import('@subwallet/extensi
 const Home = new LazyLoader('Home', () => import('@subwallet/extension-koni-ui/Popup/Home'));
 
 const Settings = new LazyLoader('Settings', () => import('@subwallet/extension-koni-ui/Popup/Settings'));
-const GeneralSetting = new LazyLoader('GeneralSetting', () => import('@subwallet/extension-koni-ui/Popup/Settings/GeneralSetting'));
 const MissionPools = new LazyLoader('MissionPools', () => import('@subwallet/extension-koni-ui/Popup/Settings/MissionPool/index'));
 const ManageAddressBook = new LazyLoader('ManageAddressBook', () => import('@subwallet/extension-koni-ui/Popup/Settings/AddressBook'));
 
@@ -218,7 +217,6 @@ export const router = createBrowserRouter([
         element: <Outlet />,
         children: [
           Settings.generateRouterObject('list'),
-          GeneralSetting.generateRouterObject('general'),
           MissionPools.generateRouterObject('mission-pools'),
           ManageAddressBook.generateRouterObject('address-book'),
           SecurityList.generateRouterObject('security'),

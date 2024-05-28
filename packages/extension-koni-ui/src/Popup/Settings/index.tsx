@@ -6,9 +6,10 @@ import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegr
 import { EXTENSION_VERSION, SUPPORT_URL } from '@subwallet/extension-koni-ui/constants/common';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
+import GeneralSetting from '@subwallet/extension-koni-ui/Popup/Settings/GeneralSetting';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { BackgroundIcon, Icon, SettingItem, SwIconProps } from '@subwallet/react-ui';
-import { ArrowSquareOut, BookBookmark, CaretRight, Coins, GlobeHemisphereEast, Graph, Headset } from 'phosphor-react';
+import { ArrowSquareOut, BookBookmark, CaretRight, Coins, Graph, Headset } from 'phosphor-react';
 import React, { useMemo } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -70,61 +71,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   // todo: i18n all titles, labels below
   const SettingGroupItemType = useMemo((): SettingGroupItemType[] => ([
-    {
-      key: 'general',
-      items: [
-        {
-          key: 'general-settings',
-          leftIcon: GlobeHemisphereEast,
-          rightIcon: CaretRight,
-          title: t('General settings'),
-          onClick: () => {
-            navigate('/settings/general');
-          }
-        }
-        // {
-        //   key: 'security-settings',
-        //   leftIcon: ShieldCheck,
-        //   leftIconBgColor: token['green-6'],
-        //   rightIcon: CaretRight,
-        //   title: t('Security settings'),
-        //   onClick: () => {
-        //     navigate('/settings/security', { state: true });
-        //   }
-        // }
-        // {
-        //   key: 'mission-pools',
-        //   leftIcon: Parachute,
-        //   leftIconBgColor: token['cyan-5'],
-        //   rightIcon: CaretRight,
-        //   title: t('Mission pools'),
-        //   onClick: () => {
-        //     navigate('/settings/mission-pools', { state: true });
-        //   }
-        // }
-      ]
-    },
-    // {
-    //   key: 'website-access',
-    //   label: t('Website access'),
-    //   items: [
-    //     {
-    //       key: 'wallet-connect',
-    //       leftIcon: (
-    //         <WalletConnect
-    //           height='1em'
-    //           width='1em'
-    //         />
-    //       ),
-    //       leftIconBgColor: token['geekblue-6'],
-    //       rightIcon: CaretRight,
-    //       title: t('WalletConnect'),
-    //       onClick: () => {
-    //         navigate('/wallet-connect/list');
-    //       }
-    //     }
-    //   ]
-    // },
     {
       key: 'assets-&-addresses',
       items: [
@@ -258,6 +204,10 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           title={t('Settings')}
         >
           <div className={'__scroll-container'}>
+            <GeneralSetting
+              className={'__group-container'}
+            />
+
             {
               SettingGroupItemType.map((group) => {
                 return (

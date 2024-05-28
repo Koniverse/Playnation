@@ -3,8 +3,6 @@
 
 import { LanguageType, ThemeNames } from '@subwallet/extension-base/background/KoniTypes';
 import { ENABLE_LANGUAGES, languageOptions } from '@subwallet/extension-base/constants/i18n';
-import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
-import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
 import { saveLanguage, saveTheme } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -107,7 +105,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     language: false
   });
 
-  const goBack = useDefaultNavigate().goBack;
   const { token } = useTheme() as Theme;
 
   const themeItems = useMemo<SelectionItemType[]>(() => {
@@ -198,59 +195,49 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   }, []);
 
   return (
-    <PageWrapper className={`general-setting ${className}`}>
-      <Layout.WithSubHeaderOnly
-        backgroundStyle={'secondary'}
-        onBack={goBack}
-        title={t('General settings')}
-      >
-        <div className={'__scroll-container'}>
-          <div className={'setting-group-container'}>
-            <SelectModal
-              background={'default'}
-              className={CN(`__modal ${className}`, '-secondary-theme')}
-              customInput={renderModalTrigger({
-                key: 'wallet-theme-trigger',
-                leftIcon: Image,
-                leftIconBgColor: token.colorPrimary,
-                title: t('Wallet theme')
-              })}
-              id='wallet-theme-select-modal'
-              inputWidth={'100%'}
-              itemKey='key'
-              items={themeItems}
-              onSelect={onSelectTheme}
-              renderItem={renderSelectionItem}
-              selected={theme}
-              shape='round'
-              title={t('Wallet theme')}
-            />
+    <div className={CN('setting-group-container general-setting', className)}>
+      <SelectModal
+        background={'default'}
+        className={CN(`__modal ${className}`, '-secondary-theme')}
+        customInput={renderModalTrigger({
+          key: 'wallet-theme-trigger',
+          leftIcon: Image,
+          leftIconBgColor: token.colorPrimary,
+          title: t('Wallet theme')
+        })}
+        id='wallet-theme-select-modal'
+        inputWidth={'100%'}
+        itemKey='key'
+        items={themeItems}
+        onSelect={onSelectTheme}
+        renderItem={renderSelectionItem}
+        selected={theme}
+        shape='round'
+        title={t('Wallet theme')}
+      />
 
-            <SelectModal
-              background={'default'}
-              className={CN(`__modal ${className}`, '-secondary-theme')}
-              customInput={renderModalTrigger({
-                key: 'languages-trigger',
-                leftIcon: GlobeHemisphereEast,
-                leftIconBgColor: token['green-6'],
-                title: t('Language')
-              })}
-              disabled={loadingMap.language}
-              id='languages-select-modal'
-              inputWidth={'100%'}
-              itemKey='key'
-              items={languageItems}
-              onSelect={onSelectLanguage}
-              renderItem={renderSelectionItem}
-              selected={_language}
-              shape='round'
-              size='small'
-              title={t('Language')}
-            />
-          </div>
-        </div>
-      </Layout.WithSubHeaderOnly>
-    </PageWrapper>
+      <SelectModal
+        background={'default'}
+        className={CN(`__modal ${className}`, '-secondary-theme')}
+        customInput={renderModalTrigger({
+          key: 'languages-trigger',
+          leftIcon: GlobeHemisphereEast,
+          leftIconBgColor: token['green-6'],
+          title: t('Language')
+        })}
+        disabled={loadingMap.language}
+        id='languages-select-modal'
+        inputWidth={'100%'}
+        itemKey='key'
+        items={languageItems}
+        onSelect={onSelectLanguage}
+        renderItem={renderSelectionItem}
+        selected={_language}
+        shape='round'
+        size='small'
+        title={t('Language')}
+      />
+    </div>
   );
 }
 
@@ -263,16 +250,6 @@ export const GeneralSetting = styled(Component)<Props>(({ theme: { extendToken, 
     },
 
     '&.general-setting': {
-      height: '100%',
-      backgroundColor: token.colorBgDefault,
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-
-      '.ant-sw-header-bg-default': {
-        // backgroundColor: 'transparent'
-      },
-
       '.ant-select-modal-input-custom + .ant-select-modal-input-custom': {
         marginTop: token.marginXS
       },
@@ -287,14 +264,6 @@ export const GeneralSetting = styled(Component)<Props>(({ theme: { extendToken, 
 
       '.__trigger-item:hover .ant-web3-block-right-item': {
         color: token.colorTextLight2
-      },
-
-      '.__scroll-container': {
-        overflow: 'auto',
-        paddingTop: token.paddingXS,
-        paddingRight: token.padding,
-        paddingLeft: token.padding,
-        paddingBottom: token.paddingLG
       }
     },
 
