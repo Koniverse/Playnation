@@ -1,466 +1,398 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { CloseIcon, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
-import AccountAvatar from '@subwallet/extension-koni-ui/components/Account/AccountAvatar';
-import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
-import useGetAccountByAddress from '@subwallet/extension-koni-ui/hooks/account/useGetAccountByAddress';
-import useGetAccountSignModeByAddress from '@subwallet/extension-koni-ui/hooks/account/useGetAccountSignModeByAddress';
-import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
-import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
-import { editAccount } from '@subwallet/extension-koni-ui/messaging';
-import { PhosphorIcon, Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { AccountSignMode } from '@subwallet/extension-koni-ui/types/account';
-import { FormCallbacks, FormFieldData } from '@subwallet/extension-koni-ui/types/form';
-import { toShort } from '@subwallet/extension-koni-ui/utils';
-import { copyToClipboard } from '@subwallet/extension-koni-ui/utils/common/dom';
-import { convertFieldToObject } from '@subwallet/extension-koni-ui/utils/form/form';
-import { BackgroundIcon, Button, Field, Form, Icon, Input } from '@subwallet/react-ui';
+import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
+import { AccountRankLevel, GameAccountAvatar, GameEnergyBar, Layout } from '@subwallet/extension-koni-ui/components';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { AccountRankType, BookaAccount, EnergyConfig, RankInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { accountRankList, rankNameMap, smallRankIconMap } from '@subwallet/extension-koni-ui/constants';
+import { useGetAccountByAddress, useGetEnergyInfo, useNotification } from '@subwallet/extension-koni-ui/hooks';
+import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { copyToClipboard, formatInteger, formatIntegerShort, toShort } from '@subwallet/extension-koni-ui/utils';
+import { Button, Icon, Progress } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CircleNotch, CopySimple, Export, Eye, FloppyDiskBack, QrCode, Swatches, User, Wallet } from 'phosphor-react';
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Copy, Lightning } from 'phosphor-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
-import styled, { useTheme } from 'styled-components';
+import { useParams } from 'react-router-dom';
+import styled from 'styled-components';
 
 type Props = ThemeProps;
 
-enum FormFieldName {
-  NAME = 'name'
+const apiSDK = BookaSdk.instance;
+
+type RankPosition = {
+  prev?: AccountRankType,
+  current: AccountRankType,
+  next?: AccountRankType,
 }
 
-enum ActionType {
-  EXPORT = 'export',
-  DERIVE = 'derive',
-  DELETE = 'delete'
+function getRankPosition (currentRank: AccountRankType = 'iron'): RankPosition {
+  const currentRanIndex = accountRankList.findIndex((r) => r === currentRank);
+
+  return {
+    prev: accountRankList[currentRanIndex - 1] || undefined,
+    current: currentRank,
+    next: accountRankList[currentRanIndex + 1] || undefined
+  };
 }
-
-interface DetailFormState {
-  [FormFieldName.NAME]: string;
-}
-
-interface MantaPayState {
-  shouldShowConfirmation: boolean,
-  loading: boolean,
-  error?: string
-}
-
-const DEFAULT_MANTA_PAY_STATE: MantaPayState = {
-  shouldShowConfirmation: true,
-  loading: false
-};
-
-export enum MantaPayReducerActionType {
-  INIT = 'INIT',
-  SET_SHOULD_SHOW_CONFIRMATION = 'SET_SHOULD_SHOW_CONFIRMATION',
-  CONFIRM_ENABLE = 'CONFIRM_ENABLE',
-  REJECT_ENABLE = 'REJECT_ENABLE',
-  SYNC_FAIL = 'SYNC_FAIL',
-  SET_LOADING = 'SET_LOADING',
-  SET_ERROR_MESSAGE = 'SET_ERROR_MESSAGE'
-}
-
-interface MantaPayReducerAction {
-  type: MantaPayReducerActionType,
-  payload: unknown
-}
-
-export const mantaPayReducer = (state: MantaPayState, action: MantaPayReducerAction): MantaPayState => {
-  const { payload, type } = action;
-
-  switch (type) {
-    case MantaPayReducerActionType.INIT:
-      return DEFAULT_MANTA_PAY_STATE;
-    case MantaPayReducerActionType.SET_SHOULD_SHOW_CONFIRMATION:
-      return {
-        ...state,
-        shouldShowConfirmation: payload as boolean
-      };
-    case MantaPayReducerActionType.CONFIRM_ENABLE:
-      return {
-        ...state,
-        shouldShowConfirmation: false,
-        loading: false
-      };
-    case MantaPayReducerActionType.REJECT_ENABLE:
-      return {
-        ...state,
-        shouldShowConfirmation: false
-      };
-    case MantaPayReducerActionType.SYNC_FAIL:
-      return {
-        ...state,
-        shouldShowConfirmation: false
-      };
-    case MantaPayReducerActionType.SET_LOADING:
-      return {
-        ...state,
-        loading: payload as boolean
-      };
-    case MantaPayReducerActionType.SET_ERROR_MESSAGE:
-      return {
-        ...state,
-        error: payload as string,
-        loading: false
-      };
-    default:
-      throw new Error("Can't handle action");
-  }
-};
 
 const Component: React.FC<Props> = (props: Props) => {
   const { className } = props;
-
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { goHome } = useDefaultNavigate();
-  const notify = useNotification();
-  const { token } = useTheme() as Theme;
   const { accountAddress } = useParams();
-  const dataContext = useContext(DataContext);
-
-  const [form] = Form.useForm<DetailFormState>();
-
-  const account = useGetAccountByAddress(accountAddress);
-
-  const saveTimeOutRef = useRef<NodeJS.Timer>();
-
-  const [saving, setSaving] = useState(false);
-
-  const signMode = useGetAccountSignModeByAddress(accountAddress);
-
-  const walletNamePrefixIcon = useMemo((): PhosphorIcon => {
-    switch (signMode) {
-      case AccountSignMode.LEDGER:
-        return Swatches;
-      case AccountSignMode.QR:
-        return QrCode;
-      case AccountSignMode.READ_ONLY:
-        return Eye;
-      case AccountSignMode.INJECTED:
-        return Wallet;
-      default:
-        return User;
-    }
-  }, [signMode]);
-
-  const onExport = useCallback(() => {
-    if (account?.address) {
-      navigate(`/accounts/export/${account.address}`);
-    }
-  }, [account?.address, navigate]);
+  const accountJson = useGetAccountByAddress(accountAddress);
+  const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
+  const [rankInfoMap, setRankInfoMap] = useState<Record<AccountRankType, RankInfo> | undefined>(apiSDK.rankInfoMap);
+  const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
+  const notify = useNotification();
+  const { t } = useTranslation();
 
   const onCopyAddress = useCallback(() => {
-    copyToClipboard(account?.address || '');
+    copyToClipboard(accountJson?.address || '');
     notify({
       message: t('Copied to clipboard')
     });
-  }, [account?.address, notify, t]);
+  }, [accountJson?.address, notify, t]);
 
-  const onUpdate: FormCallbacks<DetailFormState>['onFieldsChange'] = useCallback((changedFields: FormFieldData[], allFields: FormFieldData[]) => {
-    const changeMap = convertFieldToObject<DetailFormState>(changedFields);
+  const accountRankPosition = useMemo(() => {
+    return getRankPosition(account?.attributes.rank);
+  }, [account?.attributes.rank]);
 
-    if (changeMap[FormFieldName.NAME]) {
-      clearTimeout(saveTimeOutRef.current);
-      setSaving(true);
-      saveTimeOutRef.current = setTimeout(() => {
-        form.submit();
-      }, 1000);
-    }
-  }, [form]);
+  const { currentEnergy } = useGetEnergyInfo({
+    startTime: account?.attributes.lastEnergyUpdated,
+    energy: account?.attributes.energy,
+    maxEnergy: energyConfig?.maxEnergy
+  });
 
-  const onSubmit: FormCallbacks<DetailFormState>['onFinish'] = useCallback((values: DetailFormState) => {
-    clearTimeout(saveTimeOutRef.current);
-    const name = values[FormFieldName.NAME];
-
-    if (!account || name === account.name) {
-      setSaving(false);
-
-      return;
-    }
-
-    const address = account.address;
-
-    if (!address) {
-      setSaving(false);
-
-      return;
-    }
-
-    editAccount(account.address, name.trim())
-      .catch(console.error)
-      .finally(() => {
-        setSaving(false);
-      });
-  }, [account]);
+  const pointPercent = useMemo(() => {
+    return 0;
+  }, []);
 
   useEffect(() => {
-    if (!account) {
-      goHome();
-    }
-  }, [account, goHome, navigate]);
+    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
+      setAccount(data);
+    });
 
-  if (!account) {
-    return null;
-  }
+    const rankInfoSub = apiSDK.subscribeRankInfoMap().subscribe((data) => {
+      setRankInfoMap(data);
+    });
+
+    const energyConfigSub = apiSDK.subscribeEnergyConfig().subscribe((data) => {
+      setEnergyConfig(data);
+    });
+
+    return () => {
+      accountSub.unsubscribe();
+      rankInfoSub.unsubscribe();
+      energyConfigSub.unsubscribe();
+    };
+  }, []);
 
   return (
-    <PageWrapper
+    <Layout.WithSubHeaderOnly
+      backgroundStyle={'primary'}
       className={CN(className)}
-      resolve={dataContext.awaitStores(['mantaPay'])}
+      title={t('Account details')}
     >
-      <Layout.WithSubHeaderOnly
-        subHeaderIcons={[
-          {
-            icon: <CloseIcon />,
-            onClick: goHome
-          }
-        ]}
-        title={t('Account details')}
-      >
-        <div className='body-container'>
-          {/* <div className='account-qr'> */}
-          {/*   <SwQRCode */}
-          {/*     errorLevel='M' */}
-          {/*     icon='' */}
-          {/*     // iconSize={token.sizeLG * 1.5} */}
-          {/*     size={token.sizeXL * 3.5} */}
-          {/*     value={account.address} */}
-          {/*   /> */}
-          {/* </div> */}
-          <Form
-            className={'account-detail-form'}
-            form={form}
-            initialValues={{
-              [FormFieldName.NAME]: account.name || ''
-            }}
-            name='account-detail-form'
-            onFieldsChange={onUpdate}
-            onFinish={onSubmit}
-          >
-            <Form.Item
-              className={CN('account-field')}
-              name={FormFieldName.NAME}
-              rules={[
-                {
-                  message: t('Account name is required'),
-                  transform: (value: string) => value.trim(),
-                  required: true
-                }
-              ]}
-              statusHelpAsTooltip={true}
-            >
-              <Input
-                className='account-name-input'
-                disabled={account.isInjected}
-                label={t('Account name')}
-                onBlur={form.submit}
-                placeholder={t('Account name')}
-                prefix={(
-                  <BackgroundIcon
-                    backgroundColor='var(--wallet-name-icon-bg-color)'
-                    className={'user-name-icon'}
-                    iconColor='var(--wallet-name-icon-color)'
-                    phosphorIcon={walletNamePrefixIcon}
-                  />
-                )}
-                suffix={(
-                  <Icon
-                    className={CN({ loading: saving })}
-                    phosphorIcon={saving ? CircleNotch : FloppyDiskBack}
-                    size='sm'
-                  />
-                )}
-              />
-            </Form.Item>
-          </Form>
-          <div className={CN('account-field')}>
-            <Field
-              content={toShort(account.address, 11, 13)}
-              label={t('Wallet address')}
-              placeholder={t('Wallet address')}
-              prefix={(
-                <AccountAvatar
-                  size={token.sizeMD}
-                  value={account.address}
+      <div className='account-info-area'>
+        <GameAccountAvatar
+          avatarPath={account?.info.photoUrl || undefined}
+          className={'account-avatar'}
+          hasBoxShadow
+          size={7}
+        />
+
+        <div className='account-name'>{accountJson?.name}</div>
+        <div className='account-address-wrapper'>
+          <div className='account-address'>
+            ({accountJson?.address ? toShort(accountJson?.address, 12, 5) : ''})
+          </div>
+
+          <div className='account-address-copy-button-wrapper'>
+            <Button
+              className={'account-address-copy-button'}
+              icon={(
+                <Icon
+                  customSize={'20px'}
+                  phosphorIcon={Copy}
+                  weight={'fill'}
                 />
               )}
-              suffix={(
-                <Button
-                  icon={(
-                    <Icon
-                      phosphorIcon={CopySimple}
-                      size='sm'
-                    />
-                  )}
-                  onClick={onCopyAddress}
-                  size='xs'
-                  type='ghost'
-                />
-              )}
+              onClick={onCopyAddress}
+              size={'xs'}
+              type={'ghost'}
             />
           </div>
         </div>
+      </div>
 
-        <div className={CN('account-detail___action-footer')}>
-          <Button
-            className={CN('account-button')}
-            disabled={account.isInjected}
-            icon={(
-              <Icon
-                phosphorIcon={Export}
-                weight='fill'
-              />
-            )}
-            onClick={onExport}
-            schema='primary'
-          >
-            {t('Export')}
-          </Button>
+      <div className='process-bar-area'>
+        <div className='process-bar-wrapper -energy'>
+          <GameEnergyBar
+            className={'process-bar'}
+            currentEnergy={currentEnergy}
+            maxEnergy={energyConfig?.maxEnergy}
+          />
+
+          <div className='process-bar-info'>
+            <div className='process-bar-info-left-part'>
+              <div className='recovery-info'>
+                <span className='recovery-value'>
+                  <span>1</span>
+
+                  <Icon
+                    customSize={'12px'}
+                    phosphorIcon={Lightning}
+                    weight={'fill'}
+                  />
+                </span>
+                <span className='recovery-suffix'>
+                /{t('min')}
+                </span>
+              </div>
+            </div>
+            <div className='process-bar-info-right-part'>
+              <div className='energy-info'>
+                <span className='current-energy'>
+                  <Icon
+                    customSize={'12px'}
+                    phosphorIcon={Lightning}
+                    weight={'fill'}
+                  />
+
+                  <span>{formatIntegerShort(currentEnergy || 0)}</span>
+                </span>
+                <span className='max-energy'>
+                /{formatIntegerShort(energyConfig?.maxEnergy || 0)}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-      </Layout.WithSubHeaderOnly>
-    </PageWrapper>
+
+        <div className='process-bar-wrapper -point'>
+          <Progress
+            className={'process-bar'}
+            percent={pointPercent}
+            showInfo={false}
+            status={'active'}
+            type={'line'}
+          />
+
+          <div className='process-bar-info'>
+            <div className='process-bar-info-left-part'>
+              <div className='rank-info'>
+                <img
+                  alt='rank'
+                  className={'rank-info-icon'}
+                  src={smallRankIconMap[account?.attributes.rank || 'iron']}
+                />
+                <span className='rank-info-label'>
+                  {rankNameMap[account?.attributes.rank || 'iron']}
+                </span>
+              </div>
+            </div>
+            <div className='process-bar-info-right-part'>
+              <div className='point-info'>
+                <img
+                  alt='point'
+                  className={'point-icon'}
+                  src={DefaultLogosMap.token_icon}
+                />
+
+                <span className='current-point'>
+                  {formatInteger(account?.attributes.point || 0)}
+                </span>
+
+                <span className='tagret-point'>
+                  /{formatInteger(rankInfoMap?.[account?.attributes.rank || 'iron'].maxPoint || 0)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {
+        rankInfoMap && (
+          <div className={'rank-area'}>
+            <div className='rank-area-title'>
+              {t('Rank level')}
+            </div>
+
+            <div className='rank-list-container'>
+              <div className='rank-item-wrapper -prev-rank'>
+                {
+                  !!accountRankPosition.prev && (
+                    <AccountRankLevel
+                      rank={accountRankPosition.prev}
+                      rankInfoMap={rankInfoMap}
+                    />
+                  )
+                }
+              </div>
+              <div className='rank-item-wrapper -current-rank'>
+                <AccountRankLevel
+                  isCurrent
+                  rank={accountRankPosition.current}
+                  rankInfoMap={rankInfoMap}
+                />
+              </div>
+              <div className='rank-item-wrapper -next-rank'>
+                {
+                  !!accountRankPosition.next && (
+                    <AccountRankLevel
+                      rank={accountRankPosition.next}
+                      rankInfoMap={rankInfoMap}
+                    />
+                  )
+                }
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </Layout.WithSubHeaderOnly>
   );
 };
 
-const AccountDetail = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
-    '.account-detail-form': {
+    // account
+
+    '.ant-sw-screen-layout-body': {
+      paddingTop: token.paddingXXS,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
+    },
+
+    '.account-info-area': {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      textAlign: 'center',
+      marginBottom: 24
+    },
+
+    '.account-avatar': {
+      marginBottom: token.margin
+    },
+
+    '.account-name': {
+      fontSize: token.fontSizeHeading4,
+      lineHeight: token.lineHeightHeading4,
+      fontWeight: token.headingFontWeight,
+      color: token.colorTextDark1,
+      marginBottom: token.marginXXS
+    },
+
+    '.account-address-wrapper': {
+      color: token.colorTextDark3,
+      fontSize: token.fontSize,
+      lineHeight: token.lineHeight,
+      display: 'flex',
+      gap: token.sizeXXS
+    },
+
+    '.account-address-copy-button-wrapper': {
+      minWidth: 20,
+      height: 20,
+      position: 'relative'
+    },
+
+    '.account-address-copy-button': {
+      position: 'absolute',
+      left: -10,
+      top: -10,
+      color: token.colorTextDark3
+    },
+
+    // process info
+
+    '.process-bar-area': {
+      paddingLeft: token.padding,
+      paddingRight: token.padding,
+      marginBottom: 24
+    },
+
+    '.process-bar-info': {
+      display: 'flex',
+      fontSize: token.fontSizeSM,
+      lineHeight: token.lineHeightSM,
+      color: token.colorTextDark3,
+      justifyContent: 'space-between',
+      marginTop: 6
+    },
+
+    '.process-bar-wrapper + .process-bar-wrapper': {
       marginTop: token.margin
     },
 
-    '.ant-sw-screen-layout-body': {
+    '.process-bar': {
+      marginBottom: 0,
+      marginTop: 0,
+      marginRight: 0,
+
+      '.ant-progress-inner': {
+        backgroundColor: token.colorBgSecondary
+      },
+
+      '&, .ant-progress-outer, .ant-progress-inner': {
+        display: 'block'
+      }
+    },
+
+    '.recovery-value, .rank-info-label, .current-point, .current-energy': {
+      fontWeight: token.headingFontWeight,
+      color: token.colorTextDark2
+    },
+
+    '.point-icon, .rank-info-icon': {
+      minWidth: 16,
+      height: 16,
+      marginRight: 2
+    },
+
+    '.rank-info, .point-info': {
       display: 'flex',
-      flexDirection: 'column'
+      alignItems: 'center'
     },
 
-    '.zk-mask': {
-      width: '100%',
-      height: '100%',
-      zIndex: 3,
-      position: 'absolute',
-      backgroundColor: token.colorBgMask
+    // rank
+
+    '.rank-area': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      borderRadius: 20,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
+      paddingTop: 20,
+      paddingBottom: 28
     },
 
-    '.body-container': {
-      overflow: 'scroll',
-      flex: 1,
-      padding: `0 ${token.padding}px`,
-      '--wallet-name-icon-bg-color': token['geekblue-6'],
-      '--wallet-name-icon-color': token.colorWhite,
-
-      '.ant-background-icon': {
-        width: token.sizeMD,
-        height: token.sizeMD,
-
-        '.user-name-icon': {
-          span: {
-            height: token.sizeSM,
-            width: token.sizeSM
-          }
-        }
-      },
-
-      '.account-qr': {
-        marginTop: token.margin,
-        marginBottom: token.marginLG,
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center'
-      },
-
-      '.account-field': {
-        marginBottom: token.marginXS,
-
-        '.single-icon-only': {
-          color: token['gray-4']
-        },
-
-        '.ant-input-label': {
-          marginBottom: token.marginXS - 2
-        },
-
-        '.ant-input-suffix': {
-          marginRight: 0,
-          marginLeft: token.marginXS
-        },
-
-        '.ant-btn': {
-          height: 'auto',
-          marginRight: -(token.marginSM - 2)
-        }
-      },
-
-      '.mb-lg': {
-        marginBottom: token.marginLG
-      },
-
-      '.account-button': {
-        marginBottom: token.marginXS,
-        gap: token.sizeXS,
-        color: token.colorTextLight1,
-
-        '&:disabled': {
-          color: token.colorTextLight1,
-          opacity: 0.4
-        }
-      },
-
-      [`.action-type-${ActionType.DERIVE}`]: {
-        '--icon-bg-color': token['magenta-7']
-      },
-
-      [`.action-type-${ActionType.EXPORT}`]: {
-        '--icon-bg-color': token['green-6']
-      },
-
-      [`.action-type-${ActionType.DELETE}`]: {
-        '--icon-bg-color': token['colorError-6'],
-        color: token['colorError-6'],
-
-        '.ant-background-icon': {
-          color: token.colorTextLight1
-        },
-
-        '&:disabled': {
-          color: token['colorError-6'],
-
-          '.ant-background-icon': {
-            color: token.colorTextLight1
-          }
-        }
-      }
+    '.rank-area-title': {
+      fontSize: token.fontSizeHeading4,
+      lineHeight: token.lineHeightHeading4,
+      fontWeight: token.headingFontWeight,
+      color: token.colorTextDark1,
+      textAlign: 'center',
+      marginBottom: token.margin
     },
 
-    '.account-name-input': {
-      '.loading': {
-        color: token['gray-5'],
-        animation: 'spinner-loading 1s infinite linear'
-      }
+    '.rank-list-container': {
+      display: 'flex'
     },
 
-    '.footer__button': {
-      flexGrow: 1
-    },
-
-    '.account-detail___action-footer': {
-      backgroundColor: token.colorBgDefault,
-      position: 'sticky',
-      bottom: 0,
-      left: 0,
-      width: '100%',
+    '.rank-item-wrapper': {
       display: 'flex',
-      gap: token.marginSM,
-      padding: token.padding,
-      paddingBottom: '33px',
+      alignItems: 'flex-end'
+    },
 
-      button: {
-        flex: 2
-      },
+    '.rank-item-wrapper.-prev-rank, .rank-item-wrapper.-next-rank': {
+      flex: 1
+    },
 
-      'button:nth-child(1)': {
-        flex: 1
-      }
+    '.rank-item-wrapper.-next-rank': {
+      justifyContent: 'flex-end'
     }
   };
 });

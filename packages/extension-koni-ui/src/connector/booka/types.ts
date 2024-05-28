@@ -7,11 +7,21 @@ export enum EventTypeEnum {
   EVENT = 'EVENT',
 }
 
+export type AccountRankType = 'iron' | 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
+
 export interface EnergyConfig {
   energyPrice: number,
   energyBuyLimit: number,
   maxEnergy: number,
   energyOneBuy: number
+}
+
+export interface RankInfo {
+  minPoint: number,
+  maxPoint: number,
+  rank: AccountRankType,
+  invitePoint: number,
+  premiumInvitePoint: number
 }
 
 export interface GameItem {
@@ -151,7 +161,7 @@ export interface BookaAccount {
   attributes: {
     energy: number;
     accumulatePoint: number;
-    rank: string;
+    rank: AccountRankType;
     point: number;
     lastEnergyUpdated: string;
     createdAt: string;

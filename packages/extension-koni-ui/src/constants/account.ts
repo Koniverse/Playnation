@@ -1,6 +1,9 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { detectTranslate } from '@subwallet/extension-base/utils';
+import { AccountRankType } from '@subwallet/extension-koni-ui/connector/booka/types';
+
 import { KeypairType } from '@polkadot/util-crypto/types';
 
 export const SUBSTRATE_ACCOUNT_TYPE: KeypairType = 'sr25519';
@@ -18,6 +21,24 @@ export const rankPointMap: Record<string, number> = {
   platinum: 40500,
   diamond: 121500
 };
+
+export const rankNameMap: Record<string, string> = {
+  iron: detectTranslate('Iron'),
+  bronze: detectTranslate('Bronze'),
+  silver: detectTranslate('Silver'),
+  gold: detectTranslate('Gold'),
+  platinum: detectTranslate('Platinum'),
+  diamond: detectTranslate('Diamond')
+};
+
+export const accountRankList: AccountRankType[] = [
+  'iron',
+  'bronze',
+  'silver',
+  'gold',
+  'platinum',
+  'diamond'
+];
 
 export const smallRankIconMap: Record<string, string> = {
   iron: '/images/ranks/iron_small.png',

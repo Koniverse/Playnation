@@ -4,6 +4,7 @@
 export { default as EmptyAccount } from './EmptyValidator';
 export { default as AccountAvatar } from './AccountAvatar';
 export { default as SelectAccountType } from './SelectAccountType';
+export { default as AccountRankLevel } from './AccountRankLevel';
 export * from './Card';
 export * from './Info';
 export * from './Item';

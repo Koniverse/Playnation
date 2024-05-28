@@ -3,7 +3,7 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
@@ -19,7 +19,8 @@ const CACHE_KEYS = {
   taskCategoryList: 'data--task-category-list-cache',
   taskList: 'data--task-list-cache',
   gameList: 'data--game-list-cache',
-  energyConfig: 'data--energy-config'
+  energyConfig: 'data--energy-config-cache',
+  rankInfoMap: 'data--rank-info-map-cache'
 };
 
 export class BookaSdk {
@@ -34,9 +35,10 @@ export class BookaSdk {
   private gameItemMapSubject = new BehaviorSubject<Record<string, GameItem[]>>({});
   private gameInventoryItemListSubject = new BehaviorSubject<GameInventoryItem[]>([]);
   private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
+  private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
 
   constructor () {
-    storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game, energyConfig]) => {
+    storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game, energyConfig, rankInfoMap]) => {
       if (account) {
         try {
           const accountData = JSON.parse(account) as BookaAccount;
@@ -86,6 +88,16 @@ export class BookaSdk {
           console.error('Failed to parse energy config', e);
         }
       }
+
+      if (rankInfoMap) {
+        try {
+          const _rankInfoMap = JSON.parse(rankInfoMap) as Record<AccountRankType, RankInfo>;
+
+          this.rankInfoSubject.next(_rankInfoMap);
+        } catch (e) {
+          console.error('Failed to parse rankInfoMap', e);
+        }
+      }
     }).catch(console.error);
   }
 
@@ -131,6 +143,10 @@ export class BookaSdk {
 
   public get currentGamePlay () {
     return this.currentGamePlaySubject.value;
+  }
+
+  public get rankInfoMap () {
+    return this.rankInfoSubject.value;
   }
 
   private getRequestHeader () {
@@ -317,6 +333,7 @@ export class BookaSdk {
 
       await Promise.all([
         this.fetchEnergyConfig(),
+        this.fetchRankInfoMap(),
         this.fetchGameList(),
         this.fetchTaskCategoryList(),
         this.fetchTaskList(),
@@ -446,26 +463,85 @@ export class BookaSdk {
 
     await this.reloadAccount();
   }
+
   // --- shop
 
-  async fetchLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all' ) {
+  async fetchLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all') {
     await this.waitForSync;
-    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, {
-      startDate,
+    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate,
       endDate,
       gameId,
       limit,
-      type});
+      type });
 
     if (leaderBoard) {
       this.leaderBoardSubject.next(leaderBoard);
     }
   }
 
-  subscribeLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all' ) {
+  subscribeLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all') {
     this.fetchLeaderboard(startDate, endDate, gameId, limit, type).catch(console.error);
 
     return this.leaderBoardSubject;
+  }
+
+  async fetchRankInfoMap () {
+    const rankMap = {
+      iron: {
+        minPoint: 0,
+        maxPoint: 20000,
+        rank: 'iron',
+        invitePoint: 200,
+        premiumInvitePoint: 600
+      },
+      bronze: {
+        minPoint: 20001,
+        maxPoint: 100000,
+        rank: 'bronze',
+        invitePoint: 500,
+        premiumInvitePoint: 1500
+      },
+      silver: {
+        minPoint: 100001,
+        maxPoint: 1000000,
+        rank: 'silver',
+        invitePoint: 1500,
+        premiumInvitePoint: 4500
+      },
+      gold: {
+        minPoint: 1000001,
+        maxPoint: 5000000,
+        rank: 'gold',
+        invitePoint: 4500,
+        premiumInvitePoint: 13500
+      },
+      platinum: {
+        minPoint: 5000001,
+        maxPoint: 20000000,
+        rank: 'platinum',
+        invitePoint: 13500,
+        premiumInvitePoint: 40500
+      },
+      diamond: {
+        minPoint: 20000001,
+        maxPoint: 100000000,
+        rank: 'diamond',
+        invitePoint: 40500,
+        premiumInvitePoint: 121500
+      }
+    } as Record<AccountRankType, RankInfo>;
+
+    if (rankMap) {
+      this.rankInfoSubject.next(rankMap);
+    }
+
+    return Promise.resolve();
+  }
+
+  subscribeRankInfoMap () {
+    this.fetchRankInfoMap().catch(console.log);
+
+    return this.rankInfoSubject;
   }
 
   async signResult (gamePlayId: string, gameToken: string, score: number): Promise<string> {
