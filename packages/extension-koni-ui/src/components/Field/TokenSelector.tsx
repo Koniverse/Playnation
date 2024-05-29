@@ -206,7 +206,7 @@ export const TokenSelector = styled(forwardRef(Component))<Props>(({ theme: { ex
 
     '.ant-sw-list.ant-sw-list': {
       backgroundColor: extendToken.colorBgSecondary1,
-      borderRadius: 24,
+      borderRadius: 20,
       paddingTop: token.paddingXXS,
       paddingBottom: token.paddingXXS,
       paddingLeft: 0,

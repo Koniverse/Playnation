@@ -125,7 +125,7 @@ const Component: React.FC<ComponentProps> = (props) => {
         name={item.chainInfo?.name || t('Unknown network ({{slug}})', { replace: { slug: item.slug } })}
         networkKey={item.slug}
         networkMainLogoShape='squircle'
-        networkMainLogoSize={28}
+        networkMainLogoSize={24}
       />
     );
   }, [t]);

@@ -62,7 +62,7 @@ function Component (props: Props, ref: ForwardedRef<InputRef>): React.ReactEleme
         name={item.name}
         networkKey={item.slug}
         networkMainLogoShape='squircle'
-        networkMainLogoSize={28}
+        networkMainLogoSize={24}
         rightItem={selected && (<div className={'__check-icon'}>
           <Icon
             customSize={'20px'}
@@ -103,10 +103,44 @@ function Component (props: Props, ref: ForwardedRef<InputRef>): React.ReactEleme
   );
 }
 
-export const ChainSelector = styled(forwardRef(Component))<Props>(({ theme: { token } }: Props) => {
+export const ChainSelector = styled(forwardRef(Component))<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
-    '&.ant-select-modal-input-container .ant-select-modal-input-wrapper': {
+    '&.chain-selector-modal': {
+      '.ant-sw-list-search-input.ant-sw-list-search-input': {
+        paddingLeft: token.paddingXS,
+        paddingRight: token.paddingXS
+      },
 
+      '.ant-sw-list': {
+        borderRadius: 20,
+        backgroundColor: extendToken.colorBgSecondary1,
+        padding: token.paddingXS
+      },
+
+      '.ant-network-item.ant-network-item .ant-web3-block': {
+        paddingRight: 0
+      },
+
+      '.ant-network-item.ant-network-item .ant-web3-block-left-item': {
+        paddingRight: token.paddingSM
+      },
+
+      '.ant-network-item.ant-network-item .ant-web3-block .ant-web3-block-right-item': {
+        marginRight: 0
+      },
+
+      '.ant-sw-list-wrapper.ant-sw-list-wrapper': {
+        paddingLeft: token.paddingXS,
+        paddingRight: token.paddingXS
+      },
+
+      '.ant-select-modal-item.ant-select-modal-item': {
+        marginBottom: 0
+      },
+
+      '.ant-select-modal-item + .ant-select-modal-item': {
+        marginTop: token.marginXXS
+      }
     },
 
     '&.chain-selector-input': {

@@ -165,7 +165,7 @@ export const ProviderSelector = styled(forwardRef(Component))<Props>(({ theme: {
 
       '.ant-sw-list': {
         borderRadius: 20,
-        backgroundColor: token.colorWhite,
+        backgroundColor: extendToken.colorBgSecondary1,
         paddingTop: token.paddingXS,
         paddingRight: token.paddingXS,
         paddingLeft: token.paddingXS,

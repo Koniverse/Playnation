@@ -27,13 +27,15 @@ const Component: React.FC<Props> = (props: Props) => {
       key={chainInfo.slug}
       name={chainInfo.name}
       networkKey={chainInfo.slug}
-      networkMainLogoSize={36}
-      rightItem={<ChainItemFooter
-        chainInfo={chainInfo}
-        className={'__toggle-area'}
-        navigate={navigate}
-        showDetailNavigation={true}
-      />}
+      networkMainLogoSize={24}
+      rightItem={(
+        <ChainItemFooter
+          chainInfo={chainInfo}
+          className={'__toggle-area'}
+          navigate={navigate}
+          showDetailNavigation={true}
+        />
+      )}
       subSymbol={connectSymbol}
     />
   );
