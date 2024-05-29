@@ -880,3 +880,25 @@ div.ant-notification-notice {
 .ant-balance-item.ant-balance-item {
   background-color: transparent
 }
+
+.ant-sw-qr-scanner.ant-sw-qr-scanner {
+  overflow: hidden;
+}
+
+.ant-sw-qr-scanner-reader-container {
+  padding-top: 0 !important;
+}
+
+.ant-sw-qr-scanner-container.ant-sw-qr-scanner-container .ant-sw-qr-scanner-footer,
+.ant-sw-qr-scanner-reader-wrapper.ant-sw-qr-scanner-reader-wrapper .ant-sw-qr-scanner-reader-container {
+  position: static;
+}
+
+.ant-sw-qr-scanner .ant-sw-modal-content.ant-sw-modal-content {
+  overflow: hidden;
+  position: relative;
+}
+
+.ant-sw-qr-scanner-footer .ant-btn.ant-btn {
+  border-radius: 52px
+}
