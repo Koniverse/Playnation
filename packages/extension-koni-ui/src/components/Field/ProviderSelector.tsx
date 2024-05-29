@@ -41,22 +41,25 @@ const Component = (props: Props, ref: ForwardedRef<InputRef>): React.ReactElemen
   const renderItem = useCallback((item: ProviderItemType, selected: boolean) => {
     return (
       <SettingItem
-        leftItemIcon={<BackgroundIcon
-          backgroundColor={token['gray-4']}
-          iconColor={token.colorTextLight1}
-          phosphorIcon={ShareNetwork}
-          size={'sm'}
-          type={'phosphor'}
-          weight={'bold'}
-        />}
+        leftItemIcon={(
+          <BackgroundIcon
+            backgroundColor={token.colorPrimary}
+            iconColor={token.colorTextDark1}
+            phosphorIcon={ShareNetwork}
+            size={'sm'}
+            type={'phosphor'}
+          />
+        )}
         name={item.label}
-        rightItem={<Icon
-          customSize={'20px'}
-          iconColor={selected ? token.colorSuccess : token.colorTransparent }
-          phosphorIcon={CheckCircle}
-          type='phosphor'
-          weight={'fill'}
-        />}
+        rightItem={(
+          <Icon
+            customSize={'20px'}
+            iconColor={selected ? token.colorSuccess : token.colorTransparent }
+            phosphorIcon={CheckCircle}
+            type='phosphor'
+            weight={'fill'}
+          />
+        )}
       />
     );
   }, [token]);
@@ -76,19 +79,21 @@ const Component = (props: Props, ref: ForwardedRef<InputRef>): React.ReactElemen
     return (
       <Button
         block={true}
-        icon={<Icon
-          customSize={'28px'}
-          iconColor={token.colorTextLight1}
-          phosphorIcon={PlusCircle}
-          type={'phosphor'}
-          weight={'fill'}
-        />}
+        icon={(
+          <Icon
+            customSize={'28px'}
+            phosphorIcon={PlusCircle}
+            type={'phosphor'}
+            weight={'fill'}
+          />
+        )}
         onClick={handleAddProvider}
+        shape={'round'}
       >
         {t('Add new provider')}
       </Button>
     );
-  }, [handleAddProvider, t, token.colorTextLight1]);
+  }, [handleAddProvider, t]);
 
   return (
     <SelectModal
@@ -120,7 +125,7 @@ const Component = (props: Props, ref: ForwardedRef<InputRef>): React.ReactElemen
   );
 };
 
-export const ProviderSelector = styled(forwardRef(Component))<Props>(({ theme: { token } }: Props) => {
+export const ProviderSelector = styled(forwardRef(Component))<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '.provider_selector__selected_label': {
       color: token.colorTextDark2,
@@ -139,8 +144,69 @@ export const ProviderSelector = styled(forwardRef(Component))<Props>(({ theme: {
       paddingTop: 0
     },
 
-    '.ant-setting-item .ant-setting-item-name': {
-      whiteSpace: 'nowrap'
+    '&.provider_selector__modal': {
+      '.ant-setting-item .ant-setting-item-name': {
+        whiteSpace: 'nowrap'
+      },
+
+      '.__selection-item .ant-web3-block-right-item': {
+        color: token.colorSuccess
+      },
+
+      '.ant-sw-list-section .ant-sw-list-wrapper': {
+        flexBasis: 'auto',
+        paddingRight: token.paddingXS,
+        paddingLeft: token.paddingXS
+      },
+
+      '.ant-select-modal-item': {
+        marginBottom: token.marginXXS
+      },
+
+      '.ant-sw-list': {
+        borderRadius: 20,
+        backgroundColor: token.colorWhite,
+        paddingTop: token.paddingXS,
+        paddingRight: token.paddingXS,
+        paddingLeft: token.paddingXS,
+        paddingBottom: token.paddingXXS
+      },
+
+      '.ant-setting-item': {
+        overflow: 'hidden',
+        backgroundColor: extendToken.colorBgSecondary1,
+        borderRadius: 40,
+
+        '.ant-web3-block.ant-web3-block:hover': {
+          backgroundColor: token.colorBgSecondary
+        },
+
+        '.__left-icon': {
+          minWidth: 24,
+          height: 24,
+          borderRadius: 24,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        },
+
+        '.ant-web3-block-left-item': {
+          paddingRight: token.paddingSM
+        },
+
+        '.ant-setting-item-name': {
+          color: token.colorTextDark2
+        },
+
+        '.ant-setting-item-content': {
+          paddingRight: token.paddingXS
+        },
+
+        '.__right-icon': {
+          minWidth: 40,
+          justifyContent: 'center'
+        }
+      }
     }
   });
 });
