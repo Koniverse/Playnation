@@ -105,14 +105,25 @@ function Component ({ address, className = '', items, onSelectItem }: Props): Re
   );
 }
 
-export const TokensSelectorModal = styled(Component)<Props>(({ theme: { token } }: Props) => {
+export const TokensSelectorModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
-    '.ant-sw-modal-content': {
-      minHeight: 474
+    '.ant-sw-list-search-input.ant-sw-list-search-input': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
     },
 
-    '.ant-sw-list-search-input': {
-      paddingBottom: token.paddingXS
+    '.ant-sw-list-wrapper.ant-sw-list-wrapper': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
+    },
+
+    '.ant-sw-list.ant-sw-list': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      borderRadius: 24,
+      paddingTop: token.paddingXXS,
+      paddingBottom: token.paddingXXS,
+      paddingLeft: 0,
+      paddingRight: 0
     },
 
     '.ant-sw-modal-body': {
@@ -132,7 +143,7 @@ export const TokensSelectorModal = styled(Component)<Props>(({ theme: { token } 
     },
 
     '.token-selector-item + .token-selector-item': {
-      marginTop: token.marginXS
+      marginTop: token.marginXXS
     }
   });
 });

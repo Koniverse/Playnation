@@ -60,6 +60,7 @@ function Component ({ className = '', id, onCancel, sortedTokenSlugs, tokenBalan
 
       return (
         <TokenBalanceSelectionItem
+          className={'token-selector-item'}
           key={slug}
           tokenName={tokenName}
           {...tokenBalance}
@@ -95,12 +96,10 @@ function Component ({ className = '', id, onCancel, sortedTokenSlugs, tokenBalan
     >
       <SwList.Section
         autoFocusSearch={false}
-        displayRow
         enableSearchInput
         list={tokenBalances}
         renderItem={renderItem}
         renderWhenEmpty={renderEmpty}
-        rowGap = {'8px'}
         searchFunction={searchFunc}
         searchMinCharactersCount={2}
         searchPlaceholder={t<string>('Token name')}
@@ -109,7 +108,7 @@ function Component ({ className = '', id, onCancel, sortedTokenSlugs, tokenBalan
   );
 }
 
-export const GlobalSearchTokenModal = styled(Component)<Props>(({ theme: { token } }: Props) => {
+export const GlobalSearchTokenModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '.ant-sw-modal-body': {
       paddingLeft: 0,
@@ -122,12 +121,27 @@ export const GlobalSearchTokenModal = styled(Component)<Props>(({ theme: { token
       flex: 1
     },
 
-    '.ant-sw-list-search-input': {
-      paddingBottom: token.paddingXS
+    '.ant-sw-list-search-input.ant-sw-list-search-input': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
     },
 
-    '.ant-sw-list': {
-      paddingRight: token.padding
+    '.ant-sw-list-wrapper.ant-sw-list-wrapper': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
+    },
+
+    '.ant-sw-list.ant-sw-list': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      borderRadius: 24,
+      paddingTop: token.paddingXXS,
+      paddingBottom: token.paddingXXS,
+      paddingLeft: 0,
+      paddingRight: 0
+    },
+
+    '.token-selector-item + .token-selector-item': {
+      marginTop: token.marginXXS
     }
   });
 });

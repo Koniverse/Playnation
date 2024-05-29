@@ -184,7 +184,7 @@ function Component (props: Props, ref: ForwardedRef<InputRef>): React.ReactEleme
   );
 }
 
-export const TokenSelector = styled(forwardRef(Component))<Props>(({ theme: { token } }: Props) => {
+export const TokenSelector = styled(forwardRef(Component))<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '&.chain-selector-input .__selected-item': {
       color: token.colorText,
@@ -192,6 +192,33 @@ export const TokenSelector = styled(forwardRef(Component))<Props>(({ theme: { to
       overflow: 'hidden',
       textWrap: 'nowrap',
       whiteSpace: 'nowrap'
+    },
+
+    '.ant-sw-list-search-input.ant-sw-list-search-input': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
+    },
+
+    '.ant-sw-list-wrapper.ant-sw-list-wrapper': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
+    },
+
+    '.ant-sw-list.ant-sw-list': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      borderRadius: 24,
+      paddingTop: token.paddingXXS,
+      paddingBottom: token.paddingXXS,
+      paddingLeft: 0,
+      paddingRight: 0
+    },
+
+    '.ant-select-modal-item.ant-select-modal-item': {
+      marginBottom: 0
+    },
+
+    '.ant-select-modal-item + .ant-select-modal-item': {
+      marginTop: token.marginXXS
     },
 
     // TODO: delete this when fix component in ui-base

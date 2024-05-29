@@ -189,12 +189,7 @@ export const TokenBalanceSelectionItem = styled(Component)<Props>(({ theme: { to
       width: 40,
       display: 'flex',
       justifyContent: 'center',
-      color: token.colorTextLight4
-    },
-    '.ant-balance-item-content:hover': {
-      '.__icon-wrapper': {
-        color: token.colorTextLight2
-      }
+      color: token.colorTextDark2
     }
   });
 });

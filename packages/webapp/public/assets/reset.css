@@ -635,7 +635,6 @@ div#popup-container {
 
 .ant-sw-modal .ant-sw-modal-content.ant-sw-modal-content {
   height: auto;
-  margin-top: 24px;
   max-height: 100%;
 }
 
@@ -870,4 +869,15 @@ div.ant-notification-notice {
   font-size: 24px;
   min-width: 40px;
   height: 40px;
+}
+
+/* override */
+
+.ant-network-item.ant-network-item {
+  background-color: transparent;
+}
+
+
+.ant-balance-item.ant-balance-item {
+  background-color: transparent
 }

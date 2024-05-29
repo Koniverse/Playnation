@@ -144,6 +144,7 @@ const Component: React.FC<Props> = ({ address, className, selectedNetwork }: Pro
             />
           }
           onClick={handleClickViewOnExplorer}
+          shape={'round'}
         >{t('View account on explorer')}</Button>
       </>
     </SwModal>
@@ -197,7 +198,7 @@ const ReceiveQrModal = styled(Component)<Props>(({ theme: { token } }: Props) =>
       '.ant-account-item-address': {
         fontSize: token.fontSize,
         lineHeight: token.lineHeight,
-        color: token.colorTextLight4,
+        color: token.colorTextDark3,
         fontWeight: token.bodyFontWeight,
         paddingRight: token.paddingXS
       }
