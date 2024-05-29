@@ -64,9 +64,18 @@ const Component: React.FC<Props> = (props: Props) => {
     maxEnergy: energyConfig?.maxEnergy
   });
 
+  const currentRank = account?.attributes.rank || 'iron';
+  const currentPoint = account?.attributes.point || 0;
+
   const pointPercent = useMemo(() => {
+    const currentRankInfo = rankInfoMap?.[currentRank];
+
+    if (currentRankInfo && currentPoint > 0) {
+      return (currentPoint - currentRankInfo.minPoint) * 100 / (currentRankInfo.maxPoint - currentRankInfo.minPoint);
+    }
+
     return 0;
-  }, []);
+  }, [currentPoint, currentRank, rankInfoMap]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -185,10 +194,10 @@ const Component: React.FC<Props> = (props: Props) => {
                 <img
                   alt='rank'
                   className={'rank-info-icon'}
-                  src={smallRankIconMap[account?.attributes.rank || 'iron']}
+                  src={smallRankIconMap[currentRank]}
                 />
                 <span className='rank-info-label'>
-                  {rankNameMap[account?.attributes.rank || 'iron']}
+                  {rankNameMap[currentRank]}
                 </span>
               </div>
             </div>
@@ -201,11 +210,11 @@ const Component: React.FC<Props> = (props: Props) => {
                 />
 
                 <span className='current-point'>
-                  {formatInteger(account?.attributes.point || 0)}
+                  {formatInteger(currentPoint)}
                 </span>
 
                 <span className='tagret-point'>
-                  /{formatInteger(rankInfoMap?.[account?.attributes.rank || 'iron'].maxPoint || 0)}
+                  /{formatInteger(rankInfoMap?.[currentRank].maxPoint || 0)}
                 </span>
               </div>
             </div>
