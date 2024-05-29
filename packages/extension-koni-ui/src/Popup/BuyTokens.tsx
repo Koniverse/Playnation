@@ -535,7 +535,6 @@ const BuyTokens = styled(Component)<Props>(({ theme: { token } }: Props) => {
     },
 
     '.__buy-icon-wrapper': {
-      position: 'relative',
       width: 112,
       height: 112,
       display: 'flex',
@@ -545,21 +544,13 @@ const BuyTokens = styled(Component)<Props>(({ theme: { token } }: Props) => {
       marginRight: 'auto',
       marginTop: token.margin,
       marginBottom: token.marginLG,
-
-      '&:before': {
-        content: '""',
-        backgroundColor: token.colorSuccess,
-        inset: 0,
-        position: 'absolute',
-        display: 'block',
-        borderRadius: '100%',
-        opacity: '0.1'
-      }
+      borderRadius: '100%',
+      backgroundColor: token.colorTextDark2
     },
 
     '.__buy-icon': {
       fontSize: 64,
-      color: token.colorSuccess
+      color: token.colorPrimary
     },
 
     '.__note': {
