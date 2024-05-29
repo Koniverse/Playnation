@@ -18,6 +18,34 @@ type Props = ThemeProps;
 const apiSDK = BookaSdk.instance;
 const shopModalId = ShopModalId;
 
+const orderGameList = (data: Game[]): Game[] => {
+  const now = Date.now();
+  const dataActive = data.filter((item) => item.active);
+  const dataComingSoon = dataActive.filter((item) => item.startTime && new Date(item.startTime).getTime() > now);
+  const dataStartNull = dataActive.filter((item) => !item.startTime);
+  const dataActiveNow = dataActive.filter((item) => item.startTime && new Date(item.startTime).getTime() <= now);
+  const items = dataActiveNow.sort((a, b) => {
+    if (a.startTime === null && b.startTime === null) {
+      return 0;
+    }
+
+    if (a.startTime === null) {
+      return 1;
+    }
+
+    if (b.startTime === null) {
+      return -1;
+    }
+
+    const aTime = new Date(a.startTime).getTime();
+    const bTime = new Date(b.startTime).getTime();
+
+    return bTime - aTime;
+  });
+
+  return items.concat(dataStartNull).concat(dataComingSoon);
+};
+
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/games');
   const gameIframe = useRef<HTMLIFrameElement>(null);
@@ -76,7 +104,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     });
 
     const gameListSub = apiSDK.subscribeGameList().subscribe((data) => {
-      setGameList(data);
+      setGameList(orderGameList(data));
     });
 
     const energyConfigSub = apiSDK.subscribeEnergyConfig().subscribe((data) => {
