@@ -96,6 +96,7 @@ export interface Task {
   startTime?: string | null;
   endTime?: string | null;
   onChainType?: string | null;
+  network?: string | null;
   interval?: number | null;
 
   status: TaskHistoryStatus;

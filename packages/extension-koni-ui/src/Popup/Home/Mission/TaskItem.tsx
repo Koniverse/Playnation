@@ -77,14 +77,14 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
 
       setTaskLoading(true);
       let res: SWTransactionResponse | null = null;
-      const networkKey = 'alephTest';
+      const networkKey = task.network || '';
 
       if (onChainType) {
         const now = new Date();
         const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
         const data = JSON.stringify({ address, type: onChainType, date });
 
-        res = await actionTaskOnChain(onChainType, 'alephTest', address, data);
+        res = await actionTaskOnChain(onChainType, networkKey, address, data);
 
         if ((res && res.errors.length > 0) || !res) {
           setTaskLoading(false);
