@@ -50,12 +50,10 @@ const Component: React.FC<Props> = (props: Props) => {
     <SwList.Section
       autoFocusSearch={false}
       className={CN(className)}
-      displayRow
       enableSearchInput
       list={chainInfoList}
       renderItem={renderChainItem}
       renderWhenEmpty={renderEmpty}
-      rowGap={'8px'}
       searchFunction={chainSearchFunc}
       searchMinCharactersCount={2}
       searchPlaceholder={t<string>('Network name')}
@@ -63,10 +61,12 @@ const Component: React.FC<Props> = (props: Props) => {
   );
 };
 
-const CustomizeModalContent = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const CustomizeModalContent = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
     '.ant-sw-list-search-input': {
-      paddingBottom: token.paddingXS
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
+      paddingBottom: token.padding
     },
 
     '.ant-network-item-content': {
@@ -79,6 +79,22 @@ const CustomizeModalContent = styled(Component)<Props>(({ theme: { token } }: Pr
       'white-space': 'nowrap',
       textOverflow: 'ellipsis',
       paddingRight: token.paddingXS
+    },
+
+    '.network_item__container + .network_item__container': {
+      marginTop: token.marginXXS
+    },
+
+    '.ant-sw-list-wrapper': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
+      paddingBottom: 24
+    },
+
+    '.ant-sw-list': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      padding: token.paddingXS,
+      borderRadius: 20
     },
 
     '.manage_chain__empty_container': {

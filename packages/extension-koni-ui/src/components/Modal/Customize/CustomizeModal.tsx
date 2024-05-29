@@ -40,26 +40,28 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     >
       <div className={'__group-label'}>{t('Balance')}</div>
       <div className={'__group-content'}>
-        <SettingItem
-          className={'__setting-item'}
-          leftItemIcon={
-            <BackgroundIcon
-              backgroundColor={token['green-6']}
-              iconColor={token.colorBgBase}
-              phosphorIcon={Wallet}
-              size='sm'
-              type='phosphor'
-              weight='fill'
-            />
-          }
-          name={t('Show zero balance')}
-          rightItem={
-            <Switch
-              checked={isShowZeroBalance}
-              onClick={onChangeZeroBalance}
-              style={{ marginRight: 8 }}
-            />}
-        />
+        <div className='setting-group-container'>
+          <SettingItem
+            className={'__setting-item setting-group-item'}
+            leftItemIcon={
+              <BackgroundIcon
+                backgroundColor={token['green-6']}
+                iconColor={token.colorBgBase}
+                phosphorIcon={Wallet}
+                size='sm'
+                type='phosphor'
+                weight='fill'
+              />
+            }
+            name={t('Show zero balance')}
+            rightItem={
+              <Switch
+                checked={isShowZeroBalance}
+                onClick={onChangeZeroBalance}
+                style={{ marginRight: 8 }}
+              />}
+          />
+        </div>
       </div>
 
       <div className={'__group-label'}>{t('Networks')}</div>
@@ -86,18 +88,18 @@ export const CustomizeModal = styled(Component)<Props>(({ theme: { token } }: Pr
     },
 
     '.__group-label': {
-      paddingLeft: token.padding,
-      paddingRight: token.padding,
-      color: token.colorTextDark3,
-      textTransform: 'uppercase',
-      fontSize: token.fontSizeSM,
-      lineHeight: token.lineHeightSM,
+      paddingLeft: 20,
+      paddingRight: 20,
+      fontWeight: token.headingFontWeight,
+      color: token.colorTextDark1,
+      fontSize: token.fontSizeLG,
+      lineHeight: token.lineHeightLG,
       marginBottom: token.marginXS
     },
 
     '.__group-content': {
-      paddingLeft: token.padding,
-      paddingRight: token.padding,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
       marginBottom: token.marginXS
     },
 
