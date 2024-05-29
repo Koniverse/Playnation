@@ -41,18 +41,21 @@ const Component: React.FC<Props> = (props: Props) => {
       wrapClassName={CN(className)}
     >
       <div className='body-container'>
-        <div className='notice'>
-          <Icon
-            iconColor='var(--icon-warning-color)'
-            phosphorIcon={Warning}
-            size='sm'
-          />
-          <div className='title'>
-            {t('Your camera is not available')}
+        <div className='warning-wrapper'>
+          <div className='notice'>
+            <Icon
+              customSize={'24px'}
+              iconColor='var(--icon-warning-color)'
+              phosphorIcon={Warning}
+              weight={'fill'}
+            />
+            <div className='title'>
+              {t('Your camera is not available')}
+            </div>
           </div>
-        </div>
-        <div className='description'>
-          {t('Please allow camera access to continue')}
+          <div className='description'>
+            {t('Please allow camera access to continue')}
+          </div>
         </div>
         <Button
           block={true}
@@ -62,6 +65,7 @@ const Component: React.FC<Props> = (props: Props) => {
             />
           )}
           onClick={onClick}
+          shape={'round'}
         >
           {t('Go to Setting')}
         </Button>
@@ -70,35 +74,42 @@ const Component: React.FC<Props> = (props: Props) => {
   );
 };
 
-const RequestCameraAccessModal = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const RequestCameraAccessModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
     '--icon-warning-color': token.colorWarning,
 
     '.body-container': {
+
+    },
+
+    '.warning-wrapper': {
+      backgroundColor: extendToken.colorBgSecondary1,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      gap: token.sizeMD
+      borderRadius: 20,
+      padding: '20px 16px',
+      marginBottom: token.margin
     },
 
     '.notice': {
       display: 'flex',
       flexDirection: 'row',
       alignItems: 'center',
-      gap: token.sizeXS
+      marginBottom: token.marginSM
     },
 
     '.title': {
-      fontWeight: token.fontWeightStrong,
-      color: token.colorWarning,
-      fontSize: token.fontSizeHeading5,
-      lineHeight: token.lineHeightHeading5
+      fontWeight: token.headingFontWeight,
+      color: token.colorTextDark1,
+      fontSize: token.fontSizeHeading4,
+      lineHeight: token.lineHeightHeading4
     },
 
     '.description': {
-      color: token.colorTextDescription,
-      fontSize: token.fontSizeHeading6,
-      lineHeight: token.lineHeightHeading6
+      color: token.colorTextDark4,
+      fontSize: token.fontSize,
+      lineHeight: token.lineHeight
     }
   };
 });
