@@ -183,7 +183,7 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
 
       '.leaderboard-item': {
         position: 'relative',
-        backgroundColor: token.colorPrimary,
+        background: extendToken.colorBgGradient || token.colorPrimary,
 
         '&:before': {
           inset: 0,

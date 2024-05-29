@@ -257,9 +257,9 @@ function Component (
   );
 }
 
-export const UpperBlock = styled(Component)<Props>(({ theme: { token } }: Props) => {
+export const UpperBlock = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
-    backgroundColor: token.colorPrimary,
+    background: extendToken.colorBgGradient || token.colorPrimary,
     padding: '8px 16px 24px 16px',
     borderRadius: 20,
 
