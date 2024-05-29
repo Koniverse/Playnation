@@ -6,11 +6,15 @@ import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegr
 import { EXTENSION_VERSION, SUPPORT_URL } from '@subwallet/extension-koni-ui/constants/common';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
+import { saveCameraSetting } from '@subwallet/extension-koni-ui/messaging';
 import GeneralSetting from '@subwallet/extension-koni-ui/Popup/Settings/GeneralSetting';
+import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { BackgroundIcon, Icon, SettingItem, SwIconProps } from '@subwallet/react-ui';
-import { ArrowSquareOut, BookBookmark, CaretRight, Coins, Graph, Headset } from 'phosphor-react';
-import React, { useMemo } from 'react';
+import { BackgroundIcon, Icon, SettingItem, SwIconProps, Switch } from '@subwallet/react-ui';
+import CN from 'classnames';
+import { ArrowSquareOut, BookBookmark, Camera, CaretRight, Coins, Graph, Headset } from 'phosphor-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Outlet, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -68,6 +72,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   const { goHome } = useDefaultNavigate();
   const { t } = useTranslation();
+  const { camera } = useSelector((state: RootState) => state.settings);
+  const [loadingCamera, setLoadingCamera] = useState(false);
 
   // todo: i18n all titles, labels below
   const SettingGroupItemType = useMemo((): SettingGroupItemType[] => ([
@@ -155,45 +161,30 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     }
   ]), [navigate, t]);
 
-  // const aboutSubwalletType = useMemo<SettingItemType[]>(() => {
-  //   return [
-  //     {
-  //       key: 'website',
-  //       leftIcon: Globe,
-  //       rightIcon: ArrowSquareOut,
-  //       leftIconBgColor: token['purple-7'],
-  //       title: t('Website'),
-  //       onClick: openInNewTab(WEBSITE_URL)
-  //     },
-  //     {
-  //       key: 'terms-of-use',
-  //       leftIcon: BookBookmark,
-  //       rightIcon: ArrowSquareOut,
-  //       leftIconBgColor: token['volcano-7'],
-  //       title: t('Terms of use'),
-  //       onClick: openInNewTab(TERMS_OF_SERVICE_URL)
-  //     },
-  //     {
-  //       key: 'x',
-  //       leftIcon: (
-  //         <Image
-  //           height={24}
-  //           shape='squircle'
-  //           src={DefaultLogosMap.xtwitter}
-  //           width={24}
-  //         />
-  //       ),
-  //       rightIcon: ArrowSquareOut,
-  //       leftIconBgColor: token.colorBgSecondary,
-  //       title: t('X (Twitter)'),
-  //       onClick: openInNewTab(TWITTER_URL)
-  //     }
-  //   ];
-  // }, [t, token]);
+  const updateCamera = useCallback((currentValue: boolean) => {
+    return () => {
+      setLoadingCamera(true);
 
-  // const closeModal = useCallback(() => {
-  //   inactiveModal(modalId);
-  // }, [inactiveModal]);
+      saveCameraSetting(!currentValue)
+        .catch(console.error)
+        .finally(() => {
+          setLoadingCamera(false);
+        });
+    };
+  }, []);
+
+  useEffect(() => {
+    if (camera) {
+      window.navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          // Close video
+          stream.getTracks().forEach((track) => {
+            track.stop();
+          });
+        })
+        .catch(console.error);
+    }
+  }, [camera]);
 
   return (
     <PageWrapper className={`settings ${className}`}>
@@ -207,6 +198,28 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
             <GeneralSetting
               className={'__group-container'}
             />
+
+            <div className='setting-group-container __group-container'>
+              <SettingItem
+                className={CN('__setting-item setting-group-item')}
+                leftItemIcon={(
+                  <BackgroundIcon
+                    phosphorIcon={Camera}
+                    size='sm'
+                    type='phosphor'
+                    weight='fill'
+                  />
+                )}
+                name={t('Camera access for QR')}
+                rightItem={(
+                  <Switch
+                    checked={camera}
+                    loading={loadingCamera}
+                    onClick={updateCamera(camera)}
+                  />
+                )}
+              />
+            </div>
 
             {
               SettingGroupItemType.map((group) => {

@@ -30,7 +30,7 @@ const Component: React.FC<Props> = (props: Props) => {
   const onClick = useCallback(() => {
     closeModal();
 
-    navigate('/settings/security', { state: true });
+    navigate('/settings/list');
   }, [closeModal, navigate]);
 
   return (
