@@ -80,7 +80,7 @@ function Component (props: Props, ref: ForwardedRef<InputRef>): React.ReactEleme
   );
 }
 
-export const TokenTypeSelector = styled(forwardRef(Component))<Props>(({ theme: { token } }: Props) => {
+export const TokenTypeSelector = styled(forwardRef(Component))<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '--token-type-icon-bg-color': token['orange-6'],
     '--token-type-icon-color': token.colorWhite,
@@ -96,6 +96,71 @@ export const TokenTypeSelector = styled(forwardRef(Component))<Props>(({ theme: 
 
     '.ant-sw-list-section .ant-sw-list-wrapper': {
       flex: '1 1 auto'
+    },
+
+    '&.token-type-selector-modal': {
+      '.ant-setting-item .ant-setting-item-name': {
+        whiteSpace: 'nowrap'
+      },
+
+      '.__selection-item .ant-web3-block-right-item': {
+        color: token.colorSuccess
+      },
+
+      '.ant-sw-list-section .ant-sw-list-wrapper': {
+        flexBasis: 'auto',
+        paddingRight: token.paddingXS,
+        paddingLeft: token.paddingXS
+      },
+
+      '.ant-select-modal-item': {
+        marginBottom: token.marginXXS
+      },
+
+      '.ant-sw-list': {
+        borderRadius: 20,
+        backgroundColor: token.colorWhite,
+        paddingTop: token.paddingXS,
+        paddingRight: token.paddingXS,
+        paddingLeft: token.paddingXS,
+        paddingBottom: token.paddingXXS
+      },
+
+      '.ant-setting-item': {
+        overflow: 'hidden',
+        backgroundColor: extendToken.colorBgSecondary1,
+        borderRadius: 40,
+
+        '.ant-web3-block.ant-web3-block:hover': {
+          backgroundColor: token.colorBgSecondary
+        },
+
+        '.__left-icon': {
+          minWidth: 24,
+          height: 24,
+          borderRadius: 24,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        },
+
+        '.ant-web3-block-left-item': {
+          paddingRight: token.paddingSM
+        },
+
+        '.ant-setting-item-name': {
+          color: token.colorTextDark2
+        },
+
+        '.ant-setting-item-content': {
+          paddingRight: token.paddingXS
+        },
+
+        '.__right-icon': {
+          minWidth: 40,
+          justifyContent: 'center'
+        }
+      }
     }
   });
 });
