@@ -119,11 +119,8 @@ export const TokenTypeSelector = styled(forwardRef(Component))<Props>(({ theme: 
 
       '.ant-sw-list': {
         borderRadius: 20,
-        backgroundColor: token.colorWhite,
-        paddingTop: token.paddingXS,
-        paddingRight: token.paddingXS,
-        paddingLeft: token.paddingXS,
-        paddingBottom: token.paddingXXS
+        backgroundColor: extendToken.colorBgSecondary1,
+        padding: token.paddingXS
       },
 
       '.ant-setting-item': {

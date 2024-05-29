@@ -117,19 +117,44 @@ const Component = (props: Props, ref: ForwardedRef<InputRef>): React.ReactElemen
   );
 };
 
-export const ServiceSelector = styled(forwardRef(Component))<Props>(({ theme: { token } }: Props) => {
+export const ServiceSelector = styled(forwardRef(Component))<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '&.service-selector-modal': {
+      '.ant-sw-list': {
+        borderRadius: 20,
+        backgroundColor: extendToken.colorBgSecondary1,
+        padding: token.paddingXS
+      },
+
+      '.ant-select-modal-item.ant-select-modal-item': {
+        marginBottom: 0
+      },
+
+      '.ant-sw-list-section .ant-sw-list-wrapper': {
+        flexBasis: 'auto',
+        paddingRight: token.paddingXS,
+        paddingLeft: token.paddingXS
+      },
+
+      '.ant-web3-block.ant-web3-block': {
+        backgroundColor: 'transparent',
+        borderRadius: 40
+      },
+
+      '.ant-web3-block.ant-web3-block:hover': {
+        backgroundColor: token.colorBgSecondary
+      },
+
+      '.ant-select-modal-item + .ant-select-modal-item': {
+        marginTop: token.marginXXS
+      },
+
       '.__option-item': {
         padding: 0,
         paddingLeft: token.sizeSM,
         paddingRight: token.sizeXXS,
         minHeight: 52,
-        borderRadius: token.borderRadiusLG,
-
-        '&:not(:hover)': {
-          backgroundColor: token.colorBgSecondary
-        }
+        borderRadius: token.borderRadiusLG
       },
 
       '.disabled': {
@@ -157,10 +182,11 @@ export const ServiceSelector = styled(forwardRef(Component))<Props>(({ theme: { 
     '&.service-selector-input': {
       '.__selected-item': {
         display: 'flex',
-        color: token.colorTextLight1,
+        color: token.colorTextDark1,
         whiteSpace: 'nowrap',
         overflow: 'hidden'
       },
+
       '.__selected-item-name': {
         textOverflow: 'ellipsis',
         fontWeight: token.headingFontWeight,
