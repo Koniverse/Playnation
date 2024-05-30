@@ -8,6 +8,7 @@ import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegr
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
+import {calculateStartAndEnd} from "@subwallet/extension-koni-ui/utils/date";
 
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'BookaGamesBot/swbooka';
@@ -330,6 +331,7 @@ export class BookaSdk {
       this.accountSubject.next(account);
       storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
       this.syncHandler.resolve();
+      const { end, start } = calculateStartAndEnd('weekly');
 
       await Promise.all([
         this.fetchEnergyConfig(),
@@ -337,7 +339,7 @@ export class BookaSdk {
         this.fetchGameList(),
         this.fetchTaskCategoryList(),
         this.fetchTaskList(),
-        this.fetchLeaderboard(),
+        this.fetchLeaderboard(start, end, 0, 100),
         this.fetchGameItemMap(),
         this.fetchGameInventoryItemList()
       ]);
