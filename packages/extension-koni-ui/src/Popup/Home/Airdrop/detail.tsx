@@ -36,7 +36,7 @@ const AirdropDetail: React.FC<Props> = () => {
           <p>Raffle Total: {eligibility.raffleTotal}</p>
         </div>
       ):(
-        <h1>Eligibility not found</h1>
+        <h1>No snapshot data yet</h1>
       )}
 
     </div>
