@@ -27,7 +27,9 @@ const forceChainInfoMap = (() => {
     'polkadot',
     'goldberg_testnet',
     'kusama',
-    'alephTest'
+    'alephTest',
+    'karura',
+    'acala'
   ];
 
   return Object.fromEntries(enableList.map((slug) => {

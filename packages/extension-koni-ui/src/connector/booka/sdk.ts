@@ -7,6 +7,7 @@ import { AccountRankType, AirdropCampaign, BookaAccount, EnergyConfig, Game, Gam
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
+import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
@@ -345,6 +346,7 @@ export class BookaSdk {
       this.accountSubject.next(account);
       storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
       this.syncHandler.resolve();
+      const { end, start } = calculateStartAndEnd('weekly');
 
       await Promise.all([
         this.fetchEnergyConfig(),
@@ -352,7 +354,7 @@ export class BookaSdk {
         this.fetchGameList(),
         this.fetchTaskCategoryList(),
         this.fetchTaskList(),
-        this.fetchLeaderboard()
+        this.fetchLeaderboard(start, end, 0, 100)
         // this.fetchGameItemMap(),
         // this.fetchGameInventoryItemList(),
         // this.fetchGameItemInGameList()

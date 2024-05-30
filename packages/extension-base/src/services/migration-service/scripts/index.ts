@@ -4,6 +4,8 @@
 import EnableAvailGoldberg from '@subwallet/extension-base/services/migration-service/scripts/EnableAvailGoldberg';
 
 import BaseMigrationJob from '../Base';
+import EnableAcalaChain from "@subwallet/extension-base/services/migration-service/scripts/EnableAcalaChain";
+import EnableKaruraChain from "@subwallet/extension-base/services/migration-service/scripts/EnableKaruraChain";
 
 export const EVERYTIME = '__everytime__';
 
@@ -32,7 +34,9 @@ export default <Record<string, typeof BaseMigrationJob>>{
   // '1.1.44-01': MigrateAssetSetting,
   // '1.1.45-01': MigrateTransactionHistoryBySymbol,
   // '1.1.46-01': AutoEnableSomeTokens
-  '1.1.51-01': EnableAvailGoldberg
+  '1.1.51-01': EnableAvailGoldberg,
+  '1.1.51-10': EnableAcalaChain,
+  '1.1.51-20': EnableKaruraChain
   // [`${EVERYTIME}-1.1.42-02`]: MigrateTransactionHistoryBySymbol
   // [`${EVERYTIME}-1`]: AutoEnableChainsTokens
 };
