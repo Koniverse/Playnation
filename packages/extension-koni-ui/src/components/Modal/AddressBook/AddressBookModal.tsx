@@ -175,6 +175,7 @@ const Component: React.FC<Props> = (props: Props) => {
         addressPreLength={isRecent ? 9 : 4}
         addressSufLength={isRecent ? 9 : 4}
         avatarSize={24}
+        className={'account-item'}
         fallbackName={false}
         isSelected={selected}
         key={`${item.address}_${item.group}`}
@@ -250,7 +251,6 @@ const Component: React.FC<Props> = (props: Props) => {
             </Badge>
           )}
           autoFocusSearch={false}
-          displayRow={true}
           enableSearchInput={true}
           groupBy='group'
           groupSeparator={groupSeparator}
@@ -259,7 +259,6 @@ const Component: React.FC<Props> = (props: Props) => {
           ref={sectionRef}
           renderItem={renderItem}
           renderWhenEmpty={renderEmpty}
-          rowGap='var(--row-gap)'
           searchFunction={searchFunction}
           searchMinCharactersCount={2}
           searchPlaceholder={t<string>('Account name')}
@@ -280,9 +279,19 @@ const Component: React.FC<Props> = (props: Props) => {
   );
 };
 
-const AddressBookModal = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const AddressBookModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
     '--row-gap': `${token.sizeXS}px`,
+
+    '.ant-sw-list-section': {
+      flex: 1
+    },
+
+    '.empty-list': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      padding: '40px 20px',
+      borderRadius: 20
+    },
 
     '.ant-sw-modal-body': {
       display: 'flex',
@@ -290,23 +299,75 @@ const AddressBookModal = styled(Component)<Props>(({ theme: { token } }: Props) 
       paddingRight: 0
     },
 
-    '.ant-sw-list-section': {
-      flex: 1
+    '.ant-sw-list-search-input': {
+      paddingRight: token.paddingXS,
+      paddingLeft: token.paddingXS
     },
 
-    '.address-book-group-separator': {
-      fontWeight: token.fontWeightStrong,
-      fontSize: 11,
-      lineHeight: '20px',
-      textTransform: 'uppercase',
+    '.ant-sw-list': {
+      paddingRight: token.paddingXS,
+      paddingLeft: token.paddingXS
+    },
 
-      '.address-book-group-label': {
-        color: token.colorTextBase
+    '.___list-separator': {
+      fontSize: token.fontSizeLG,
+      lineHeight: token.lineHeightLG,
+      paddingLeft: token.paddingSM,
+      paddingRight: token.paddingSM,
+      marginBottom: token.marginXS
+    },
+
+    '.___list-separator + .account-item': {
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20
+    },
+
+    '.account-item + .___list-separator': {
+      marginTop: token.marginXS
+    },
+
+    '.ant-sw-list > .account-item': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
+      position: 'relative',
+
+      '.ant-account-item': {
+        minHeight: 68,
+        paddingTop: token.paddingXS,
+        paddingBottom: token.paddingXS,
+        backgroundColor: 'transparent',
+        paddingLeft: 20
       },
 
-      '.address-book-group-counter': {
-        color: token.colorTextTertiary
+      '.ant-web3-block-left-item': {
+        paddingRight: token.paddingSM
       }
+    },
+
+    '.ant-sw-list > .account-item + .account-item': {
+      marginTop: -token.marginXXS,
+
+      '&:before': {
+        content: '""',
+        position: 'absolute',
+        display: 'block',
+        height: 15,
+        left: 0,
+        right: 0,
+        top: -15,
+        backgroundColor: extendToken.colorBgSecondary1
+      },
+
+      '.ant-account-item': {
+        minHeight: 60,
+        paddingTop: 0,
+        backgroundColor: 'transparent'
+      }
+    },
+
+    '.address-book-group-counter': {
+      color: token.colorTextDark3
     }
   };
 });

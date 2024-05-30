@@ -336,6 +336,10 @@ const ManageAddressBook = styled(Component)<Props>(({ theme: { extendToken, toke
       fontSize: token.fontSizeHeading6,
       lineHeight: token.lineHeightHeading6,
       color: token.colorTextBase
+    },
+
+    '.address-book-group-counter': {
+      color: token.colorTextDark3
     }
   };
 });
