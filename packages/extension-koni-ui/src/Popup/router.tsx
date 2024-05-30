@@ -162,7 +162,6 @@ export const router = createBrowserRouter([
           Tokens.generateRouterObject('tokens'),
           TokenDetailList.generateRouterObject('tokens/detail/:slug'),
           AirDrop.generateRouterObject('airdrop'),
-          AirDropDetail.generateRouterObject('airdrop/detail/:id'),
           {
             path: 'nfts',
             element: <Outlet />,
@@ -202,6 +201,9 @@ export const router = createBrowserRouter([
             element: <Example />
           }
         ]
+      },
+      {
+        ...AirDropDetail.generateRouterObject('airdrop/detail/:id')
       },
       {
         ...TransactionDone.generateRouterObject('transaction-done/:address/:chain/:transactionId')

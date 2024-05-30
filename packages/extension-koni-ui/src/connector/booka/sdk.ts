@@ -40,7 +40,7 @@ export class BookaSdk {
   private gameItemInGame = new BehaviorSubject<Partial<Record<string, InGameItem>>>({});
   private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
-  private airdropCampaign = new BehaviorSubject<AirdropCampaign[]>([]);
+  private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
   private checkEligibility = new BehaviorSubject<{ eligibility: boolean; raffleTotal: number } | undefined>(undefined);
 
   constructor () {
@@ -161,6 +161,10 @@ export class BookaSdk {
 
   public get rankInfoMap () {
     return this.rankInfoSubject.value;
+  }
+
+  public get airdropCampaignList () {
+    return this.airdropCampaignSubject.value;
   }
 
   private getRequestHeader () {
@@ -589,7 +593,7 @@ export class BookaSdk {
     const airdropCampaignResponse = await this.getRequest<AirdropCampaign[]>(`${GAME_API_HOST}/api/airdrop/list-airdrop-campaign`);
 
     if (airdropCampaignResponse) {
-      this.airdropCampaign.next(airdropCampaignResponse);
+      this.airdropCampaignSubject.next(airdropCampaignResponse);
     }
   }
 
@@ -602,7 +606,7 @@ export class BookaSdk {
   }
 
   subscribeAirdropCampaign () {
-    return this.airdropCampaign;
+    return this.airdropCampaignSubject;
   }
 
   // Singleton

@@ -1,4 +1,4 @@
-// [object Object]
+// Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
@@ -23,7 +23,7 @@ const AirdropComponent: React.FC<Props> = ({ className }) => {
   useSetCurrentPage('/home/airdrop');
   const navigate = useNavigate();
 
-  const [airdropCampaign, setAirdropCampaign] = useState<AirdropCampaign[]>([]);
+  const [airdropCampaign, setAirdropCampaign] = useState<AirdropCampaign[]>(apiSDK.airdropCampaignList);
 
   useEffect(() => {
     const subscription = apiSDK.subscribeAirdropCampaign().subscribe((data) => {
@@ -36,7 +36,7 @@ const AirdropComponent: React.FC<Props> = ({ className }) => {
   }, []);
 
   const detailCampaign = useCallback((campaignId: number) => {
-    navigate(`detail/${campaignId}`);
+    navigate(`/airdrop/detail/${campaignId}`);
   }, [navigate]);
 
   const renderContent = () => {
