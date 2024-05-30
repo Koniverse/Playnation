@@ -1,13 +1,14 @@
-// Copyright 2019-2022 @subwallet/extension-ui authors & contributors
+// [object Object]
 // SPDX-License-Identifier: Apache-2.0
 
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AirdropCampaignRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AirdropCampaign } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Image, Typography } from '@subwallet/react-ui';
+import { Button, Image, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
@@ -20,7 +21,9 @@ const formatDate = (date: string | number | Date) => {
 
 const AirdropComponent: React.FC<Props> = ({ className }) => {
   useSetCurrentPage('/home/airdrop');
-  const [airdropCampaign, setAirdropCampaign] = useState<AirdropCampaignRecord[]>([]);
+  const navigate = useNavigate();
+
+  const [airdropCampaign, setAirdropCampaign] = useState<AirdropCampaign[]>([]);
 
   useEffect(() => {
     const subscription = apiSDK.subscribeAirdropCampaign().subscribe((data) => {
@@ -32,6 +35,10 @@ const AirdropComponent: React.FC<Props> = ({ className }) => {
     };
   }, []);
 
+  const detailCampaign = useCallback((campaignId: number) => {
+    navigate(`detail/${campaignId}`);
+  }, [navigate]);
+
   const renderContent = () => {
     if (!airdropCampaign.length) {
       return null;
@@ -39,46 +46,67 @@ const AirdropComponent: React.FC<Props> = ({ className }) => {
 
     return (
       <div>
-        {airdropCampaign.map((game) => (<div
-          className={CN('game-item')}
-          key={`game-${game.id}`}
-        >
-          <div className='game-banner'>
-            <Image
-              shape={'square'}
-              src={game.banner}
-              width={'100%'}
-            />
-          </div>
-          <div className='game-info'>
-            <Image
-              className={'game-icon'}
-              src={game.icon}
-              width={40}
-            />
-            <div className={'game-text-info'}>
-              <Typography.Title
-                className={'__title'}
-                level={5}
-              >
-                {game.name}
-              </Typography.Title>
-              <Typography.Text
-                className={'__sub-title'}
-                size={'sm'}
-              >{formatDate(game.start)} -  {formatDate(game.end)}</Typography.Text>
+        {airdropCampaign.map((campaign: AirdropCampaign) => (
+          <div
+            className={CN('campaign-item')}
+            key={`campaign-${campaign.id}`}
+          >
+            <div className='campaign-banner'>
+              <Image
+                shape={'square'}
+                src={campaign.banner}
+                width={'100%'}
+              />
             </div>
-            <div className={'play-area'}>
+            <div className='campaign-info'>
+              <Image
+                className={'campaign-icon'}
+                src={campaign.icon}
+                width={40}
+              />
+              <div className={'campaign-text-info'}>
+                <Typography.Title
+                  className={'__title'}
+                  level={5}
+                >
+                  {campaign.name}
+                </Typography.Title>
+                <Typography.Text
+                  className={'__sub-title'}
+                  size={'sm'}
+                >
+                  {formatDate(campaign.start)} - {formatDate(campaign.end)}
+                </Typography.Text>
 
-              <Typography.Text
-                className={'game-energy'}
-                size={'sm'}
-              >
-                {game.total_tokens} {game.symbol}
-              </Typography.Text>
+                {campaign.eligibilityList.map((item, index) => (
+                  <Typography.Text
+                    className={'__sub-title'}
+                    key={index}
+                    size={'sm'}
+                  >
+                    {item.name}
+                  </Typography.Text>
+                ))}
+
+                <Button
+                  className={'play-button'}
+                  onClick={() => detailCampaign(campaign.campaign_id!)}
+                  size={'xs'}
+                >
+                  Explore
+                </Button>
+              </div>
+              <div className={'play-area'}>
+                <Typography.Text
+                  className={'campaign-energy'}
+                  size={'sm'}
+                >
+                  {campaign.total_tokens} {campaign.symbol}
+                </Typography.Text>
+              </div>
             </div>
           </div>
-        </div>))}
+        ))}
       </div>
     );
   };
@@ -98,7 +126,7 @@ const Airdrop = styled(AirdropComponent)<ThemeProps>(({ theme: { extendToken, to
       marginBottom: token.margin
     },
 
-    '.game-play': {
+    '.campaign-play': {
       position: 'fixed',
       width: '100vw',
       height: '100vh',
@@ -106,7 +134,7 @@ const Airdrop = styled(AirdropComponent)<ThemeProps>(({ theme: { extendToken, to
       left: 0,
       zIndex: 9999,
 
-      '.game-iframe': {
+      '.campaign-iframe': {
         opacity: 0,
         transition: 'opacity 0.6s ease-in-out',
         position: 'relative',
@@ -116,7 +144,7 @@ const Airdrop = styled(AirdropComponent)<ThemeProps>(({ theme: { extendToken, to
       }
     },
 
-    '.game-info': {
+    '.campaign-info': {
       display: 'flex',
       alignItems: 'center',
       width: '100%',
@@ -127,7 +155,7 @@ const Airdrop = styled(AirdropComponent)<ThemeProps>(({ theme: { extendToken, to
       display: 'none'
     },
 
-    '.game-text-info': {
+    '.campaign-text-info': {
       flex: 1,
       marginLeft: token.marginXS,
 
@@ -144,13 +172,13 @@ const Airdrop = styled(AirdropComponent)<ThemeProps>(({ theme: { extendToken, to
       textAlign: 'right'
     },
 
-    '.game-energy': {
+    '.campaign-energy': {
       display: 'block',
       color: 'rgba(0, 0, 0, 0.65)',
       borderRadius: token.borderRadius
     },
 
-    '.game-item': {
+    '.campaign-item': {
       position: 'relative',
       display: 'flex',
       flexDirection: 'column',
@@ -167,14 +195,14 @@ const Airdrop = styled(AirdropComponent)<ThemeProps>(({ theme: { extendToken, to
       },
 
       '&.coming-soon': {
-        '.game-banner': {
+        '.campaign-banner': {
           overflow: 'hidden',
           img: {
             filter: 'blur(8px)'
           }
         },
 
-        '.game-text-info': {
+        '.campaign-text-info': {
           '.__title, .__sub-title': {
             display: 'none'
           },

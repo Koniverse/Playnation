@@ -37,7 +37,8 @@ export class BookaSdk {
   private gameInventoryItemInGame = new BehaviorSubject<GameInventoryItem['inventoryInGame']>({});
   private gameItemInGame = new BehaviorSubject<Partial<Record<string, InGameItem>>>({});
   private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
-  private airdropCampaign = new BehaviorSubject<AirdropCampaignRecord[]>([]);
+  private airdropCampaign = new BehaviorSubject<AirdropCampaign[]>([]);
+  private checkEligibility = new BehaviorSubject<{ eligibility: boolean; raffleTotal: number } | undefined>(undefined);
 
   constructor () {
     storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game, energyConfig]) => {
@@ -495,9 +496,18 @@ export class BookaSdk {
     }
   }
 
+  async checkEligibilityList(campaignId: number) {
+    const response = await this.postRequest<{ eligibility: boolean; raffleTotal: number }>(`${GAME_API_HOST}/api/airdrop/check-eligibility`, { campaign_id: campaignId });
+    if (response) {
+      this.checkEligibility.next(response);
+    }
+  }
+
+
   subscribeAirdropCampaign () {
     return this.airdropCampaign;
   }
+
 
   // Singleton
   private static _instance: BookaSdk;

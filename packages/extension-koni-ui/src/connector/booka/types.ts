@@ -180,6 +180,7 @@ export enum AirdropCampaignStatus {
 }
 export interface AirdropCampaign {
   id: number;
+  campaign_id?: number;
   name: string;
   icon: string;
   banner: string;
@@ -193,11 +194,16 @@ export interface AirdropCampaign {
   decimal: number;
   method: string;
   raffle_count: number;
-  tokenDistributions: JSON;
-  npsDistributions: JSON;
   start: Date;
   end: Date;
+  description: Text;
+  tokenDistributions: JSON;
+  npsDistributions: JSON;
   status: string;
   createdAt: Date;
   updatedAt: Date;
+  eligibilityList: {
+    name: string;
+    type: string;
+  }[];
 }
