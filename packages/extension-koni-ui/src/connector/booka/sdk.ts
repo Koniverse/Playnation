@@ -3,9 +3,11 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { AccountRankType, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType,
+  AirdropCampaign, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
+import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
@@ -34,8 +36,12 @@ export class BookaSdk {
   private referralListSubject = new BehaviorSubject<ReferralRecord[]>([]);
   private gameItemMapSubject = new BehaviorSubject<Record<string, GameItem[]>>({});
   private gameInventoryItemListSubject = new BehaviorSubject<GameInventoryItem[]>([]);
+  private gameInventoryItemInGame = new BehaviorSubject<GameInventoryItem['inventoryInGame']>({});
+  private gameItemInGame = new BehaviorSubject<Partial<Record<string, InGameItem>>>({});
   private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
+  private airdropCampaign = new BehaviorSubject<AirdropCampaign[]>([]);
+  private checkEligibility = new BehaviorSubject<{ eligibility: boolean; raffleTotal: number } | undefined>(undefined);
 
   constructor () {
     storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game, energyConfig, rankInfoMap]) => {
@@ -129,8 +135,16 @@ export class BookaSdk {
     return this.gameItemMapSubject.value;
   }
 
+  public get gameItemInGameList () {
+    return this.gameItemInGame.value;
+  }
+
   public get gameInventoryItemList () {
     return this.gameInventoryItemListSubject.value;
+  }
+
+  public get gameInventoryItemInGameList () {
+    return this.gameInventoryItemInGame.value;
   }
 
   public get leaderBoard () {
@@ -175,17 +189,19 @@ export class BookaSdk {
   }
 
   private async postRequest<T> (url: string, body: any) {
-    const request = await fetch(url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: this.getRequestHeader(),
       body: JSON.stringify(body)
     });
 
-    if (request.status === 200 || request.status === 304) {
-      return (await request.json()) as unknown as T;
-    } else {
-      return undefined;
+    if (!response || response.status !== 200) {
+      const errorResponse = await response.json() as { error: string };
+
+      throw new Error(errorResponse.error || 'Bad request');
     }
+
+    return await response.json() as T;
   }
 
   private async reloadAccount () {
@@ -338,9 +354,11 @@ export class BookaSdk {
         this.fetchTaskCategoryList(),
         this.fetchTaskList(),
         this.fetchLeaderboard(),
-        this.fetchGameItemMap(),
-        this.fetchGameInventoryItemList()
+        // this.fetchGameItemMap(),
+        // this.fetchGameInventoryItemList(),
+        // this.fetchGameItemInGameList()
       ]);
+      await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchLeaderboard(), this.fetchAirdropCampaign()]);
     } else {
       throw new Error('Failed to sync account');
     }
@@ -427,10 +445,14 @@ export class BookaSdk {
   async fetchGameInventoryItemList () {
     await this.waitForSync;
 
-    const inventoryItemList = await this.getRequest<GameInventoryItem[]>(`${GAME_API_HOST}/api/shop/get-inventory`);
+    const inventoryResponse = await this.getRequest<{ success: boolean; inventory: GameInventoryItem[], inventoryInGame: GameInventoryItem['inventoryInGame'] }>(`${GAME_API_HOST}/api/shop/get-inventory`);
 
-    if (inventoryItemList) {
+    if (inventoryResponse && inventoryResponse.success) {
+      const inventoryItemList = inventoryResponse.inventory;
+      const gameInventoryItemInGame = inventoryResponse.inventoryInGame;
+
       this.gameInventoryItemListSubject.next(inventoryItemList);
+      this.gameInventoryItemInGame.next(gameInventoryItemInGame);
     }
   }
 
@@ -464,6 +486,14 @@ export class BookaSdk {
     await this.reloadAccount();
   }
 
+  async fetchGameItemInGameList () {
+    const gameItem = await this.getRequest<{ success: boolean, items: any }>(`${GAME_API_HOST}/api/shop/get-item-in-game`);
+
+    if (gameItem) {
+      console.log('gameItem', gameItem);
+      this.gameItemInGame.next(gameItem.items);
+    }
+  }
   // --- shop
 
   async fetchLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all') {
@@ -552,6 +582,27 @@ export class BookaSdk {
       throw new Error('Account not found');
     }
   }
+
+  async fetchAirdropCampaign () {
+    const airdropCampaignResponse = await this.getRequest<AirdropCampaign[]>(`${GAME_API_HOST}/api/airdrop/list-airdrop-campaign`);
+
+    if (airdropCampaignResponse) {
+      this.airdropCampaign.next(airdropCampaignResponse);
+    }
+  }
+
+  async checkEligibilityList(campaignId: number) {
+    const response = await this.postRequest<{ eligibility: boolean; raffleTotal: number }>(`${GAME_API_HOST}/api/airdrop/check-eligibility`, { campaign_id: campaignId });
+    if (response) {
+      this.checkEligibility.next(response);
+    }
+  }
+
+
+  subscribeAirdropCampaign () {
+    return this.airdropCampaign;
+  }
+
 
   // Singleton
   private static _instance: BookaSdk;

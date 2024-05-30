@@ -38,6 +38,7 @@ export interface GameItem {
   itemGroup: string,
   itemGroupLevel: number,
   effectDuration: number,
+  icon?: string
 }
 
 export enum GameInventoryItemStatus {
@@ -47,14 +48,20 @@ export enum GameInventoryItemStatus {
 }
 
 export interface GameInventoryItem {
-  id: number,
-  gameId: number,
-  accountId: number,
-  gameDataId: number,
-  gameItemId: number,
-  quantity: number,
-  usable: boolean,
-  itemId?: number | null
+  success: boolean,
+  inventory: {
+    id: number,
+    gameId: number,
+    accountId: number,
+    gameDataId: number,
+    gameItemId: number,
+    quantity: number,
+    usable: boolean,
+    itemId?: number | null
+  },
+  inventoryInGame: {
+    [key: string]: number;
+  }
 }
 
 export interface Game {
@@ -193,4 +200,38 @@ export interface ReferralRecord {
   point: number;
   referralSuccessTime: number;
   accountInfo: AccountPublicInfo;
+}
+export enum AirdropCampaignStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  CANCELED = 'CANCELED',
+}
+export interface AirdropCampaign {
+  id: number;
+  campaign_id?: number;
+  name: string;
+  icon: string;
+  banner: string;
+  start_snapshot: Date;
+  end_snapshot: Date;
+  start_claim: Date;
+  end_claim: Date;
+  network: string;
+  total_tokens: number;
+  symbol: string;
+  decimal: number;
+  method: string;
+  raffle_count: number;
+  start: Date;
+  end: Date;
+  description: Text;
+  tokenDistributions: JSON;
+  npsDistributions: JSON;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+  eligibilityList: {
+    name: string;
+    type: string;
+  }[];
 }
