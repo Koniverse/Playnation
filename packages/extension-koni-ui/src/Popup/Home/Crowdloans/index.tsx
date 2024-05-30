@@ -3,7 +3,8 @@
 
 import { _FundStatus } from '@subwallet/chain-list/types';
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
-import { CrowdloanItem, EmptyList, FilterModal, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
+import { EmptyList, FilterModal, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
+import { CrowdloanItem } from '@subwallet/extension-koni-ui/components/Crowdloan';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { useFilterModal, useGetBannerByScreen, useGetCrowdloanList, useSelector, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { _CrowdloanItemType, ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -170,8 +171,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           }
 
           <SwList.Section
-            autoFocusSearch={false}
             actionBtnIcon={<Icon phosphorIcon={FadersHorizontal} />}
+            autoFocusSearch={false}
             enableSearchInput
             filterBy={filterFunction}
             list={items}
