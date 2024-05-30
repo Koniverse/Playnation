@@ -3,8 +3,7 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { AccountRankType,
-  AirdropCampaign, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, AirdropCampaign, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
@@ -353,7 +352,7 @@ export class BookaSdk {
         this.fetchGameList(),
         this.fetchTaskCategoryList(),
         this.fetchTaskList(),
-        this.fetchLeaderboard(),
+        this.fetchLeaderboard()
         // this.fetchGameItemMap(),
         // this.fetchGameInventoryItemList(),
         // this.fetchGameItemInGameList()
@@ -491,6 +490,7 @@ export class BookaSdk {
 
     if (gameItem) {
       console.log('gameItem', gameItem);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       this.gameItemInGame.next(gameItem.items);
     }
   }
@@ -591,18 +591,17 @@ export class BookaSdk {
     }
   }
 
-  async checkEligibilityList(campaignId: number) {
+  async checkEligibilityList (campaignId: number) {
     const response = await this.postRequest<{ eligibility: boolean; raffleTotal: number }>(`${GAME_API_HOST}/api/airdrop/check-eligibility`, { campaign_id: campaignId });
+
     if (response) {
       this.checkEligibility.next(response);
     }
   }
 
-
   subscribeAirdropCampaign () {
     return this.airdropCampaign;
   }
-
 
   // Singleton
   private static _instance: BookaSdk;
