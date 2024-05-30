@@ -46,7 +46,7 @@ jobs:
         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         projectName: ${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME_PROD }}
         gitHubToken: ${{ secrets.GH_AUTOMATION_TOKEN }}
-        branch: ${{ github.ref_name  }}
+        branch: main
         directory: './packages/webapp/build'
         wranglerVersion: '3'
     - if: "github.ref_name == 'telegram-wallet' && github.event_name == 'push'"
