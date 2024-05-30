@@ -9,7 +9,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Icon, SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
-import { ArrowLeft, ChartBar, Rocket, Target, UserCirclePlus, Wallet } from 'phosphor-react';
+import { ArrowLeft, ChartBar, Parachute, Target, Wallet } from 'phosphor-react';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -75,20 +75,20 @@ const Component = ({ backgroundStyle, children, className, headerIcons, onBack, 
       key: 'leaderboard',
       url: '/home/leaderboard'
     },
+    // {
+    //   icon: {
+    //     type: 'phosphor',
+    //     phosphorIcon: UserCirclePlus,
+    //     weight: 'fill'
+    //   },
+    //   label: t('Invite'),
+    //   key: 'invite',
+    //   url: '/home/invite'
+    // },
     {
       icon: {
         type: 'phosphor',
-        phosphorIcon: UserCirclePlus,
-        weight: 'fill'
-      },
-      label: t('Invite'),
-      key: 'invite',
-      url: '/home/invite'
-    },
-    {
-      icon: {
-        type: 'phosphor',
-        phosphorIcon: Rocket,
+        phosphorIcon: Parachute,
         weight: 'fill'
       },
       label: t('Airdrop'),
