@@ -272,7 +272,8 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
     '.ant-sw-screen-layout-body': {
       paddingTop: token.paddingXXS,
       paddingLeft: token.paddingXS,
-      paddingRight: token.paddingXS
+      paddingRight: token.paddingXS,
+      paddingBottom: 24
     },
 
     '.account-info-area': {
