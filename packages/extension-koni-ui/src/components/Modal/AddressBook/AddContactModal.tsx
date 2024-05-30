@@ -193,6 +193,7 @@ const Component: React.FC<Props> = (props: Props) => {
               />
             )}
             loading={loading}
+            shape={'round'}
           >
             {t('Add contact')}
           </Button>
@@ -207,7 +208,7 @@ const AddContactModal = styled(Component)<Props>(({ theme: { token } }: Props) =
 
     '.__overlay': {
       position: 'absolute',
-      backgroundColor: token.colorBgSecondary,
+      backgroundColor: token.colorBgInput,
       top: 0,
       left: 2,
       bottom: 2,
@@ -218,7 +219,8 @@ const AddContactModal = styled(Component)<Props>(({ theme: { token } }: Props) =
       alignItems: 'center',
       paddingLeft: token.paddingSM,
       paddingRight: 84,
-      whiteSpace: 'nowrap'
+      whiteSpace: 'nowrap',
+      color: token.colorTextDark2
     },
 
     '.address-input': {

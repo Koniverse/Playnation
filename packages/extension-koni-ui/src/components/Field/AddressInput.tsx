@@ -322,7 +322,8 @@ export const AddressInput = styled(forwardRef(Component))<Props>(({ theme: { tok
   return ({
     '.__overlay': {
       position: 'absolute',
-      backgroundColor: token.colorBgSecondary,
+      backgroundColor: token.colorBgInput,
+      color: token.colorTextDark2,
       top: 0,
       left: 2,
       bottom: 2,
@@ -339,7 +340,7 @@ export const AddressInput = styled(forwardRef(Component))<Props>(({ theme: { tok
     '.__name': {
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      color: token.colorTextLight1,
+      color: token.colorTextDark2,
 
       '&.limit-width': {
         maxWidth: 136

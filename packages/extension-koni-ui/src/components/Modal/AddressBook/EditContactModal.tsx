@@ -215,12 +215,15 @@ const Component: React.FC<Props> = (props: Props) => {
             loading={deleting}
             onClick={onDelete}
             schema='danger'
+            shape={'round'}
           />
           <Button
             block={true}
+            className={'-secondary-2'}
             disabled={loading || deleting}
             onClick={onCancel}
             schema='secondary'
+            shape={'round'}
           >
             {t('Cancel')}
           </Button>
@@ -229,6 +232,7 @@ const Component: React.FC<Props> = (props: Props) => {
             disabled={isDisabled || deleting}
             htmlType='submit'
             loading={loading}
+            shape={'round'}
           >
             {t('Save')}
           </Button>
