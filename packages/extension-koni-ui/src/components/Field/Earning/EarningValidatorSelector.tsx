@@ -360,8 +360,8 @@ const Component = (props: Props, ref: ForwardedRef<InputRef>) => {
         title={t('Select') + ' ' + t(handleValidatorLabel)}
       >
         <SwList.Section
-          autoFocusSearch={false}
           actionBtnIcon={<Icon phosphorIcon={FadersHorizontal} />}
+          autoFocusSearch={false}
           enableSearchInput={true}
           filterBy={filterFunction}
           list={resultList}

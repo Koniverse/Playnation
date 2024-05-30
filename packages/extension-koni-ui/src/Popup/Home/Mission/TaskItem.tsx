@@ -169,7 +169,7 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
     if (content) {
       return (
         <div className='__task-date'>
-         content
+          {content}
         </div>
       );
     }

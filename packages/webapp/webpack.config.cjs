@@ -177,7 +177,7 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
         url: false
       }
     },
-    optimization : {
+    optimization: {
       splitChunks: {
         chunks: 'all',
         maxSize: 2000000,
@@ -200,7 +200,7 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
 };
 
 module.exports = createConfig({
-  fallback: ['./src/fallback.ts', './src/webRunner.ts', './src/index.tsx'],
+  fallback: ['./src/fallback.ts', './src/webRunner.ts', './src/index.tsx']
 }, {
   'manta-extension-sdk': './manta-extension-sdk-empty.ts'
 }, true);
