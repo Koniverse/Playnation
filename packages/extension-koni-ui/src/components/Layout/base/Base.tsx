@@ -61,7 +61,7 @@ const Component = ({ backgroundStyle, children, className, headerIcons, onBack, 
         phosphorIcon: Target,
         weight: 'fill'
       },
-      label: t('Mission'),
+      label: t('Missions'),
       key: 'mission',
       url: '/home/mission'
     },
