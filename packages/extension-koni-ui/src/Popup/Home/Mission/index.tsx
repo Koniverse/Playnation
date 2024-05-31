@@ -3,7 +3,7 @@
 
 import { GameAccountBlock } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { EnergyConfig, Task, TaskCategory, TaskCategoryInfo, TaskHistoryStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { EnergyConfig, Task, TaskCategory, TaskCategoryInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { TaskList } from '@subwallet/extension-koni-ui/Popup/Home/Mission/TaskList';
@@ -66,11 +66,11 @@ function getTaskCategoryInfoMap (tasks: Task[]): Record<number, TaskCategoryInfo
         return -1;
       }
 
-      if (a.status === TaskHistoryStatus.COMPLETED && b.status !== TaskHistoryStatus.COMPLETED) {
+      if (a.completedAt && !b.completedAt) {
         return 1;
       }
 
-      if (a.status !== TaskHistoryStatus.COMPLETED && b.status === TaskHistoryStatus.COMPLETED) {
+      if (!a.completedAt && b.completedAt) {
         return -1;
       }
 
