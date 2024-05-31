@@ -240,6 +240,7 @@ export const AirdropDetailHeader = styled(Component)<Props>(({ theme: { extendTo
       display: 'flex',
       flexDirection: 'column',
       top: 0,
+      opacity: 0.4,
 
       '&.-left': {
         left: 0,
@@ -255,6 +256,10 @@ export const AirdropDetailHeader = styled(Component)<Props>(({ theme: { extendTo
       '&.-end': {
         right: 0,
         alignItems: 'flex-end'
+      },
+
+      '&.-active': {
+        opacity: 1
       }
     },
 
