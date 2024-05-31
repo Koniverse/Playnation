@@ -63,7 +63,7 @@ const Invite = new LazyLoader('Games', () => import('@subwallet/extension-koni-u
 const Tokens = new LazyLoader('Tokens', () => import('@subwallet/extension-koni-ui/Popup/Home/Tokens'));
 const TokenDetailList = new LazyLoader('TokenDetailList', () => import('@subwallet/extension-koni-ui/Popup/Home/Tokens/DetailList'));
 const AirDrop = new LazyLoader('AirDrop', () => import('@subwallet/extension-koni-ui/Popup/Home/Airdrop'));
-const AirDropDetail = new LazyLoader('AirdropDetail', () => import('@subwallet/extension-koni-ui/Popup/Home/Airdrop/detail'));
+const AirDropDetail = new LazyLoader('AirdropDetail', () => import('@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail'));
 
 const NftItemDetail = new LazyLoader('NftItemDetail', () => import('@subwallet/extension-koni-ui/Popup/Home/Nfts/NftItemDetail'));
 const NftCollections = new LazyLoader('NftCollections', () => import('@subwallet/extension-koni-ui/Popup/Home/Nfts/NftCollections'));

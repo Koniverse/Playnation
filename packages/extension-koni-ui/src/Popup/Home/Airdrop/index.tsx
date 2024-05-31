@@ -74,7 +74,7 @@ const AirdropComponent: React.FC<Props> = ({ className }) => {
           className={'airdrop-item'}
           item={campaign}
           key={campaign.campaign_id}
-          onExplore={onExplore(campaign.id)}
+          onExplore={onExplore(campaign.campaign_id)}
         />
       ))}
     </div>
