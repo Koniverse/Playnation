@@ -79,7 +79,7 @@ function Component ({ className, item, onPlay }: Props) {
 export const GameCardItem = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return ({
     backgroundColor: token.colorWhite,
-    borderRadius: 24,
+    borderRadius: 20,
     overflow: 'hidden',
     display: 'flex',
     height: 184,

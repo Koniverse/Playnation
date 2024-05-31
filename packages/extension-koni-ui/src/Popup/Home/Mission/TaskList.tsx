@@ -31,7 +31,7 @@ const Component = ({ actionReloadPoint, className, taskCategoryInfoMap, taskCate
               </div>
 
               <div className='__complete-missions'>
-                {`${tci.completeCount}/${tci.tasks.length}`} {t('mission')}
+                {`${tci.completeCount}/${tci.tasks.length}`} {t('missions')}
               </div>
             </div>
             <div className='__tasks-container'>

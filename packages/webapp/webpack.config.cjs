@@ -58,7 +58,9 @@ const _additionalEnv = {
   INFURA_API_KEY: JSON.stringify(process.env.INFURA_API_KEY),
   INFURA_API_KEY_SECRET: JSON.stringify(process.env.INFURA_API_KEY_SECRET),
   GAME_API_HOST: JSON.stringify(process.env.GAME_API_HOST),
-  TELEGRAM_WEBAPP_LINK: JSON.stringify(process.env.TELEGRAM_WEBAPP_LINK)
+  TELEGRAM_WEBAPP_LINK: JSON.stringify(process.env.TELEGRAM_WEBAPP_LINK),
+  KARURA_PLAYDROP_START_DATE: JSON.stringify(process.env.KARURA_PLAYDROP_START_DATE),
+  KARURA_PLAYDROP_END_DATE: JSON.stringify(process.env.KARURA_PLAYDROP_END_DATE),
 };
 
 const createConfig = (entry, alias = {}, useSplitChunk = false) => {

@@ -9,6 +9,7 @@ import styled from 'styled-components';
 export type TabGroupItemType = {
   label: string,
   value: string,
+  disabled?: boolean
 }
 
 type Props = ThemeProps & {
@@ -30,10 +31,11 @@ function Component ({ className = '', items, onSelect, selectedItem }: Props): R
         items.map((i) => (
           <div
             className={CN('__tab-item', {
-              '-active': i.value === selectedItem
+              '-active': i.value === selectedItem,
+              '-disabled': i.disabled
             })}
             key={i.value}
-            onClick={onClick(i.value)}
+            onClick={i.disabled ? undefined : onClick(i.value)}
             tabIndex={-1}
           >
             <div className={'__tab-item-label'}>

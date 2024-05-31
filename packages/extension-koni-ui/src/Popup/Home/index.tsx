@@ -108,7 +108,7 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
       }
     },
 
-    '&.game-screen-wrapper, &.invitation-screen-wrapper, &.mission-screen-wrapper': {
+    '&.game-screen-wrapper, &.invitation-screen-wrapper, &.mission-screen-wrapper, &.airdrop-screen-wrapper': {
       '.ant-sw-screen-layout-body': {
         paddingBottom: 56,
 

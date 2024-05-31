@@ -19,6 +19,7 @@ function Component (props: Props): React.ReactElement<Props> {
     description,
     disabled,
     gameItemId,
+    icon,
     inventoryQuantity,
     limit,
     name, onBuy, onUse, price, usable } = props;
@@ -41,24 +42,23 @@ function Component (props: Props): React.ReactElement<Props> {
     >
       <Image
         className={'item-icon'}
-        src={DefaultLogosMap.subwallet}
+        src={icon || DefaultLogosMap.subwallet}
         width={40}
       />
 
       <div className={'__middle-part'}>
-        <div>{name}</div>
-        <div>description: {description}</div>
+        <div className={'__website-name h5-text'}>{name}</div>
         {
           !!limit && (
             <div>Limit: {limit}</div>
           )
         }
 
-        <div>Price: {price}</div>
+        <div className={'__website-domain description'}>Price: <strong> {price}</strong></div>
 
         {
           !!inventoryQuantity && (
-            <div>Quantity: {inventoryQuantity}</div>
+            <div className={'__website-domain description'}>Quantity: <strong> {inventoryQuantity}</strong></div>
           )
         }
 
@@ -68,6 +68,7 @@ function Component (props: Props): React.ReactElement<Props> {
         usable && (
           <Button
             onClick={_onUse}
+            size={'xs'}
           >
             Use
           </Button>
@@ -77,6 +78,7 @@ function Component (props: Props): React.ReactElement<Props> {
       <Button
         disabled={disabled}
         onClick={_onBuy}
+        size={'xs'}
       >
         Buy
       </Button>

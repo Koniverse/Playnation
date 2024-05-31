@@ -6,7 +6,7 @@ import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ButtonProps, Icon, ModalContext } from '@subwallet/react-ui';
-import { FadersHorizontal, Gift, MagnifyingGlass } from 'phosphor-react';
+import { FadersHorizontal, MagnifyingGlass, UserCirclePlus } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -25,22 +25,19 @@ type Props = {
 
 const Home = ({ backgroundStyle, children, onClickFilterIcon, onClickSearchIcon, onTabSelected, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar }: Props) => {
   const navigate = useNavigate();
+  // @ts-ignore
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
+  // @ts-ignore
   const notify = useNotification();
 
   const onOpenCustomizeModal = useCallback(() => {
     activeModal(CUSTOMIZE_MODAL);
   }, [activeModal]);
 
-  const onOpenGift = useCallback(() => {
-    notify({
-      key: 'gift',
-      message: t('The snapshot for the first airdrop will be taken in the next few weeks based on your NPS points'),
-      type: 'info',
-      duration: 12
-    });
-  }, [notify, t]);
+  const onOpenInvite = useCallback(() => {
+    navigate('/home/invite');
+  }, [navigate]);
 
   const headerIcons = useMemo<ButtonProps[]>(() => {
     const icons: ButtonProps[] = [];
@@ -73,17 +70,16 @@ const Home = ({ backgroundStyle, children, onClickFilterIcon, onClickSearchIcon,
       icons.push({
         icon: (
           <Icon
-            iconColor={'#ED4062'}
-            phosphorIcon={Gift}
+            phosphorIcon={UserCirclePlus}
             size='md'
           />
         ),
-        onClick: onOpenGift
+        onClick: onOpenInvite
       });
     }
 
     return icons;
-  }, [onClickFilterIcon, onOpenGift, onClickSearchIcon, onOpenCustomizeModal, showFilterIcon, showGiftIcon, showSearchIcon]);
+  }, [onClickFilterIcon, onOpenInvite, onClickSearchIcon, onOpenCustomizeModal, showFilterIcon, showGiftIcon, showSearchIcon]);
 
   const onClickListIcon = useCallback(() => {
     navigate('/settings/list');
