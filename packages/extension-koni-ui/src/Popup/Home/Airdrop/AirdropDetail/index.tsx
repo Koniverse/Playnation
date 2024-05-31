@@ -32,7 +32,7 @@ enum TabType {
 const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [selectedTab, setSelectedTab] = useState<string>(TabType.CONDITION);
+  const [selectedTab, setSelectedTab] = useState<string>(TabType.ABOUT);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
@@ -99,18 +99,22 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
           />
         </div>
 
-        <div className={'tab-content'}>
-          {
-            selectedTab === TabType.CONDITION && (
-              <AirdropDetailCondition airdropInfo={currentAirdrop} />
-            )
-          }
-          {
-            selectedTab === TabType.ABOUT && (
-              <AirdropDetailAbout airdropInfo={currentAirdrop} />
-            )
-          }
-        </div>
+        {
+          selectedTab === TabType.CONDITION && (
+            <AirdropDetailCondition
+              airdropInfo={currentAirdrop}
+              className={'tab-content'}
+            />
+          )
+        }
+        {
+          selectedTab === TabType.ABOUT && (
+            <AirdropDetailAbout
+              airdropInfo={currentAirdrop}
+              className={'tab-content'}
+            />
+          )
+        }
       </div>
 
       <div className='footer-part'>

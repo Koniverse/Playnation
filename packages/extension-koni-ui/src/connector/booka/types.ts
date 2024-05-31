@@ -224,7 +224,7 @@ export interface AirdropCampaign {
   raffle_count: number;
   start: Date;
   end: Date;
-  description: Text;
+  description: string;
   tokenDistributions: JSON;
   npsDistributions: JSON;
   status: string;
