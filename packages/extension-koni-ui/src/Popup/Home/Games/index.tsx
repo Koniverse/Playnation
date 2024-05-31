@@ -20,7 +20,7 @@ const shopModalId = ShopModalId;
 
 const orderGameList = (data: Game[]): Game[] => {
   const now = Date.now();
-  const dataActive = data.filter((item) => item.active);
+  const dataActive = data.filter((item) => item.active && (!item.endTime || new Date(item.endTime).getTime() > now));
   const dataComingSoon = dataActive.filter((item) => item.startTime && new Date(item.startTime).getTime() > now);
   const dataStartNull = dataActive.filter((item) => !item.startTime);
   const dataActiveNow = dataActive.filter((item) => item.startTime && new Date(item.startTime).getTime() <= now);
