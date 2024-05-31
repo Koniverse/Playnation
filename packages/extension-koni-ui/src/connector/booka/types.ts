@@ -208,6 +208,6 @@ export interface AirdropCampaign {
     start: Date;
     end: Date;
     boxCount:number,
-    note:""
+    note:string
   }[];
 }
