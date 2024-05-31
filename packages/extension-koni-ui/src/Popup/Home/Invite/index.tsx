@@ -123,40 +123,44 @@ const Component = ({ className }: Props): React.ReactElement => {
           />
         </div>
 
-        <div className='invitation-buttons'>
-          <Button
-            block={true}
-            icon={(
-              <Icon
-                customSize={'20px'}
-                phosphorIcon={UserPlus}
-              />
-            )}
-            onClick={inviteFriend}
-            schema={'primary'}
-            shape={'round'}
-            size={'xs'}
-          >
-            {t('Invite now')}
-          </Button>
+        {
+          account && (
+            <div className='invitation-buttons'>
+              <Button
+                block={true}
+                icon={(
+                  <Icon
+                    customSize={'20px'}
+                    phosphorIcon={UserPlus}
+                  />
+                )}
+                onClick={inviteFriend}
+                schema={'primary'}
+                shape={'round'}
+                size={'xs'}
+              >
+                {t('Invite now')}
+              </Button>
 
-          <Button
-            block={true}
-            icon={(
-              <Icon
-                customSize={'20px'}
-                phosphorIcon={Copy}
-                weight={'fill'}
-              />
-            )}
-            onClick={copyLink}
-            schema={'secondary'}
-            shape={'round'}
-            size={'xs'}
-          >
-            {t('Copy Link')}
-          </Button>
-        </div>
+              <Button
+                block={true}
+                icon={(
+                  <Icon
+                    customSize={'20px'}
+                    phosphorIcon={Copy}
+                    weight={'fill'}
+                  />
+                )}
+                onClick={copyLink}
+                schema={'secondary'}
+                shape={'round'}
+                size={'xs'}
+              >
+                {t('Copy Link')}
+              </Button>
+            </div>
+          )
+        }
       </div>
 
       {
@@ -184,7 +188,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   );
 };
 
-const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
+const Invite = styled(Component)<ThemeProps>(({theme: {extendToken, token } }: ThemeProps) => {
   return {
     overflow: 'hidden',
     display: 'flex',
