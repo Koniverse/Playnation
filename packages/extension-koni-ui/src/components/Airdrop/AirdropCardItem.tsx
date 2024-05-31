@@ -126,7 +126,7 @@ export const AirdropCardItem = styled(Component)<Props>(({ theme: { extendToken,
     borderRadius: 20,
     overflow: 'hidden',
     display: 'flex',
-    height: 216,
+    height: 215,
 
     '.__token-tag-wrapper': {
       display: 'flex',

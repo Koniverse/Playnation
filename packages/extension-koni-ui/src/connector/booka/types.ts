@@ -208,7 +208,7 @@ export enum AirdropCampaignStatus {
 }
 export interface AirdropCampaign {
   id: number;
-  campaign_id?: number;
+  campaign_id: number;
   name: string;
   icon: string;
   banner: string;

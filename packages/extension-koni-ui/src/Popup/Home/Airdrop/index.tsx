@@ -4,9 +4,10 @@
 import { AirdropCardItem } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AirdropCampaign } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -18,7 +19,35 @@ const AirdropComponent: React.FC<Props> = ({ className }) => {
   useSetCurrentPage('/home/airdrop');
   const navigate = useNavigate();
 
+  const { setContainerClass } = useContext(HomeContext);
   const [airdropCampaign, setAirdropCampaign] = useState<AirdropCampaign[]>(apiSDK.airdropCampaignList);
+
+  const orderAirdropCampaign = useMemo(() => {
+    return [...airdropCampaign].sort((a, b) => {
+      if (a.start === null && b.start === null) {
+        return 0;
+      }
+
+      if (a.start === null) {
+        return 1;
+      }
+
+      if (b.start === null) {
+        return -1;
+      }
+
+      const aTime = new Date(a.start).getTime();
+      const bTime = new Date(b.start).getTime();
+
+      return aTime - bTime;
+    });
+  }, [airdropCampaign]);
+
+  const onExplore = useCallback((campaignId: number) => {
+    return () => {
+      navigate(`/airdrop/detail/${campaignId}`);
+    };
+  }, [navigate]);
 
   useEffect(() => {
     const subscription = apiSDK.subscribeAirdropCampaign().subscribe((data) => {
@@ -30,18 +59,21 @@ const AirdropComponent: React.FC<Props> = ({ className }) => {
     };
   }, []);
 
-  const onExplore = useCallback((campaignId: number) => {
+  useEffect(() => {
+    setContainerClass('airdrop-screen-wrapper');
+
     return () => {
-      navigate(`/airdrop/detail/${campaignId}`);
+      setContainerClass(undefined);
     };
-  }, [navigate]);
+  }, [setContainerClass]);
 
   return (
     <div className={className}>
-      {airdropCampaign.map((campaign: AirdropCampaign) => (
+      {orderAirdropCampaign.map((campaign: AirdropCampaign) => (
         <AirdropCardItem
+          className={'airdrop-item'}
           item={campaign}
-          key={campaign.id}
+          key={campaign.campaign_id}
           onExplore={onExplore(campaign.id)}
         />
       ))}
@@ -51,104 +83,13 @@ const AirdropComponent: React.FC<Props> = ({ className }) => {
 
 const Airdrop = styled(AirdropComponent)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    padding: token.padding,
+    overflow: 'auto',
+    paddingLeft: token.sizeXS,
+    paddingRight: token.sizeXS,
+    paddingBottom: 34,
 
-    '.account-info': {
-      marginBottom: token.margin
-    },
-
-    '.campaign-play': {
-      position: 'fixed',
-      width: '100vw',
-      height: '100vh',
-      top: 0,
-      left: 0,
-      zIndex: 9999,
-
-      '.campaign-iframe': {
-        opacity: 0,
-        transition: 'opacity 0.6s ease-in-out',
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        border: 0
-      }
-    },
-
-    '.campaign-info': {
-      display: 'flex',
-      alignItems: 'center',
-      width: '100%',
-      padding: token.padding
-    },
-
-    '.__coming-soon-title': {
-      display: 'none'
-    },
-
-    '.campaign-text-info': {
-      flex: 1,
-      marginLeft: token.marginXS,
-
-      '.__title': {
-        marginBottom: 0
-      },
-
-      '.__sub-title': {
-        color: 'rgba(0, 0, 0, 0.65)'
-      }
-    },
-
-    '.play-area': {
-      textAlign: 'right'
-    },
-
-    '.campaign-energy': {
-      display: 'block',
-      color: 'rgba(0, 0, 0, 0.65)',
-      borderRadius: token.borderRadius
-    },
-
-    '.campaign-item': {
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      backgroundColor: token['gray-1'],
-      borderRadius: token.borderRadius,
-      border: 0,
-      marginBottom: '10px',
-      overflow: 'hidden',
-
-      '& img': {
-        width: '100%',
-        height: 'auto'
-      },
-
-      '&.coming-soon': {
-        '.campaign-banner': {
-          overflow: 'hidden',
-          img: {
-            filter: 'blur(8px)'
-          }
-        },
-
-        '.campaign-text-info': {
-          '.__title, .__sub-title': {
-            display: 'none'
-          },
-
-          '.__coming-soon-title': {
-            display: 'block',
-            marginTop: 0,
-            marginBottom: 0
-          }
-        },
-
-        '.play-area': {
-          display: 'none'
-        }
-      }
+    '.airdrop-item': {
+      marginBottom: token.marginSM
     }
   };
 });
