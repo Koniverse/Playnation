@@ -1,12 +1,11 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { AirdropCardItem } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AirdropCampaign } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, Image, Typography } from '@subwallet/react-ui';
-import CN from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -14,10 +13,6 @@ import styled from 'styled-components';
 type Props = ThemeProps;
 
 const apiSDK = BookaSdk.instance;
-
-const formatDate = (date: string | number | Date) => {
-  return new Date(date).toISOString().split('T')[0];
-};
 
 const AirdropComponent: React.FC<Props> = ({ className }) => {
   useSetCurrentPage('/home/airdrop');
@@ -35,85 +30,21 @@ const AirdropComponent: React.FC<Props> = ({ className }) => {
     };
   }, []);
 
-  const detailCampaign = useCallback((campaignId: number) => {
-    navigate(`/airdrop/detail/${campaignId}`);
+  const onExplore = useCallback((campaignId: number) => {
+    return () => {
+      navigate(`/airdrop/detail/${campaignId}`);
+    };
   }, [navigate]);
-
-  const renderContent = () => {
-    if (!airdropCampaign.length) {
-      return null;
-    }
-
-    return (
-      <div>
-        {airdropCampaign.map((campaign: AirdropCampaign) => (
-          <div
-            className={CN('campaign-item')}
-            key={`campaign-${campaign.id}`}
-          >
-            <div className='campaign-banner'>
-              <Image
-                shape={'square'}
-                src={campaign.banner}
-                width={'100%'}
-              />
-            </div>
-            <div className='campaign-info'>
-              <Image
-                className={'campaign-icon'}
-                src={campaign.icon}
-                width={40}
-              />
-              <div className={'campaign-text-info'}>
-                <Typography.Title
-                  className={'__title'}
-                  level={5}
-                >
-                  {campaign.name}
-                </Typography.Title>
-                <Typography.Text
-                  className={'__sub-title'}
-                  size={'sm'}
-                >
-                  {formatDate(campaign.start)} - {formatDate(campaign.end)}
-                </Typography.Text>
-
-                {campaign.eligibilityList.map((item, index) => (
-                  <Typography.Text
-                    className={'__sub-title'}
-                    key={index}
-                    size={'sm'}
-                  >
-                    {item.name}
-                  </Typography.Text>
-                ))}
-
-                <Button
-                  className={'play-button'}
-                  onClick={() => detailCampaign(campaign.campaign_id!)}
-                  size={'xs'}
-                >
-                  Explore
-                </Button>
-              </div>
-              <div className={'play-area'}>
-                <Typography.Text
-                  className={'campaign-energy'}
-                  size={'sm'}
-                >
-                  {campaign.total_tokens} {campaign.symbol}
-                </Typography.Text>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
 
   return (
     <div className={className}>
-      <div className='invite-data'>{renderContent()}</div>
+      {airdropCampaign.map((campaign: AirdropCampaign) => (
+        <AirdropCardItem
+          item={campaign}
+          key={campaign.id}
+          onExplore={onExplore(campaign.id)}
+        />
+      ))}
     </div>
   );
 };

@@ -72,7 +72,6 @@ const Home = ({ backgroundStyle, children, onClickFilterIcon, onClickSearchIcon,
           <Icon
             phosphorIcon={UserCirclePlus}
             size='md'
-            weight={'fill'}
           />
         ),
         onClick: onOpenInvite

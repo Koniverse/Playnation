@@ -34,3 +34,4 @@ export * from './TokenItem';
 export * from './WalletConnect';
 export * from './Shop';
 export * from './Games';
+export * from './Airdrop';
