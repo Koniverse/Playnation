@@ -374,7 +374,7 @@ export class BookaSdk {
         // this.fetchGameInventoryItemList(),
         // this.fetchGameItemInGameList()
       ]);
-      await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchLeaderboard(), this.fetchAirdropCampaign()]);
+      await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchAirdropCampaign()]);
     } else {
       throw new Error('Failed to sync account');
     }

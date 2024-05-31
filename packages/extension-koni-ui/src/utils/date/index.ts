@@ -23,18 +23,13 @@ export function calculateStartAndEnd (key: string) {
       return { start: formatDate(start), end: formatDate(end) };
     }
 
-    case 'monthly': {
-      const start = new Date(year, month, 1);
-      const end = new Date(year, month + 1, 0); // Ngày 0 của tháng sau là ngày cuối cùng của tháng này
+    case 'karura_playdrop': {
+      const startEnv = process.env.KARURA_PLAYDROP_START_DATE as string;
+      const endEnv = process.env.KARURA_PLAYDROP_END_DATE as string;
+      const startDate = new Date(startEnv);
+      const endDate = new Date(endEnv);
 
-      return { start: formatDate(start), end: formatDate(end) };
-    }
-
-    case 'yearly': {
-      const start = new Date(year, 0, 1); // 1 tháng 1
-      const end = new Date(year + 1, 0, 0); // 31 tháng 12
-
-      return { start: formatDate(start), end: formatDate(end) };
+      return { start: formatDate(startDate), end: formatDate(endDate) };
     }
 
     default:
