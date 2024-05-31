@@ -24,8 +24,8 @@ export function calculateStartAndEnd (key: string) {
     }
 
     case 'karura_playdrop': {
-      const startEnv = process.env.KARURA_PLAYDROP_START_DATE as string;
-      const endEnv = process.env.KARURA_PLAYDROP_END_DATE as string;
+      const startEnv = process.env.KARURA_PLAYDROP_START_DATE || '2024-06-01 10:00:00' as string;
+      const endEnv = process.env.KARURA_PLAYDROP_END_DATE || '2024-06-14 10:00:00' as string;
       const startDate = new Date(startEnv);
       const endDate = new Date(endEnv);
 
