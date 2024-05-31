@@ -349,7 +349,7 @@ export class BookaSdk {
       isBot: !!userInfo?.is_bot,
       addedToAttachMenu: !!userInfo?.added_to_attachment_menu,
       firstName: userInfo?.first_name || 'Booka',
-      lastName: userInfo?.last_name || 'Gaming',
+      lastName: userInfo?.last_name || '',
       photoUrl: userInfo?.photo_url,
       isPremium: userInfo?.is_premium,
       languageCode: userInfo?.language_code || 'en'
