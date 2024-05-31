@@ -205,5 +205,7 @@ export interface AirdropCampaign {
   eligibilityList: {
     name: string;
     type: string;
+    start: Date;
+    end: Date;
   }[];
 }
