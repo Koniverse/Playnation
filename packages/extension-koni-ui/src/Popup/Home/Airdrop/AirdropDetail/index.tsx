@@ -32,7 +32,7 @@ enum TabType {
 const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [selectedTab, setSelectedTab] = useState<string>(TabType.ABOUT);
+  const [selectedTab, setSelectedTab] = useState<string>(TabType.CONDITION);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
