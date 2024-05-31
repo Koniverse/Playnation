@@ -21,8 +21,7 @@ const apiSDK = BookaSdk.instance;
 
 enum TabType {
   WEEKLY = 'weekly',
-  MONTHLY = 'monthly',
-  YEARLY = 'yearly',
+  KARURA_PLAYDROP = 'karura_playdrop'
 }
 
 const Component = ({ className }: Props): React.ReactElement => {
@@ -39,12 +38,8 @@ const Component = ({ className }: Props): React.ReactElement => {
         value: TabType.WEEKLY
       },
       {
-        label: t('Monthly'),
-        value: TabType.MONTHLY
-      },
-      {
-        label: t('Yearly'),
-        value: TabType.YEARLY
+        label: t('Karura Playdrop'),
+        value: TabType.KARURA_PLAYDROP
       }
     ];
   }, [t]);
@@ -55,12 +50,27 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   useEffect(() => {
     const { end, start } = calculateStartAndEnd(selectedTab);
-    const leaderBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
-      setLeaderBoard(data);
-    });
+    let weeklyBoardSub: { unsubscribe: () => void } | null = null;
+    let karuraBoardSub: { unsubscribe: () => void } | null = null;
+
+    if (selectedTab === TabType.KARURA_PLAYDROP) {
+      karuraBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 1500).subscribe((data) => {
+        setLeaderBoard(data);
+      });
+    } else {
+      weeklyBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
+        setLeaderBoard(data);
+      });
+    }
 
     return () => {
-      leaderBoardSub.unsubscribe();
+      if (weeklyBoardSub) {
+        weeklyBoardSub.unsubscribe();
+      }
+
+      if (karuraBoardSub) {
+        karuraBoardSub.unsubscribe();
+      }
     };
   }, [selectedTab]);
 
