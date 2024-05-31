@@ -16,6 +16,8 @@ export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'BookaGa
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
 
+// Incase of changing the cache version, we need to clear the cache
+const cacheVersion = '1.1';
 const CACHE_KEYS = {
   account: 'data--account-cache',
   taskCategoryList: 'data--task-category-list-cache',
@@ -44,65 +46,74 @@ export class BookaSdk {
   private checkEligibility = new BehaviorSubject<{ eligibility: boolean; raffleTotal: number } | undefined>(undefined);
 
   constructor () {
-    storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game, energyConfig, rankInfoMap]) => {
-      if (account) {
-        try {
-          const accountData = JSON.parse(account) as BookaAccount;
+    storage.getItem('cache-version').then((version) => {
+      if (cacheVersion === version) {
+        storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game, energyConfig, rankInfoMap]) => {
+          if (account) {
+            try {
+              const accountData = JSON.parse(account) as BookaAccount;
 
-          this.accountSubject.next(accountData);
-        } catch (e) {
-          console.error('Failed to parse account data', e);
-        }
-      }
+              this.accountSubject.next(accountData);
+            } catch (e) {
+              console.error('Failed to parse account data', e);
+            }
+          }
 
-      if (taskCategory) {
-        try {
-          const taskCategoryList = JSON.parse(taskCategory) as TaskCategory[];
+          if (taskCategory) {
+            try {
+              const taskCategoryList = JSON.parse(taskCategory) as TaskCategory[];
 
-          this.taskCategoryListSubject.next(taskCategoryList);
-        } catch (e) {
-          console.error('Failed to parse task list', e);
-        }
-      }
+              this.taskCategoryListSubject.next(taskCategoryList);
+            } catch (e) {
+              console.error('Failed to parse task list', e);
+            }
+          }
 
-      if (tasks) {
-        try {
-          const taskList = JSON.parse(tasks) as Task[];
+          if (tasks) {
+            try {
+              const taskList = JSON.parse(tasks) as Task[];
 
-          this.taskListSubject.next(taskList);
-        } catch (e) {
-          console.error('Failed to parse task list', e);
-        }
-      }
+              this.taskListSubject.next(taskList);
+            } catch (e) {
+              console.error('Failed to parse task list', e);
+            }
+          }
 
-      if (game) {
-        try {
-          const gameList = JSON.parse(game) as Game[];
+          if (game) {
+            try {
+              const gameList = JSON.parse(game) as Game[];
 
-          this.gameListSubject.next(gameList);
-        } catch (e) {
-          console.error('Failed to parse game list', e);
-        }
-      }
+              this.gameListSubject.next(gameList);
+            } catch (e) {
+              console.error('Failed to parse game list', e);
+            }
+          }
 
-      if (energyConfig) {
-        try {
-          const _energyConfig = JSON.parse(energyConfig) as EnergyConfig;
+          if (energyConfig) {
+            try {
+              const _energyConfig = JSON.parse(energyConfig) as EnergyConfig;
 
-          this.energyConfigSubject.next(_energyConfig);
-        } catch (e) {
-          console.error('Failed to parse energy config', e);
-        }
-      }
+              this.energyConfigSubject.next(_energyConfig);
+            } catch (e) {
+              console.error('Failed to parse energy config', e);
+            }
+          }
 
-      if (rankInfoMap) {
-        try {
-          const _rankInfoMap = JSON.parse(rankInfoMap) as Record<AccountRankType, RankInfo>;
+          if (rankInfoMap) {
+            try {
+              const _rankInfoMap = JSON.parse(rankInfoMap) as Record<AccountRankType, RankInfo>;
 
-          this.rankInfoSubject.next(_rankInfoMap);
-        } catch (e) {
-          console.error('Failed to parse rankInfoMap', e);
-        }
+              this.rankInfoSubject.next(_rankInfoMap);
+            } catch (e) {
+              console.error('Failed to parse rankInfoMap', e);
+            }
+          }
+        }).catch(console.error);
+      } else {
+        console.debug('Clearing cache');
+        storage.removeItems(Object.keys(CACHE_KEYS)).then(() => {
+          storage.setItem('cache-version', cacheVersion).catch(console.error);
+        }).catch(console.error);
       }
     }).catch(console.error);
   }

@@ -216,8 +216,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       />
 
       <SwList.Section
-        autoFocusSearch={false}
         actionBtnIcon={<Icon phosphorIcon={FadersHorizontal} />}
+        autoFocusSearch={false}
         enableSearchInput
         filterBy={filterFunction}
         list={websiteAccessItems}
