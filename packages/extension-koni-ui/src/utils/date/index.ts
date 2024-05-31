@@ -8,6 +8,17 @@ const formatDate = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
+const formatDateFully = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+  const day = String(date.getDate()).padStart(2, '0');
+  const hour = String(date.getHours()).padStart(2, '0');
+  const minute = String(date.getMinutes()).padStart(2, '0');
+  const second = String(date.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+};
+
 export function calculateStartAndEnd (key: string) {
   const today = new Date();
   const year = today.getFullYear();
@@ -24,12 +35,12 @@ export function calculateStartAndEnd (key: string) {
     }
 
     case 'karura_playdrop': {
-      const startEnv = process.env.KARURA_PLAYDROP_START_DATE || '2024-06-01 10:00:00' as string;
-      const endEnv = process.env.KARURA_PLAYDROP_END_DATE || '2024-06-14 10:00:00' as string;
+      const startEnv = process.env.KARURA_PLAYDROP_START_DATE || '2024-06-01 03:00:00' as string;
+      const endEnv = process.env.KARURA_PLAYDROP_END_DATE || '2024-06-14 03:00:00' as string;
       const startDate = new Date(startEnv);
       const endDate = new Date(endEnv);
 
-      return { start: formatDate(startDate), end: formatDate(endDate) };
+      return { start: formatDateFully(startDate), end: formatDateFully(endDate) };
     }
 
     default:
