@@ -107,7 +107,7 @@ function Component ({ airdropInfo, className }: Props) {
             >
               <div className='__time-line-legend-item-name'>{t('Snapshot')}</div>
               <div className='__time-line-legend-item-date'>
-                {customFormatDate(airdropInfo.start_snapshot, '#DD#/#MM#')}
+                {customFormatDate(airdropInfo.end_snapshot, '#DD#/#MM#')}
               </div>
             </div>
           </div>

@@ -70,7 +70,7 @@ function Component ({ className, item, onExplore }: Props) {
         </div>
 
         <div className={'__description'}>
-          {isComingSoon ? '' : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum'}
+          {isComingSoon ? '' : 'The airdrop is based on users\' contributions and achievements, with different raffle entries. Earn raffles by being a top NPS Holder, inviting friends, or joining mini-events on Playnation\'s social channel.'}
         </div>
 
         <div className='__buttons'>
