@@ -33,12 +33,12 @@ function Component ({ airdropInfo, className }: Props) {
     let currentTimeline = Timeline.START;
     const pastTimelines: Timeline[] = [Timeline.START];
 
-    if (airdropInfo.start_snapshot && now >= new Date(airdropInfo.start_snapshot).getTime()) {
+    if (airdropInfo.end_snapshot && now >= new Date(airdropInfo.end_snapshot).getTime()) {
       currentTimeline = Timeline.SNAPSHOT;
       pastTimelines.push(Timeline.SNAPSHOT);
     }
 
-    if (airdropInfo.start_claim && now >= new Date(airdropInfo.start_claim).getTime()) {
+    if (airdropInfo.end_claim && now >= new Date(airdropInfo.end_claim).getTime()) {
       currentTimeline = Timeline.CLAIM;
       pastTimelines.push(Timeline.CLAIM);
     }
@@ -213,11 +213,11 @@ export const AirdropDetailHeader = styled(Component)<Props>(({ theme: { extendTo
       },
 
       '&.-is-snapshot:before': {
-        maxWidth: '25%'
+        maxWidth: `${100 / 3}%`
       },
 
       '&.-is-claim:before': {
-        maxWidth: '75%'
+        maxWidth: `${200 / 3}%`
       },
 
       '&.-is-end:before': {
