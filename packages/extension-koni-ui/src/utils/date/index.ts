@@ -21,15 +21,15 @@ const formatDateFully = (date: Date) => {
 
 export function calculateStartAndEnd (key: string) {
   const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
-  const day = today.getDate();
+  const year = today.getUTCFullYear();
+  const month = today.getUTCMonth();
+  const day = today.getUTCDate();
 
   switch (key) {
     case 'weekly': {
-      const dayOfWeek = today.getDay(); // 0 (Chủ Nhật) đến 6 (Thứ Bảy)
-      const start = new Date(year, month, day - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)); // Điều chỉnh nếu hôm nay là Chủ Nhật
-      const end = new Date(year, month, start.getDate() + 6);
+      const dayOfWeek = today.getUTCDay(); // 0 (Chủ Nhật) đến 6 (Thứ Bảy)
+      const start = new Date(Date.UTC(year, month, day - dayOfWeek + (dayOfWeek === 0 ? -6 : 1))); // Adjust if today is Sunday
+      const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate() + 6));
 
       return { start: formatDate(start), end: formatDate(end) };
     }
