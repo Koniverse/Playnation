@@ -235,7 +235,7 @@ export interface AirdropCampaign {
     type: string;
     start: Date;
     end: Date;
-    boxCount:number,
-    note:string
+    boxCount: number,
+    note: string
   }[];
 }

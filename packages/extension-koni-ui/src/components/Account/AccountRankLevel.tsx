@@ -13,7 +13,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
-  rank: AccountRankType;
+  rank: AccountRankType | 'unknown';
   isCurrent?: boolean;
   rankInfoMap: Record<AccountRankType, RankInfo>
 }
@@ -43,12 +43,12 @@ const Component: React.FC<Props> = ({ className, isCurrent, rank, rankInfoMap }:
       </div>
 
       <div className='__rank-name'>
-        {rankNameMap[rank]}
+        {rank === 'unknown' ? '-------' : rankNameMap[rank]}
       </div>
 
       <GamePoint
         className={'__game-point'}
-        point={`${formatInteger(rankInfoMap[rank]?.minPoint || 0)}`}
+        point={rank === 'unknown' ? '---' : `${formatInteger(rankInfoMap[rank]?.minPoint || 0)}`}
       />
     </div>
   );

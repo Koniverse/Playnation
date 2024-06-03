@@ -41,6 +41,7 @@ export const accountRankList: AccountRankType[] = [
 ];
 
 export const smallRankIconMap: Record<string, string> = {
+  unknown: '/images/ranks/rank_placeholder.png',
   iron: '/images/ranks/iron_small.png',
   bronze: '/images/ranks/bronze_small.png',
   silver: '/images/ranks/silver_small.png',
@@ -50,6 +51,7 @@ export const smallRankIconMap: Record<string, string> = {
 };
 
 export const largeRankIconMap: Record<string, string> = {
+  unknown: '/images/ranks/rank_placeholder.png',
   iron: '/images/ranks/iron_large.png',
   bronze: '/images/ranks/bronze_large.png',
   silver: '/images/ranks/silver_large.png',

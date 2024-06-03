@@ -28,12 +28,12 @@ type RankPosition = {
 }
 
 function getRankPosition (currentRank: AccountRankType = 'iron'): RankPosition {
-  const currentRanIndex = accountRankList.findIndex((r) => r === currentRank);
+  const currentRankIndex = accountRankList.findIndex((r) => r === currentRank);
 
   return {
-    prev: accountRankList[currentRanIndex - 1] || undefined,
+    prev: accountRankList[currentRankIndex - 1] || 'unknown',
     current: currentRank,
-    next: accountRankList[currentRanIndex + 1] || undefined
+    next: accountRankList[currentRankIndex + 1] || 'unknown'
   };
 }
 
@@ -231,14 +231,10 @@ const Component: React.FC<Props> = (props: Props) => {
 
             <div className='rank-list-container'>
               <div className='rank-item-wrapper -prev-rank'>
-                {
-                  !!accountRankPosition.prev && (
-                    <AccountRankLevel
-                      rank={accountRankPosition.prev}
-                      rankInfoMap={rankInfoMap}
-                    />
-                  )
-                }
+                <AccountRankLevel
+                  rank={accountRankPosition.prev || 'unknown'}
+                  rankInfoMap={rankInfoMap}
+                />
               </div>
               <div className='rank-item-wrapper -current-rank'>
                 <AccountRankLevel
@@ -248,14 +244,10 @@ const Component: React.FC<Props> = (props: Props) => {
                 />
               </div>
               <div className='rank-item-wrapper -next-rank'>
-                {
-                  !!accountRankPosition.next && (
-                    <AccountRankLevel
-                      rank={accountRankPosition.next}
-                      rankInfoMap={rankInfoMap}
-                    />
-                  )
-                }
+                <AccountRankLevel
+                  rank={accountRankPosition.next || 'unknown'}
+                  rankInfoMap={rankInfoMap}
+                />
               </div>
             </div>
           </div>
