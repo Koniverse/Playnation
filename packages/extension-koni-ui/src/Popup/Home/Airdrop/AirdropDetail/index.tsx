@@ -10,9 +10,10 @@ import { AirdropDetailAbout } from '@subwallet/extension-koni-ui/Popup/Home/Aird
 import { AirdropDetailCondition } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Condition';
 import { AirdropDetailHeader } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Header';
 import { AirdropDetailHistory } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/History';
+import { AIRDROP_REWARD_MODAL_ID, AirdropRewardModal } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/RewardModal';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, Icon } from '@subwallet/react-ui';
+import { Button, Icon, ModalContext } from '@subwallet/react-ui';
 import { Alarm, ArrowCircleRight, CheckCircle, ShareNetwork } from 'phosphor-react';
 import React, { Context, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -31,8 +32,11 @@ enum TabType {
   HISTORY = 'history',
 }
 
+const rewardModalId = AIRDROP_REWARD_MODAL_ID;
+
 const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const navigate = useNavigate();
+  const { activeModal, inactiveModal } = useContext(ModalContext);
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState<string>(TabType.CONDITION);
   const token = useContext<Theme>(ThemeContext as Context<Theme>).token;
@@ -82,6 +86,22 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const buttonType: number = (() => {
     return 3;
   })();
+
+  const onRaffle = useCallback(() => {
+    activeModal(rewardModalId);
+  }, [activeModal]);
+
+  const onCancel = useCallback(() => {
+    inactiveModal(rewardModalId);
+  }, [inactiveModal]);
+
+  const onClaim = useCallback(() => {
+    //
+  }, []);
+
+  const onClaimLater = useCallback(() => {
+    inactiveModal(rewardModalId);
+  }, [inactiveModal]);
 
   return (
     <Layout.WithSubHeaderOnly
@@ -178,6 +198,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
                   weight='fill'
                 />
               )}
+              onClick={onRaffle}
               shape={'round'}
             >
               {t('Raffle')} {'(3/3)'}
@@ -185,6 +206,12 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
           )
         }
       </div>
+
+      <AirdropRewardModal
+        onCancel={onCancel}
+        onClaim={onClaim}
+        onClaimLater={onClaimLater}
+      />
     </Layout.WithSubHeaderOnly>
   );
 };
