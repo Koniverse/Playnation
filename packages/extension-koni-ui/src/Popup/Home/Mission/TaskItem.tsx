@@ -129,7 +129,7 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
         task.url && telegramConnector.openLink(task.url);
       }, 100);
     })().catch(console.error);
-  }, [account?.info, actionReloadPoint, notify, t, task.id, task.onChainType, task.url]);
+  }, [account?.info, actionReloadPoint, notify, t, task.id, task.network, task.onChainType, task.url]);
 
   const { endTime,
     isDisabled,

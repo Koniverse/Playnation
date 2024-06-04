@@ -240,3 +240,12 @@ export interface AirdropCampaign {
     note: string
   }[];
 }
+
+export interface AirdropRewardHistoryLog {
+  status: 'PENDING' | 'MISSED' | 'RECEIVED',
+  type: 'TOKEN' | 'NPS',
+  rewardValue: number,
+  endTime: string,
+  name: string,
+  id: number,
+}

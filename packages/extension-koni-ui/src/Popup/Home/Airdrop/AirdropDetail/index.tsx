@@ -9,12 +9,14 @@ import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTransla
 import { AirdropDetailAbout } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/About';
 import { AirdropDetailCondition } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Condition';
 import { AirdropDetailHeader } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Header';
+import { AirdropDetailHistory } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/History';
+import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon } from '@subwallet/react-ui';
-import { ArrowCircleRight, ShareNetwork } from 'phosphor-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alarm, ArrowCircleRight, CheckCircle, ShareNetwork } from 'phosphor-react';
+import React, { Context, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { ThemeContext } from 'styled-components';
 
 type WrapperProps = ThemeProps;
 type Props = ThemeProps & {
@@ -33,6 +35,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState<string>(TabType.CONDITION);
+  const token = useContext<Theme>(ThemeContext as Context<Theme>).token;
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
@@ -46,8 +49,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       },
       {
         label: t('History'),
-        value: TabType.HISTORY,
-        disabled: true
+        value: TabType.HISTORY
       }
     ];
   }, [t]);
@@ -75,6 +77,11 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       }
     ];
   }, []);
+
+  // todo: @Khanh, please update logic for this
+  const buttonType: number = (() => {
+    return 3;
+  })();
 
   return (
     <Layout.WithSubHeaderOnly
@@ -115,22 +122,68 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
             />
           )
         }
+        {
+          selectedTab === TabType.HISTORY && (
+            <AirdropDetailHistory
+              className={'tab-content'}
+            />
+          )
+        }
       </div>
 
       <div className='footer-part'>
-        <Button
-          block={true}
-          disabled={true}
-          icon={(
-            <Icon
-              phosphorIcon={ArrowCircleRight}
-              weight='fill'
-            />
-          )}
-          shape={'round'}
-        >
-          {t('Eligible')}
-        </Button>
+        {
+          buttonType === 1 && (
+            <Button
+              block={true}
+              disabled={true}
+              icon={(
+                <Icon
+                  phosphorIcon={Alarm}
+                  weight='fill'
+                />
+              )}
+              shape={'round'}
+            >
+              {t('Comming soon')}
+            </Button>
+          )
+        }
+
+        {
+          buttonType === 2 && (
+            <Button
+              block={true}
+              icon={(
+                <Icon
+                  phosphorIcon={ArrowCircleRight}
+                  weight='fill'
+                />
+              )}
+              shape={'round'}
+            >
+              {t('Eligible')}
+            </Button>
+          )
+        }
+
+        {
+          buttonType === 3 && (
+            <Button
+              block={true}
+              icon={(
+                <Icon
+                  iconColor={token.colorPrimary}
+                  phosphorIcon={CheckCircle}
+                  weight='fill'
+                />
+              )}
+              shape={'round'}
+            >
+              {t('Raffle')} {'(3/3)'}
+            </Button>
+          )
+        }
       </div>
     </Layout.WithSubHeaderOnly>
   );
