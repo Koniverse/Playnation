@@ -85,6 +85,18 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   return (
     <div className={className}>
+      <img
+        alt='game_background_image'
+        className={'__background-image-1'}
+        src={DefaultLogosMap.game_background_image}
+      />
+
+      <img
+        alt='game_background_image'
+        className={'__background-image-2'}
+        src={DefaultLogosMap.game_background_image}
+      />
+
       <div className='account-info-area'>
         <GameAccountAvatar
           avatarPath={account?.info.photoUrl || undefined}
@@ -188,13 +200,36 @@ const Component = ({ className }: Props): React.ReactElement => {
   );
 };
 
-const Invite = styled(Component)<ThemeProps>(({theme: {extendToken, token } }: ThemeProps) => {
+const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
     paddingLeft: token.paddingXS,
     paddingRight: token.paddingXS,
+    position: 'relative',
+
+    '& > div': {
+      position: 'relative',
+      zIndex: 5
+    },
+
+    '.__background-image-1, .__background-image-2': {
+      position: 'absolute',
+      width: 138,
+      height: 'auto',
+      zIndex: 0
+    },
+
+    '.__background-image-1': {
+      left: -17,
+      top: 4
+    },
+
+    '.__background-image-2': {
+      right: -30,
+      top: 51
+    },
 
     '.account-info-area': {
       display: 'flex',

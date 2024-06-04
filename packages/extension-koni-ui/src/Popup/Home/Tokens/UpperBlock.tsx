@@ -282,7 +282,8 @@ export const UpperBlock = styled(Component)<Props>(({ theme: { extendToken, toke
       width: 138,
       height: 'auto',
       right: -18,
-      top: 12
+      top: 12,
+      zIndex: 0
     },
 
     '.__top-part': {
