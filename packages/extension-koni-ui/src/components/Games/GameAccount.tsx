@@ -10,23 +10,25 @@ import styled from 'styled-components';
 
 type GamePointProps = ThemeProps & {
   className?: string;
-  name: string;
+  name?: string;
   prefix?: string;
   point?: number;
-  avatar?: string
+  avatar?: string;
+  isPlaceholder?: boolean;
 };
 
-function Component ({ avatar, className, name, point, prefix }: GamePointProps) {
+function Component ({ avatar, className, isPlaceholder, name, point, prefix }: GamePointProps) {
   return (
     <div className={CN(className)}>
       {prefix && <span className={'__prefix'}>{prefix}</span>}
       <GameAccountAvatar
         avatarPath={avatar}
         className={'__avatar'}
+        isPlaceholder={isPlaceholder}
       />
-      <span className={'__name'}>{name}</span>
+      <span className={'__name'}>{isPlaceholder ? '------' : name}</span>
       <span className={'__point'}>
-        {formatIntegerShort(point)}
+        {isPlaceholder ? '---' : formatIntegerShort(point)}
       </span>
     </div>
   );

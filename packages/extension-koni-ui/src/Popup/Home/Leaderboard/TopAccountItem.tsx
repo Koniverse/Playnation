@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
+import { GameAccountAvatar, GamePoint } from '@subwallet/extension-koni-ui/components';
 import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
@@ -9,11 +9,30 @@ import CN from 'classnames';
 import React from 'react';
 import styled from 'styled-components';
 
-type Props = ThemeProps & LeaderboardPerson & {
+type Props = ThemeProps & {
   isFirst?: boolean;
+  leaderboardInfo?: LeaderboardPerson;
+  isPlaceholder?: boolean;
+  rank?: number;
 };
 
-const Component = ({ accountInfo, className, isFirst, point, rank }: Props): React.ReactElement => {
+const Component = ({ className, isFirst, isPlaceholder, leaderboardInfo, rank }: Props): React.ReactElement => {
+  const accountName = (() => {
+    if (isPlaceholder) {
+      return '------';
+    }
+
+    return `${leaderboardInfo?.accountInfo.firstName || ''} ${leaderboardInfo?.accountInfo.lastName || ''}`;
+  })();
+
+  const point = (() => {
+    if (isPlaceholder) {
+      return '---';
+    }
+
+    return formatIntegerShort(leaderboardInfo?.point);
+  })();
+
   return (
     <div className={CN(
       className, {
@@ -21,22 +40,24 @@ const Component = ({ accountInfo, className, isFirst, point, rank }: Props): Rea
       })}
     >
       <div className={'__rank'}>
-        {rank}
+        {rank || leaderboardInfo?.rank}
       </div>
 
       <GameAccountAvatar
-        avatarPath={accountInfo.avatar}
+        avatarPath={leaderboardInfo?.accountInfo.avatar}
         className={'__avatar'}
         hasBoxShadow
+        isPlaceholder={isPlaceholder}
         size={isFirst ? 7 : 5}
       />
 
       <div className={'__account-name'}>
-        {`${accountInfo.firstName || ''} ${accountInfo.lastName || ''}`}
+        {accountName}
       </div>
-      <div className={'__point'}>
-        {formatIntegerShort(point)}
-      </div>
+      <GamePoint
+        className={'__point'}
+        point={point}
+      />
     </div>
   );
 };
@@ -80,7 +101,7 @@ export const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendTo
       fontSize: token.fontSizeSM,
       lineHeight: token.lineHeightSM,
       color: token.colorTextDark4,
-      textAlign: 'center'
+      justifyContent: 'center'
     }
   };
 });

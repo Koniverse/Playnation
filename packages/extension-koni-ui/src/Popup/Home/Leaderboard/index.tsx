@@ -24,6 +24,10 @@ enum TabType {
   KARURA_PLAYDROP = 'karura_playdrop'
 }
 
+type GameItemPlaceholderType = {
+  rank: number;
+};
+
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/leaderboard');
   const [leaderBoard, setLeaderBoard] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
@@ -47,6 +51,28 @@ const Component = ({ className }: Props): React.ReactElement => {
   const onSelectTab = useCallback((value: string) => {
     setSelectedTab(value);
   }, []);
+
+  const filteredLeaderBoard = leaderBoard.filter((item) => item.point > 0);
+
+  const placeholderItems = (() => {
+    if (filteredLeaderBoard.length >= 10) {
+      return [];
+    }
+
+    const items: GameItemPlaceholderType[] = [];
+
+    for (let i = filteredLeaderBoard.length; i < 10; i++) {
+      if (i < 3) {
+        continue;
+      }
+
+      items.push({
+        rank: i + 1
+      });
+    }
+
+    return items;
+  })();
 
   useEffect(() => {
     const { end, start } = calculateStartAndEnd(selectedTab);
@@ -74,8 +100,6 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [selectedTab]);
 
-  const filteredLeaderBoard = leaderBoard.filter((item) => item.point > 0);
-
   useEffect(() => {
     setContainerClass('leaderboard-screen-wrapper');
 
@@ -96,33 +120,30 @@ const Component = ({ className }: Props): React.ReactElement => {
     <div className='top-three-area'>
       <div className='top-account-item-wrapper'>
         {
-          !!filteredLeaderBoard[1] && (
-            <TopAccountItem
-              {...filteredLeaderBoard[1]}
-              rank={2}
-            />
-          )
+          <TopAccountItem
+            isPlaceholder={!filteredLeaderBoard[1]}
+            leaderboardInfo={filteredLeaderBoard[1]}
+            rank={2}
+          />
         }
       </div>
       <div className='top-account-item-wrapper -is-first'>
         {
-          !!filteredLeaderBoard[0] && (
-            <TopAccountItem
-              {...filteredLeaderBoard[0]}
-              isFirst
-              rank={1}
-            />
-          )
+          <TopAccountItem
+            isFirst
+            isPlaceholder={!filteredLeaderBoard[0]}
+            leaderboardInfo={filteredLeaderBoard[0]}
+            rank={1}
+          />
         }
       </div>
       <div className='top-account-item-wrapper'>
         {
-          !!filteredLeaderBoard[2] && (
-            <TopAccountItem
-              {...filteredLeaderBoard[2]}
-              rank={3}
-            />
-          )
+          <TopAccountItem
+            isPlaceholder={!filteredLeaderBoard[2]}
+            leaderboardInfo={filteredLeaderBoard[2]}
+            rank={3}
+          />
         }
       </div>
     </div>
@@ -140,10 +161,25 @@ const Component = ({ className }: Props): React.ReactElement => {
             className={CN('leaderboard-item')}
             name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
             point={item.point}
-            prefix={`${item.rank}`}
+            prefix={`${item.rank}`.padStart(2, '0')}
           />
         </div>
       ))}
+
+      {
+        placeholderItems.map((item) => (
+          <div
+            className={CN('leaderboard-item-wrapper')}
+            key={item.rank}
+          >
+            <GameAccount
+              className={CN('leaderboard-item')}
+              isPlaceholder
+              prefix={`${item.rank}`.padStart(2, '0')}
+            />
+          </div>
+        ))
+      }
     </div>
   </div>;
 };

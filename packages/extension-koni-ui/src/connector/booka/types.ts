@@ -201,6 +201,7 @@ export interface ReferralRecord {
   referralSuccessTime: number;
   accountInfo: AccountPublicInfo;
 }
+
 export enum AirdropCampaignStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
