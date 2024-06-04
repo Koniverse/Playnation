@@ -230,7 +230,9 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
     '.game-background-image': {
       position: 'fixed',
       top: '56%',
-      left: 0,
+      width: 138,
+      height: 'auto',
+      left: -17,
       zIndex: 0
     }
   },
