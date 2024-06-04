@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
 import { GameEnergyBar } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig } from '@subwallet/extension-koni-ui/connector/booka/types';
@@ -79,6 +80,12 @@ function Component (
 
   return (
     <div className={`tokens-upper-block ${className} ${isShrink ? '-shrink' : ''}`}>
+      <img
+        alt='game_background_image'
+        className={'__background-image'}
+        src={DefaultLogosMap.game_background_image}
+      />
+
       <div className='__top-part'>
         <div className={'__total-balance-label-wrapper'}>
           <div className='__total-balance-label'>
@@ -262,6 +269,21 @@ export const UpperBlock = styled(Component)<Props>(({ theme: { extendToken, toke
     background: extendToken.colorBgGradient || token.colorPrimary,
     padding: '8px 16px 24px 16px',
     borderRadius: 20,
+    position: 'relative',
+    overflow: 'hidden',
+
+    '& > div': {
+      position: 'relative',
+      zIndex: 5
+    },
+
+    '.__background-image': {
+      position: 'absolute',
+      width: 138,
+      height: 'auto',
+      right: -18,
+      top: 12
+    },
 
     '.__top-part': {
       display: 'flex',
@@ -386,6 +408,10 @@ export const UpperBlock = styled(Component)<Props>(({ theme: { extendToken, toke
 
     '&.-shrink': {
       paddingBottom: 20,
+
+      '.__background-image': {
+        opacity: 0
+      },
 
       '.__total-balance-value-container': {
         marginBottom: token.margin
