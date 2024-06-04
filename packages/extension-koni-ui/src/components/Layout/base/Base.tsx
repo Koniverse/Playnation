@@ -224,7 +224,7 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
 
     '.ant-sw-screen-layout-body': {
       position: 'relative',
-      zIndex: 1
+      zIndex: 5
     },
 
     '.game-background-image': {
