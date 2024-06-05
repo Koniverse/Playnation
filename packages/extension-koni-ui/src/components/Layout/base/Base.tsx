@@ -17,12 +17,14 @@ import styled from 'styled-components';
 
 import SelectAccount from '../parts/SelectAccount';
 
+type BackgroundStyle = 'primary' | 'secondary' | 'secondary-with-image'
+
 export interface LayoutBaseProps extends Omit<
 SwScreenLayoutProps,
 'tabBarItems' | 'footer' | 'headerContent' | 'selectedTabBarItem'
 >, ThemeProps {
   children: React.ReactNode | React.ReactNode[];
-  backgroundStyle?: 'primary' | 'secondary';
+  backgroundStyle?: BackgroundStyle;
   onTabSelected?: (key: string) => void
 }
 
@@ -189,10 +191,11 @@ const Component = ({ backgroundStyle, children, className, headerIcons, onBack, 
         'special-language': specialLanguages.includes(language),
         '-show-tab-bar': props.showTabBar,
         '-primary-style': backgroundStyle === 'primary',
-        '-secondary-style': backgroundStyle === 'secondary'
+        '-secondary-style': backgroundStyle === 'secondary',
+        '-secondary-with-image-style': backgroundStyle === 'secondary-with-image'
       })}
       footer={
-        backgroundStyle === 'secondary' && (
+        backgroundStyle === 'secondary-with-image' && (
           <img
             alt='game_background_image'
             className={'game-background-image'}
@@ -220,6 +223,10 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
   },
 
   '&.-secondary-style': {
+    backgroundColor: token.colorBgSecondary
+  },
+
+  '&.-secondary-with-image-style': {
     backgroundColor: token.colorBgSecondary,
 
     '.ant-sw-screen-layout-body': {

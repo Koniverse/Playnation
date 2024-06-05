@@ -118,7 +118,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       resolve={dataContext.awaitStores(['assetRegistry'])}
     >
       <Layout.Base
-        backgroundStyle={'secondary'}
+        backgroundStyle={'secondary-with-image'}
         onBack={goBack}
         showBackButton={true}
         showSubHeader={true}

@@ -275,7 +275,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   return (
     <PageWrapper className={`chain_import ${className}`}>
       <Layout.WithSubHeaderOnly
-        backgroundStyle={'secondary'}
+        backgroundStyle={'secondary-with-image'}
         leftFooterButton={{
           onClick: onBack,
           className: 'ant-sw-screen-layout-footer-left-button -secondary-2',

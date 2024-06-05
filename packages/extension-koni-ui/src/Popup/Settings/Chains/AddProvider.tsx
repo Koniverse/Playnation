@@ -248,7 +248,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       resolve={dataContext.awaitStores(['chainStore'])}
     >
       <Layout.Base
-        backgroundStyle={'secondary'}
+        backgroundStyle={'secondary-with-image'}
         leftFooterButton={{
           onClick: onCancel,
           className: 'ant-sw-screen-layout-footer-left-button -secondary-2',

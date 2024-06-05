@@ -190,7 +190,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     <PageWrapper className={`settings ${className}`}>
       <>
         <Layout.WithSubHeaderOnly
-          backgroundStyle={'secondary'}
+          backgroundStyle={'secondary-with-image'}
           onBack={goHome}
           title={t('Settings')}
         >

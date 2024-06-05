@@ -209,7 +209,7 @@ export const AirdropDetailHeader = styled(Component)<Props>(({ theme: { extendTo
         display: 'block',
         height: 8,
         backgroundColor: token.colorSuccess,
-        maxWidth: 0
+        maxWidth: '5%'
       },
 
       '&.-is-snapshot:before': {
