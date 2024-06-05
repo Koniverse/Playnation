@@ -4,7 +4,7 @@
 import { Layout, LoadingScreen, TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AirdropCampaign } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AirdropCampaign, AirdropEligibility } from '@subwallet/extension-koni-ui/connector/booka/types';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { AirdropDetailAbout } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/About';
 import { AirdropDetailCondition } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Condition';
@@ -32,6 +32,21 @@ enum TabType {
   HISTORY = 'history',
 }
 
+const enum buttonTypeConst {
+  COMING_SOON = 1,
+  EGIBLE = 2,
+  RAFFLE = 3,
+  INEGIBLE = 4,
+};
+
+const enum AirdropCampaignProcess {
+  COMING_SOON = 'COMING_SOON',
+  SNAPSHOT = 'SNAPSHOT',
+  ELIGIBILITY = 'ELIGIBILITY',
+  RAFFLE = 'RAFFLE',
+  END_CAMPAIGN = 'END_CAMPAIGN',
+}
+
 const rewardModalId = AIRDROP_REWARD_MODAL_ID;
 
 const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
@@ -40,6 +55,8 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState<string>(TabType.CONDITION);
   const token = useContext<Theme>(ThemeContext as Context<Theme>).token;
+  const [eligibility, setEligibility] = useState<AirdropEligibility | null>(null);
+  const [checkEgibility, setCheckEgibility] = useState<boolean>(false);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
@@ -55,8 +72,36 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
         label: t('History'),
         value: TabType.HISTORY
       }
+
     ];
   }, [t]);
+
+  const fetchEligibility = async (campaignId: number) => {
+    try {
+      const result: any = await apiSDK.checkEgibilityList(campaignId);
+      if (result) {
+        setEligibility(result);
+        setCheckEgibility(true)
+      }
+    } catch (error) {
+      setCheckEgibility(false)
+      setEligibility(null);
+    } finally {
+      console.log('fetching eligibility list done');
+    }
+  };
+  useEffect(() => {
+    if (currentAirdrop && currentAirdrop.campaign_id) {
+      const startDate = new Date(currentAirdrop.start);
+      const currentDate = new Date();
+      if (startDate <= currentDate) {
+        fetchEligibility(currentAirdrop.campaign_id);
+      }
+    }
+  }, [currentAirdrop]);
+
+
+
 
   const onSelectTab = useCallback((value: string) => {
     setSelectedTab(value);
@@ -83,9 +128,24 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   }, []);
 
   // todo: @Khanh, please update logic for this
-  const buttonType: number = (() => {
-    return 3;
+  const buttonType = (() => {
+    if (eligibility && eligibility.currentProcess) {
+      switch (eligibility.currentProcess) {
+        case AirdropCampaignProcess.COMING_SOON:
+          return buttonTypeConst.COMING_SOON;
+        case AirdropCampaignProcess.SNAPSHOT:
+          return buttonTypeConst.INEGIBLE;
+        case AirdropCampaignProcess.RAFFLE:
+          return buttonTypeConst.RAFFLE;
+        default:
+          return buttonTypeConst.COMING_SOON;
+      }
+    } else {
+      return buttonTypeConst.INEGIBLE;
+    }
+
   })();
+
 
   const onRaffle = useCallback(() => {
     activeModal(rewardModalId);
@@ -102,6 +162,63 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const onClaimLater = useCallback(() => {
     inactiveModal(rewardModalId);
   }, [inactiveModal]);
+
+  const renderButton = () => {
+    return (
+      <>
+        {checkEgibility ? (
+          <>
+            {buttonType === buttonTypeConst.INEGIBLE && (
+              <Button
+                block={true}
+                disabled={true}
+                icon={
+                  <Icon
+                    phosphorIcon={Alarm}
+                    weight="fill"
+                  />
+                }
+                shape={'round'}
+              >
+                {t('In Eligible')}
+              </Button>
+            )}
+            {buttonType === buttonTypeConst.RAFFLE && (
+              <Button
+                block={true}
+                icon={
+                  <Icon
+                    iconColor={token.colorPrimary}
+                    phosphorIcon={CheckCircle}
+                    weight="fill"
+                  />
+                }
+                onClick={onRaffle}
+                shape={'round'}
+              >
+                {t('Raffle')} {'(3/3)'}
+              </Button>
+            )}
+          </>
+        ) : (
+          <Button
+            block={true}
+            disabled={true}
+            icon={
+              <Icon
+                phosphorIcon={Alarm}
+                weight="fill"
+              />
+            }
+            shape={'round'}
+          >
+            {t('Coming soon')}
+          </Button>
+        )}
+      </>
+    );
+  };
+
 
   return (
     <Layout.WithSubHeaderOnly
@@ -152,59 +269,8 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       </div>
 
       <div className='footer-part'>
-        {
-          buttonType === 1 && (
-            <Button
-              block={true}
-              disabled={true}
-              icon={(
-                <Icon
-                  phosphorIcon={Alarm}
-                  weight='fill'
-                />
-              )}
-              shape={'round'}
-            >
-              {t('Comming soon')}
-            </Button>
-          )
-        }
+        {renderButton()}
 
-        {
-          buttonType === 2 && (
-            <Button
-              block={true}
-              icon={(
-                <Icon
-                  phosphorIcon={ArrowCircleRight}
-                  weight='fill'
-                />
-              )}
-              shape={'round'}
-            >
-              {t('Eligible')}
-            </Button>
-          )
-        }
-
-        {
-          buttonType === 3 && (
-            <Button
-              block={true}
-              icon={(
-                <Icon
-                  iconColor={token.colorPrimary}
-                  phosphorIcon={CheckCircle}
-                  weight='fill'
-                />
-              )}
-              onClick={onRaffle}
-              shape={'round'}
-            >
-              {t('Raffle')} {'(3/3)'}
-            </Button>
-          )
-        }
       </div>
 
       <AirdropRewardModal

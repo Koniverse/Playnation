@@ -3,7 +3,7 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { AccountRankType, AirdropCampaign, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
@@ -43,7 +43,7 @@ export class BookaSdk {
   private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
-  private checkEligibility = new BehaviorSubject<{ eligibility: boolean; raffleTotal: number } | undefined>(undefined);
+  private checkEligibility = new BehaviorSubject<AirdropEligibility[] | undefined>(undefined);
 
   constructor () {
     storage.getItem('cache-version').then((version) => {
@@ -608,16 +608,27 @@ export class BookaSdk {
     }
   }
 
-  async checkEligibilityList (campaignId: number) {
-    const response = await this.postRequest<{ eligibility: boolean; raffleTotal: number }>(`${GAME_API_HOST}/api/airdrop/check-eligibility`, { campaign_id: campaignId });
+  async checkEgibilityList (campaignId: number): Promise<AirdropEligibility[]> {
+    try {
+      const response = await this.postRequest<AirdropEligibility[]>(`${GAME_API_HOST}/api/airdrop/check-eligibility`, { campaign_id: campaignId });
 
-    if (response) {
-      this.checkEligibility.next(response);
+      if (response) {
+        this.checkEligibility.next(response);
+      }
+
+      return response || [];
+    } catch (error) {
+      console.error('Error in checkEligibilityList:', error);
+      throw error;
     }
   }
 
   subscribeAirdropCampaign () {
     return this.airdropCampaignSubject;
+  }
+
+  subscribeCheckEligibility () {
+    return this.checkEligibility;
   }
 
   // Singleton

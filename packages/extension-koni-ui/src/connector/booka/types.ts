@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+
 export enum EventTypeEnum {
   GAMEPLAY = 'GAMEPLAY',
   TASK = 'TASK',
@@ -248,4 +249,12 @@ export interface AirdropRewardHistoryLog {
   endTime: string,
   name: string,
   id: number,
+}
+
+export interface AirdropEligibility {
+  eligibility: boolean,
+  totalBoxOpen: number,
+  totalBoxClose: number,
+  totalBox: number,
+  currentProcess: string
 }
