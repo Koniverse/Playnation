@@ -45,6 +45,7 @@ const enum AirdropCampaignProcess {
   ELIGIBILITY = 'ELIGIBILITY',
   RAFFLE = 'RAFFLE',
   END_CAMPAIGN = 'END_CAMPAIGN',
+  INEGIBLE = 'INEGIBLE'
 }
 
 const rewardModalId = AIRDROP_REWARD_MODAL_ID;
@@ -127,13 +128,12 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
     ];
   }, []);
 
-  // todo: @Khanh, please update logic for this
   const buttonType = (() => {
     if (eligibility && eligibility.currentProcess) {
       switch (eligibility.currentProcess) {
         case AirdropCampaignProcess.COMING_SOON:
           return buttonTypeConst.COMING_SOON;
-        case AirdropCampaignProcess.SNAPSHOT:
+        case AirdropCampaignProcess.INEGIBLE:
           return buttonTypeConst.INEGIBLE;
         case AirdropCampaignProcess.RAFFLE:
           return buttonTypeConst.RAFFLE;
@@ -174,7 +174,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
                 disabled={true}
                 icon={
                   <Icon
-                    phosphorIcon={Alarm}
+                    phosphorIcon={ArrowCircleRight}
                     weight="fill"
                   />
                 }

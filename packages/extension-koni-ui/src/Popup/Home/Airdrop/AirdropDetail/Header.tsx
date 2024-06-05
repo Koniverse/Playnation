@@ -29,30 +29,34 @@ function Component({ airdropInfo, className }: Props) {
     pastTimelines: Timeline[]
   } = (() => {
 
-    const now = Date.now();
-    const { start, end, start_snapshot, end_snapshot, end_claim }: AirdropCampaign = airdropInfo;
+    const { start, end, start_snapshot, end_snapshot, end_claim, start_claim } = airdropInfo;
     let currentTimeline: Timeline = Timeline.START;
     const pastTimelines: Timeline[] = [Timeline.START];
+    const currentDate = Date.now();
     const startMs = new Date(start).getTime();
     const endMs = new Date(end).getTime();
     const startSnapshotMs = new Date(start_snapshot).getTime();
     const endSnapshotMs = new Date(end_snapshot).getTime();
-    const endClaimMs = end_claim ? new Date(end_claim).getTime() : null;
-    if (startMs <= now && startSnapshotMs <= now && now < endSnapshotMs) {
+    const endClaimMs = new Date(end_claim).getTime();
+    const startClaim = new Date(start_claim).getTime();
+
+
+    if (currentDate > startMs) {
+      currentTimeline = Timeline.START;
+      pastTimelines.push(Timeline.START);
+    }
+    if (currentDate >= startSnapshotMs && currentDate <= endSnapshotMs) {
       currentTimeline = Timeline.SNAPSHOT;
       pastTimelines.push(Timeline.SNAPSHOT);
     }
-
-    if (endClaimMs && now >= endClaimMs) {
+    if (currentDate >= startClaim && currentDate <= endClaimMs) {
       currentTimeline = Timeline.CLAIM;
       pastTimelines.push(Timeline.CLAIM);
     }
-
-    if (now >= endMs) {
+    if (currentDate > endMs) {
       currentTimeline = Timeline.END;
       pastTimelines.push(Timeline.END);
     }
-
     return {
       currentTimeline,
       pastTimelines
