@@ -105,10 +105,15 @@ export class GameApp {
   }
 
   async onPlay () {
-    const gamePlay = await this.apiSDK.playGame(this.currentGameInfo.id, this.currentGameInfo.energyPerGame);
 
     const account = this.apiSDK.account;
     const currentGame = this.currentGameInfo;
+    const energy = account?.attributes.energy || 0;
+    if (energy < currentGame.energyPerGame) {
+      throw newError('Not enought energy', errorCodes.NotEnoughEnergy);
+    }
+    const gamePlay = await this.apiSDK.playGame(this.currentGameInfo.id, this.currentGameInfo.energyPerGame);
+
 
     if (!account || !currentGame) {
       throw newError('invalid account or game', errorCodes.SystemError);
@@ -289,5 +294,6 @@ const errorCodes = {
   NotEnoughGEM: 110, // no enought GEM to buy tickets or items
   InvalidScore: 120, // score was not accepted (cheat detected)
   UserReject: 130, // User reject transaction (buy tickets or items)
-  NotEnoughTicket: 140 // Not enough ticket to play game
+  NotEnoughTicket: 140, // Not enough ticket to play game
+  NotEnoughEnergy: 150
 };
