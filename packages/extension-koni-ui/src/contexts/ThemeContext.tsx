@@ -32,6 +32,10 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
   applyPreloadStyle(extendToken.bodyBackgroundColor);
 
   return ({
+    '.startup-screen': {
+      background: extendToken.colorBgGradient || token.colorPrimary
+    },
+
     body: {
       fontFamily: token.fontFamily,
       color: token.colorText,

@@ -79,8 +79,50 @@
 
 <body style="background-color: #F0F7F8;">
   <div id="root"></div>
-  <div id="loading-placeholder" style="background-color: #FFFFFF; position:fixed; top: 0; left: 0; right: 0; bottom: 0">
-    <img src="/images/loading.svg" style="width: 100px; height: 100px; position: absolute; top: calc(50% - 50px); left: calc(50% - 50px)" alt="Loading">
+  <div id="loading-placeholder" class="startup-screen" style="position:fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000">
+    <div class="startup-screen-title">
+      Welcome to Playnation Telegram’s app
+    </div>
+
+    <img class="startup-screen-mockup-1" src="/images/startup-screen/token-1.png" alt="mockup-1">
+    <img class="startup-screen-mockup-2" src="/images/startup-screen/token-2.png" alt="mockup-2">
+    <img class="startup-screen-mockup-3" src="/images/startup-screen/token-3.png" alt="mockup-3">
+    <img class="startup-screen-mockup-4" src="/images/startup-screen/bottom-background-image.png" alt="mockup-4">
   </div>
+
+  <script>
+    const settings = localStorage.getItem('Settings');
+    let currentTheme;
+
+    try {
+      currentTheme = JSON.parse(settings).theme;
+    } catch (e) {
+      currentTheme = 'default'
+    }
+
+    let backGroundStyle;
+
+    if (currentTheme === 'sky') {
+      backGroundStyle = '#C7F0FF';
+    } else if (currentTheme === 'morning_sunny') {
+      backGroundStyle = '#FFF8C4';
+    } else if (currentTheme === 'spring') {
+      backGroundStyle = '#7EEC79';
+    } else if (currentTheme === 'lavender') {
+      backGroundStyle = '#BB9EFF';
+    } else if (currentTheme === 'sunny') {
+      backGroundStyle = '#FBCE01';
+    } else if (currentTheme === 'begie') {
+      backGroundStyle = '#EBD7C9';
+    } else if (currentTheme === 'clove') {
+      backGroundStyle = 'linear-gradient(117deg, #A2F6C1 9.05%, #CBF147 91.43%)';
+    } else if (currentTheme === 'aurora') {
+      backGroundStyle = 'linear-gradient(117deg, #A2F6C1 9.05%, #9FE3FF 91.43%)';
+    } else {
+      backGroundStyle = '#CBF147';
+    }
+
+    document.getElementById("loading-placeholder").style.background = backGroundStyle;
+  </script>
 </body>
 </html>
