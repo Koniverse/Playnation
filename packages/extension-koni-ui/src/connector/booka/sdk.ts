@@ -649,9 +649,9 @@ export class BookaSdk {
   }
 
   // airdrop history
-  async fetchAirdropHistory() {
+  async fetchAirdropHistory(campaignId:number) {
     try {
-      return  await this.getRequest<AirdropEligibility[]>(`${GAME_API_HOST}/api/airdrop/history`);
+      return await this.postRequest(`${GAME_API_HOST}/api/airdrop/history`, { campaign_id: campaignId });
     } catch (error) {
       console.error('Error in fetchAirdropHistory:', error);
       throw error;
@@ -672,6 +672,10 @@ export class BookaSdk {
 
   subscribeAirdropClaim(airdrop_log_id: number) {
     return this.fetchClaimAirdrop(airdrop_log_id);
+  }
+
+  subscribeAirdropHistory(campaignId: number) {
+    return this.fetchAirdropHistory(campaignId);
   }
 
   // Singleton

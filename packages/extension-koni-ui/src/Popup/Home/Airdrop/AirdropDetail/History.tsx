@@ -2,18 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AirdropHistoryItem } from '@subwallet/extension-koni-ui/components';
-import { AirdropRewardHistoryLog } from '@subwallet/extension-koni-ui/connector/booka/types';
+import {  AirdropRewardHistoryLog } from '@subwallet/extension-koni-ui/connector/booka/types';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
 import React from 'react';
 import styled from 'styled-components';
 
-type Props = ThemeProps;
-
-function Component ({ className }: Props) {
+type Props = ThemeProps & {
+  airdropHistory: AirdropRewardHistoryLog | null;
+};
+function Component ({airdropHistory, className }: Props) {
   const { t } = useTranslation();
-
+console.log(airdropHistory)
   const mockItems: AirdropRewardHistoryLog[] = [
     {
       status: 'PENDING',

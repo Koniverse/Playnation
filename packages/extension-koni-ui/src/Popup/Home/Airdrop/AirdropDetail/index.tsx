@@ -4,7 +4,7 @@
 import { Layout, LoadingScreen, TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AirdropCampaign, AirdropEligibility, AirdropRaffle } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AirdropCampaign, AirdropEligibility, AirdropRaffle,AirdropRewardHistoryLog } from '@subwallet/extension-koni-ui/connector/booka/types';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { AirdropDetailAbout } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/About';
 import { AirdropDetailCondition } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Condition';
@@ -60,6 +60,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const [raffle, setRaffle] = useState<AirdropRaffle | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [claim, setClaim] = useState<boolean>(false);
+  const [airdropHistory, setAirdropHistory] = useState<AirdropRewardHistoryLog | null>(null);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
@@ -89,11 +90,27 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
     } catch (error) {
       console.error('Error fetching eligibility:', error);
     }
-  }, [currentAirdrop.airdrop_campaign_id,raffle, inactiveModal,claim]);
+  }, [currentAirdrop.airdrop_campaign_id, raffle, inactiveModal, claim]);
+
+  const fetchHistory = useCallback(async () => {
+    try {
+      const data = await apiSDK.subscribeAirdropHistory(currentAirdrop.airdrop_campaign_id) as unknown as AirdropRewardHistoryLog;
+      console.log(data)
+      if (data) {
+        setAirdropHistory(data);
+      }
+    } catch (error) {
+      console.error('Error fetching eligibility:', error);
+    }
+  }, [currentAirdrop.airdrop_campaign_id, raffle, inactiveModal, claim]);
+
+
 
   useEffect(() => {
     fetchEligibility();
-  }, [fetchEligibility]);
+    fetchHistory();
+  }, [fetchEligibility,fetchHistory]);
+
 
 
 
@@ -312,6 +329,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
           selectedTab === TabType.HISTORY && (
             <AirdropDetailHistory
               className={'tab-content'}
+              airdropHistory={airdropHistory}
             />
           )
         }
