@@ -1,6 +1,8 @@
 // Copyright 2019-2022 @subwallet/extension authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+
+
 export enum EventTypeEnum {
   GAMEPLAY = 'GAMEPLAY',
   TASK = 'TASK',
@@ -209,7 +211,7 @@ export enum AirdropCampaignStatus {
 }
 export interface AirdropCampaign {
   id: number;
-  campaign_id: number;
+  airdrop_campaign_id: number;
   name: string;
   icon: string;
   banner: string;
@@ -232,6 +234,7 @@ export interface AirdropCampaign {
   createdAt: Date;
   updatedAt: Date;
   eligibilityList: {
+    id: number;
     name: string;
     type: string;
     start: Date;
@@ -239,4 +242,34 @@ export interface AirdropCampaign {
     boxCount: number,
     note: string
   }[];
+  eligibilityIds?: number[];
+}
+
+export interface AirdropRewardHistoryLog {
+  status: 'PENDING' | 'MISSED' | 'RECEIVED',
+  type: 'TOKEN' | 'NPS',
+  rewardValue: number,
+  endTime: string,
+  name: string,
+  id: number,
+}
+
+export interface AirdropEligibility {
+  eligibility: boolean,
+  totalBoxOpen: number,
+  totalBoxClose: number,
+  totalBox: number,
+  currentProcess: string
+  eligibilityIds?: number[];
+}
+
+export interface AirdropRaffle {
+  airdropRecordLogId: number,
+  rewardAmount: number,
+  rewardType: string,
+  success: boolean,
+}
+
+export interface AirdropClaim {
+  airdropRecordLogId: number,
 }

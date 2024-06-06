@@ -21,33 +21,42 @@ enum Timeline {
   END = 'end'
 }
 
-function Component ({ airdropInfo, className }: Props) {
+function Component({ airdropInfo, className }: Props) {
   const { t } = useTranslation();
 
   const { currentTimeline, pastTimelines }: {
     currentTimeline: Timeline,
     pastTimelines: Timeline[]
   } = (() => {
-    const now = Date.now();
 
-    let currentTimeline = Timeline.START;
+    const { start, end, start_snapshot, end_snapshot, end_claim, start_claim } = airdropInfo;
+    let currentTimeline: Timeline = Timeline.START;
     const pastTimelines: Timeline[] = [Timeline.START];
+    const currentDate = Date.now();
+    const startMs = new Date(start).getTime();
+    const endMs = new Date(end).getTime();
+    const startSnapshotMs = new Date(start_snapshot).getTime();
+    const endSnapshotMs = new Date(end_snapshot).getTime();
+    const endClaimMs = new Date(end_claim).getTime();
+    const startClaim = new Date(start_claim).getTime();
 
-    if (airdropInfo.end_snapshot && now >= new Date(airdropInfo.end_snapshot).getTime()) {
+
+    if (currentDate > startMs) {
+      currentTimeline = Timeline.START;
+      pastTimelines.push(Timeline.START);
+    }
+    if (currentDate >= startSnapshotMs && currentDate <= endSnapshotMs) {
       currentTimeline = Timeline.SNAPSHOT;
       pastTimelines.push(Timeline.SNAPSHOT);
     }
-
-    if (airdropInfo.end_claim && now >= new Date(airdropInfo.end_claim).getTime()) {
+    if (currentDate >= startClaim && currentDate <= endClaimMs) {
       currentTimeline = Timeline.CLAIM;
       pastTimelines.push(Timeline.CLAIM);
     }
-
-    if (airdropInfo.end && now >= new Date(airdropInfo.end).getTime()) {
+    if (currentDate > endMs) {
       currentTimeline = Timeline.END;
       pastTimelines.push(Timeline.END);
     }
-
     return {
       currentTimeline,
       pastTimelines

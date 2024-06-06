@@ -4,17 +4,21 @@
 import { Layout, LoadingScreen, TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AirdropCampaign } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AirdropCampaign, AirdropEligibility, AirdropRaffle,AirdropRewardHistoryLog } from '@subwallet/extension-koni-ui/connector/booka/types';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { AirdropDetailAbout } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/About';
 import { AirdropDetailCondition } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Condition';
 import { AirdropDetailHeader } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Header';
+import { AirdropDetailHistory } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/History';
+import { AIRDROP_REWARD_MODAL_ID, AirdropRewardModal } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/RewardModal';
+import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, Icon } from '@subwallet/react-ui';
-import { ArrowCircleRight, ShareNetwork } from 'phosphor-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Button, Icon, ModalContext } from '@subwallet/react-ui';
+import { Alarm, ArrowCircleRight, CheckCircle, ShareNetwork } from 'phosphor-react';
+import React, { Context, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { ThemeContext } from 'styled-components';
+import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 
 type WrapperProps = ThemeProps;
 type Props = ThemeProps & {
@@ -29,10 +33,34 @@ enum TabType {
   HISTORY = 'history',
 }
 
+const enum buttonTypeConst {
+  ELIGIBLE = 1,
+  RAFFLE = 2,
+  INELIGIBLE = 3,
+  END_CAMPAIGN = 4
+};
+
+const enum AirdropCampaignProcess {
+  RAFFLE = 'RAFFLE',
+  END_CAMPAIGN = 'END_CAMPAIGN',
+  INELIGIBLE = 'INELIGIBLE',
+  ELIGIBLE = 'ELIGIBLE'
+}
+
+const rewardModalId = AIRDROP_REWARD_MODAL_ID;
+
 const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const navigate = useNavigate();
+  const notify = useNotification();
+  const { activeModal, inactiveModal } = useContext(ModalContext);
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState<string>(TabType.CONDITION);
+  const token = useContext<Theme>(ThemeContext as Context<Theme>).token;
+  const [eligibility, setEligibility] = useState<AirdropEligibility | null>(null);
+  const [raffle, setRaffle] = useState<AirdropRaffle | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [claim, setClaim] = useState<boolean>(false);
+  const [airdropHistory, setAirdropHistory] = useState<AirdropRewardHistoryLog | null>(null);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
@@ -46,11 +74,46 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       },
       {
         label: t('History'),
-        value: TabType.HISTORY,
-        disabled: true
+        value: TabType.HISTORY
       }
+
     ];
   }, [t]);
+
+  const fetchEligibility = useCallback(async () => {
+    try {
+      const data = await apiSDK.subscribeCheckEligibility(currentAirdrop.airdrop_campaign_id) as unknown as AirdropEligibility;
+      if (data) {
+        setEligibility(data);
+        currentAirdrop.eligibilityIds = data.eligibilityIds;
+      }
+    } catch (error) {
+      console.error('Error fetching eligibility:', error);
+    }
+  }, [currentAirdrop.airdrop_campaign_id, raffle, inactiveModal, claim]);
+
+  const fetchHistory = useCallback(async () => {
+    try {
+      const data = await apiSDK.subscribeAirdropHistory(currentAirdrop.airdrop_campaign_id) as unknown as AirdropRewardHistoryLog;
+      console.log(data)
+      if (data) {
+        setAirdropHistory(data);
+      }
+    } catch (error) {
+      console.error('Error fetching eligibility:', error);
+    }
+  }, [currentAirdrop.airdrop_campaign_id, raffle, inactiveModal, claim]);
+
+
+
+  useEffect(() => {
+    fetchEligibility();
+    fetchHistory();
+  }, [fetchEligibility,fetchHistory]);
+
+
+
+
 
   const onSelectTab = useCallback((value: string) => {
     setSelectedTab(value);
@@ -75,6 +138,153 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       }
     ];
   }, []);
+
+  const buttonType = (() => {
+    if (eligibility && eligibility.currentProcess && eligibility.eligibility) {
+      switch (eligibility.currentProcess) {
+        case AirdropCampaignProcess.ELIGIBLE:
+          return buttonTypeConst.ELIGIBLE;
+        case AirdropCampaignProcess.INELIGIBLE:
+          return buttonTypeConst.INELIGIBLE;
+        case AirdropCampaignProcess.RAFFLE:
+          return buttonTypeConst.RAFFLE;
+        case AirdropCampaignProcess.END_CAMPAIGN:
+          return buttonTypeConst.END_CAMPAIGN;
+        default:
+          return buttonTypeConst.ELIGIBLE;
+      }
+    } else {
+      return buttonTypeConst.INELIGIBLE;
+    }
+
+  })();
+
+
+  const onRaffle = useCallback(async () => {
+    try {
+      const result = await apiSDK.subscribeAirdropRaffle(currentAirdrop.airdrop_campaign_id) as unknown as AirdropRaffle;
+      setRaffle(result);
+      activeModal(rewardModalId);
+    } catch (error) {
+      setRaffle(null);
+      console.log('error', error);
+    }
+  }, [activeModal]);
+
+  const onCancel = useCallback(() => {
+    inactiveModal(rewardModalId);
+  }, [inactiveModal]);
+
+  const onClaim = useCallback(async () => {
+    if (raffle) {
+      setIsLoading(true);
+      try {
+        await apiSDK.subscribeAirdropClaim(raffle.airdropRecordLogId);
+        notify({
+          message: t('Claim successfully'),
+          type: 'success'
+        });
+        inactiveModal(rewardModalId);
+        setIsLoading(false);
+        setClaim(true);
+      } catch (error) {
+        notify({
+          message: (error as Error).message,
+          type: 'error'
+        });
+        inactiveModal(rewardModalId);
+        setIsLoading(false);
+        setClaim(false);
+      }
+    }
+  }, [raffle]);
+
+  const onClaimLater = useCallback(() => {
+    inactiveModal(rewardModalId);
+  }, [inactiveModal]);
+
+
+  const renderButton = () => {
+    return (
+      <>
+        {eligibility ? (
+          <>
+            {buttonType === buttonTypeConst.INELIGIBLE && (
+              <Button
+                block={true}
+                disabled={true}
+                shape={'round'}
+              >
+                {t('INELIGIBLE')}
+              </Button>
+            )}
+            {buttonType === buttonTypeConst.END_CAMPAIGN && (
+              <Button
+                block={true}
+                disabled={true}
+                icon={
+                  <Icon
+                    phosphorIcon={ArrowCircleRight}
+                    weight="fill"
+                  />
+                }
+                shape={'round'}
+              >
+                {t('END CAMPAIGN')}
+              </Button>
+            )}
+            {buttonType === buttonTypeConst.ELIGIBLE && (
+              <Button
+                block={true}
+                disabled={true}
+                icon={
+                  <Icon
+                    phosphorIcon={ArrowCircleRight}
+                    weight="fill"
+                  />
+                }
+                shape={'round'}
+              >
+                {t('ELIGIBLE')}
+              </Button>
+            )}
+            {buttonType === buttonTypeConst.RAFFLE && (
+              <Button
+                block={true}
+                disabled={eligibility?.totalBoxOpen === eligibility?.totalBox}
+                icon={
+                  <Icon
+                    iconColor={token.colorPrimary}
+                    phosphorIcon={CheckCircle}
+                    weight="fill"
+                  />
+                }
+                onClick={onRaffle}
+                shape={'round'}
+              >
+                {t('Raffle')} {eligibility?.totalBoxOpen}/{eligibility?.totalBox}
+              </Button>
+            )}
+          </>
+        ) : (
+          <Button
+            block={true}
+            disabled={true}
+            icon={
+              <Icon
+                phosphorIcon={Alarm}
+                weight="fill"
+              />
+            }
+            shape={'round'}
+          >
+            {t('ELIGIBLE')}
+          </Button>
+        )}
+      </>
+    );
+  };
+
 
   return (
     <Layout.WithSubHeaderOnly
@@ -115,23 +325,28 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
             />
           )
         }
+        {
+          selectedTab === TabType.HISTORY && (
+            <AirdropDetailHistory
+              className={'tab-content'}
+              airdropHistory={airdropHistory}
+            />
+          )
+        }
       </div>
 
       <div className='footer-part'>
-        <Button
-          block={true}
-          disabled={true}
-          icon={(
-            <Icon
-              phosphorIcon={ArrowCircleRight}
-              weight='fill'
-            />
-          )}
-          shape={'round'}
-        >
-          {t('Eligible')}
-        </Button>
+        {renderButton()}
+
       </div>
+
+      <AirdropRewardModal
+        onCancel={onCancel}
+        onClaim={onClaim}
+        onClaimLater={onClaimLater}
+        raffle={raffle}
+        isLoading={isLoading}
+      />
     </Layout.WithSubHeaderOnly>
   );
 };
@@ -141,7 +356,7 @@ const WrapperComponent = (props: WrapperProps): React.ReactElement<Props> => {
   const [airdropList, setAirdropList] = useState<AirdropCampaign[]>(apiSDK.airdropCampaignList);
 
   const currentAirdropCampaign = useMemo(() => {
-    return airdropList.find((a) => campaignId && a.campaign_id === +campaignId);
+    return airdropList.find((a) => campaignId && a.airdrop_campaign_id === +campaignId);
   }, [airdropList, campaignId]);
 
   useEffect(() => {
