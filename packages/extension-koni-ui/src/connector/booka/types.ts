@@ -210,7 +210,7 @@ export enum AirdropCampaignStatus {
 }
 export interface AirdropCampaign {
   id: number;
-  campaign_id: number;
+  airdrop_campaign_id: number;
   name: string;
   icon: string;
   banner: string;
@@ -233,6 +233,7 @@ export interface AirdropCampaign {
   createdAt: Date;
   updatedAt: Date;
   eligibilityList: {
+    id: number;
     name: string;
     type: string;
     start: Date;
@@ -240,6 +241,7 @@ export interface AirdropCampaign {
     boxCount: number,
     note: string
   }[];
+  eligibilityIds?: number[];
 }
 
 export interface AirdropRewardHistoryLog {

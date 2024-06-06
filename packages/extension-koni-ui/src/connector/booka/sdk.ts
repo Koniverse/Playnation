@@ -632,6 +632,7 @@ export class BookaSdk {
   async claimAirdrop(airdrop_log_id: number) {
     try {
       const claim = await this.postRequest(`${GAME_API_HOST}/api/airdrop/claim`, { airdrop_log_id: airdrop_log_id });
+      this.fetchAirdropCampaign();
       return claim;
     } catch (error) {
       console.error('Error in claimAirdrop:', error);
@@ -643,9 +644,21 @@ export class BookaSdk {
   async raffleAirdrop(campaignId: number) {
     try {
       const raffle = await this.postRequest(`${GAME_API_HOST}/api/airdrop/raffle`, { campaign_id: campaignId });
+      this.fetchAirdropCampaign();
       return raffle;
     } catch (error) {
       console.error('Error in raffleAirdrop:', error);
+      throw error;
+    }
+  }
+
+  //history
+  async fetchAirdropHistory() {
+    try {
+      const history = await this.getRequest<AirdropEligibility[]>(`${GAME_API_HOST}/api/airdrop/history`);
+      return history;
+    } catch (error) {
+      console.error('Error in fetchAirdropHistory:', error);
       throw error;
     }
   }

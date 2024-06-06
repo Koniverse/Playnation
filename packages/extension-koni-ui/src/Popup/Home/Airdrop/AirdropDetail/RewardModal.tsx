@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { AirdropReward } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
@@ -13,6 +14,7 @@ interface Props extends ThemeProps {
   onCancel: VoidFunction;
   onClaim: VoidFunction;
   onClaimLater: VoidFunction;
+  reward: AirdropReward | null;
 }
 
 type RewardInfo = {
@@ -24,9 +26,9 @@ type RewardInfo = {
 export const AIRDROP_REWARD_MODAL_ID = 'AIRDROP_REWARD_MODAL_ID';
 const modalId = AIRDROP_REWARD_MODAL_ID;
 
-function Component (props: Props): React.ReactElement<Props> {
+function Component(props: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const { className = '', onCancel, onClaim, onClaimLater } = props;
+  const { className = '', onCancel, onClaim, onClaimLater, reward } = props;
 
   const _onClaimLater = useCallback(() => {
     onClaimLater?.();
@@ -69,9 +71,17 @@ function Component (props: Props): React.ReactElement<Props> {
   })();
 
   const rewardInfo: RewardInfo = (() => {
+
+    if (reward?.rewardType === 'NPS') {
+      return {
+        iconSrc: '/images/games/token-icon.png',
+        value: reward?.rewardAmount || 0,
+        symbol: 'NPS'
+      };
+    }
     return {
       iconSrc: '/images/projects/karura.png', // or DefaultLogosMap.token_icon if NPS, @Khank, please note this
-      value: 20,
+      value: reward?.rewardAmount || 0,
       symbol: 'KAR'
     };
   })();
