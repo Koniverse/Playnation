@@ -4,7 +4,7 @@
 import { Layout, LoadingScreen, TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AirdropCampaign, AirdropEligibility, AirdropReward } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AirdropCampaign, AirdropEligibility, AirdropRaffle } from '@subwallet/extension-koni-ui/connector/booka/types';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { AirdropDetailAbout } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/About';
 import { AirdropDetailCondition } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Condition';
@@ -57,8 +57,9 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const [selectedTab, setSelectedTab] = useState<string>(TabType.CONDITION);
   const token = useContext<Theme>(ThemeContext as Context<Theme>).token;
   const [eligibility, setEligibility] = useState<AirdropEligibility | null>(null);
-  const [checkEgibility, setCheckEgibility] = useState<boolean>(false);
-  const [reward, setReward] = useState<AirdropReward | null>(null);
+  const [raffle, setRaffle] = useState<AirdropRaffle | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [claim, setClaim] = useState<boolean>(false);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
@@ -78,30 +79,21 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
     ];
   }, [t]);
 
-  const fetchEligibility = async (campaignId: number) => {
+  const fetchEligibility = useCallback(async () => {
     try {
-      const result: any = await apiSDK.checkEgibilityList(campaignId);
-      if (result) {
-        setEligibility(result);
-        setCheckEgibility(true);
-        currentAirdrop.eligibilityIds = [1, 2]
+      const data = await apiSDK.subscribeCheckEligibility(currentAirdrop.airdrop_campaign_id) as unknown as AirdropEligibility;
+      if (data) {
+        setEligibility(data);
+        currentAirdrop.eligibilityIds = data.eligibilityIds;
       }
     } catch (error) {
-      setCheckEgibility(false)
-      setEligibility(null);
-    } finally {
-      console.log('fetching eligibility list done');
+      console.error('Error fetching eligibility:', error);
     }
-  };
+  }, [currentAirdrop.airdrop_campaign_id,raffle, inactiveModal,claim]);
+
   useEffect(() => {
-    if (currentAirdrop && currentAirdrop.airdrop_campaign_id) {
-      const startDate = new Date(currentAirdrop.start);
-      const currentDate = new Date();
-      if (startDate <= currentDate) {
-        fetchEligibility(currentAirdrop.airdrop_campaign_id);
-      }
-    }
-  }, [currentAirdrop]);
+    fetchEligibility();
+  }, [fetchEligibility]);
 
 
 
@@ -151,71 +143,54 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   })();
 
 
-  const onRaffle = useCallback(() => {
-    handleRaffle();
+  const onRaffle = useCallback(async () => {
+    try {
+      const result = await apiSDK.subscribeAirdropRaffle(currentAirdrop.airdrop_campaign_id) as unknown as AirdropRaffle;
+      setRaffle(result);
+      activeModal(rewardModalId);
+    } catch (error) {
+      setRaffle(null);
+      console.log('error', error);
+    }
   }, [activeModal]);
 
   const onCancel = useCallback(() => {
     inactiveModal(rewardModalId);
   }, [inactiveModal]);
 
-  const onClaim = useCallback(() => {
-    if (reward) {
-      handleClaim();
-    } else {
-      console.log('No reward to claim');
+  const onClaim = useCallback(async () => {
+    if (raffle) {
+      setIsLoading(true);
+      try {
+        await apiSDK.subscribeAirdropClaim(raffle.airdropRecordLogId);
+        notify({
+          message: t('Claim successfully'),
+          type: 'success'
+        });
+        inactiveModal(rewardModalId);
+        setIsLoading(false);
+        setClaim(true);
+      } catch (error) {
+        notify({
+          message: (error as Error).message,
+          type: 'error'
+        });
+        inactiveModal(rewardModalId);
+        setIsLoading(false);
+        setClaim(false);
+      }
     }
-  }, [reward]);
+  }, [raffle]);
 
   const onClaimLater = useCallback(() => {
     inactiveModal(rewardModalId);
   }, [inactiveModal]);
 
-  // handle raflle
-  async function handleRaffle() {
-    try {
-      const result = await apiSDK.raffleAirdrop(currentAirdrop.airdrop_campaign_id) as unknown as AirdropReward;
-      setReward(result);
-      activeModal(rewardModalId);
-    } catch (error) {
-      setReward(null);
-      console.log('error', error);
-    } finally {
-      console.log('raffle done');
-    }
-  }
-
-
-  // handle claim
-  async function handleClaim() {
-    if (reward) {
-      try {
-        const claim = await apiSDK.claimAirdrop(reward.airdropRecordLogId) as unknown as AirdropReward;
-        if (claim) {
-          notify({
-            message: t('Claim successfully'),
-            type: 'success'
-          });
-        }
-        inactiveModal(rewardModalId);
-      } catch (error) {
-        console.log('error', error);
-        notify({
-          message: (error as Error).message,
-          type: 'error'
-        });
-      } finally {
-        console.log('claim done');
-      }
-    }
-  }
-
-
 
   const renderButton = () => {
     return (
       <>
-        {checkEgibility ? (
+        {eligibility ? (
           <>
             {buttonType === buttonTypeConst.INELIGIBLE && (
               <Button
@@ -259,7 +234,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
             {buttonType === buttonTypeConst.RAFFLE && (
               <Button
                 block={true}
-                disabled={eligibility?.totalBoxOpen === eligibility?.totalBox ? true : false}
+                disabled={eligibility?.totalBoxOpen === eligibility?.totalBox}
                 icon={
                   <Icon
                     iconColor={token.colorPrimary}
@@ -351,7 +326,8 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
         onCancel={onCancel}
         onClaim={onClaim}
         onClaimLater={onClaimLater}
-        reward={reward}
+        raffle={raffle}
+        isLoading={isLoading}
       />
     </Layout.WithSubHeaderOnly>
   );
@@ -360,29 +336,22 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 const WrapperComponent = (props: WrapperProps): React.ReactElement<Props> => {
   const { id: campaignId } = useParams<{ id: string }>();
   const [airdropList, setAirdropList] = useState<AirdropCampaign[]>(apiSDK.airdropCampaignList);
-  const [eligibility, setEligibility] = useState<AirdropEligibility[]>(apiSDK.checkEligibilityList);
 
   const currentAirdropCampaign = useMemo(() => {
     return airdropList.find((a) => campaignId && a.airdrop_campaign_id === +campaignId);
   }, [airdropList, campaignId]);
 
-
-
   useEffect(() => {
     const subscription = apiSDK.subscribeAirdropCampaign().subscribe((data) => {
       setAirdropList(data);
     });
-    const subscriptionEligibility = apiSDK.subscribeCheckEligibility().subscribe((data) => {
-      setEligibility(data);
-    });
 
     return () => {
       subscription.unsubscribe();
-      subscriptionEligibility.unsubscribe();
     };
   }, []);
 
-  if (!currentAirdropCampaign || !eligibility) {
+  if (!currentAirdropCampaign) {
     return <LoadingScreen />;
   }
 

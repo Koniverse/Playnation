@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 
+
 export enum EventTypeEnum {
   GAMEPLAY = 'GAMEPLAY',
   TASK = 'TASK',
@@ -259,11 +260,16 @@ export interface AirdropEligibility {
   totalBoxClose: number,
   totalBox: number,
   currentProcess: string
+  eligibilityIds?: number[];
 }
 
-export interface AirdropReward {
+export interface AirdropRaffle {
   airdropRecordLogId: number,
   rewardAmount: number,
   rewardType: string,
   success: boolean,
+}
+
+export interface AirdropClaim {
+  airdropRecordLogId: number,
 }

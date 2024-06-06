@@ -3,7 +3,7 @@
 
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { BuyInGameItemResponse, ErrorCode, GameError, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, InGameItemList, Player, PlayResponse, SDKInitParams, Tournament, UseInGameItemResponse } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
+import { BuyInGameItemResponse, ErrorCode, GameError, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, Player, PlayResponse, SDKInitParams, Tournament, UseInGameItemResponse } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
 import { camelCase } from 'lodash';
 import z from 'zod';
 
