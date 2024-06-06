@@ -4,7 +4,7 @@
 import { Layout, LoadingScreen, TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AirdropCampaign, AirdropEligibility } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AirdropCampaign, AirdropEligibility, AirdropReward } from '@subwallet/extension-koni-ui/connector/booka/types';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { AirdropDetailAbout } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/About';
 import { AirdropDetailCondition } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Condition';
@@ -33,19 +33,17 @@ enum TabType {
 }
 
 const enum buttonTypeConst {
-  COMING_SOON = 1,
-  EGIBLE = 2,
-  RAFFLE = 3,
-  INEGIBLE = 4,
+  ELIGIBLE = 1,
+  RAFFLE = 2,
+  INELIGIBLE = 3,
+  END_CAMPAIGN = 4
 };
 
 const enum AirdropCampaignProcess {
-  COMING_SOON = 'COMING_SOON',
-  SNAPSHOT = 'SNAPSHOT',
-  ELIGIBILITY = 'ELIGIBILITY',
   RAFFLE = 'RAFFLE',
   END_CAMPAIGN = 'END_CAMPAIGN',
-  INEGIBLE = 'INEGIBLE'
+  INELIGIBLE = 'INELIGIBLE',
+  ELIGIBLE = 'ELIGIBLE'
 }
 
 const rewardModalId = AIRDROP_REWARD_MODAL_ID;
@@ -58,6 +56,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const token = useContext<Theme>(ThemeContext as Context<Theme>).token;
   const [eligibility, setEligibility] = useState<AirdropEligibility | null>(null);
   const [checkEgibility, setCheckEgibility] = useState<boolean>(false);
+  const [reward, setReward] = useState<AirdropReward | null>(null);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
@@ -129,19 +128,21 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   }, []);
 
   const buttonType = (() => {
-    if (eligibility && eligibility.currentProcess) {
+    if (eligibility && eligibility.currentProcess && eligibility.eligibility) {
       switch (eligibility.currentProcess) {
-        case AirdropCampaignProcess.COMING_SOON:
-          return buttonTypeConst.COMING_SOON;
-        case AirdropCampaignProcess.INEGIBLE:
-          return buttonTypeConst.INEGIBLE;
+        case AirdropCampaignProcess.ELIGIBLE:
+          return buttonTypeConst.ELIGIBLE;
+        case AirdropCampaignProcess.INELIGIBLE:
+          return buttonTypeConst.INELIGIBLE;
         case AirdropCampaignProcess.RAFFLE:
           return buttonTypeConst.RAFFLE;
+        case AirdropCampaignProcess.END_CAMPAIGN:
+          return buttonTypeConst.END_CAMPAIGN;
         default:
-          return buttonTypeConst.COMING_SOON;
+          return buttonTypeConst.ELIGIBLE;
       }
     } else {
-      return buttonTypeConst.INEGIBLE;
+      return buttonTypeConst.INELIGIBLE;
     }
 
   })();
@@ -149,26 +150,62 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 
   const onRaffle = useCallback(() => {
     activeModal(rewardModalId);
-  }, [activeModal]);
+    handleRaffle();
+  }, []);
 
   const onCancel = useCallback(() => {
     inactiveModal(rewardModalId);
   }, [inactiveModal]);
 
   const onClaim = useCallback(() => {
-    //
+    console.log('rewardrewardrewardreward', reward);
+
+    if (reward) {
+      handleClaim();
+    }
+    console.log('claim');
   }, []);
 
   const onClaimLater = useCallback(() => {
     inactiveModal(rewardModalId);
   }, [inactiveModal]);
 
+  // handle raflle
+  async function handleRaffle() {
+    try {
+      const result = await apiSDK.raffleAirdrop(currentAirdrop.campaign_id) as unknown as AirdropReward;
+      setReward(result);
+    } catch (error) {
+      setReward(null);
+      console.log('error', error);
+    } finally {
+      console.log('raffle done');
+    }
+  }
+
+
+  // handle claim
+  async function handleClaim() {
+    if (reward) {
+      try {
+        const result: any = await apiSDK.claimAirdrop(reward.airdropRecordLogId);
+        console.log('result', result);
+      } catch (error) {
+        console.log('error', error);
+      } finally {
+        console.log('claim done');
+      }
+    }
+  }
+
+
+
   const renderButton = () => {
     return (
       <>
         {checkEgibility ? (
           <>
-            {buttonType === buttonTypeConst.INEGIBLE && (
+            {buttonType === buttonTypeConst.INELIGIBLE && (
               <Button
                 block={true}
                 disabled={true}
@@ -180,7 +217,37 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
                 }
                 shape={'round'}
               >
-                {t('In Eligible')}
+                {t('INELIGIBLE')}
+              </Button>
+            )}
+            {buttonType === buttonTypeConst.END_CAMPAIGN && (
+              <Button
+                block={true}
+                disabled={true}
+                icon={
+                  <Icon
+                    phosphorIcon={ArrowCircleRight}
+                    weight="fill"
+                  />
+                }
+                shape={'round'}
+              >
+                {t('END CAMPAIGN')}
+              </Button>
+            )}
+            {buttonType === buttonTypeConst.ELIGIBLE && (
+              <Button
+                block={true}
+                disabled={true}
+                icon={
+                  <Icon
+                    phosphorIcon={ArrowCircleRight}
+                    weight="fill"
+                  />
+                }
+                shape={'round'}
+              >
+                {t('ELIGIBLE')}
               </Button>
             )}
             {buttonType === buttonTypeConst.RAFFLE && (
@@ -196,7 +263,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
                 onClick={onRaffle}
                 shape={'round'}
               >
-                {t('Raffle')} {'(3/3)'}
+                {t('Raffle')} {eligibility?.totalBoxOpen}/{eligibility?.totalBox}
               </Button>
             )}
           </>
@@ -212,7 +279,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
             }
             shape={'round'}
           >
-            {t('Coming soon')}
+            {t('ELIGIBLE')}
           </Button>
         )}
       </>
@@ -285,22 +352,29 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 const WrapperComponent = (props: WrapperProps): React.ReactElement<Props> => {
   const { id: campaignId } = useParams<{ id: string }>();
   const [airdropList, setAirdropList] = useState<AirdropCampaign[]>(apiSDK.airdropCampaignList);
+  const [eligibility, setEligibility] = useState<AirdropEligibility[]>(apiSDK.checkEligibilityList);
 
   const currentAirdropCampaign = useMemo(() => {
     return airdropList.find((a) => campaignId && a.campaign_id === +campaignId);
   }, [airdropList, campaignId]);
 
+
+
   useEffect(() => {
     const subscription = apiSDK.subscribeAirdropCampaign().subscribe((data) => {
       setAirdropList(data);
     });
+    const subscriptionEligibility = apiSDK.subscribeCheckEligibility().subscribe((data) => {
+      setEligibility(data);
+    });
 
     return () => {
       subscription.unsubscribe();
+      subscriptionEligibility.unsubscribe();
     };
   }, []);
 
-  if (!currentAirdropCampaign) {
+  if (!currentAirdropCampaign || !eligibility) {
     return <LoadingScreen />;
   }
 

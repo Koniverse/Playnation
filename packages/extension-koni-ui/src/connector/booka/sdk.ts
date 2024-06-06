@@ -43,9 +43,9 @@ export class BookaSdk {
   private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
-  private checkEligibility = new BehaviorSubject<AirdropEligibility[] | undefined>(undefined);
+  private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
 
-  constructor () {
+  constructor() {
     storage.getItem('cache-version').then((version) => {
       if (cacheVersion === version) {
         storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game, energyConfig, rankInfoMap]) => {
@@ -118,67 +118,71 @@ export class BookaSdk {
     }).catch(console.error);
   }
 
-  public get waitForSync () {
+  public get waitForSync() {
     return this.syncHandler.promise;
   }
 
-  public get account () {
+  public get account() {
     return this.accountSubject.value;
   }
 
-  public get energyConfig () {
+  public get energyConfig() {
     return this.energyConfigSubject.value;
   }
 
-  public get taskList () {
+  public get taskList() {
     return this.taskListSubject.value;
   }
 
-  public get taskCategoryList () {
+  public get taskCategoryList() {
     return this.taskCategoryListSubject.value;
   }
 
-  public get gameList () {
+  public get gameList() {
     return this.gameListSubject.value;
   }
 
-  public get gameItemMap () {
+  public get gameItemMap() {
     return this.gameItemMapSubject.value;
   }
 
-  public get gameItemInGameList () {
+  public get gameItemInGameList() {
     return this.gameItemInGame.value;
   }
 
-  public get gameInventoryItemList () {
+  public get gameInventoryItemList() {
     return this.gameInventoryItemListSubject.value;
   }
 
-  public get gameInventoryItemInGameList () {
+  public get gameInventoryItemInGameList() {
     return this.gameInventoryItemInGame.value;
   }
 
-  public get leaderBoard () {
+  public get leaderBoard() {
     return this.leaderBoardSubject.value;
   }
 
-  public get referralList () {
+  public get referralList() {
     return this.referralListSubject.value;
   }
 
-  public get currentGamePlay () {
+  public get currentGamePlay() {
     return this.currentGamePlaySubject.value;
   }
 
-  public get rankInfoMap () {
+  public get rankInfoMap() {
     return this.rankInfoSubject.value;
   }
 
-  public get airdropCampaignList () {
+  public get airdropCampaignList() {
     return this.airdropCampaignSubject.value;
   }
 
-  private getRequestHeader () {
+  public get checkEligibilityList() {
+    return this.checkEligibility.value;
+  }
+
+  private getRequestHeader() {
     const header: Record<string, string> = {
       'Content-Type': 'application/json'
     };
@@ -190,7 +194,7 @@ export class BookaSdk {
     return header;
   }
 
-  private async getRequest<T> (url: string) {
+  private async getRequest<T>(url: string) {
     const request = await fetch(url, {
       method: 'GET',
       headers: this.getRequestHeader()
@@ -203,7 +207,7 @@ export class BookaSdk {
     }
   }
 
-  private async postRequest<T> (url: string, body: any) {
+  private async postRequest<T>(url: string, body: any) {
     const response = await fetch(url, {
       method: 'POST',
       headers: this.getRequestHeader(),
@@ -219,7 +223,7 @@ export class BookaSdk {
     return await response.json() as T;
   }
 
-  private async reloadAccount () {
+  private async reloadAccount() {
     const account = this.account;
     const newAccountData = await this.getRequest<Omit<BookaAccount, 'token'>>(`${GAME_API_HOST}/api/account/get-attribute`);
 
@@ -233,11 +237,11 @@ export class BookaSdk {
     storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
   }
 
-  subscribeAccount () {
+  subscribeAccount() {
     return this.accountSubject;
   }
 
-  async fetchEnergyConfig () {
+  async fetchEnergyConfig() {
     const energyConfig = await this.getRequest<EnergyConfig>(`${GAME_API_HOST}/api/shop/get-config-buy-energy`);
 
     if (energyConfig) {
@@ -246,11 +250,11 @@ export class BookaSdk {
     }
   }
 
-  subscribeEnergyConfig () {
+  subscribeEnergyConfig() {
     return this.energyConfigSubject;
   }
 
-  async fetchGameList () {
+  async fetchGameList() {
     const gameList = await this.getRequest<Game[]>(`${GAME_API_HOST}/api/game/fetch`);
 
     if (gameList) {
@@ -259,11 +263,11 @@ export class BookaSdk {
     }
   }
 
-  subscribeGameList () {
+  subscribeGameList() {
     return this.gameListSubject;
   }
 
-  async fetchTaskCategoryList () {
+  async fetchTaskCategoryList() {
     await this.waitForSync;
     const taskCategoryList = await this.getRequest<TaskCategory[]>(`${GAME_API_HOST}/api/task-category/fetch`);
 
@@ -273,11 +277,11 @@ export class BookaSdk {
     }
   }
 
-  subscribeTaskCategoryList () {
+  subscribeTaskCategoryList() {
     return this.taskCategoryListSubject;
   }
 
-  async fetchTaskList () {
+  async fetchTaskList() {
     await this.waitForSync;
     const taskList = await this.getRequest<Task[]>(`${GAME_API_HOST}/api/task/history`);
 
@@ -287,12 +291,12 @@ export class BookaSdk {
     }
   }
 
-  subscribeTaskList () {
+  subscribeTaskList() {
     return this.taskListSubject;
   }
 
-  async completeTask (taskHistoryId: number|undefined) {
-    const taskHistoryCheck = await this.postRequest<{completed: boolean}>(`${GAME_API_HOST}/api/task/check-complete-task`, { taskHistoryId: taskHistoryId });
+  async completeTask(taskHistoryId: number | undefined) {
+    const taskHistoryCheck = await this.postRequest<{ completed: boolean }>(`${GAME_API_HOST}/api/task/check-complete-task`, { taskHistoryId: taskHistoryId });
 
     if (taskHistoryCheck && taskHistoryCheck.completed) {
       await this.reloadAccount();
@@ -303,7 +307,7 @@ export class BookaSdk {
     return false;
   }
 
-  async finishTask (taskId: number, extrinsicHash: string, network: string) {
+  async finishTask(taskId: number, extrinsicHash: string, network: string) {
     await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId, extrinsicHash, network });
 
     await this.fetchTaskCategoryList();
@@ -313,11 +317,11 @@ export class BookaSdk {
     await this.reloadAccount();
   }
 
-  getInviteURL (): string {
+  getInviteURL(): string {
     return `https://t.me/${TELEGRAM_WEBAPP_LINK}?startapp=${this.account?.info.inviteCode || 'booka'}`;
   }
 
-  async fetchReferalList () {
+  async fetchReferalList() {
     await this.waitForSync;
     const refList = await this.getRequest<ReferralRecord[]>(`${GAME_API_HOST}/api/account/get-rerferal-logs`);
 
@@ -326,13 +330,13 @@ export class BookaSdk {
     }
   }
 
-  subscribeReferralList () {
+  subscribeReferralList() {
     this.fetchReferalList().catch(console.error);
 
     return this.referralListSubject;
   }
 
-  async sync (address: string) {
+  async sync(address: string) {
     const userInfo = telegramConnector.userInfo;
     const message = `Login as ${userInfo?.username || 'booka'}`;
     const signature = await this.requestSignature(address, message);
@@ -380,7 +384,7 @@ export class BookaSdk {
     }
   }
 
-  async requestSignature (address: string, message: string): Promise<string> {
+  async requestSignature(address: string, message: string): Promise<string> {
     const loginMessage = await storage.getItem('loginMessage');
 
     let loginMap: Record<string, string> = {};
@@ -407,7 +411,7 @@ export class BookaSdk {
     return result.signature;
   }
 
-  async playGame (gameId: number, energyUsed: number): Promise<GamePlay> {
+  async playGame(gameId: number, energyUsed: number): Promise<GamePlay> {
     await this.waitForSync;
     const gamePlay = await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/new-game`, {
       gameId
@@ -430,7 +434,7 @@ export class BookaSdk {
     return gamePlay;
   }
 
-  async submitGame (gamePlayId: number, point: number, signature: string) {
+  async submitGame(gamePlayId: number, point: number, signature: string) {
     await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/submit`, {
       gamePlayId: gamePlayId,
       point: point,
@@ -444,7 +448,7 @@ export class BookaSdk {
 
   // --- shop
 
-  async fetchGameItemMap () {
+  async fetchGameItemMap() {
     await this.waitForSync;
 
     const gameItemMap = await this.postRequest<Record<string, GameItem[]>>(`${GAME_API_HOST}/api/shop/list-items`, {});
@@ -454,11 +458,11 @@ export class BookaSdk {
     }
   }
 
-  subscribeGameItemMap () {
+  subscribeGameItemMap() {
     return this.gameItemMapSubject;
   }
 
-  async fetchGameInventoryItemList () {
+  async fetchGameInventoryItemList() {
     await this.waitForSync;
 
     const inventoryResponse = await this.getRequest<{ success: boolean; inventory: GameInventoryItem[], inventoryInGame: GameInventoryItem['inventoryInGame'] }>(`${GAME_API_HOST}/api/shop/get-inventory`);
@@ -472,11 +476,11 @@ export class BookaSdk {
     }
   }
 
-  subscribeGameInventoryItemList () {
+  subscribeGameInventoryItemList() {
     return this.gameInventoryItemListSubject;
   }
 
-  async buyItem (gameItemId: number, quantity = 1) {
+  async buyItem(gameItemId: number, quantity = 1) {
     await this.postRequest(`${GAME_API_HOST}/api/shop/buy-item`, { gameItemId, quantity });
 
     await this.fetchGameInventoryItemList();
@@ -486,7 +490,7 @@ export class BookaSdk {
     await this.reloadAccount();
   }
 
-  async useInventoryItem (gameItemId: number) {
+  async useInventoryItem(gameItemId: number) {
     await this.postRequest(`${GAME_API_HOST}/api/shop/use-inventory-item`, { gameItemId });
 
     await this.fetchGameInventoryItemList();
@@ -496,13 +500,13 @@ export class BookaSdk {
     await this.reloadAccount();
   }
 
-  async buyEnergy () {
+  async buyEnergy() {
     await this.postRequest(`${GAME_API_HOST}/api/shop/buy-energy`, {});
 
     await this.reloadAccount();
   }
 
-  async fetchGameItemInGameList () {
+  async fetchGameItemInGameList() {
     const gameItem = await this.getRequest<{ success: boolean, items: any }>(`${GAME_API_HOST}/api/shop/get-item-in-game`);
 
     if (gameItem) {
@@ -513,26 +517,28 @@ export class BookaSdk {
   }
   // --- shop
 
-  async fetchLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all') {
+  async fetchLeaderboard(startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all') {
     await this.waitForSync;
-    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate,
+    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, {
+      startDate,
       endDate,
       gameId,
       limit,
-      type });
+      type
+    });
 
     if (leaderBoard) {
       this.leaderBoardSubject.next(leaderBoard);
     }
   }
 
-  subscribeLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all') {
+  subscribeLeaderboard(startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all') {
     this.fetchLeaderboard(startDate, endDate, gameId, limit, type).catch(console.error);
 
     return this.leaderBoardSubject;
   }
 
-  async fetchRankInfoMap () {
+  async fetchRankInfoMap() {
     const rankMap = {
       iron: {
         minPoint: 0,
@@ -585,13 +591,13 @@ export class BookaSdk {
     return Promise.resolve();
   }
 
-  subscribeRankInfoMap () {
+  subscribeRankInfoMap() {
     this.fetchRankInfoMap().catch(console.log);
 
     return this.rankInfoSubject;
   }
 
-  async signResult (gamePlayId: string, gameToken: string, score: number): Promise<string> {
+  async signResult(gamePlayId: string, gameToken: string, score: number): Promise<string> {
     if (this.account) {
       // Implement later
       return await this.requestSignature(this.account?.info.address, `${gamePlayId}|${gameToken}|${score}`);
@@ -600,7 +606,7 @@ export class BookaSdk {
     }
   }
 
-  async fetchAirdropCampaign () {
+  async fetchAirdropCampaign() {
     const airdropCampaignResponse = await this.getRequest<AirdropCampaign[]>(`${GAME_API_HOST}/api/airdrop/list-airdrop-campaign`);
 
     if (airdropCampaignResponse) {
@@ -608,7 +614,7 @@ export class BookaSdk {
     }
   }
 
-  async checkEgibilityList (campaignId: number): Promise<AirdropEligibility[]> {
+  async checkEgibilityList(campaignId: number): Promise<AirdropEligibility[]> {
     try {
       const response = await this.postRequest<AirdropEligibility[]>(`${GAME_API_HOST}/api/airdrop/check-eligibility`, { campaign_id: campaignId });
 
@@ -623,18 +629,40 @@ export class BookaSdk {
     }
   }
 
-  subscribeAirdropCampaign () {
+  async claimAirdrop(airdrop_log_id: number) {
+    try {
+      const claim = await this.postRequest(`${GAME_API_HOST}/api/airdrop/claim`, { airdrop_log_id: airdrop_log_id });
+      return claim;
+    } catch (error) {
+      console.error('Error in claimAirdrop:', error);
+      throw error;
+    }
+  }
+
+  // raffle 
+  async raffleAirdrop(campaignId: number) {
+    try {
+      const raffle = await this.postRequest(`${GAME_API_HOST}/api/airdrop/raffle`, { campaign_id: campaignId });
+      return raffle;
+    } catch (error) {
+      console.error('Error in raffleAirdrop:', error);
+      throw error;
+    }
+  }
+
+  subscribeAirdropCampaign() {
     return this.airdropCampaignSubject;
   }
 
-  subscribeCheckEligibility () {
+  subscribeCheckEligibility() {
     return this.checkEligibility;
   }
+
 
   // Singleton
   private static _instance: BookaSdk;
 
-  public static get instance () {
+  public static get instance() {
     if (!this._instance) {
       this._instance = new BookaSdk();
     }

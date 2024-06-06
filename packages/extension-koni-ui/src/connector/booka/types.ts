@@ -258,3 +258,10 @@ export interface AirdropEligibility {
   totalBox: number,
   currentProcess: string
 }
+
+export interface AirdropReward {
+  airdropRecordLogId: number,
+  rewardAmount: number,
+  rewardType: string,
+  success: boolean,
+}
