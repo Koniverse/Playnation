@@ -11,9 +11,11 @@ import styled from 'styled-components';
 
 type Props = ThemeProps & {
   airdropHistory: AirdropRewardHistoryLog | null;
+  onClaim: (airdrop_record_id: number) => void;
 };
-function Component({ airdropHistory, className }: Props) {
+function Component({ airdropHistory, className,onClaim }: Props) {
   const { t } = useTranslation();
+
   // object to array
   const mockItems: AirdropRewardHistoryLog[] = Object.values(airdropHistory || {});
   return (
@@ -29,6 +31,7 @@ function Component({ airdropHistory, className }: Props) {
               className={'__history-item'}
               item={item}
               key={item.id}
+              onClaim={onClaim}
             />
           ))
         }

@@ -101,7 +101,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
     } catch (error) {
       console.error('Error fetching eligibility:', error);
     }
-  }, [currentAirdrop.airdrop_campaign_id, raffle, inactiveModal, claim]);
+  }, [currentAirdrop.airdrop_campaign_id, raffle, inactiveModal, claim, notify]);
 
   useEffect(() => {
     fetchEligibility();
@@ -168,29 +168,37 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
     inactiveModal(rewardModalId);
   }, [inactiveModal]);
 
-  const onClaim = useCallback(async () => {
-    if (raffle) {
-      setIsLoading(true);
-      try {
-        await apiSDK.subscribeAirdropClaim(raffle.airdropRecordLogId);
-        notify({
-          message: t('Claim successfully'),
-          type: 'success'
-        });
-        inactiveModal(rewardModalId);
-        setIsLoading(false);
-        setClaim(true);
-      } catch (error) {
-        notify({
-          message: (error as Error).message,
-          type: 'error'
-        });
-        inactiveModal(rewardModalId);
-        setIsLoading(false);
-        setClaim(false);
+  const onClaim = useCallback(async (airdrop_record_id?: number) => {
+    setIsLoading(true);
+    try {
+      let airdropRecordLogId;
+      if (raffle) {
+        airdropRecordLogId = raffle.airdropRecordLogId;
+      } else if (airdrop_record_id !== undefined) {
+        airdropRecordLogId = airdrop_record_id;
+      } else {
+        throw new Error('No airdrop record ID available');
       }
+      await apiSDK.subscribeAirdropClaim(airdropRecordLogId);
+
+      notify({
+        message: t('Claim successfully'),
+        type: 'success'
+      });
+      inactiveModal(rewardModalId);
+      setIsLoading(false);
+      await fetchHistory();
+      setClaim(true);
+    } catch (error) {
+      notify({
+        message: (error as Error).message,
+        type: 'error'
+      });
+      inactiveModal(rewardModalId);
+      setIsLoading(false);
+      setClaim(false);
     }
-  }, [raffle]);
+  }, [raffle,notify, inactiveModal]);
 
   const onClaimLater = useCallback(() => {
     inactiveModal(rewardModalId);
@@ -323,6 +331,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
             <AirdropDetailHistory
               className={'tab-content'}
               airdropHistory={airdropHistory}
+              onClaim={onClaim}
             />
           )
         }

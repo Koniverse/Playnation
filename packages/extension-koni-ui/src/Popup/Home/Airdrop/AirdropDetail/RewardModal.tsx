@@ -53,21 +53,42 @@ function Component(props: Props): React.ReactElement<Props> {
         >
           {t('Claim later')}
         </Button>
-        <Button
-          block={true}
-          icon={
-            <Icon
-              phosphorIcon={CheckCircle}
-              weight={'fill'}
-            />
-          }
-          onClick={onClaim}
-          shape={'round'}
-          size={'sm'}
-          loading={isLoading}
-        >
-          {t('Claim')}
-        </Button>
+
+        {raffle?.rewardType === 'NPS' ? (
+          <Button
+            block={true}
+            icon={
+              <Icon
+                phosphorIcon={CheckCircle}
+                weight={'fill'}
+              />
+            }
+            onClick={_onClaimLater}
+            shape={'round'}
+            size={'sm'}
+            loading={isLoading}
+          >
+            {t('Claim')}
+          </Button>
+        ) :      (
+          <Button
+            block={true}
+            icon={
+              <Icon
+                phosphorIcon={CheckCircle}
+                weight={'fill'}
+              />
+            }
+            onClick={onClaim}
+            shape={'round'}
+            size={'sm'}
+            loading={isLoading}
+          >
+            {t('Claim')}
+          </Button>
+          )
+        }
+
       </>
     );
   })();

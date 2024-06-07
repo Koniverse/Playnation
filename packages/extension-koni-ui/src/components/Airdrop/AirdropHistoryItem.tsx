@@ -11,35 +11,24 @@ import CN from 'classnames';
 import { CheckCircle, Gift } from 'phosphor-react';
 import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
-import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
-import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 type Props = {
-  item: AirdropRewardHistoryLog
+  item: AirdropRewardHistoryLog,
+  onClaim: (airdrop_record_id: number) => void;
 } & ThemeProps;
 
-const Component = ({ className, item }: Props): React.ReactElement => {
+const Component = ({ className, item,onClaim }: Props): React.ReactElement => {
   const { t } = useTranslation();
-  const notify = useNotification();
-  const apiSDK = BookaSdk.instance;
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const onClaim = useCallback(async (airdrop_record_id: number) => {
+  const _onClaim = useCallback(async (airdrop_record_id: number) => {
     setIsLoading(true);
     try {
-      await apiSDK.subscribeAirdropClaim(airdrop_record_id);
+      await  onClaim(airdrop_record_id);
       setIsLoading(false);
-      notify({
-        message: t('Claim successfully'),
-        type: 'success'
-      });
     } catch (error) {
       setIsLoading(false);
-      notify({
-        message: (error as Error).message,
-        type: 'error'
-      });
     }
-  }, []);
+  }, [onClaim]);
 
   const renderDate = () => {
     let content: string;
@@ -99,7 +88,7 @@ const Component = ({ className, item }: Props): React.ReactElement => {
         {item.status !== 'RECEIVED' && (
           <Button
             className={'-primary-2'}
-            onClick={() => onClaim(item.id)}
+            onClick={() => _onClaim(item.id)}
             shape={'round'}
             size={'xs'}
             loading={isLoading}
