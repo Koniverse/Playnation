@@ -4,7 +4,7 @@
 import { Layout, LoadingScreen, TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AirdropCampaign, AirdropEligibility, AirdropRaffle,AirdropRewardHistoryLog } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog } from '@subwallet/extension-koni-ui/connector/booka/types';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { AirdropDetailAbout } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/About';
 import { AirdropDetailCondition } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Condition';
@@ -95,7 +95,6 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const fetchHistory = useCallback(async () => {
     try {
       const data = await apiSDK.subscribeAirdropHistory(currentAirdrop.airdrop_campaign_id) as unknown as AirdropRewardHistoryLog;
-      console.log(data)
       if (data) {
         setAirdropHistory(data);
       }
@@ -104,16 +103,10 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
     }
   }, [currentAirdrop.airdrop_campaign_id, raffle, inactiveModal, claim]);
 
-
-
   useEffect(() => {
     fetchEligibility();
     fetchHistory();
-  }, [fetchEligibility,fetchHistory]);
-
-
-
-
+  }, [fetchEligibility, fetchHistory]);
 
   const onSelectTab = useCallback((value: string) => {
     setSelectedTab(value);

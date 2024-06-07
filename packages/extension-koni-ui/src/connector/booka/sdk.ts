@@ -651,7 +651,7 @@ export class BookaSdk {
   // airdrop history
   async fetchAirdropHistory(campaignId:number) {
     try {
-      return await this.getRequest(`${GAME_API_HOST}/api/airdrop/history`);
+      return await this.postRequest(`${GAME_API_HOST}/api/airdrop/history`, { campaign_id: campaignId });
     } catch (error) {
       console.error('Error in fetchAirdropHistory:', error);
       throw error;
