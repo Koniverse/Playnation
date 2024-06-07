@@ -40,7 +40,7 @@ function Component ({ className, item, onExplore }: Props) {
 
     const url = await apiSDK.getShareTwitterURL(item.start_snapshot, item.end_snapshot);
 
-    telegramConnector.openTelegramLink(url);
+    telegramConnector.openLink(url);
   }, [item]);
 
   return (

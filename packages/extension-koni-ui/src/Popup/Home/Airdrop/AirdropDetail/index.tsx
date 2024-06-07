@@ -68,7 +68,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 
     const url = await apiSDK.getShareTwitterURL(currentAirdrop.start_snapshot, currentAirdrop.end_snapshot);
 
-    telegramConnector.openTelegramLink(url);
+    telegramConnector.openLink(url);
   }, [currentAirdrop]);
 
   const subHeaderIcons = useMemo(() => {

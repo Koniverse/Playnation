@@ -320,8 +320,7 @@ export class BookaSdk {
   async getShareTwitterURL (startDate: Date, endDate: Date) {
     const start = formatDateFully(new Date(startDate));
     const end = formatDateFully(new Date(endDate));
-    await this.fetchLeaderboard(start, end, 0, 1, 'all');
-    const leaderBoard = this.leaderBoard;
+    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate: start, endDate: end, limit: 1 });
     const personMine = leaderBoard.find((item) => item.mine);
     let result = '';
     if (personMine) {
