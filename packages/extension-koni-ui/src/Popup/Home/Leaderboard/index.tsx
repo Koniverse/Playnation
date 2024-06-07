@@ -129,16 +129,17 @@ const Component = ({ className }: Props): React.ReactElement => {
     }
 
     const personMine = leaderBoard.find((item) => item.mine);
-    let result = '';
+    let content = 'A new exciting game is in town, Karura Token Playdrop! Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A';
 
     if (personMine) {
-      result = `Wooho, I got ${personMine.point} points and ranked ${personMine.rank} the Karura Token Playdrop leaderboard 🔥\n `;
+      const result = `Wooho, I got ${personMine.point} points and ranked ${personMine.rank} on the Karura Token Playdrop leaderboard 🔥`;
+
+      content = `${result} Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A`;
     }
 
-    const urlShareImage = 'https://x.playnation.app/playnation-airdrop-karura';
+    const urlShareImage = 'https://x.playnation.app/playnation-share-karura';
 
     const linkShare = `${urlShareImage}?startApp=${account?.info.inviteCode || 'booka'}`;
-    const content = `${result} \n Want some fun and a chance to win Karura airdrop? Join me NOW 👇`;
 
     const url = `http://x.com/share?text=${content}&url=${linkShare}`;
 

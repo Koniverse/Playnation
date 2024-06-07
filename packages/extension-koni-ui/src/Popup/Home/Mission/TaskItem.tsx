@@ -125,8 +125,19 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
         })
         .catch(console.error);
 
-      setTimeout(() => {
-        task.url && telegramConnector.openLink(task.url);
+      setTimeout(async () => {
+        let urlRedirect = task.url;
+
+        if (urlRedirect) {
+          if (urlRedirect.includes('share_airdrop')) {
+            const startEnv = process.env.KARURA_PLAYDROP_START_DATE || '2024-06-01 03:00:00' as string;
+            const endEnv = process.env.KARURA_PLAYDROP_END_DATE || '2024-06-15 00:00:00' as string;
+
+            urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv);
+          }
+
+          telegramConnector.openLink(urlRedirect);
+        }
       }, 100);
     })().catch(console.error);
   }, [account?.info, actionReloadPoint, notify, t, task.id, task.onChainType, task.url]);
