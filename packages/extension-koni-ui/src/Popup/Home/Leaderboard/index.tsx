@@ -6,12 +6,15 @@ import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { TopAccountItem } from '@subwallet/extension-koni-ui/Popup/Home/Leaderboard/TopAccountItem';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
+import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
+import { ShareNetwork } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
@@ -27,6 +30,7 @@ enum TabType {
 type GameItemPlaceholderType = {
   rank: number;
 };
+const telegramConnector = TelegramConnector.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/leaderboard');
@@ -34,6 +38,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const { setContainerClass } = useContext(HomeContext);
   const [selectedTab, setSelectedTab] = useState<string>(TabType.WEEKLY);
+  const [account, setAccount] = useState(apiSDK.account);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
@@ -75,6 +80,16 @@ const Component = ({ className }: Props): React.ReactElement => {
   })();
 
   useEffect(() => {
+    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
+      setAccount(data);
+    });
+
+    return () => {
+      accountSub.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
     const { end, start } = calculateStartAndEnd(selectedTab);
     let weeklyBoardSub: { unsubscribe: () => void } | null = null;
     let karuraBoardSub: { unsubscribe: () => void } | null = null;
@@ -108,6 +123,28 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [setContainerClass]);
 
+  const onClickShare = useCallback(async () => {
+    if (!leaderBoard || !account) {
+      return;
+    }
+
+    const personMine = leaderBoard.find((item) => item.mine);
+    let result = '';
+
+    if (personMine) {
+      result = `Wooho, I got ${personMine.point} points and ranked ${personMine.rank} the Karura Token Playdrop leaderboard 🔥\n `;
+    }
+
+    const urlShareImage = 'https://x.playnation.app/playnation-airdrop-karura';
+
+    const linkShare = `${urlShareImage}?startApp=${account?.info.inviteCode || 'booka'}`;
+    const content = `${result} \n Want some fun and a chance to win Karura airdrop? Join me NOW 👇`;
+
+    const url = `http://x.com/share?text=${content}&url=${linkShare}`;
+
+    telegramConnector.openLink(url);
+  }, [leaderBoard, account]);
+
   return <div className={className}>
     <div className='tab-group-wrapper'>
       <TabGroup
@@ -118,6 +155,18 @@ const Component = ({ className }: Props): React.ReactElement => {
       />
     </div>
     <div className='top-three-area'>
+      <Button
+        className={'__share-button -primary-3'}
+        icon={(
+          <Icon
+            phosphorIcon={ShareNetwork}
+            size={'md'}
+          />
+        )}
+        onClick={onClickShare}
+        shape={'round'}
+        size={'xs'}
+      />
       <div className='top-account-item-wrapper'>
         {
           <TopAccountItem
@@ -194,6 +243,10 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
       paddingLeft: token.padding,
       paddingRight: token.padding
     },
+    '.top-button-share': {
+      paddingLeft: token.padding,
+      paddingRight: token.padding
+    },
 
     '.top-account-item-wrapper': {
       maxWidth: 120,
@@ -215,7 +268,13 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
       paddingBottom: token.size,
       justifyContent: 'center',
       paddingLeft: token.paddingXS,
-      paddingRight: token.paddingXS
+      paddingRight: token.paddingXS,
+      position: 'relative',
+      '.__share-button': {
+        position: 'absolute',
+        right: token.padding,
+        top: 0
+      }
     },
 
     '.leaderboard-item-wrapper': {

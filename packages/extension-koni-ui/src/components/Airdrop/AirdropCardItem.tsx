@@ -38,7 +38,7 @@ function Component ({ className, item, onExplore }: Props) {
       return;
     }
 
-    const url = await apiSDK.getShareTwitterURL(item.start_snapshot, item.end_snapshot);
+    const url = await apiSDK.getShareTwitterAirdropURL(item.start_snapshot, item.end_snapshot);
 
     telegramConnector.openLink(url);
   }, [item]);

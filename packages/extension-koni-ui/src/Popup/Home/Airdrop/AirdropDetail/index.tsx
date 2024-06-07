@@ -66,7 +66,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       return;
     }
 
-    const url = await apiSDK.getShareTwitterURL(currentAirdrop.start_snapshot, currentAirdrop.end_snapshot);
+    const url = await apiSDK.getShareTwitterAirdropURL(currentAirdrop.start_snapshot, currentAirdrop.end_snapshot);
 
     telegramConnector.openLink(url);
   }, [currentAirdrop]);

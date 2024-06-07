@@ -317,16 +317,18 @@ export class BookaSdk {
     return `https://t.me/${TELEGRAM_WEBAPP_LINK}?startapp=${this.account?.info.inviteCode || 'booka'}`;
   }
 
-  async getShareTwitterURL (startDate: Date, endDate: Date) {
+  async getShareTwitterAirdropURL (startDate: Date, endDate: Date) {
     const start = formatDateFully(new Date(startDate));
     const end = formatDateFully(new Date(endDate));
     const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate: start, endDate: end, limit: 1 });
     const personMine = leaderBoard.find((item) => item.mine);
     let result = '';
+
     if (personMine) {
       result = `Wooho, I got ${personMine.point} points and ranked ${personMine.rank} the Karura Token Playdrop leaderboard 🔥\n `;
     }
-    const urlBot = 'https://x.subwallet.app/playnation-airdrop-karura';
+
+    const urlBot = 'https://x.playnation.app/playnation-airdrop-karura';
 
     const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
     const content = `${result} \n Want some fun and a chance to win Karura airdrop? Join me NOW 👇`;
