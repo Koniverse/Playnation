@@ -129,7 +129,7 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
         let urlRedirect = task.url;
 
         if (urlRedirect) {
-          if (urlRedirect.includes('share_airdrop')) {
+          if (urlRedirect === 'share_airdrop') {
             const startEnv = process.env.KARURA_PLAYDROP_START_DATE || '2024-06-01 03:00:00' as string;
             const endEnv = process.env.KARURA_PLAYDROP_END_DATE || '2024-06-15 00:00:00' as string;
 
