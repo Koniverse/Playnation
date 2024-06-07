@@ -7,12 +7,12 @@ import { AccountRankType, AirdropCampaign, BookaAccount, EnergyConfig, Game, Gam
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
-import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
+import { calculateStartAndEnd, formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
-export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'BookaGamesBot/swbooka';
+export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
 
@@ -315,6 +315,24 @@ export class BookaSdk {
 
   getInviteURL (): string {
     return `https://t.me/${TELEGRAM_WEBAPP_LINK}?startapp=${this.account?.info.inviteCode || 'booka'}`;
+  }
+
+  async getShareTwitterURL (startDate: Date, endDate: Date) {
+    const start = formatDateFully(new Date(startDate));
+    const end = formatDateFully(new Date(endDate));
+    await this.fetchLeaderboard(start, end, 0, 1, 'all');
+    const leaderBoard = this.leaderBoard;
+    const personMine = leaderBoard.find((item) => item.mine);
+    let result = '';
+    if (personMine) {
+      result = `Wooho, I got ${personMine.point} points and ranked ${personMine.rank} the Karura Token Playdrop leaderboard 🔥\n `;
+    }
+    const urlBot = 'https://x.subwallet.app/playnation-airdrop-karura';
+
+    const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
+    const content = `${result} \n Want some fun and a chance to win Karura airdrop? Join me NOW 👇`;
+
+    return `http://x.com/share?text=${content}&url=${linkApp}`;
   }
 
   async fetchReferalList () {
