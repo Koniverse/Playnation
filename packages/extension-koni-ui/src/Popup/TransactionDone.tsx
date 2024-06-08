@@ -41,11 +41,13 @@ const Component: React.FC<Props> = (props: Props) => {
         leftFooterButton={{
           block: true,
           onClick: viewInHistory,
+          shape: 'round',
           children: t('View transaction')
         }}
         rightFooterButton={{
           block: true,
           onClick: goHome,
+          shape: 'round',
           children: t('Back to home')
         }}
         subHeaderLeft={<CloseIcon />}

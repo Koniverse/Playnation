@@ -53,6 +53,7 @@ const Component: React.FC<Props> = (props: Props) => {
         <Button
           loading={loading}
           onClick={handleCancel}
+          shape={'round'}
         >
           {t('Back to home')}
         </Button>

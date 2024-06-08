@@ -43,6 +43,7 @@ const Component: React.FC<Props> = (props: Props) => {
           block={true}
           icon={closeIcon}
           onClick={onClose}
+          shape={'round'}
         >
           {t('Close')}
         </Button>

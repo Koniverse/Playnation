@@ -1,20 +1,24 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AirdropCampaign } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { formatBalance } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { Coins, ShareNetwork } from 'phosphor-react';
-import React from 'react';
+import React, { useCallback } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
   item: AirdropCampaign;
   onExplore: VoidFunction;
 };
+const apiSDK = BookaSdk.instance;
+const telegramConnector = TelegramConnector.instance;
 
 function Component ({ className, item, onExplore }: Props) {
   const { t } = useTranslation();
@@ -29,6 +33,15 @@ function Component ({ className, item, onExplore }: Props) {
 
     return startTime > Date.now();
   })();
+  const onClickShare = useCallback(async () => {
+    if (!item || !item.start_snapshot || !item.end_snapshot) {
+      return;
+    }
+
+    const url = await apiSDK.getShareTwitterAirdropURL(item.start_snapshot, item.end_snapshot);
+
+    telegramConnector.openLink(url);
+  }, [item]);
 
   return (
     <div className={CN(className, {
@@ -95,6 +108,7 @@ function Component ({ className, item, onExplore }: Props) {
                     phosphorIcon={ShareNetwork}
                   />
                 )}
+                onClick={onClickShare}
                 shape={'round'}
                 size={'xs'}
               />

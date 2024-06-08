@@ -262,6 +262,7 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
     borderRadius: 40,
     alignItems: 'flex-start',
     backgroundColor: extendToken.colorBgSecondary2,
+    zIndex: 500,
 
     '.ant-sw-tab-bar-item': {
       gap: token.sizeXXS,

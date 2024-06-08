@@ -68,6 +68,7 @@ function Component ({ className = '', data, onCancel }: Props): React.ReactEleme
           />
         }
         onClick={openBlockExplorer(link || '')}
+        shape={'round'}
       >
         {t('View on explorer')}
       </Button>
@@ -92,11 +93,16 @@ function Component ({ className = '', data, onCancel }: Props): React.ReactEleme
 export const HistoryDetailModal = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return ({
     '.ant-sw-modal-body': {
-      marginBottom: 0
+      marginBottom: 0,
+      paddingBottom: 0,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
     },
 
     '.ant-sw-modal-footer': {
-      border: 0
+      border: 0,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
     }
   });
 });

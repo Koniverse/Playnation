@@ -63,11 +63,8 @@ function Component (
                 '-hide': !isAbleToShowFee(item)
               })}
               decimal={item?.fee?.decimals || 0}
-              decimalOpacity={0.45}
               hide={!isShowBalance}
-              intOpacity={0.45}
               suffix={item.fee?.symbol}
-              unitOpacity={0.45}
               value={item.fee?.value || '0'}
             />
           </div>
@@ -83,9 +80,9 @@ function Component (
   );
 }
 
-export const HistoryItem = styled(Component)<Props>(({ theme: { token } }: Props) => {
+export const HistoryItem = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
-    backgroundColor: token.colorBgSecondary,
+    backgroundColor: extendToken.colorBgSecondary1,
     borderRadius: token.borderRadiusLG,
     paddingTop: 0,
     paddingBottom: 0,
@@ -93,6 +90,7 @@ export const HistoryItem = styled(Component)<Props>(({ theme: { token } }: Props
 
     '.ant-number .ant-typography': {
       fontSize: 'inherit !important',
+      color: 'inherit !important',
       fontWeight: 'inherit !important',
       lineHeight: 'inherit'
     },
@@ -136,14 +134,14 @@ export const HistoryItem = styled(Component)<Props>(({ theme: { token } }: Props
     '.__account-name, .__value': {
       fontSize: token.fontSizeHeading5,
       lineHeight: token.lineHeightHeading5,
-      color: token.colorTextLight1,
+      color: token.colorTextDark1,
       fontWeight: token.headingFontWeight
     },
 
     '.__meta, .__fee': {
       fontSize: token.fontSizeSM,
       lineHeight: token.lineHeightSM,
-      color: token.colorTextLight4
+      color: token.colorTextDark3
     },
 
     '.__fee.-hide': {
@@ -159,7 +157,7 @@ export const HistoryItem = styled(Component)<Props>(({ theme: { token } }: Props
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      color: token.colorTextLight4
+      color: token.colorTextDark3
     },
 
     '&:hover': {

@@ -71,16 +71,15 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         setContainerClass
       }}
       >
-        <div className={CN('home', 'home-container', className, containerClass)}>
-          <Layout.Home
-            backgroundStyle={backgroundStyle}
-            onClickSearchIcon={onOpenGlobalSearchToken}
-            onTabSelected={onTabSelected}
-            showGiftIcon
-          >
-            <Outlet />
-          </Layout.Home>
-        </div>
+        <Layout.Home
+          backgroundStyle={backgroundStyle}
+          className={CN('home', 'home-container', className, containerClass)}
+          onClickSearchIcon={onOpenGlobalSearchToken}
+          onTabSelected={onTabSelected}
+          showGiftIcon
+        >
+          <Outlet />
+        </Layout.Home>
       </HomeContext.Provider>
 
       <GlobalSearchTokenModal
@@ -108,8 +107,8 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
       }
     },
 
-    '&.game-screen-wrapper, &.invitation-screen-wrapper, &.mission-screen-wrapper, &.airdrop-screen-wrapper': {
-      '.ant-sw-screen-layout-body': {
+    '&.game-screen-wrapper, &.invitation-screen-wrapper, &.mission-screen-wrapper, &.airdrop-screen-wrapper, &.history-screen-wrapper': {
+      '> .ant-sw-screen-layout-body': {
         paddingBottom: 56,
 
         '> div': {

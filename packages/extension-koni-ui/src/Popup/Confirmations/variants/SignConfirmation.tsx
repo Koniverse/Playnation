@@ -47,6 +47,7 @@ function Component ({ className, request }: Props) {
           <Button
             icon={<ViewDetailIcon />}
             onClick={onClickDetail}
+            shape={'round'}
             size='xs'
             type='ghost'
           >

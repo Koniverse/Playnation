@@ -5,6 +5,7 @@ import { Layout, LoadingScreen, TabGroup } from '@subwallet/extension-koni-ui/co
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AirdropCampaign } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { AirdropDetailAbout } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/About';
 import { AirdropDetailCondition } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Condition';
@@ -22,6 +23,7 @@ type Props = ThemeProps & {
 };
 
 const apiSDK = BookaSdk.instance;
+const telegramConnector = TelegramConnector.instance;
 
 enum TabType {
   CONDITION = 'condition',
@@ -59,6 +61,15 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const onBack = useCallback(() => {
     navigate('/home/airdrop');
   }, [navigate]);
+  const onClickShare = useCallback(async () => {
+    if (!currentAirdrop || !currentAirdrop.start_snapshot || !currentAirdrop.end_snapshot) {
+      return;
+    }
+
+    const url = await apiSDK.getShareTwitterAirdropURL(currentAirdrop.start_snapshot, currentAirdrop.end_snapshot);
+
+    telegramConnector.openLink(url);
+  }, [currentAirdrop]);
 
   const subHeaderIcons = useMemo(() => {
     return [
@@ -70,11 +81,11 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
           />
         ),
         onClick: () => {
-          //
+          onClickShare().catch(console.error);
         }
       }
     ];
-  }, []);
+  }, [onClickShare]);
 
   return (
     <Layout.WithSubHeaderOnly
