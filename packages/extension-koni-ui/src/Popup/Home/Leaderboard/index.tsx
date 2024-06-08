@@ -156,18 +156,20 @@ const Component = ({ className }: Props): React.ReactElement => {
       />
     </div>
     <div className='top-three-area'>
-      <Button
-        className={'__share-button -primary-3'}
-        icon={(
-          <Icon
-            phosphorIcon={ShareNetwork}
-            size={'md'}
-          />
-        )}
-        onClick={onClickShare}
-        shape={'round'}
-        size={'xs'}
-      />
+      {selectedTab === TabType.KARURA_PLAYDROP && (
+        <Button
+          className={'__share-button -primary-3'}
+          icon={(
+            <Icon
+              phosphorIcon={ShareNetwork}
+              size={'md'}
+            />
+          )}
+          onClick={onClickShare}
+          shape={'round'}
+          size={'xs'}
+        />
+      )}
       <div className='top-account-item-wrapper'>
         {
           <TopAccountItem
