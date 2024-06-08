@@ -91,11 +91,10 @@
   </div>
 
   <script>
-    const settings = localStorage.getItem('Settings');
     let currentTheme;
 
     try {
-      currentTheme = JSON.parse(settings).theme;
+      currentTheme = localStorage.getItem('currentTheme') || 'default';
     } catch (e) {
       currentTheme = 'default'
     }

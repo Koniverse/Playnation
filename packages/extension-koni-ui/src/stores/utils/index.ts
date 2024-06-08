@@ -151,6 +151,7 @@ export const subscribeTransactionRequests = lazySubscribeMessage('pri(transactio
 // Settings Store
 
 export const updateUiSettings = (data: UiSettings) => {
+  localStorage.setItem('currentTheme', data.theme);
   store.dispatch({ type: 'settings/updateUiSettings', payload: data });
 };
 
