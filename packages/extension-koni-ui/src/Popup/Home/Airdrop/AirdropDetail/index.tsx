@@ -81,11 +81,11 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
           />
         ),
         onClick: () => {
-          onClickShare();
+          onClickShare().catch(console.error);
         }
       }
     ];
-  }, []);
+  }, [onClickShare]);
 
   return (
     <Layout.WithSubHeaderOnly

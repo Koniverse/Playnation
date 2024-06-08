@@ -87,10 +87,14 @@ function Component (props: Props): React.ReactElement<Props> {
 export const FilterModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '.ant-sw-modal-body': {
-      paddingBottom: token.paddingXS
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
+      paddingBottom: 0
     },
 
     '.ant-sw-modal-footer': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
       borderTop: 0
     },
 

@@ -24,6 +24,7 @@ import styled from 'styled-components';
 import { isEthereumAddress } from '@polkadot/util-crypto';
 
 import { HistoryDetailModal } from './Detail';
+import {HomeContext} from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 
 type Props = ThemeProps
 
@@ -217,6 +218,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const { language } = useSelector((root) => root.settings);
   const [loading, setLoading] = useState<boolean>(true);
   const [rawHistoryList, setRawHistoryList] = useState<TransactionHistoryItem[]>([]);
+  const { setContainerClass } = useContext(HomeContext);
 
   const isActive = checkActive(modalId);
 
@@ -337,7 +339,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     [ExtrinsicType.UNSTAKE_SDOT]: t('Unstake sDOT'),
     [ExtrinsicType.UNSTAKE_STDOT]: t('Unstake stDOT'),
     [ExtrinsicType.TOKEN_APPROVE]: t('Token approve'),
-    [ExtrinsicType.UNKNOWN]: t('Unknown')
+    [ExtrinsicType.UNKNOWN]: t('Unknown'),
+    [ExtrinsicType.REMARK_WITH_EVENT]: t('Remark with event')
   }), [t]);
 
   const typeTitleMap: Record<string, string> = useMemo((): Record<ExtrinsicType | 'default' | 'send' | 'received', string> => ({
@@ -380,7 +383,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     [ExtrinsicType.UNSTAKE_SDOT]: t('Unstake sDOT tranasction'),
     [ExtrinsicType.UNSTAKE_STDOT]: t('Unstake stDOT tranasction'),
     [ExtrinsicType.TOKEN_APPROVE]: t('Token approve transaction'),
-    [ExtrinsicType.UNKNOWN]: t('Unknown transaction')
+    [ExtrinsicType.UNKNOWN]: t('Unknown transaction'),
+    [ExtrinsicType.REMARK_WITH_EVENT]: t('Remark with event transaction')
   }), [t]);
 
   // Fill display data to history list
@@ -699,6 +703,14 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     setHistoryItems(getHistoryItems(currentItemDisplayCount));
   }, [currentItemDisplayCount, getHistoryItems]);
 
+  useEffect(() => {
+    setContainerClass('history-screen-wrapper');
+
+    return () => {
+      setContainerClass(undefined);
+    };
+  }, [setContainerClass]);
+
   return (
     <>
       <PageWrapper
@@ -741,14 +753,21 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   );
 }
 
-const History = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const History = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     display: 'flex',
     flexDirection: 'column',
+    overflow: 'auto',
+
+    '.ant-sw-screen-layout-container': {
+      backgroundColor: 'transparent'
+    },
 
     '.__page-tool-area': {
       display: 'flex',
-      padding: token.padding,
+      paddingBottom: token.padding,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
       paddingTop: 0,
       borderBottomLeftRadius: token.size,
       borderBottomRightRadius: token.size,
@@ -792,10 +811,9 @@ const History = styled(Component)<Props>(({ theme: { token } }: Props) => {
     '.ant-sw-list': {
       height: '100%',
       overflow: 'auto',
-      paddingBottom: token.padding,
-      paddingLeft: token.padding,
-      paddingRight: token.padding,
-      paddingTop: token.paddingSM,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
+      paddingBottom: 34,
 
       '.__infinite-loader': {
         opacity: 0
@@ -812,6 +830,12 @@ const History = styled(Component)<Props>(({ theme: { token } }: Props) => {
       marginBottom: 0
     },
 
+    '.empty-list': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      borderRadius: 20,
+      padding: '40px 24px'
+    },
+
     '.ant-sw-list-section': {
       flex: 1
     },
@@ -824,7 +848,7 @@ const History = styled(Component)<Props>(({ theme: { token } }: Props) => {
     '.___list-separator': {
       fontSize: token.fontSizeSM,
       lineHeight: token.lineHeightSM,
-      color: token.colorTextLight3,
+      color: token.colorTextDark2,
       fontWeight: token.headingFontWeight,
       marginBottom: token.marginXS
     }

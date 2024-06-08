@@ -260,6 +260,7 @@ function Component ({ className, request }: Props) {
                 disabled={loading}
                 onClick={onCancel}
                 schema={'secondary'}
+                shape={'round'}
               >
                 {t('Cancel')}
               </Button>
@@ -267,6 +268,7 @@ function Component ({ className, request }: Props) {
                 disabled={isDisableConnect}
                 loading={loading}
                 onClick={onConfirm}
+                shape={'round'}
               >
                 {t('Connect')}
               </Button>
@@ -287,6 +289,7 @@ function Component ({ className, request }: Props) {
                   )}
                   onClick={onCancel}
                   schema={'secondary'}
+                  shape={'round'}
                 >
                   {t('Cancel')}
                 </Button>
@@ -299,6 +302,7 @@ function Component ({ className, request }: Props) {
                     />
                   )}
                   onClick={onAddAccount}
+                  shape={'round'}
                 >
                   {t('Create one')}
                 </Button>

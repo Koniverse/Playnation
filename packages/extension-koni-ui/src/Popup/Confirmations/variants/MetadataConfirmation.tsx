@@ -78,6 +78,7 @@ function Component ({ className, request }: Props) {
           )}
           onClick={onCancel}
           schema={'secondary'}
+          shape={'round'}
         >
           {t('Cancel')}
         </Button>
@@ -90,6 +91,7 @@ function Component ({ className, request }: Props) {
           )}
           loading={loading}
           onClick={onConfirm}
+          shape={'round'}
         >
           {t('Approve')}
         </Button>

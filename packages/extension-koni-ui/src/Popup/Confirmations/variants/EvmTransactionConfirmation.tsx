@@ -96,6 +96,7 @@ function Component ({ className, request, type }: Props) {
           <Button
             icon={<ViewDetailIcon />}
             onClick={onClickDetail}
+            shape={'round'}
             size='xs'
             type='ghost'
           >

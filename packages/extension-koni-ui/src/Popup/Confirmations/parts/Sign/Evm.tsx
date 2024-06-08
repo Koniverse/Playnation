@@ -249,6 +249,7 @@ const Component: React.FC<Props> = (props: Props) => {
         )}
         onClick={onCancel}
         schema={'secondary'}
+        shape={'round'}
       >
         {t('Cancel')}
       </Button>
@@ -262,6 +263,7 @@ const Component: React.FC<Props> = (props: Props) => {
         )}
         loading={loading}
         onClick={onConfirm}
+        shape={'round'}
       >
         {t('Approve')}
       </Button>

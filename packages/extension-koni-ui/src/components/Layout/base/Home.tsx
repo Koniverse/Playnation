@@ -21,9 +21,10 @@ type Props = {
   showTabBar?: boolean
   backgroundStyle?: LayoutBaseProps['backgroundStyle'];
   onTabSelected?: LayoutBaseProps['onTabSelected'];
+  className?: string;
 };
 
-const Home = ({ backgroundStyle, children, onClickFilterIcon, onClickSearchIcon, onTabSelected, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar }: Props) => {
+const Home = ({ backgroundStyle, children, className, onClickFilterIcon, onClickSearchIcon, onTabSelected, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar }: Props) => {
   const navigate = useNavigate();
   // @ts-ignore
   const { t } = useTranslation();
@@ -88,6 +89,7 @@ const Home = ({ backgroundStyle, children, onClickFilterIcon, onClickSearchIcon,
   return (
     <Layout.Base
       backgroundStyle={backgroundStyle}
+      className={className}
       headerCenter={false}
       headerIcons={headerIcons}
       headerLeft={'default'}

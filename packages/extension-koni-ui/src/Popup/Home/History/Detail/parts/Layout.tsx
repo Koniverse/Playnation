@@ -27,7 +27,10 @@ const Component: React.FC<Props> = (props: Props) => {
   const { language } = useSelector((state) => state.settings);
 
   return (
-    <MetaInfo className={CN(className)}>
+    <MetaInfo
+      className={CN(className)}
+      hasBackgroundWrapper
+    >
       <MetaInfo.DisplayType
         label={t('Transaction type')}
         typeName={t(TxTypeNameMap[data.type])}

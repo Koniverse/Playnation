@@ -11,15 +11,15 @@ import { AccountGroupItem, AccountItem, ChainItem, DataItem, DefaultItem, Displa
 interface Props extends ThemeProps {
   children?: React.ReactNode;
   hasBackgroundWrapper?: boolean;
-  labelColorScheme?: 'light' | 'gray';
+  labelColorScheme?: 'light' | 'gray' | 'dark';
   labelFontWeight?: 'regular' | 'semibold';
-  valueColorScheme?: 'light' | 'gray';
+  valueColorScheme?: 'light' | 'gray' | 'dark';
   spaceSize?: 'xxs' | 'xs' | 'sm' | 'ms';
 }
 
 const Component: React.FC<Props> = ({ children, className = '',
   hasBackgroundWrapper = false,
-  labelColorScheme = 'light',
+  labelColorScheme = 'dark',
   labelFontWeight = 'semibold',
   spaceSize = 'ms', valueColorScheme = 'gray' }: Props) => (
   <div
@@ -38,7 +38,7 @@ const Component: React.FC<Props> = ({ children, className = '',
   </div>
 );
 
-const _MetaInfo = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const _MetaInfo = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '& + .meta-info-block': {
       marginTop: token.marginSM
@@ -51,8 +51,8 @@ const _MetaInfo = styled(Component)<Props>(({ theme: { token } }: Props) => {
     },
 
     '&.-has-background-wrapper': {
-      background: token.colorBgSecondary,
-      borderRadius: token.borderRadiusLG,
+      background: extendToken.colorBgSecondary1,
+      borderRadius: 20,
       padding: token.paddingSM
     },
 
@@ -113,7 +113,7 @@ const _MetaInfo = styled(Component)<Props>(({ theme: { token } }: Props) => {
     },
 
     '&.-label-scheme-gray .__label, &.-value-scheme-gray .__value': {
-      color: token.colorTextLight4
+      color: token.colorTextDark3
     },
 
     '.__col': {
@@ -153,8 +153,12 @@ const _MetaInfo = styled(Component)<Props>(({ theme: { token } }: Props) => {
       color: token.colorTextLight2
     },
 
+    '.__value.-schema-dark': {
+      color: token.colorTextDark2
+    },
+
     '.__value.-schema-gray': {
-      color: token.colorTextLight4
+      color: token.colorTextDark3
     },
 
     '.__value.-schema-success': {
