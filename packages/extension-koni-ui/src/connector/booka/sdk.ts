@@ -10,6 +10,7 @@ import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types'
 import { calculateStartAndEnd, formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
+import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
 
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
@@ -336,25 +337,21 @@ export class BookaSdk {
     return `http://x.com/share?text=${content}&url=${linkApp}`;
   }
 
-  async getShareTwitterURL (startDate: string, endDate: string) {
+  async getShareTwitterURL (startDate: string, endDate: string, content: string, contentNoTemplate: string, url: string) {
     const start = formatDateFully(new Date(startDate));
     const end = formatDateFully(new Date(endDate));
     const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate: start, endDate: end, limit: 1 });
 
     const personMine = leaderBoard.find((item) => item.mine);
-    let content = 'A new exciting game is in town, Karura Token Playdrop! Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A';
+    let contentShare = contentNoTemplate;
 
     if (personMine) {
-      const result = `Wooho, I got ${personMine.point} points and ranked ${personMine.rank} on the Karura Token Playdrop leaderboard 🔥`;
-
-      content = `${result} Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A`;
+      contentShare = populateTemplateString(content, personMine);
     }
 
-    const urlShareImage = 'https://x.playnation.app/playnation-share-karura';
+    const linkShare = `${url}?startApp=${this.account?.info.inviteCode || 'booka'}`;
 
-    const linkShare = `${urlShareImage}?startApp=${this.account?.info.inviteCode || 'booka'}`;
-
-    return `http://x.com/share?text=${content}&url=${linkShare}`;
+    return `http://x.com/share?text=${contentShare}%0A&url=${linkShare}`;
   }
 
   async fetchReferalList () {

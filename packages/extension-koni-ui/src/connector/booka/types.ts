@@ -88,6 +88,15 @@ export enum TaskHistoryStatus {
   COMPLETED = 'completed',
 }
 
+export interface ShareLeaderboard {
+  content: string;
+  content_no_template: string;
+  url: string;
+  start_time: string;
+  end_time: string;
+
+}
+
 export interface Task {
   id: number; // id on db
   contentId: number;
@@ -109,6 +118,7 @@ export interface Task {
   status: TaskHistoryStatus;
   completedAt?: string;
   taskHistoryId?: number;
+  share_leaderboard?: string | null;
 }
 
 export interface TaskCategory {
