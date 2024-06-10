@@ -216,7 +216,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
                 disabled={true}
                 shape={'round'}
               >
-                {t('INELIGIBLE')}
+                {t('InEligible')}
               </Button>
             )}
             {buttonType === buttonTypeConst.END_CAMPAIGN && (
@@ -231,7 +231,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
                 }
                 shape={'round'}
               >
-                {t('END CAMPAIGN')}
+                {t('End Campaign')}
               </Button>
             )}
             {buttonType === buttonTypeConst.ELIGIBLE && (
@@ -246,7 +246,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
                 }
                 shape={'round'}
               >
-                {t('ELIGIBLE')}
+                {t('eligible')}
               </Button>
             )}
             {buttonType === buttonTypeConst.RAFFLE && (
@@ -279,7 +279,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
             }
             shape={'round'}
           >
-            {t('ELIGIBLE')}
+            {t('Eligible')}
           </Button>
         )}
       </>
