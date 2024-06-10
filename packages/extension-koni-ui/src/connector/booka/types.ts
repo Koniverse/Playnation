@@ -90,7 +90,6 @@ export enum TaskHistoryStatus {
 
 export interface ShareLeaderboard {
   content: string;
-  content_no_template: string;
   url: string;
   start_time: string;
   end_time: string;

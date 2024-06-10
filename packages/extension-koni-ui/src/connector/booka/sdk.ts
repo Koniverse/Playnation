@@ -337,21 +337,26 @@ export class BookaSdk {
     return `http://x.com/share?text=${content}&url=${linkApp}`;
   }
 
-  async getShareTwitterURL (startDate: string, endDate: string, content: string, contentNoTemplate: string, url: string) {
+  async getShareTwitterURL (startDate: string, endDate: string, content: string, gameId: number, url: string) {
     const start = formatDateFully(new Date(startDate));
     const end = formatDateFully(new Date(endDate));
-    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate: start, endDate: end, limit: 1 });
+    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`,
+      {
+        startDate: start,
+        endDate: end,
+        gameId: gameId,
+        limit: 1 });
 
     const personMine = leaderBoard.find((item) => item.mine);
-    let contentShare = contentNoTemplate;
+    let contentShare = '';
 
     if (personMine) {
-      contentShare = populateTemplateString(content, personMine);
+      contentShare = `text=${populateTemplateString(content, personMine)}%0A&`;
     }
 
     const linkShare = `${url}?startApp=${this.account?.info.inviteCode || 'booka'}`;
 
-    return `http://x.com/share?text=${contentShare}%0A&url=${linkShare}`;
+    return `http://x.com/share?${contentShare}url=${linkShare}`;
   }
 
   async fetchReferalList () {

@@ -121,7 +121,6 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
           console.error('shareLeaderboard', e);
         }
       }
-
       apiSDK.finishTask(taskId, extrinsicHash, networkKey)
         .finally(() => {
           setTaskLoading(false);
@@ -143,7 +142,7 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
             const startEnv = shareLeaderboard.start_time;
             const endEnv = shareLeaderboard.end_time;
 
-            urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv, shareLeaderboard.content, shareLeaderboard.content_no_template, shareLeaderboard.url);
+            urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv, shareLeaderboard.content, task.gameId ?? 0, shareLeaderboard.url);
           }
 
           telegramConnector.openLink(urlRedirect);
