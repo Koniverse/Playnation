@@ -24,14 +24,8 @@ enum Timeline {
 function Component({ airdropInfo, className }: Props) {
   const { t } = useTranslation();
 
-  const { currentTimeline, pastTimelines }: {
-    currentTimeline: Timeline,
-    pastTimelines: Timeline[]
-  } = (() => {
-
+  const { currentTimeline, pastTimelines } = (() => {
     const { start, end, start_snapshot, end_snapshot, end_claim, start_claim } = airdropInfo;
-    let currentTimeline: Timeline = Timeline.START;
-    const pastTimelines: Timeline[] = [Timeline.START];
     const currentDate = Date.now();
     const startMs = new Date(start).getTime();
     const endMs = new Date(end).getTime();
@@ -40,23 +34,23 @@ function Component({ airdropInfo, className }: Props) {
     const endClaimMs = new Date(end_claim).getTime();
     const startClaim = new Date(start_claim).getTime();
 
+    let currentTimeline: Timeline = Timeline.START;
+    const pastTimelines: Timeline[] = [];
 
-    if (currentDate > startMs) {
+    if (currentDate >= startMs && currentDate < startSnapshotMs) {
       currentTimeline = Timeline.START;
       pastTimelines.push(Timeline.START);
-    }
-    if (currentDate >= startSnapshotMs && currentDate <= endSnapshotMs) {
+    } else if (currentDate >= startSnapshotMs && currentDate <= endSnapshotMs) {
       currentTimeline = Timeline.SNAPSHOT;
-      pastTimelines.push(Timeline.SNAPSHOT);
-    }
-    if (currentDate >= startClaim && currentDate <= endClaimMs) {
+      pastTimelines.push(Timeline.START, Timeline.SNAPSHOT);
+    } else if (currentDate >= startClaim && currentDate <= endClaimMs) {
       currentTimeline = Timeline.CLAIM;
-      pastTimelines.push(Timeline.CLAIM);
-    }
-    if (currentDate > endMs) {
+      pastTimelines.push(Timeline.START, Timeline.SNAPSHOT, Timeline.CLAIM);
+    } else if (currentDate > endMs) {
       currentTimeline = Timeline.END;
-      pastTimelines.push(Timeline.END);
+      pastTimelines.push(Timeline.START, Timeline.SNAPSHOT, Timeline.CLAIM, Timeline.END);
     }
+
     return {
       currentTimeline,
       pastTimelines
