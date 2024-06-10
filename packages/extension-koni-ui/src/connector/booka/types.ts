@@ -228,6 +228,7 @@ export interface AirdropCampaign {
   start: Date;
   end: Date;
   description: string;
+  shortDescription: string;
   tokenDistributions: JSON;
   npsDistributions: JSON;
   status: string;
