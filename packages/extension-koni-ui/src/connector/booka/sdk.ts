@@ -329,7 +329,7 @@ export class BookaSdk {
     //   result = `Wooho, I got ${personMine.point} points and ranked ${personMine.rank} the Karura Token Playdrop leaderboard 🔥\n `;
     // }
 
-    const urlBot = 'https://x.playnation.app/playnation-share-karura';
+    const urlBot = 'https://x.playnation.app/playnation-karura';
 
     const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
     const content = 'A new exciting game is in town, Karura Token Playdrop! Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A';
