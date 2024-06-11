@@ -9,7 +9,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   return (
     <div className={className}>
-      <h1>{t('Account Banned')}</h1>
+      <h1>{t('Account suspended')}</h1>
       <p>{t('Your account has been suspended due to unusual activities.')}</p>
       <p>{t('If you think this is a mistake, contact our support team')} <a href={"https://t.me/playnation_globalchat"}>Playnation Suport</a> </p>
     </div>
