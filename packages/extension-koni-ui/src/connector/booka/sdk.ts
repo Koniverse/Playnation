@@ -44,7 +44,7 @@ export class BookaSdk {
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
-  isActive = new BehaviorSubject<boolean>(true);
+  isEnabled = new BehaviorSubject<boolean>(true);
 
 
   constructor() {
@@ -363,7 +363,6 @@ export class BookaSdk {
         this.accountSubject.next(account);
         storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
         this.syncHandler.resolve();
-        this.isActive.next(true);
         const { end, start } = calculateStartAndEnd('weekly');
 
         await Promise.all([
@@ -381,8 +380,10 @@ export class BookaSdk {
         await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchAirdropCampaign()]);
       }
     } catch (error: any) {
-      this.isActive.next(false);
-      this.syncHandler.reject(error.message);
+      if(error.message === 'ACCOUNT_BANNED') {
+        this.isEnabled.next(false);
+        this.syncHandler.reject(error.message);
+      }
       throw error;
     }
 }

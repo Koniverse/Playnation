@@ -54,8 +54,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     if (mantaPayConfig && mantaPayConfig.enabled && !mantaPayConfig.isInitialSync && !isZkModeSyncing) {
       handleMantaPaySync(mantaPayConfig.address);
     }
-    apiSDK.isActive.subscribe((isActive) => {
-      if(!isActive) {
+    apiSDK.isEnabled.subscribe((isEnabled) => {
+      if(!isEnabled) {
         navigate('/account-banned')
       }
     });

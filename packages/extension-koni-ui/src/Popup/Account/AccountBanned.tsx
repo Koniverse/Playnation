@@ -8,7 +8,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     <div className={className}>
       <h1>Account Banned</h1>
       <p>Your account has been banned due to violation of our terms of service.</p>
-      <p>Please contact our support team for more information.</p>
+      <p>Please contact our support team for more information. <a href={"https://t.me/Playnation_bot"}>Playnation</a> </p>
     </div>
   );
 };
