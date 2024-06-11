@@ -137,7 +137,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       content = `${result} Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A`;
     }
 
-    const urlShareImage = 'https://x.playnation.app/playnation-share-karura';
+    const urlShareImage = 'https://x.playnation.app/playnation-karura';
 
     const linkShare = `${urlShareImage}?startApp=${account?.info.inviteCode || 'booka'}`;
 
