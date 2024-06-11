@@ -4,7 +4,7 @@
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import { GamePoint } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Task, TaskHistoryStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { ShareLeaderboard, Task, TaskHistoryStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -112,6 +112,15 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
         extrinsicHash = res.extrinsicHash || '';
       }
 
+      let shareLeaderboard: ShareLeaderboard | null = null;
+
+      if (task.share_leaderboard) {
+        try {
+          shareLeaderboard = JSON.parse(task.share_leaderboard) as ShareLeaderboard;
+        } catch (e) {
+          console.error('shareLeaderboard', e);
+        }
+      }
       apiSDK.finishTask(taskId, extrinsicHash, networkKey)
         .finally(() => {
           setTaskLoading(false);
@@ -129,11 +138,11 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
         let urlRedirect = task.url;
 
         if (urlRedirect) {
-          if (urlRedirect === 'share_airdrop') {
-            const startEnv = process.env.KARURA_PLAYDROP_START_DATE || '2024-06-01 03:00:00' as string;
-            const endEnv = process.env.KARURA_PLAYDROP_END_DATE || '2024-06-15 00:00:00' as string;
+          if (shareLeaderboard && shareLeaderboard.content) {
+            const startEnv = shareLeaderboard.start_time;
+            const endEnv = shareLeaderboard.end_time;
 
-            urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv);
+            urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv, shareLeaderboard.content, task.gameId ?? 0, shareLeaderboard.url);
           }
 
           telegramConnector.openLink(urlRedirect);
