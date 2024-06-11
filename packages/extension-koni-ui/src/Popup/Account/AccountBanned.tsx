@@ -2,13 +2,16 @@ import React from 'react';
 import styled from 'styled-components';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Props } from 'react-select';
+import { useTranslation } from 'react-i18next';
 
 const Component = ({ className }: Props): React.ReactElement => {
+  const { t } = useTranslation();
+
   return (
     <div className={className}>
-      <h1>Account Banned</h1>
-      <p>Your account has been banned due to violation of our terms of service.</p>
-      <p>Please contact our support team for more information. <a href={"https://t.me/Playnation_bot"}>Playnation</a> </p>
+      <h1>{t('Account Banned')}</h1>
+      <p>{t('Your account has been suspended due to unusual activities.')}</p>
+      <p>{t('If you think this is a mistake, contact our support team')} <a href={"https://t.me/playnation_globalchat"}>Playnation Suport</a> </p>
     </div>
   );
 };
