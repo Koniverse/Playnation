@@ -167,6 +167,7 @@ export interface BookaAccount {
     createdAt: string;
     updatedAt: string;
     inviteCode: string;
+    isActive: boolean;
   };
   attributes: {
     energy: number;

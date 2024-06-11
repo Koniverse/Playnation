@@ -44,6 +44,8 @@ export class BookaSdk {
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
+  isActive = new BehaviorSubject<boolean>(true);
+
 
   constructor() {
     storage.getItem('cache-version').then((version) => {
@@ -355,31 +357,35 @@ export class BookaSdk {
       languageCode: userInfo?.language_code || 'en'
     };
 
-    const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/sync`, syncData);
+    try {
+      const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/sync`, syncData)
+      if (account) {
+        this.accountSubject.next(account);
+        storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
+        this.syncHandler.resolve();
+        this.isActive.next(true);
+        const { end, start } = calculateStartAndEnd('weekly');
 
-    if (account) {
-      this.accountSubject.next(account);
-      storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
-      this.syncHandler.resolve();
-      const { end, start } = calculateStartAndEnd('weekly');
+        await Promise.all([
+          this.fetchEnergyConfig(),
+          this.fetchRankInfoMap(),
+          this.fetchGameList(),
+          this.fetchTaskCategoryList(),
+          this.fetchTaskList(),
+          this.fetchLeaderboard(start, end, 0, 100)
+          // this.fetchGameItemMap(),
+          // this.fetchGameInventoryItemList(),
+          // this.fetchGameItemInGameList()
+        ]);
 
-      await Promise.all([
-        this.fetchEnergyConfig(),
-        this.fetchRankInfoMap(),
-        this.fetchGameList(),
-        this.fetchTaskCategoryList(),
-        this.fetchTaskList(),
-        this.fetchLeaderboard(start, end, 0, 100)
-        // this.fetchGameItemMap(),
-        // this.fetchGameInventoryItemList(),
-        // this.fetchGameItemInGameList()
-      ]);
-      await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchAirdropCampaign()]);
-    } else {
-      throw new Error('Failed to sync account');
+        await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchAirdropCampaign()]);
+      }
+    } catch (error: any) {
+      this.isActive.next(false);
+      this.syncHandler.reject(error.message);
+      throw error;
     }
-  }
-
+}
   async requestSignature(address: string, message: string): Promise<string> {
     const loginMessage = await storage.getItem('loginMessage');
 
