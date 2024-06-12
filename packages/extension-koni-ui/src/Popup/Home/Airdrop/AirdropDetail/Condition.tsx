@@ -1,4 +1,4 @@
-// Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
+// Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import { AirdropCampaign } from '@subwallet/extension-koni-ui/connector/booka/types';
@@ -6,16 +6,24 @@ import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTransla
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { customFormatDate } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
+import { CheckCircle } from 'phosphor-react';
 import React from 'react';
 import styled from 'styled-components';
+import { Icon } from '@subwallet/react-ui';
 
 type Props = ThemeProps & {
   airdropInfo: AirdropCampaign
 };
 
-function Component ({ airdropInfo, className }: Props) {
-  // @ts-ignore
+function Component({ airdropInfo, className }: Props) {
   const { t } = useTranslation();
+
+  const checkEligibility = (eligibilityId: number) => {
+    if (airdropInfo && airdropInfo.eligibilityIds) {
+      return airdropInfo.eligibilityIds.includes(eligibilityId);
+    }
+    return false;
+  };
 
   return (
     <div className={CN(className)}>
@@ -27,6 +35,12 @@ function Component ({ airdropInfo, className }: Props) {
           >
             <div className='__eligibility-item-name'>
               {item.name}
+              {checkEligibility(item.id) && <Icon
+                className={'background-icon -size-3 __eligibility-icon -primary-1 __current-icon'}
+                phosphorIcon={CheckCircle}
+                weight={'fill'}
+              />}
+
             </div>
 
             <div className='__eligibility-item-line'>
@@ -45,7 +59,7 @@ function Component ({ airdropInfo, className }: Props) {
             <div className='__eligibility-item-note'>
               <span className='__eligibility-item-note-label'>{t('Note')}:</span>
               <span className='__eligibility-item-note-content'>
-                {item.note || t('A player can win multiple type of rewards')}
+                {item.note || t('A player can win multiple types of rewards')}
               </span>
             </div>
           </div>
@@ -104,6 +118,9 @@ export const AirdropDetailCondition = styled(Component)<Props>(({ theme: { exten
     '.__eligibility-item-date': {
       display: 'flex',
       gap: token.sizeXXS
+    },
+    '.__eligibility-icon': {
+      marginLeft: token.marginXS
     }
   });
 });
