@@ -1,12 +1,13 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
 import { Layout, LoadingScreen, TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AirdropCampaign } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { AirdropDetailAbout } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/About';
 import { AirdropDetailCondition } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/Condition';
@@ -20,8 +21,7 @@ import { Alarm, ArrowCircleRight, CheckCircle, ShareNetwork } from 'phosphor-rea
 import React, { Context, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled, { ThemeContext } from 'styled-components';
-import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
-import DefaultLogosMap  from '@subwallet/extension-koni-ui/assets/logo';
+
 type WrapperProps = ThemeProps;
 type Props = ThemeProps & {
   currentAirdrop: AirdropCampaign;
@@ -41,7 +41,7 @@ const enum buttonTypeConst {
   RAFFLE = 2,
   INELIGIBLE = 3,
   END_CAMPAIGN = 4
-};
+}
 
 const enum AirdropCampaignProcess {
   RAFFLE = 'RAFFLE',
@@ -104,6 +104,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const fetchEligibility = useCallback(async () => {
     try {
       const data = await apiSDK.subscribeCheckEligibility(currentAirdrop.airdrop_campaign_id) as unknown as AirdropEligibility;
+
       if (data) {
         setEligibility(data);
         currentAirdrop.eligibilityIds = data.eligibilityIds;
@@ -115,7 +116,8 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 
   const fetchHistory = useCallback(async () => {
     try {
-      const data = await apiSDK.subscribeAirdropHistory(currentAirdrop.airdrop_campaign_id) as unknown as AirdropRewardHistoryLog;
+      const data = await apiSDK.subscribeAirdropHistory(currentAirdrop.airdrop_campaign_id) as AirdropRewardHistoryLog;
+
       if (data) {
         setAirdropHistory(data);
       }
@@ -179,20 +181,18 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
     } else {
       return buttonTypeConst.INELIGIBLE;
     }
-
   })();
-
 
   const onRaffle = useCallback(async () => {
     try {
-      const result = await apiSDK.subscribeAirdropRaffle(currentAirdrop.airdrop_campaign_id) as unknown as AirdropRaffle;
+      const result = await apiSDK.subscribeAirdropRaffle(currentAirdrop.airdrop_campaign_id) as AirdropRaffle;
+
       setRaffle(result);
       showLoadingRaffle(true);
       setTimeout(() => {
         showLoadingRaffle(false);
         activeModal(rewardModalId);
-      },3000);
-
+      }, 3000);
     } catch (error) {
       setRaffle(null);
       console.log('error', error);
@@ -205,8 +205,10 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 
   const onClaim = useCallback(async (airdrop_record_id?: number) => {
     setIsLoading(true);
+
     try {
       let airdropRecordLogId;
+
       if (raffle) {
         airdropRecordLogId = raffle.airdropRecordLogId;
       } else if (airdrop_record_id !== undefined) {
@@ -214,6 +216,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       } else {
         throw new Error('No airdrop record ID available');
       }
+
       await apiSDK.subscribeAirdropClaim(airdropRecordLogId);
 
       notify({
@@ -233,94 +236,94 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       setIsLoading(false);
       setClaim(false);
     }
-  }, [raffle,notify, inactiveModal]);
+  }, [raffle, notify, inactiveModal]);
 
   const onClaimLater = useCallback(() => {
     inactiveModal(rewardModalId);
   }, [inactiveModal]);
 
-
   const renderButton = () => {
     return (
       <>
-        {eligibility ? (
-          <>
-            {buttonType === buttonTypeConst.INELIGIBLE && (
-              <Button
-                block={true}
-                disabled={true}
-                shape={'round'}
-              >
-                {t('InEligible')}
-              </Button>
-            )}
-            {buttonType === buttonTypeConst.END_CAMPAIGN && (
-              <Button
-                block={true}
-                disabled={true}
-                icon={
-                  <Icon
-                    phosphorIcon={ArrowCircleRight}
-                    weight="fill"
-                  />
-                }
-                shape={'round'}
-              >
-                {t('End Campaign')}
-              </Button>
-            )}
-            {buttonType === buttonTypeConst.ELIGIBLE && (
-              <Button
-                block={true}
-                disabled={true}
-                icon={
-                  <Icon
-                    phosphorIcon={ArrowCircleRight}
-                    weight="fill"
-                  />
-                }
-                shape={'round'}
-              >
-                {t('eligible')}
-              </Button>
-            )}
-            {buttonType === buttonTypeConst.RAFFLE && (
-              <Button
-                block={true}
-                disabled={eligibility?.totalBoxOpen === eligibility?.totalBox}
-                icon={
-                  <Icon
-                    iconColor={token.colorPrimary}
-                    phosphorIcon={CheckCircle}
-                    weight="fill"
-                  />
-                }
-                onClick={onRaffle}
-                shape={'round'}
-              >
-                {t('Raffle')} {eligibility?.totalBoxOpen}/{eligibility?.totalBox}
-              </Button>
-            )}
-          </>
-        ) : (
-          <Button
-            block={true}
-            disabled={true}
-            icon={
-              <Icon
-                phosphorIcon={Alarm}
-                weight="fill"
-              />
-            }
-            shape={'round'}
-          >
-            {t('Eligible')}
-          </Button>
-        )}
+        {eligibility
+          ? (
+            <>
+              {buttonType === buttonTypeConst.INELIGIBLE && (
+                <Button
+                  block={true}
+                  disabled={true}
+                  shape={'round'}
+                >
+                  {t('InEligible')}
+                </Button>
+              )}
+              {buttonType === buttonTypeConst.END_CAMPAIGN && (
+                <Button
+                  block={true}
+                  disabled={true}
+                  icon={
+                    <Icon
+                      phosphorIcon={ArrowCircleRight}
+                      weight='fill'
+                    />
+                  }
+                  shape={'round'}
+                >
+                  {t('End Campaign')}
+                </Button>
+              )}
+              {buttonType === buttonTypeConst.ELIGIBLE && (
+                <Button
+                  block={true}
+                  disabled={true}
+                  icon={
+                    <Icon
+                      phosphorIcon={ArrowCircleRight}
+                      weight='fill'
+                    />
+                  }
+                  shape={'round'}
+                >
+                  {t('eligible')}
+                </Button>
+              )}
+              {buttonType === buttonTypeConst.RAFFLE && (
+                <Button
+                  block={true}
+                  disabled={eligibility?.totalBoxOpen === eligibility?.totalBox}
+                  icon={
+                    <Icon
+                      iconColor={token.colorPrimary}
+                      phosphorIcon={CheckCircle}
+                      weight='fill'
+                    />
+                  }
+                  onClick={onRaffle}
+                  shape={'round'}
+                >
+                  {t('Raffle')} {eligibility?.totalBoxOpen}/{eligibility?.totalBox}
+                </Button>
+              )}
+            </>
+          )
+          : (
+            <Button
+              block={true}
+              disabled={true}
+              icon={
+                <Icon
+                  phosphorIcon={Alarm}
+                  weight='fill'
+                />
+              }
+              shape={'round'}
+            >
+              {t('Eligible')}
+            </Button>
+          )}
       </>
     );
   };
-
 
   return (
     <Layout.WithSubHeaderOnly
@@ -364,8 +367,8 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
         {
           selectedTab === TabType.HISTORY && (
             <AirdropDetailHistory
-              className={'tab-content'}
               airdropHistory={airdropHistory}
+              className={'tab-content'}
               onClaim={onClaim}
             />
           )
@@ -378,15 +381,18 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       </div>
 
       <AirdropRewardModal
+        isLoading={isLoading}
         onCancel={onCancel}
         onClaim={onClaim}
         onClaimLater={onClaimLater}
         raffle={raffle}
-        isLoading={isLoading}
       />
       {loadingRaffle && (
         <LoadingGIF>
-          <img src={DefaultLogosMap.boxGift} alt="Loading..." />
+          <img
+            alt='Loading...'
+            src={DefaultLogosMap.boxGift}
+          />
         </LoadingGIF>)
       }
 
