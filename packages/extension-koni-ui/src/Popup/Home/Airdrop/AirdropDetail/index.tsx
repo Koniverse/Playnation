@@ -19,7 +19,6 @@ import React, { Context, useCallback, useContext, useEffect, useMemo, useState }
 import { useNavigate, useParams } from 'react-router-dom';
 import styled, { ThemeContext } from 'styled-components';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
-import DefaultLogosMap  from '@subwallet/extension-koni-ui/assets/logo';
 type WrapperProps = ThemeProps;
 type Props = ThemeProps & {
   currentAirdrop: AirdropCampaign;
@@ -49,22 +48,7 @@ const enum AirdropCampaignProcess {
 
 const rewardModalId = AIRDROP_REWARD_MODAL_ID;
 
-const LoadingGIF = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  img {
-    max-width: 100%;
-    max-height: 100%;
-  }
-`;
+
 
 const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const navigate = useNavigate();
@@ -78,7 +62,6 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [claim, setClaim] = useState<boolean>(false);
   const [airdropHistory, setAirdropHistory] = useState<AirdropRewardHistoryLog | null>(null);
-  const [loadingRaffle, showLoadingRaffle] = useState<boolean>(false);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
@@ -172,15 +155,11 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 
 
   const onRaffle = useCallback(async () => {
+
     try {
       const result = await apiSDK.subscribeAirdropRaffle(currentAirdrop.airdrop_campaign_id) as unknown as AirdropRaffle;
       setRaffle(result);
-      showLoadingRaffle(true);
-      setTimeout(() => {
-        showLoadingRaffle(false);
-        activeModal(rewardModalId);
-      },3000);
-
+      activeModal(rewardModalId);
     } catch (error) {
       setRaffle(null);
       console.log('error', error);
@@ -372,11 +351,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
         raffle={raffle}
         isLoading={isLoading}
       />
-      {loadingRaffle && (
-        <LoadingGIF>
-          <img src={DefaultLogosMap.boxGift} alt="Loading..." />
-        </LoadingGIF>)
-      }
+
 
     </Layout.WithSubHeaderOnly>
   );
