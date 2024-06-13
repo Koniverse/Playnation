@@ -9,6 +9,7 @@ import { ArrowCircleDown, CheckCircle } from 'phosphor-react';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
+import DefaultLogosMap  from '@subwallet/extension-koni-ui/assets/logo';
 
 interface Props extends ThemeProps {
   onCancel: VoidFunction;
@@ -29,8 +30,7 @@ const modalId = AIRDROP_REWARD_MODAL_ID;
 
 function Component(props: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const { className = '', onCancel, onClaim, onClaimLater, raffle,isLoading } = props;
-
+  const { className = '', onCancel, onClaim, onClaimLater, raffle,isLoading} = props;
   const _onClaimLater = useCallback(() => {
     onClaimLater?.();
   }, [onClaimLater]);
@@ -103,7 +103,7 @@ function Component(props: Props): React.ReactElement<Props> {
       };
     }
     return {
-      iconSrc: '/images/projects/karura.png', // or DefaultLogosMap.token_icon if NPS, @Khank, please note this
+      iconSrc: '/images/projects/karura.png',
       value: raffle?.rewardAmount || 0,
       symbol: 'KAR'
     };
@@ -117,18 +117,22 @@ function Component(props: Props): React.ReactElement<Props> {
       onCancel={onCancel}
       title={t('Your rewards')}
     >
-      <div className='__content-area'>
-        <div className='__congratulation-text'>
+      <div className="__content-area">
+        <img
+          src={DefaultLogosMap.boxGift}
+          className={'__zoomable-image'}
+          alt="Gift Box"
+        />
+        <div className="__congratulation-text">
           {t('Congratulations on your receipt')}:
         </div>
 
-        <div className='__reward-info'>
+        <div className="__reward-info">
           <img
             alt={'token'}
-            className='__reward-icon'
+            className="__reward-icon"
             src={rewardInfo.iconSrc}
           />
-
           <span className={'__reward-value'}>{rewardInfo.value}</span>
           <span className={'__reward-symbol'}>{rewardInfo.symbol}</span>
         </div>
@@ -193,6 +197,7 @@ export const AirdropRewardModal = styled(Component)<Props>(({ theme: { extendTok
     '.__reward-symbol': {
       marginLeft: token.marginXXS,
       color: token.colorTextDark4
-    }
+    },
+
   });
 });
