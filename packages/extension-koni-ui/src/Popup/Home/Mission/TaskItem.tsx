@@ -4,7 +4,7 @@
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import { GamePoint } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { ShareLeaderboard, Task, TaskHistoryStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { ShareLeaderboard, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -31,29 +31,6 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
   const [completed, setCompleted] = useState(!!task.completedAt);
-  const [checking, setChecking] = useState(task.status === TaskHistoryStatus.CHECKING);
-
-  useEffect(() => {
-    let taskItemUpdaterInterval: NodeJS.Timer;
-
-    if (checking) {
-      taskItemUpdaterInterval = setInterval(() => {
-        apiSDK.completeTask(task.taskHistoryId)
-          .then((data: boolean) => {
-            if (data) {
-              // @ts-ignore
-              clearInterval(taskItemUpdaterInterval);
-              setCompleted(true);
-              setChecking(false);
-              actionReloadPoint();
-            }
-          })
-          .catch(console.error);
-      }, 10000);
-    }
-
-    return () => clearInterval(taskItemUpdaterInterval);
-  }, [actionReloadPoint, checking, task.taskHistoryId]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -125,13 +102,8 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
       apiSDK.finishTask(taskId, extrinsicHash, networkKey)
         .finally(() => {
           setTaskLoading(false);
-
-          if (onChainType) {
-            setChecking(true);
-          } else {
-            setCompleted(true);
-            actionReloadPoint();
-          }
+          setCompleted(true);
+          actionReloadPoint();
         })
         .catch(console.error);
 
@@ -150,7 +122,7 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
         }
       }, 100);
     })().catch(console.error);
-  }, [account?.info, actionReloadPoint, notify, t, task.id, task.network, task.onChainType, task.url]);
+  }, [account?.info, actionReloadPoint, notify, t, task.gameId, task.id, task.network, task.onChainType, task.share_leaderboard, task.url]);
 
   const { endTime,
     isDisabled,
@@ -230,8 +202,8 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
       <div className='__right-part'>
         {!completed && (
           <Button
-            disabled={checking || isDisabled}
-            loading={checking || taskLoading}
+            disabled={isDisabled}
+            loading={taskLoading}
             onClick={finishTask}
             shape={'round'}
             size={'xs'}
