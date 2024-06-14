@@ -19,6 +19,17 @@ export const formatDateFully = (date: Date) => {
   return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 };
 
+const formatFully = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+  const day = String(date.getDate()).padStart(2, '0');
+  const hour = String(date.getHours()).padStart(2, '0');
+  const minute = String(date.getMinutes()).padStart(2, '0');
+  const second = String(date.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+};
+
 export function calculateStartAndEnd (key: string) {
   const today = new Date();
   const year = today.getUTCFullYear();
@@ -40,7 +51,7 @@ export function calculateStartAndEnd (key: string) {
       const startDate = new Date(startEnv);
       const endDate = new Date(endEnv);
 
-      return { start: formatDateFully(startDate), end: formatDateFully(endDate) };
+      return { start: formatFully(startDate), end: formatFully(endDate) };
     }
 
     default:

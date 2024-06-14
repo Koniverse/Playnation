@@ -95,7 +95,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     let karuraBoardSub: { unsubscribe: () => void } | null = null;
 
     if (selectedTab === TabType.KARURA_PLAYDROP) {
-      karuraBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 1500).subscribe((data) => {
+      karuraBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
         setLeaderBoard(data);
       });
     } else {
