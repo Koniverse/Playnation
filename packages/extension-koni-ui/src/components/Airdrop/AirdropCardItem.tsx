@@ -62,7 +62,7 @@ function Component ({ className, item, onExplore }: Props) {
                   <>
                     <span className={'__token-value'}>
                       {
-                        formatBalance(item.total_tokens, item.decimal)
+                        formatBalance(item.total_tokens, 0)
                       }
                     </span>
 
