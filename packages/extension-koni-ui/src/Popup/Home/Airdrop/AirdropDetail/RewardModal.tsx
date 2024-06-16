@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
 import { AirdropRaffle } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, SwModal } from '@subwallet/react-ui';
@@ -9,7 +10,6 @@ import { ArrowCircleDown, CheckCircle } from 'phosphor-react';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import DefaultLogosMap  from '@subwallet/extension-koni-ui/assets/logo';
 
 interface Props extends ThemeProps {
   onCancel: VoidFunction;
@@ -28,9 +28,9 @@ type RewardInfo = {
 export const AIRDROP_REWARD_MODAL_ID = 'AIRDROP_REWARD_MODAL_ID';
 const modalId = AIRDROP_REWARD_MODAL_ID;
 
-function Component(props: Props): React.ReactElement<Props> {
+function Component (props: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const { className = '', onCancel, onClaim, onClaimLater, raffle,isLoading} = props;
+  const { className = '', isLoading, onCancel, onClaim, onClaimLater, raffle } = props;
   const _onClaimLater = useCallback(() => {
     onClaimLater?.();
   }, [onClaimLater]);
@@ -38,39 +38,41 @@ function Component(props: Props): React.ReactElement<Props> {
   const modalFooter = (() => {
     return (
       <>
-        <Button
-          block={true}
-          icon={
-            <Icon
-              phosphorIcon={ArrowCircleDown}
-              weight={'fill'}
-            />
-          }
-          onClick={_onClaimLater}
-          schema={'secondary'}
-          shape={'round'}
-          size={'sm'}
-        >
-          {t('Claim later')}
-        </Button>
+        {raffle?.rewardType === 'NPS' &&
+         <Button
+           block={true}
+           icon={
+             <Icon
+               phosphorIcon={ArrowCircleDown}
+               weight={'fill'}
+             />
+           }
+           onClick={_onClaimLater}
+           schema={'secondary'}
+           shape={'round'}
+           size={'sm'}
+         >
 
-        {raffle?.rewardType === 'NPS' ? (
+           {t('Close')}
+         </Button>
+        }
+        {raffle?.rewardType !== 'NPS' && <>
           <Button
             block={true}
             icon={
               <Icon
-                phosphorIcon={CheckCircle}
+                phosphorIcon={ArrowCircleDown}
                 weight={'fill'}
               />
             }
             onClick={_onClaimLater}
+            schema={'secondary'}
             shape={'round'}
             size={'sm'}
-            loading={isLoading}
           >
-            {t('Claim')}
+
+            {t('Claim later')}
           </Button>
-        ) :      (
           <Button
             block={true}
             icon={
@@ -79,14 +81,14 @@ function Component(props: Props): React.ReactElement<Props> {
                 weight={'fill'}
               />
             }
+            loading={isLoading}
             onClick={onClaim}
             shape={'round'}
             size={'sm'}
-            loading={isLoading}
           >
             {t('Claim')}
           </Button>
-          )
+        </>
         }
 
       </>
@@ -94,7 +96,6 @@ function Component(props: Props): React.ReactElement<Props> {
   })();
 
   const rewardInfo: RewardInfo = (() => {
-
     if (raffle?.rewardType === 'NPS') {
       return {
         iconSrc: '/images/games/token-icon.png',
@@ -102,6 +103,7 @@ function Component(props: Props): React.ReactElement<Props> {
         symbol: 'NPS'
       };
     }
+
     return {
       iconSrc: '/images/projects/karura.png',
       value: raffle?.rewardAmount || 0,
@@ -117,20 +119,20 @@ function Component(props: Props): React.ReactElement<Props> {
       onCancel={onCancel}
       title={t('Your rewards')}
     >
-      <div className="__content-area">
+      <div className='__content-area'>
         <img
-          src={DefaultLogosMap.boxGift}
+          alt='Gift Box'
           className={'__zoomable-image'}
-          alt="Gift Box"
+          src={DefaultLogosMap.boxGift}
         />
-        <div className="__congratulation-text">
+        <div className='__congratulation-text'>
           {t('Congratulations on your receipt')}:
         </div>
 
-        <div className="__reward-info">
+        <div className='__reward-info'>
           <img
             alt={'token'}
-            className="__reward-icon"
+            className='__reward-icon'
             src={rewardInfo.iconSrc}
           />
           <span className={'__reward-value'}>{rewardInfo.value}</span>
@@ -197,7 +199,7 @@ export const AirdropRewardModal = styled(Component)<Props>(({ theme: { extendTok
     '.__reward-symbol': {
       marginLeft: token.marginXXS,
       color: token.colorTextDark4
-    },
+    }
 
   });
 });
