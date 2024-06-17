@@ -262,7 +262,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
                   }
                   shape={'round'}
                 >
-                  {t('eligible')}
+                  {t('Eligible')}
                 </Button>
               )}
               {buttonType === buttonTypeConst.RAFFLE && (
