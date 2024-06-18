@@ -47,6 +47,7 @@ function Component (props: Props): React.ReactElement<Props> {
     await storage.setItem('isShareClaimed', 'true');
     setLoadingShare(true);
     const url = await apiSDK.getShareTwitterClaimURL();
+
     setIsShareClaimed(true);
     setLoadingShare(false);
 

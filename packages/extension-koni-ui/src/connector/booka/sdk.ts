@@ -349,12 +349,11 @@ export class BookaSdk {
       content = `Just claimed my @KaruraNetwork Playdrop on @playnationapp with ${personMine.point} NPS and ${personMine.rank}th rank on the Karura Token Playdrop leaderboard 🔥 Join me NOW to win future airdrops👇`;
     }
 
-    const urlBot = 'https://x.playnation.app/playnation-karura';
+    const urlBot = 'https://x.playnation.app/playnation-claim-karura';
 
     const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
 
-
-    return `http://x.com/share?text=${content}&url=${linkApp}%0A&hashtags=Playnation,Karura,KaruraPlaydrop`;
+    return `http://x.com/share?text=${content}%0A&url=${linkApp}%0A&hashtags=Playnation,Karura,KaruraPlaydrop`;
   }
 
   async getShareTwitterURL (startDate: string, endDate: string, content: string, gameId: number, url: string) {
