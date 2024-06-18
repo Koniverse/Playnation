@@ -150,7 +150,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 
   const buttonType = (() => {
     const now = Date.now();
-    const shouldCheck = now >= currentAirdrop.start_snapshot.getTime();
+    const shouldCheck = currentAirdrop?.start_claim && new Date(currentAirdrop?.start_claim).getTime() > now;
 
     if (shouldCheck && eligibility && eligibility.currentProcess && eligibility.eligibility) {
       switch (eligibility.currentProcess) {
