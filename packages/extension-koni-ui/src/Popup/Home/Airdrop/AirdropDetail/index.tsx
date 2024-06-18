@@ -39,7 +39,8 @@ const enum buttonTypeConst {
   ELIGIBLE = 1,
   RAFFLE = 2,
   INELIGIBLE = 3,
-  END_CAMPAIGN = 4
+  END_CAMPAIGN = 4,
+  COMING_SOON = 5
 }
 
 const enum AirdropCampaignProcess {
@@ -148,7 +149,10 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   }, [onClickShare]);
 
   const buttonType = (() => {
-    if (eligibility && eligibility.currentProcess && eligibility.eligibility) {
+    const now = Date.now();
+    const shouldCheck = now >= currentAirdrop.start_snapshot.getTime();
+
+    if (shouldCheck && eligibility && eligibility.currentProcess && eligibility.eligibility) {
       switch (eligibility.currentProcess) {
         case AirdropCampaignProcess.ELIGIBLE:
           return buttonTypeConst.ELIGIBLE;
@@ -298,15 +302,9 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
             <Button
               block={true}
               disabled={true}
-              icon={
-                <Icon
-                  phosphorIcon={Alarm}
-                  weight='fill'
-                />
-              }
               shape={'round'}
             >
-              {t('Eligible')}
+              {t('Coming Soon')}
             </Button>
           )}
       </>
