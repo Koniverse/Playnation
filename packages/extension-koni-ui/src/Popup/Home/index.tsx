@@ -15,10 +15,13 @@ import React, { useCallback, useContext, useEffect, useMemo, useState } from 're
 import { useSelector } from 'react-redux';
 import { Outlet } from 'react-router';
 import styled from 'styled-components';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { useNavigate } from 'react-router-dom';
 
 type Props = ThemeProps;
 
 export const GlobalSearchTokenModalId = 'globalSearchToken';
+const apiSDK = BookaSdk.instance;
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const { activeModal, inactiveModal } = useContext(ModalContext);
@@ -37,6 +40,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const firstBanner = useMemo((): CampaignBanner | undefined => banners[0], [banners]);
 
   const [backgroundStyle, setBackgroundStyle] = useState<LayoutBaseProps['backgroundStyle'] | undefined>();
+  const navigate = useNavigate();
 
   const onOpenGlobalSearchToken = useCallback(() => {
     activeModal(GlobalSearchTokenModalId);
@@ -50,6 +54,11 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     if (mantaPayConfig && mantaPayConfig.enabled && !mantaPayConfig.isInitialSync && !isZkModeSyncing) {
       handleMantaPaySync(mantaPayConfig.address);
     }
+    apiSDK.isEnabled.subscribe((isEnabled) => {
+      if(!isEnabled) {
+        navigate('/account-banned')
+      }
+    });
   }, [handleMantaPaySync, isZkModeSyncing, mantaPayConfig]);
 
   const onTabSelected = useCallback(

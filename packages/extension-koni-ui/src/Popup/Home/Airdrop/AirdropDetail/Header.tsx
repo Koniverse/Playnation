@@ -21,31 +21,34 @@ enum Timeline {
   END = 'end'
 }
 
-function Component ({ airdropInfo, className }: Props) {
+function Component({ airdropInfo, className }: Props) {
   const { t } = useTranslation();
 
-  const { currentTimeline, pastTimelines }: {
-    currentTimeline: Timeline,
-    pastTimelines: Timeline[]
-  } = (() => {
-    const now = Date.now();
+  const { currentTimeline, pastTimelines } = (() => {
+    const { start, end, start_snapshot, end_snapshot, end_claim, start_claim } = airdropInfo;
+    const currentDate = Date.now();
+    const startMs = new Date(start).getTime();
+    const endMs = new Date(end).getTime();
+    const startSnapshotMs = new Date(start_snapshot).getTime();
+    const endSnapshotMs = new Date(end_snapshot).getTime();
+    const endClaimMs = new Date(end_claim).getTime();
+    const startClaim = new Date(start_claim).getTime();
 
-    let currentTimeline = Timeline.START;
-    const pastTimelines: Timeline[] = [Timeline.START];
+    let currentTimeline: Timeline = Timeline.START;
+    const pastTimelines: Timeline[] = [];
 
-    if (airdropInfo.end_snapshot && now >= new Date(airdropInfo.end_snapshot).getTime()) {
+    if (currentDate >= startMs && currentDate < startSnapshotMs) {
+      currentTimeline = Timeline.START;
+      pastTimelines.push(Timeline.START);
+    } else if (currentDate >= startSnapshotMs && currentDate <= endSnapshotMs) {
       currentTimeline = Timeline.SNAPSHOT;
-      pastTimelines.push(Timeline.SNAPSHOT);
-    }
-
-    if (airdropInfo.end_claim && now >= new Date(airdropInfo.end_claim).getTime()) {
+      pastTimelines.push(Timeline.START, Timeline.SNAPSHOT);
+    } else if (currentDate >= startClaim && currentDate <= endClaimMs) {
       currentTimeline = Timeline.CLAIM;
-      pastTimelines.push(Timeline.CLAIM);
-    }
-
-    if (airdropInfo.end && now >= new Date(airdropInfo.end).getTime()) {
+      pastTimelines.push(Timeline.START, Timeline.SNAPSHOT, Timeline.CLAIM);
+    } else if (currentDate > endMs) {
       currentTimeline = Timeline.END;
-      pastTimelines.push(Timeline.END);
+      pastTimelines.push(Timeline.START, Timeline.SNAPSHOT, Timeline.CLAIM, Timeline.END);
     }
 
     return {

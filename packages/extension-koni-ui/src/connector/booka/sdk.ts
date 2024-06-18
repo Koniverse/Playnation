@@ -3,14 +3,14 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { AccountRankType, AirdropCampaign, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
+import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
 import { calculateStartAndEnd, formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
-import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
 
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
@@ -44,7 +44,8 @@ export class BookaSdk {
   private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
-  private checkEligibility = new BehaviorSubject<{ eligibility: boolean; raffleTotal: number } | undefined>(undefined);
+  private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
+  isEnabled = new BehaviorSubject<boolean>(true);
 
   constructor () {
     storage.getItem('cache-version').then((version) => {
@@ -292,8 +293,8 @@ export class BookaSdk {
     return this.taskListSubject;
   }
 
-  async completeTask (taskHistoryId: number|undefined) {
-    const taskHistoryCheck = await this.postRequest<{completed: boolean}>(`${GAME_API_HOST}/api/task/check-complete-task`, { taskHistoryId: taskHistoryId });
+  async completeTask (taskHistoryId: number | undefined) {
+    const taskHistoryCheck = await this.postRequest<{ completed: boolean }>(`${GAME_API_HOST}/api/task/check-complete-task`, { taskHistoryId: taskHistoryId });
 
     if (taskHistoryCheck && taskHistoryCheck.completed) {
       await this.reloadAccount();
@@ -337,12 +338,21 @@ export class BookaSdk {
     return `http://x.com/share?text=${content}&url=${linkApp}`;
   }
 
+  getShareTwitterClaimURL () {
+
+    const urlBot = 'https://x.playnation.app/playnation-karura';
+
+    const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
+    const content = 'A new exciting game is in town, Karura Token Playdrop! Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A';
+
+    return `http://x.com/share?text=${content}&url=${linkApp}`;
+  }
+
   async getShareTwitterURL (startDate: string, endDate: string, content: string, gameId: number, url: string) {
     const start = formatDateFully(new Date(startDate));
     const end = formatDateFully(new Date(endDate));
     const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`,
-      {
-        startDate: start,
+      { startDate: start,
         endDate: end,
         gameId: gameId,
         limit: 1 });
@@ -397,28 +407,36 @@ export class BookaSdk {
       languageCode: userInfo?.language_code || 'en'
     };
 
-    const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/sync`, syncData);
+    try {
+      const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/sync`, syncData);
 
-    if (account) {
-      this.accountSubject.next(account);
-      storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
-      this.syncHandler.resolve();
-      const { end, start } = calculateStartAndEnd('weekly');
+      if (account) {
+        this.accountSubject.next(account);
+        storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
+        this.syncHandler.resolve();
+        const { end, start } = calculateStartAndEnd('weekly');
 
-      await Promise.all([
-        this.fetchEnergyConfig(),
-        this.fetchRankInfoMap(),
-        this.fetchGameList(),
-        this.fetchTaskCategoryList(),
-        this.fetchTaskList(),
-        this.fetchLeaderboard(start, end, 0, 100)
-        // this.fetchGameItemMap(),
-        // this.fetchGameInventoryItemList(),
-        // this.fetchGameItemInGameList()
-      ]);
-      await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchAirdropCampaign()]);
-    } else {
-      throw new Error('Failed to sync account');
+        await Promise.all([
+          this.fetchEnergyConfig(),
+          this.fetchRankInfoMap(),
+          this.fetchGameList(),
+          this.fetchTaskCategoryList(),
+          this.fetchTaskList(),
+          this.fetchLeaderboard(start, end, 0, 100)
+          // this.fetchGameItemMap(),
+          // this.fetchGameInventoryItemList(),
+          // this.fetchGameItemInGameList()
+        ]);
+
+        await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchAirdropCampaign()]);
+      }
+    } catch (error: any) {
+      if (error.message === 'ACCOUNT_BANNED') {
+        this.isEnabled.next(false);
+        this.syncHandler.reject(error.message);
+      }
+
+      throw error;
     }
   }
 
@@ -557,11 +575,13 @@ export class BookaSdk {
 
   async fetchLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all') {
     await this.waitForSync;
-    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate,
+    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, {
+      startDate,
       endDate,
       gameId,
       limit,
-      type });
+      type
+    });
 
     if (leaderBoard) {
       this.leaderBoardSubject.next(leaderBoard);
@@ -650,16 +670,76 @@ export class BookaSdk {
     }
   }
 
-  async checkEligibilityList (campaignId: number) {
-    const response = await this.postRequest<{ eligibility: boolean; raffleTotal: number }>(`${GAME_API_HOST}/api/airdrop/check-eligibility`, { campaign_id: campaignId });
+  async fetchCheckEligibility (campaignId: number): Promise<AirdropEligibility[]> {
+    try {
+      const response = await this.postRequest<AirdropEligibility[]>(`${GAME_API_HOST}/api/airdrop/check-eligibility`, { campaign_id: campaignId });
 
-    if (response) {
-      this.checkEligibility.next(response);
+      if (response) {
+        this.checkEligibility.next(response);
+      }
+
+      return response || [];
+    } catch (error) {
+      console.error('Error in checkEligibilityList:', error);
+      throw error;
+    }
+  }
+
+  async fetchClaimAirdrop (airdrop_log_id: number) {
+    try {
+      const claim = await this.postRequest(`${GAME_API_HOST}/api/airdrop/claim`, { airdrop_log_id: airdrop_log_id });
+
+      await this.fetchAirdropCampaign();
+
+      return claim;
+    } catch (error) {
+      console.error('Error in claimAirdrop:', error);
+      throw error;
+    }
+  }
+
+  // airdrop raffle
+  async fetchRaffleAirdrop (campaignId: number) {
+    try {
+      const raffle = await this.postRequest(`${GAME_API_HOST}/api/airdrop/raffle`, { campaign_id: campaignId });
+
+      await this.fetchAirdropCampaign();
+
+      return raffle;
+    } catch (error) {
+      console.error('Error in raffleAirdrop:', error);
+      throw error;
+    }
+  }
+
+  // airdrop history
+  async fetchAirdropHistory (campaignId: number) {
+    try {
+      return await this.postRequest(`${GAME_API_HOST}/api/airdrop/history`, { campaign_id: campaignId });
+    } catch (error) {
+      console.error('Error in fetchAirdropHistory:', error);
+      throw error;
     }
   }
 
   subscribeAirdropCampaign () {
     return this.airdropCampaignSubject;
+  }
+
+  subscribeCheckEligibility (campaignId: number) {
+    return this.fetchCheckEligibility(campaignId);
+  }
+
+  subscribeAirdropRaffle (campaignId: number) {
+    return this.fetchRaffleAirdrop(campaignId);
+  }
+
+  subscribeAirdropClaim (airdrop_log_id: number) {
+    return this.fetchClaimAirdrop(airdrop_log_id);
+  }
+
+  subscribeAirdropHistory (campaignId: number) {
+    return this.fetchAirdropHistory(campaignId);
   }
 
   // Singleton

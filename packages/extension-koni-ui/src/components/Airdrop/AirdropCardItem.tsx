@@ -62,7 +62,7 @@ function Component ({ className, item, onExplore }: Props) {
                   <>
                     <span className={'__token-value'}>
                       {
-                        formatBalance(item.total_tokens, item.decimal)
+                        formatBalance(item.total_tokens, 0)
                       }
                     </span>
 
@@ -83,7 +83,7 @@ function Component ({ className, item, onExplore }: Props) {
         </div>
 
         <div className={'__description'}>
-          {isComingSoon ? '' : 'The airdrop is based on users\' contributions and achievements, with different raffle entries. Earn raffles by being a top NPS Holder, inviting friends, or joining mini-events on Playnation\'s social channel.'}
+          {isComingSoon ? '' : item.shortDescription}
         </div>
 
         <div className='__buttons'>

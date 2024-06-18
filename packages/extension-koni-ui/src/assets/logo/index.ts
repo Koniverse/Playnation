@@ -17,7 +17,8 @@ export const DefaultLogosMap: Record<string, string> = {
   stellaswap: '/images/projects/stellaswap.png',
   xtwitter: '/images/projects/xtwitter.png',
   game_background_image: '/images/subwallet/game-background-image.png',
-  token_icon: '/images/games/token-icon.png'
+  token_icon: '/images/games/token-icon.png',
+  boxGift: '/images/box.png',
 };
 
 export const IconMap = {
