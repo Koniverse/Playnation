@@ -338,6 +338,16 @@ export class BookaSdk {
     return `http://x.com/share?text=${content}&url=${linkApp}`;
   }
 
+  getShareTwitterClaimURL () {
+
+    const urlBot = 'https://x.playnation.app/playnation-karura';
+
+    const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
+    const content = 'A new exciting game is in town, Karura Token Playdrop! Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A';
+
+    return `http://x.com/share?text=${content}&url=${linkApp}`;
+  }
+
   async getShareTwitterURL (startDate: string, endDate: string, content: string, gameId: number, url: string) {
     const start = formatDateFully(new Date(startDate));
     const end = formatDateFully(new Date(endDate));

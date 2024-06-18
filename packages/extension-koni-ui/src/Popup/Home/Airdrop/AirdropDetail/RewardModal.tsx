@@ -1,13 +1,16 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { SWStorage } from '@subwallet/extension-base/storage';
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AirdropRaffle } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { ArrowCircleDown, CheckCircle } from 'phosphor-react';
-import React, { useCallback } from 'react';
+import { ArrowCircleDown, CheckCircle, ShareNetwork } from 'phosphor-react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -27,6 +30,9 @@ type RewardInfo = {
 
 export const AIRDROP_REWARD_MODAL_ID = 'AIRDROP_REWARD_MODAL_ID';
 const modalId = AIRDROP_REWARD_MODAL_ID;
+const storage = SWStorage.instance;
+const apiSDK = BookaSdk.instance;
+const telegramConnector = TelegramConnector.instance;
 
 function Component (props: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
@@ -34,6 +40,25 @@ function Component (props: Props): React.ReactElement<Props> {
   const _onClaimLater = useCallback(() => {
     onClaimLater?.();
   }, [onClaimLater]);
+  const [isShareClaimed, setIsShareClaimed] = useState<boolean>(false);
+
+  const onClickShare = useCallback(async () => {
+    await storage.setItem('isShareClaimed', 'true');
+    setIsShareClaimed(true);
+    const url = apiSDK.getShareTwitterClaimURL();
+
+    telegramConnector.openLink(url);
+  }, []);
+
+  useEffect(() => {
+    const checkShareClaimed = async () => {
+      const isClaimed = await storage.getItem('isShareClaimed') === 'true';
+
+      setIsShareClaimed(isClaimed);
+    };
+
+    checkShareClaimed();
+  }, []);
 
   const modalFooter = (() => {
     return (
@@ -73,21 +98,41 @@ function Component (props: Props): React.ReactElement<Props> {
 
             {t('Claim later')}
           </Button>
-          <Button
-            block={true}
-            icon={
-              <Icon
-                phosphorIcon={CheckCircle}
-                weight={'fill'}
-              />
-            }
-            loading={isLoading}
-            onClick={onClaim}
-            shape={'round'}
-            size={'sm'}
-          >
-            {t('Claim')}
-          </Button>
+          {isShareClaimed
+            ? (
+              <Button
+                block={true}
+                icon={
+                  <Icon
+                    phosphorIcon={CheckCircle}
+                    weight={'fill'}
+                  />
+                }
+                loading={isLoading}
+                onClick={onClaim}
+                shape={'round'}
+                size={'sm'}
+              >
+                {t('Claim')}
+              </Button>
+            )
+            : (
+              <Button
+                block={true}
+                icon={
+                  <Icon
+                    phosphorIcon={ShareNetwork}
+                    weight={'fill'}
+                  />
+                }
+                loading={isLoading}
+                onClick={onClickShare}
+                shape={'round'}
+                size={'sm'}
+              >
+                {t('Share Claim')}
+              </Button>
+            )}
         </>
         }
 
