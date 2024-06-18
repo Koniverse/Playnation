@@ -41,11 +41,14 @@ function Component (props: Props): React.ReactElement<Props> {
     onClaimLater?.();
   }, [onClaimLater]);
   const [isShareClaimed, setIsShareClaimed] = useState<boolean>(false);
+  const [loadingShare, setLoadingShare] = useState(false);
 
   const onClickShare = useCallback(async () => {
     await storage.setItem('isShareClaimed', 'true');
+    setLoadingShare(true);
+    const url = await apiSDK.getShareTwitterClaimURL();
     setIsShareClaimed(true);
-    const url = apiSDK.getShareTwitterClaimURL();
+    setLoadingShare(false);
 
     telegramConnector.openLink(url);
   }, []);
@@ -82,55 +85,59 @@ function Component (props: Props): React.ReactElement<Props> {
          </Button>
         }
         {raffle?.rewardType !== 'NPS' && <>
-          <Button
-            block={true}
-            icon={
-              <Icon
-                phosphorIcon={ArrowCircleDown}
-                weight={'fill'}
-              />
-            }
-            onClick={_onClaimLater}
-            schema={'secondary'}
-            shape={'round'}
-            size={'sm'}
-          >
 
-            {t('Claim later')}
-          </Button>
           {isShareClaimed
             ? (
-              <Button
-                block={true}
-                icon={
-                  <Icon
-                    phosphorIcon={CheckCircle}
-                    weight={'fill'}
-                  />
-                }
-                loading={isLoading}
-                onClick={onClaim}
-                shape={'round'}
-                size={'sm'}
-              >
-                {t('Claim')}
-              </Button>
+              <>
+                <Button
+                  block={true}
+                  icon={
+                    <Icon
+                      phosphorIcon={ArrowCircleDown}
+                      weight={'fill'}
+                    />
+                  }
+                  onClick={_onClaimLater}
+                  schema={'secondary'}
+                  shape={'round'}
+                  size={'sm'}
+                >
+
+                  {t('Claim later')}
+                </Button>
+                <Button
+                  block={true}
+                  icon={
+                    <Icon
+                      phosphorIcon={CheckCircle}
+                      size={'small'}
+                      weight={'fill'}
+                    />
+                  }
+                  loading={isLoading}
+                  onClick={onClaim}
+                  shape={'round'}
+                  size={'sm'}
+                >
+                  {t('Claim')}
+                </Button>
+              </>
             )
             : (
               <Button
                 block={true}
                 icon={
                   <Icon
+                    customSize={'20px'}
                     phosphorIcon={ShareNetwork}
-                    weight={'fill'}
                   />
                 }
-                loading={isLoading}
+                loading={loadingShare}
                 onClick={onClickShare}
                 shape={'round'}
                 size={'sm'}
               >
-                {t('Share Claim')}
+                {t('Share to Twitter and celebrate!')}
               </Button>
             )}
         </>
@@ -171,7 +178,7 @@ function Component (props: Props): React.ReactElement<Props> {
           src={DefaultLogosMap.boxGift}
         />
         <div className='__congratulation-text'>
-          {t('Congratulations on your receipt')}:
+          {t('Congratulations! You won a reward of')}:
         </div>
 
         <div className='__reward-info'>

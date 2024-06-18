@@ -338,14 +338,23 @@ export class BookaSdk {
     return `http://x.com/share?text=${content}&url=${linkApp}`;
   }
 
-  getShareTwitterClaimURL () {
+  async getShareTwitterClaimURL () {
+    const start = '2024-06-01 03:00:00';
+    const end = '2024-06-15 00:00:00';
+    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate: start, endDate: end, limit: 1 });
+    const personMine = leaderBoard.find((item) => item.mine);
+    let content = 'Just claimed my @KaruraNetwork Playdrop on @playnationapp 🔥 Join me NOW to win future airdrops👇';
+
+    if (personMine) {
+      content = `Just claimed my @KaruraNetwork Playdrop on @playnationapp with ${personMine.point} NPS and ${personMine.rank}th rank on the Karura Token Playdrop leaderboard 🔥 Join me NOW to win future airdrops👇`;
+    }
 
     const urlBot = 'https://x.playnation.app/playnation-karura';
 
     const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
-    const content = 'A new exciting game is in town, Karura Token Playdrop! Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A';
 
-    return `http://x.com/share?text=${content}&url=${linkApp}`;
+
+    return `http://x.com/share?text=${content}&url=${linkApp}%0A&hashtags=Playnation,Karura,KaruraPlaydrop`;
   }
 
   async getShareTwitterURL (startDate: string, endDate: string, content: string, gameId: number, url: string) {
@@ -704,6 +713,7 @@ export class BookaSdk {
       const raffle = await this.postRequest(`${GAME_API_HOST}/api/airdrop/raffle`, { campaign_id: campaignId });
 
       await this.fetchAirdropCampaign();
+      await this.reloadAccount();
 
       return raffle;
     } catch (error) {
