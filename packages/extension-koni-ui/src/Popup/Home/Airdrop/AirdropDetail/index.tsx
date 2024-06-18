@@ -35,6 +35,7 @@ enum TabType {
 }
 
 const enum buttonTypeConst {
+  COMING_SOON = 0,
   ELIGIBLE = 1,
   RAFFLE = 2,
   INELIGIBLE = 3,
@@ -105,11 +106,11 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
     } catch (error) {
       console.error('Error fetching eligibility:', error);
     }
-  }, [currentAirdrop.airdrop_campaign_id, raffle, inactiveModal, claim, notify]);
+  }, [currentAirdrop.airdrop_campaign_id]);
 
   useEffect(() => {
-    fetchEligibility();
-    fetchHistory();
+    fetchEligibility().catch(console.error);
+    fetchHistory().catch(console.error);
   }, [fetchEligibility, fetchHistory]);
 
   const onSelectTab = useCallback((value: string) => {
@@ -161,7 +162,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
           return buttonTypeConst.ELIGIBLE;
       }
     } else {
-      return buttonTypeConst.INELIGIBLE;
+      return buttonTypeConst.COMING_SOON;
     }
   })();
 
@@ -175,7 +176,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       setRaffle(null);
       console.log('error', error);
     }
-  }, [activeModal]);
+  }, [activeModal, currentAirdrop.airdrop_campaign_id]);
 
   const onCancel = useCallback(() => {
     inactiveModal(rewardModalId);
@@ -214,7 +215,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       setIsLoading(false);
       setClaim(false);
     }
-  }, [raffle, notify, inactiveModal]);
+  }, [raffle, notify, t, inactiveModal, fetchHistory]);
 
   const onClaimLater = useCallback(() => {
     inactiveModal(rewardModalId);
@@ -226,6 +227,15 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
         {eligibility
           ? (
             <>
+              {buttonType === buttonTypeConst.COMING_SOON && (
+                <Button
+                  block={true}
+                  disabled={true}
+                  shape={'round'}
+                >
+                  {t('Coming Soon')}
+                </Button>
+              )}
               {buttonType === buttonTypeConst.INELIGIBLE && (
                 <Button
                   block={true}
