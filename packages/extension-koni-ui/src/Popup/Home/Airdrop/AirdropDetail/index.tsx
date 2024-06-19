@@ -152,8 +152,9 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const buttonType = (() => {
     const now = Date.now();
     const shouldCheck = currentAirdrop?.start_claim && new Date(currentAirdrop?.start_claim).getTime() < now;
+    const endCampaign = currentAirdrop?.end && new Date(currentAirdrop?.end).getTime() < now;
 
-    if (!shouldCheck) {
+    if (!shouldCheck && !endCampaign) {
       return buttonTypeConst.COMING_SOON;
     }
 
