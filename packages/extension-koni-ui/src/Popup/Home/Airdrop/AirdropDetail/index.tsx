@@ -64,6 +64,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const [raffle, setRaffle] = useState<AirdropRaffle | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [claim, setClaim] = useState<boolean>(false);
+  const [isLoadingRaffle, setIsLoadingRaffle] = useState<boolean>(false);
   const [airdropHistory, setAirdropHistory] = useState<AirdropRewardHistoryLog | null>(null);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
@@ -172,14 +173,18 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 
   const onRaffle = useCallback(async () => {
     try {
+      setIsLoadingRaffle(true);
       const result = await apiSDK.subscribeAirdropRaffle(currentAirdrop.airdrop_campaign_id) as AirdropRaffle;
 
       setRaffle(result);
       activeModal(rewardModalId);
+      setIsLoadingRaffle(false);
     } catch (error) {
       setRaffle(null);
+      setIsLoadingRaffle(false);
       console.log('error', error);
     }
+
   }, [activeModal, currentAirdrop.airdrop_campaign_id]);
 
   const onCancel = useCallback(() => {
@@ -282,6 +287,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
               {buttonType === buttonTypeConst.RAFFLE && (
                 <Button
                   block={true}
+                  loading={isLoadingRaffle}
                   disabled={eligibility?.totalBoxOpen === eligibility?.totalBox}
                   icon={
                     <Icon
