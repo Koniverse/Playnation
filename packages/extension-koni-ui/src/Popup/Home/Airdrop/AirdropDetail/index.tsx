@@ -153,7 +153,11 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
     const now = Date.now();
     const shouldCheck = currentAirdrop?.start_claim && new Date(currentAirdrop?.start_claim).getTime() < now;
 
-    if (shouldCheck && eligibility && eligibility.currentProcess && eligibility.eligibility) {
+    if (!shouldCheck) {
+      return buttonTypeConst.COMING_SOON;
+    }
+
+    if (eligibility && eligibility.currentProcess && eligibility.eligibility) {
       switch (eligibility.currentProcess) {
         case AirdropCampaignProcess.ELIGIBLE:
           return buttonTypeConst.ELIGIBLE;
@@ -167,7 +171,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
           return buttonTypeConst.ELIGIBLE;
       }
     } else {
-      return buttonTypeConst.COMING_SOON;
+      return buttonTypeConst.INELIGIBLE;
     }
   })();
 
@@ -184,7 +188,6 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       setIsLoadingRaffle(false);
       console.log('error', error);
     }
-
   }, [activeModal, currentAirdrop.airdrop_campaign_id]);
 
   const onCancel = useCallback(() => {
