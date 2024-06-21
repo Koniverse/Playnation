@@ -313,7 +313,7 @@ export default class TransactionService {
           resolve();
         });
       } else {
-        emitter.on('signed', (data: TransactionEventResponse) => {
+        emitter.on('extrinsicHash', (data: TransactionEventResponse) => {
           validatedTransaction.id = data.id;
           validatedTransaction.extrinsicHash = data.extrinsicHash;
           resolve();
