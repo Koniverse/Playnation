@@ -99,13 +99,19 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
         }
       }
 
-      apiSDK.finishTask(taskId, extrinsicHash, networkKey)
-        .finally(() => {
-          setTaskLoading(false);
-          setCompleted(true);
-          actionReloadPoint();
-        })
-        .catch(console.error);
+      const result = await apiSDK.finishTask(taskId, extrinsicHash, networkKey);
+
+      console.log('finishTask', result, taskId, extrinsicHash, networkKey, shareLeaderboard, task.url, task.gameId);
+      setTaskLoading(false);
+      setCompleted(result.success);
+      actionReloadPoint();
+
+      if (!result.success) {
+        notify({
+          message: result.message,
+          type: 'error'
+        });
+      }
 
       setTimeout(async () => {
         let urlRedirect = task.url;
