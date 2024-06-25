@@ -124,11 +124,11 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   }, [navigate]);
 
   const onClickShare = useCallback(async () => {
-    if (!currentAirdrop || !currentAirdrop.start_snapshot || !currentAirdrop.end_snapshot) {
+    if (!currentAirdrop || !currentAirdrop.network) {
       return;
     }
 
-    const url = await apiSDK.getShareTwitterAirdropURL(currentAirdrop.start_snapshot, currentAirdrop.end_snapshot);
+    const url = apiSDK.getShareTwitterAirdropURL(currentAirdrop.network);
 
     telegramConnector.openLink(url);
   }, [currentAirdrop]);
