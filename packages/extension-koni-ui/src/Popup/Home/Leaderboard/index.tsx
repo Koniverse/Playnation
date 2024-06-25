@@ -24,7 +24,7 @@ const apiSDK = BookaSdk.instance;
 
 enum TabType {
   WEEKLY = 'weekly',
-  KARURA_PLAYDROP = 'karura_playdrop'
+  DED_PLAYDROP = 'ded_playdrop'
 }
 
 type GameItemPlaceholderType = {
@@ -47,8 +47,8 @@ const Component = ({ className }: Props): React.ReactElement => {
         value: TabType.WEEKLY
       },
       {
-        label: t('Karura Playdrop'),
-        value: TabType.KARURA_PLAYDROP
+        label: t('DED Playdrop'),
+        value: TabType.DED_PLAYDROP
       }
     ];
   }, [t]);
@@ -94,7 +94,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     let weeklyBoardSub: { unsubscribe: () => void } | null = null;
     let karuraBoardSub: { unsubscribe: () => void } | null = null;
 
-    if (selectedTab === TabType.KARURA_PLAYDROP) {
+    if (selectedTab === TabType.DED_PLAYDROP) {
       karuraBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
         setLeaderBoard(data);
       });
@@ -129,19 +129,19 @@ const Component = ({ className }: Props): React.ReactElement => {
     }
 
     const personMine = leaderBoard.find((item) => item.mine);
-    let content = 'A new exciting game is in town, Karura Token Playdrop! Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A';
+    let content = '';
 
     if (personMine) {
-      const result = `Wooho, I got ${personMine.point} points and ranked ${personMine.rank} on the Karura Token Playdrop leaderboard 🔥`;
-
-      content = `${result} Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A`;
+      content += `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank} on the DED Egg Hunt Airdrop`;
     }
 
-    const urlShareImage = 'https://x.playnation.app/playnation-karura';
+    content += 'Leaderboard! Want to join the fun and get a chance to win $DED rewards? Join me now! 🚀';
+
+    const urlShareImage = 'https://x.playnation.app/playnation-ded';
 
     const linkShare = `${urlShareImage}?startApp=${account?.info.inviteCode || 'booka'}`;
 
-    const url = `http://x.com/share?text=${content}&url=${linkShare}`;
+    const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&hashtags=DEDEggHunt,Playnation,DOTisDED,Airdrop`;
 
     telegramConnector.openLink(url);
   }, [leaderBoard, account]);
@@ -156,7 +156,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       />
     </div>
     <div className='top-three-area'>
-      {selectedTab === TabType.KARURA_PLAYDROP && (
+      {selectedTab === TabType.DED_PLAYDROP && (
         <Button
           className={'__share-button -primary-3'}
           icon={(

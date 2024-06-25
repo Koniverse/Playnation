@@ -55,6 +55,15 @@ export function calculateStartAndEnd (key: string) {
       return { start: formatFully(startDate), end: formatFully(endDate) };
     }
 
+    case 'ded_playdrop': {
+      const startEnv = process.env.DED_PLAYDROP_START_DATE || '2024-06-26 03:00:00' as string;
+      const endEnv = process.env.DED_PLAYDROP_END_DATE || '2024-07-10 03:00:00' as string;
+      const startDate = new Date(startEnv);
+      const endDate = new Date(endEnv);
+
+      return { start: formatFully(startDate), end: formatFully(endDate) };
+    }
+
     default:
       throw new Error('Invalid key. Must be "weekly", "monthly", or "yearly".');
   }

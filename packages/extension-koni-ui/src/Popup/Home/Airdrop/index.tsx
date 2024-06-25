@@ -29,17 +29,17 @@ const AirdropComponent: React.FC<Props> = ({ className }) => {
       }
 
       if (a.start === null) {
-        return 1;
-      }
-
-      if (b.start === null) {
         return -1;
       }
 
-      const aTime = new Date(a.start).getTime();
-      const bTime = new Date(b.start).getTime();
+      if (b.start === null) {
+        return 1;
+      }
 
-      return aTime - bTime;
+      const aTime = new Date(a.end).getTime();
+      const bTime = new Date(b.end).getTime();
+
+      return bTime - aTime;
     });
   }, [airdropCampaign]);
 

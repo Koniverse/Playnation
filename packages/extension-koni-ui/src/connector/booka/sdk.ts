@@ -319,23 +319,21 @@ export class BookaSdk {
     return `https://t.me/${TELEGRAM_WEBAPP_LINK}?startapp=${this.account?.info.inviteCode || 'booka'}`;
   }
 
-  async getShareTwitterAirdropURL (startDate: Date, endDate: Date) {
-    // const start = formatDateFully(new Date(startDate));
-    // const end = formatDateFully(new Date(endDate));
-    // const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate: start, endDate: end, limit: 1 });
-    // const personMine = leaderBoard.find((item) => item.mine);
-    // let result = '';
+  public getShareTwitterAirdropURL (network: string) {
+    let urlBot = 'https://x.playnation.app/playnation-karura';
 
-    // if (personMine) {
-    //   result = `Wooho, I got ${personMine.point} points and ranked ${personMine.rank} the Karura Token Playdrop leaderboard 🔥\n `;
-    // }
+    let content = 'A new exciting game is in town, Karura Token Playdrop! Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A';
+    let hashtag = '';
 
-    const urlBot = 'https://x.playnation.app/playnation-karura';
+    if (network !== 'karura') {
+      urlBot = 'https://x.playnation.app/playnation-ded';
+      content = 'Get ready for the DED Airdrop! 🎉 Earn $DED tokens by joining our Egg Hunt event. Don’t miss out on the fun and rewards! 🥚💸';
+      hashtag = '&hashtags=DEDEggHunt,Playnation,DOTisDED,Airdrop';
+    }
 
     const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
-    const content = 'A new exciting game is in town, Karura Token Playdrop! Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A';
 
-    return `http://x.com/share?text=${content}&url=${linkApp}`;
+    return `http://x.com/share?text=${content}&url=${linkApp}%0A${hashtag}`;
   }
 
   async getShareTwitterClaimURL () {
