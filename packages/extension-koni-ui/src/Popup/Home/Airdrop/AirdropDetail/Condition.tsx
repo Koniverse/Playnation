@@ -53,7 +53,6 @@ function Component({ airdropInfo, className }: Props) {
             </div>
             <div className='__eligibility-item-line'>
               <div className='__eligibility-item-line-label'>{t('Method')}</div>
-              <div className='__eligibility-item-line-value'>Raffle ({item.boxCount})</div>
             </div>
 
             <div className='__eligibility-item-note'>

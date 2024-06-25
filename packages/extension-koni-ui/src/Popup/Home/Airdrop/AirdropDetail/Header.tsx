@@ -76,7 +76,7 @@ function Component ({ airdropInfo, className }: Props) {
           </div>
 
           <div className='__airdrop-token'>
-            <span className='__airdrop-token-value'>{formatBalance(airdropInfo.total_tokens, airdropInfo.decimal)}</span>
+            <span className='__airdrop-token-value'>{formatBalance(airdropInfo.total_tokens, 0)}</span>
             <span className='__airdrop-token-symbol'>{airdropInfo.symbol}</span>
           </div>
         </div>
