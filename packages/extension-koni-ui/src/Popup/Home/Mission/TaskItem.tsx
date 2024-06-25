@@ -19,12 +19,13 @@ import styled from 'styled-components';
 type Props = {
   task: Task,
   actionReloadPoint: VoidFunction;
+  actionOpenPopup: (task: Task) => void;
 } & ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
 
-const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactElement => {
+const _TaskItem = ({ actionOpenPopup, actionReloadPoint, className, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const notify = useNotification();
   const [account, setAccount] = useState(apiSDK.account);
@@ -106,13 +107,6 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
       setCompleted(result.success);
       actionReloadPoint();
 
-      if (!result.success) {
-        notify({
-          message: result.message,
-          type: 'error'
-        });
-      }
-
       setTimeout(async () => {
         let urlRedirect = task.url;
 
@@ -123,7 +117,7 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
           urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv, shareLeaderboard.content, task.gameId ?? 0, shareLeaderboard.url);
         }
 
-        if (urlRedirect) {
+        if (urlRedirect && result.openUrl) {
           telegramConnector.openLink(urlRedirect);
         }
       }, 100);

@@ -314,7 +314,7 @@ export class BookaSdk {
 
     await this.reloadAccount();
 
-    return data as {success:boolean, message: string};
+    return data as {success:boolean, openUrl: boolean, message: string};
   }
 
   getInviteURL (): string {
