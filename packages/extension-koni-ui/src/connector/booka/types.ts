@@ -120,6 +120,8 @@ export interface Task {
   completedAt?: string;
   taskHistoryId?: number;
   share_leaderboard?: string | null;
+  zealyType?: string | null;
+  zealyId?: string | null;
 }
 
 export interface TaskCategory {

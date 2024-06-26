@@ -306,13 +306,15 @@ export class BookaSdk {
   }
 
   async finishTask (taskId: number, extrinsicHash: string, network: string) {
-    await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId, extrinsicHash, network });
+    const data = await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId, extrinsicHash, network });
 
     await this.fetchTaskCategoryList();
 
     await this.fetchTaskList();
 
     await this.reloadAccount();
+
+    return data as {success:boolean, openUrl: boolean, message: string};
   }
 
   getInviteURL (): string {
