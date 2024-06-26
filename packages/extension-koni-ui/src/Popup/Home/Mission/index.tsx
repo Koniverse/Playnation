@@ -42,7 +42,7 @@ function getTaskCategoryInfoMap (tasks: Task[]): Record<number, TaskCategoryInfo
       };
     }
 
-    if (!t.completedAt && t.endTime && new Date(t.endTime).getTime() < now) {
+    if (t.endTime && new Date(t.endTime).getTime() < now) {
       return;
     }
 
