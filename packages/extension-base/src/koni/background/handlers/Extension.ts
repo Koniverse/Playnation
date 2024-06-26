@@ -12,7 +12,7 @@ import RequestBytesSign from '@subwallet/extension-base/background/RequestBytesS
 import RequestExtrinsicSign from '@subwallet/extension-base/background/RequestExtrinsicSign';
 import { AccountAuthType, AccountJson, AuthorizeRequest, MessageTypes, MetadataRequest, RequestAccountChangePassword, RequestAccountCreateExternal, RequestAccountCreateHardware, RequestAccountCreateSuri, RequestAccountEdit, RequestAccountExport, RequestAccountForget, RequestAccountShow, RequestAccountTie, RequestAccountValidate, RequestAuthorizeCancel, RequestAuthorizeReject, RequestBatchRestore, RequestCurrentAccountAddress, RequestDeriveCreate, RequestDeriveValidate, RequestJsonRestore, RequestMetadataApprove, RequestMetadataReject, RequestSeedCreate, RequestSeedValidate, RequestSigningApproveSignature, RequestSigningCancel, RequestTypes, ResponseAccountExport, ResponseAuthorizeList, ResponseDeriveValidate, ResponseJsonGetAccountInfo, ResponseSeedCreate, ResponseSeedValidate, ResponseSigning, ResponseType, SigningRequest, WindowOpenParams } from '@subwallet/extension-base/background/types';
 import { TransactionWarning } from '@subwallet/extension-base/background/warnings/TransactionWarning';
-import { ALL_ACCOUNT_KEY, ALL_GENESIS_HASH, XCM_FEE_RATIO, XCM_MIN_AMOUNT_RATIO } from '@subwallet/extension-base/constants';
+import { ALL_ACCOUNT_KEY, ALL_GENESIS_HASH, LATEST_SESSION, XCM_FEE_RATIO, XCM_MIN_AMOUNT_RATIO } from '@subwallet/extension-base/constants';
 import { ALLOWED_PATH } from '@subwallet/extension-base/defaults';
 import { resolveAzeroAddressToDomain, resolveAzeroDomainToAddress } from '@subwallet/extension-base/koni/api/dotsama/domain';
 import { parseSubstrateTransaction } from '@subwallet/extension-base/koni/api/dotsama/parseTransaction';
@@ -36,8 +36,10 @@ import { SWTransaction, SWTransactionResponse, SWTransactionResult, TransactionE
 import { WALLET_CONNECT_EIP155_NAMESPACE } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { isProposalExpired, isSupportWalletConnectChain, isSupportWalletConnectNamespace } from '@subwallet/extension-base/services/wallet-connect-service/helpers';
 import { ResultApproveWalletConnectSession, WalletConnectNotSupportRequest, WalletConnectSessionRequest } from '@subwallet/extension-base/services/wallet-connect-service/types';
+import { SWStorage } from '@subwallet/extension-base/storage';
 import { AccountsStore } from '@subwallet/extension-base/stores';
 import { BalanceJson, BuyServiceInfo, BuyTokenInfo, NominationPoolInfo, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData } from '@subwallet/extension-base/types';
+import { SwapPair, SwapQuoteResponse, SwapRequest, SwapRequestResult, SwapSubmitParams, ValidateSwapProcessParams } from '@subwallet/extension-base/types/swap';
 import { BN_ZERO, convertSubjectInfoToAddresses, createTransactionFromRLP, isSameAddress, reformatAddress, signatureToHex, Transaction as QrTransaction, uniqueStringArray } from '@subwallet/extension-base/utils';
 import { parseContractInput, parseEvmRlp } from '@subwallet/extension-base/utils/eth/parseTransaction';
 import { balanceFormatter, formatNumber } from '@subwallet/extension-base/utils/number';
@@ -111,11 +113,13 @@ export default class KoniExtension {
           this.#lockTimeOut = setTimeout(() => {
             if (!this.#skipAutoLock) {
               this.keyringLock();
+              updateLatestSession(Date.now());
             }
           }, this.#timeAutoLock * 60 * 1000);
         } else if (this.#alwaysLock) {
           if (!this.#firstTime) {
             this.keyringLock();
+            updateLatestSession(Date.now());
           }
         }
       }
@@ -123,6 +127,10 @@ export default class KoniExtension {
       if (this.#firstTime) {
         this.#firstTime = false;
       }
+    };
+
+    const updateLatestSession = (time: number) => {
+      SWStorage.instance.setItem(LATEST_SESSION, JSON.stringify({ remind: true, timeCalculate: time }));
     };
 
     this.#koniState.settingService.getSettings(updateTimeAutoLock);
@@ -1150,6 +1158,10 @@ export default class KoniExtension {
     return this.#koniState.priceService.getPrice();
   }
 
+  private async setPriceCurrency ({ currency }: RequestChangePriceCurrency): Promise<boolean> {
+    return await this.#koniState.priceService.setPriceCurrency(currency);
+  }
+
   private subscribePrice (id: string, port: chrome.runtime.Port): Promise<PriceJson> {
     const cb = createSubscription<'pri(price.getSubscription)'>(id, port);
 
@@ -1498,6 +1510,26 @@ export default class KoniExtension {
       }
     } else {
       throw new Error(t('Wrong password'));
+    }
+  }
+
+  private async batchExportV2 ({ addresses, password }: RequestAccountBatchExportV2): Promise<ResponseAccountBatchExportV2> {
+    try {
+      if (addresses && !addresses.length) {
+        throw new Error(t('No accounts found to export'));
+      }
+
+      return {
+        exportedJson: await keyring.backupAccounts(password, addresses)
+      };
+    } catch (e) {
+      const error = e as Error;
+
+      if (error.message === 'Invalid master password') {
+        throw new Error(t('Wrong password'));
+      } else {
+        throw error;
+      }
     }
   }
 
@@ -2981,7 +3013,10 @@ export default class KoniExtension {
     let isEvm = false;
 
     if (isJsonPayload(payload)) {
-      // Get the metadata for the genesisHash
+      /**
+       *  Get the metadata for the genesisHash
+       *  @todo: need to handle case metadata store in db
+      */
       const currentMetadata = this.#koniState.knownMetadata.find((meta: MetadataDef) =>
         meta.genesisHash === payload.genesisHash);
 
@@ -2994,14 +3029,30 @@ export default class KoniExtension {
 
       const [, chainInfo] = this.#koniState.findNetworkKeyByGenesisHash(payload.genesisHash);
 
-      if (chainInfo && (_API_OPTIONS_CHAIN_GROUP.avail.includes(chainInfo.slug) || _API_OPTIONS_CHAIN_GROUP.goldberg.includes(chainInfo.slug))) {
-        const isChainActive = this.#koniState.getChainStateByKey(chainInfo.slug).active;
+      if (!currentMetadata) {
+        /*
+        * Some networks must have metadata to signing,
+        * so if the chain not active (cannot use metadata from api), it must be rejected
+        *  */
+        if (
+          chainInfo &&
+          (_API_OPTIONS_CHAIN_GROUP.avail.includes(chainInfo.slug) || _API_OPTIONS_CHAIN_GROUP.goldberg.includes(chainInfo.slug)) // The special case for chains that need metadata to signing
+        ) {
+          // For case the chain does not have any provider
+          if (!Object.keys(chainInfo.providers).length) {
+            reject(new Error('{{chain}} network does not have any provider to connect, please update metadata from dApp'.replaceAll('{{chain}}', chainInfo.name)));
 
-        if (!isChainActive) {
-          reject(new Error('Please activate {{chain}} network before signing'.replaceAll('{{chain}}', chainInfo.name)));
+            return false;
+          }
 
-          return false;
-        } else {
+          const isChainActive = this.#koniState.getChainStateByKey(chainInfo.slug).active;
+
+          if (!isChainActive) {
+            reject(new Error('Please activate {{chain}} network before signing'.replaceAll('{{chain}}', chainInfo.name)));
+
+            return false;
+          }
+
           registry = this.#koniState.getSubstrateApi(chainInfo.slug).api.registry as unknown as TypeRegistry;
         }
       }
@@ -3986,6 +4037,81 @@ export default class KoniExtension {
     return rs;
   }
 
+  /* Swap service */
+  private async subscribeSwapPairs (id: string, port: chrome.runtime.Port): Promise<SwapPair[]> {
+    const cb = createSubscription<'pri(swapService.subscribePairs)'>(id, port);
+    let ready = false;
+
+    await this.#koniState.swapService.waitForStarted();
+
+    const callback = (rs: SwapPair[]) => {
+      if (ready) {
+        cb(rs);
+      }
+    };
+
+    const subscription = this.#koniState.swapService.subscribeSwapPairs(callback);
+
+    this.createUnsubscriptionHandle(id, subscription.unsubscribe);
+
+    port.onDisconnect.addListener((): void => {
+      this.cancelSubscription(id);
+    });
+
+    ready = true;
+
+    return this.#koniState.swapService.getSwapPairs();
+  }
+
+  private async handleSwapRequest (request: SwapRequest): Promise<SwapRequestResult> {
+    return this.#koniState.swapService.handleSwapRequest(request);
+  }
+
+  private async getLatestSwapQuote (swapRequest: SwapRequest): Promise<SwapQuoteResponse> {
+    return this.#koniState.swapService.getLatestQuotes(swapRequest);
+  }
+
+  private async validateSwapProcess (params: ValidateSwapProcessParams): Promise<TransactionError[]> {
+    return this.#koniState.swapService.validateSwapProcess(params);
+  }
+
+  private async handleSwapStep (inputData: SwapSubmitParams): Promise<SWTransactionResponse> {
+    const { address, process, quote, recipient } = inputData;
+
+    if (!quote || !address || !process) {
+      return this.#koniState.transactionService
+        .generateBeforeHandleResponseErrors([new TransactionError(BasicTxErrorType.INTERNAL_ERROR)]);
+    }
+
+    const isLastStep = inputData.currentStep + 1 === process.steps.length;
+
+    const swapValidations: TransactionError[] = await this.#koniState.swapService.validateSwapProcess({ address, process, selectedQuote: quote, recipient });
+
+    if (swapValidations.length > 0) {
+      return this.#koniState.transactionService
+        .generateBeforeHandleResponseErrors(swapValidations);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { chainType, extrinsic, extrinsicType, transferNativeAmount, txChain, txData } = await this.#koniState.swapService.handleSwapProcess(inputData);
+    // const chosenFeeToken = process.steps.findIndex((step) => step.type === SwapStepType.SET_FEE_TOKEN) > -1;
+    // const allowSkipValidation = [ExtrinsicType.SET_FEE_TOKEN, ExtrinsicType.SWAP].includes(extrinsicType);
+
+    return await this.#koniState.transactionService.handleTransaction({
+      address,
+      chain: txChain,
+      transaction: extrinsic,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      data: txData,
+      extrinsicType, // change this depends on step
+      chainType,
+      resolveOnDone: !isLastStep,
+      transferNativeAmount
+      // skipFeeValidation: chosenFeeToken && allowSkipValidation
+    });
+  }
+  /* Swap service */
+
   // --------------------------------------------------------------
   // eslint-disable-next-line @typescript-eslint/require-await
   public async handle<TMessageType extends MessageTypes> (id: string, type: TMessageType, request: RequestTypes[TMessageType], port: chrome.runtime.Port): Promise<ResponseType<TMessageType>> {
@@ -4131,12 +4257,16 @@ export default class KoniExtension {
         return await this.getPrice();
       case 'pri(price.getSubscription)':
         return await this.subscribePrice(id, port);
+      case 'pri(settings.savePriceCurrency)':
+        return await this.setPriceCurrency(request as RequestChangePriceCurrency);
       case 'pri(balance.getBalance)':
         return await this.getBalance();
       case 'pri(balance.getSubscription)':
         return await this.subscribeBalance(id, port);
       case 'pri(derivation.createV2)':
         return this.derivationCreateV2(request as RequestDeriveCreateV2);
+      case 'pri(accounts.batchExportV2)':
+        return this.batchExportV2(request as RequestAccountBatchExportV2);
       case 'pri(json.restoreV2)':
         return this.jsonRestoreV2(request as RequestJsonRestoreV2);
       case 'pri(json.batchRestoreV2)':

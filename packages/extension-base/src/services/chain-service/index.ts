@@ -10,7 +10,7 @@ import { MantaPrivateHandler } from '@subwallet/extension-base/services/chain-se
 import { SubstrateChainHandler } from '@subwallet/extension-base/services/chain-service/handler/SubstrateChainHandler';
 import { _CHAIN_VALIDATION_ERROR } from '@subwallet/extension-base/services/chain-service/handler/types';
 import { _ChainApiStatus, _ChainConnectionStatus, _ChainState, _CUSTOM_PREFIX, _DataMap, _EvmApi, _NetworkUpsertParams, _NFT_CONTRACT_STANDARDS, _SMART_CONTRACT_STANDARDS, _SmartContractTokenInfo, _SubstrateApi, _ValidateCustomAssetRequest, _ValidateCustomAssetResponse } from '@subwallet/extension-base/services/chain-service/types';
-import { _isAssetAutoEnable, _isAssetFungibleToken, _isChainEnabled, _isCustomAsset, _isCustomChain, _isCustomProvider, _isEqualContractAddress, _isEqualSmartContractAsset, _isMantaZkAsset, _isPureEvmChain, _isPureSubstrateChain, _parseAssetRefKey, fetchPatchData, randomizeProvider, updateLatestChainInfo } from '@subwallet/extension-base/services/chain-service/utils';
+import { _isAssetAutoEnable, _isAssetCanPayTxFee, _isAssetFungibleToken, _isChainEnabled, _isCustomAsset, _isCustomChain, _isCustomProvider, _isEqualContractAddress, _isEqualSmartContractAsset, _isMantaZkAsset, _isPureEvmChain, _isPureSubstrateChain, _parseAssetRefKey, fetchPatchData, randomizeProvider, updateLatestChainInfo } from '@subwallet/extension-base/services/chain-service/utils';
 import { EventService } from '@subwallet/extension-base/services/event-service';
 import { IChain, IMetadataItem } from '@subwallet/extension-base/services/storage-service/databases';
 import DatabaseService from '@subwallet/extension-base/services/storage-service/DatabaseService';
@@ -71,6 +71,7 @@ export class ChainService {
   private assetRegistrySubject = new Subject<Record<string, _ChainAsset>>();
   private multiChainAssetMapSubject = new Subject<Record<string, _MultiChainAsset>>();
   private xcmRefMapSubject = new Subject<Record<string, _AssetRef>>();
+  private swapRefMapSubject = new Subject<Record<string, _AssetRef>>();
   private assetLogoMapSubject = new BehaviorSubject<Record<string, string>>(AssetLogoMap);
   private chainLogoMapSubject = new BehaviorSubject<Record<string, string>>(ChainLogoMap);
 
@@ -88,6 +89,7 @@ export class ChainService {
     this.chainStateMapSubject.next(this.dataMap.chainStateMap);
     this.assetRegistrySubject.next(this.dataMap.assetRegistry);
     this.xcmRefMapSubject.next(this.xcmRefMap);
+    this.swapRefMapSubject.next(this.swapRefMap);
 
     if (MODULE_SUPPORT.MANTA_ZK) {
       console.log('Init Manta ZK');
@@ -100,12 +102,28 @@ export class ChainService {
     this.logger = createLogger('chain-service');
   }
 
+  public subscribeSwapRefMap () {
+    return this.swapRefMapSubject;
+  }
+
   // Getter
   get xcmRefMap () {
     const result: Record<string, _AssetRef> = {};
 
     Object.entries(this.dataMap.assetRefMap).forEach(([key, assetRef]) => {
       if (assetRef.path === _AssetRefPath.XCM) {
+        result[key] = assetRef;
+      }
+    });
+
+    return result;
+  }
+
+  get swapRefMap () {
+    const result: Record<string, _AssetRef> = {};
+
+    Object.entries(this.dataMap.assetRefMap).forEach(([key, assetRef]) => {
+      if (assetRef.path === _AssetRefPath.SWAP) {
         result[key] = assetRef;
       }
     });
@@ -277,7 +295,7 @@ export class ChainService {
   }
 
   public getSupportedSmartContractTypes () {
-    return [_AssetType.ERC20, _AssetType.ERC721, _AssetType.PSP22, _AssetType.PSP34];
+    return [_AssetType.ERC20, _AssetType.ERC721, _AssetType.PSP22, _AssetType.PSP34, _AssetType.GRC20, _AssetType.GRC721];
   }
 
   public getActiveChainInfoMap () {
@@ -589,8 +607,6 @@ export class ChainService {
     await this.initAssetSettings();
     this.initAssetRefMap();
     await this.autoEnableTokens();
-
-    this.checkLatestData();
   }
 
   initAssetRefMap () {
@@ -644,6 +660,7 @@ export class ChainService {
     this.dataMap.assetRefMap = updatedAssetRefMap;
 
     this.xcmRefMapSubject.next(this.xcmRefMap);
+    this.swapRefMapSubject.next(this.swapRefMap);
     this.logger.log('Finished updating latest asset ref');
   }
 
@@ -773,8 +790,30 @@ export class ChainService {
       }));
   }
 
+  public async initSingleApi (slug: string) {
+    const chainInfoMap = this.getChainInfoMap();
+    const chainStateMap = this.getChainStateMap();
+
+    if (!chainStateMap[slug].active) {
+      return false;
+    }
+
+    await this.initApiForChain(chainInfoMap[slug]);
+
+    return true;
+  }
+
   private async initApiForChain (chainInfo: _ChainInfo) {
     const { endpoint, providerName } = this.getChainCurrentProviderByKey(chainInfo.slug);
+
+    /**
+     * Disable chain if not found provider
+     * */
+    if (!endpoint && !providerName) {
+      this.disableChain(chainInfo.slug);
+
+      return;
+    }
 
     const onUpdateStatus = (status: _ChainConnectionStatus) => {
       const slug = chainInfo.slug;
@@ -795,7 +834,11 @@ export class ChainService {
       }
     }
 
-    if (chainInfo.evmInfo !== null && chainInfo.evmInfo !== undefined) {
+    /**
+     * To check if the chain is EVM chain, we need to check if the chain has evmInfo and evmChainId is not -1
+     * (fake evm chain to connect to substrate chain)
+     * */
+    if (chainInfo.evmInfo !== null && chainInfo.evmInfo !== undefined && chainInfo.evmInfo.evmChainId !== -1) {
       const chainApi = await this.evmChainHandler.initApi(chainInfo.slug, endpoint, { providerName, onUpdateStatus });
 
       this.evmChainHandler.setEvmApi(chainInfo.slug, chainApi);
@@ -853,23 +896,28 @@ export class ChainService {
     this.lockChainInfoMap = true;
 
     const initPromises = chainSlugs.map(async (chainSlug) => {
-      const chainInfo = chainInfoMap[chainSlug];
-      const currentState = chainStateMap[chainSlug]?.active;
+      // Add try catch to prevent one chain error stop the whole process
+      try {
+        const chainInfo = chainInfoMap[chainSlug];
+        const currentState = chainStateMap[chainSlug]?.active;
 
-      if (!currentState) {
-        this.dbService.updateChainStore({
-          ...chainInfo,
-          active: true,
-          currentProvider: chainStateMap[chainSlug].currentProvider,
-          manualTurnOff: !!chainStateMap[chainSlug].manualTurnOff
-        }).catch(console.error);
+        if (!currentState) {
+          // Enable chain success then update chain state
+          await this.initApiForChain(chainInfo);
 
-        chainStateMap[chainSlug].active = true;
-        await this.initApiForChain(chainInfo);
+          this.dbService.updateChainStore({
+            ...chainInfo,
+            active: true,
+            currentProvider: chainStateMap[chainSlug].currentProvider,
+            manualTurnOff: !!chainStateMap[chainSlug].manualTurnOff
+          }).catch(console.error);
 
-        this.eventService.emit('chain.updateState', chainSlug);
-        needUpdate = true;
-      }
+          chainStateMap[chainSlug].active = true;
+
+          this.eventService.emit('chain.updateState', chainSlug);
+          needUpdate = true;
+        }
+      } catch (e) {}
     });
 
     await Promise.all(initPromises);
@@ -1115,6 +1163,7 @@ export class ChainService {
               providers: storedChainInfo.providers, // TODO: review
               evmInfo: storedChainInfo.evmInfo,
               substrateInfo: storedChainInfo.substrateInfo,
+              bitcoinInfo: storedChainInfo.bitcoinInfo ?? null,
               isTestnet: storedChainInfo.isTestnet,
               chainStatus: storedChainInfo.chainStatus,
               icon: storedChainInfo.icon,
@@ -1350,6 +1399,7 @@ export class ChainService {
       providers: params.chainEditInfo.providers,
       substrateInfo,
       evmInfo,
+      bitcoinInfo: null,
       isTestnet: false,
       chainStatus: _ChainStatus.ACTIVE,
       icon: '', // Todo: Allow update with custom chain,
@@ -1612,9 +1662,9 @@ export class ChainService {
 
   private async getSmartContractTokenInfo (contractAddress: string, tokenType: _AssetType, originChain: string, contractCaller?: string): Promise<_SmartContractTokenInfo> {
     if ([_AssetType.ERC721, _AssetType.ERC20].includes(tokenType)) {
-      return await this.evmChainHandler.getSmartContractTokenInfo(contractAddress, tokenType, originChain);
-    } else if ([_AssetType.PSP34, _AssetType.PSP22].includes(tokenType)) {
-      return await this.substrateChainHandler.getSmartContractTokenInfo(contractAddress, tokenType, originChain, contractCaller);
+      return await this.evmChainHandler.getEvmContractTokenInfo(contractAddress, tokenType, originChain);
+    } else if ([_AssetType.PSP34, _AssetType.PSP22, _AssetType.GRC20].includes(tokenType)) {
+      return await this.substrateChainHandler.getSubstrateContractTokenInfo(contractAddress, tokenType, originChain, contractCaller);
     }
 
     return {
@@ -1897,7 +1947,7 @@ export class ChainService {
     const chainInfoMap = this.getChainInfoMap();
 
     Object.values(chainInfoMap).forEach((i) => {
-      const subscanSlug = i.slug === 'goldberg_testnet' ? 'avail-testnet' : i.extraInfo?.subscanSlug; // Hotfix for Goldberg testnet
+      const subscanSlug = i.extraInfo?.subscanSlug;
 
       if (!subscanSlug) {
         return;
@@ -1926,5 +1976,11 @@ export class ChainService {
     }
 
     return result;
+  }
+
+  public getFeeTokensByChain (chainSlug: string): string[] {
+    return Object.values(this.getAssetRegistry()).filter((chainAsset) => {
+      return chainAsset.originChain === chainSlug && (chainAsset.assetType === _AssetType.NATIVE || _isAssetCanPayTxFee(chainAsset));
+    }).map((chainAsset) => chainAsset.slug);
   }
 }

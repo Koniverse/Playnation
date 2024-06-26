@@ -166,7 +166,7 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
         ...alias,
         'react/jsx-runtime': require.resolve('react/jsx-runtime')
       }),
-      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx'],
       fallback: {
         crypto: require.resolve('crypto-browserify'),
         path: require.resolve('path-browserify'),
@@ -194,6 +194,9 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
           }
         }
       }
+    },
+    experiments: {
+      asyncWebAssembly: true
     },
     watch: false
   };

@@ -688,6 +688,16 @@ export default class TransactionService {
         break;
       }
 
+      case ExtrinsicType.SWAP: {
+        const data = parseTransactionData<ExtrinsicType.SWAP>(transaction.data); // TODO: switch by provider
+        const inputAsset = this.state.chainService.getAssetBySlug(data.quote.pair.from);
+
+        historyItem.amount = { value: data.quote.fromAmount, symbol: _getAssetSymbol(inputAsset), decimals: _getAssetDecimals(inputAsset) };
+        historyItem.additionalInfo = data;
+
+        break;
+      }
+
       case ExtrinsicType.UNKNOWN:
         break;
     }
@@ -794,6 +804,12 @@ export default class TransactionService {
       }
     } else if ([ExtrinsicType.STAKING_BOND, ExtrinsicType.STAKING_UNBOND, ExtrinsicType.STAKING_WITHDRAW, ExtrinsicType.STAKING_CANCEL_UNSTAKE, ExtrinsicType.STAKING_CLAIM_REWARD, ExtrinsicType.STAKING_JOIN_POOL, ExtrinsicType.STAKING_POOL_WITHDRAW, ExtrinsicType.STAKING_LEAVE_POOL].includes(transaction.extrinsicType)) {
       this.state.eventService.emit('transaction.submitStaking', transaction.chain);
+    } else if (transaction.extrinsicType === ExtrinsicType.SWAP) {
+      const inputData = parseTransactionData<ExtrinsicType.SWAP>(transaction.data);
+      const toAssetSlug = inputData.quote.pair.to;
+
+      // todo: consider async
+      this.state.chainService.updateAssetSetting(toAssetSlug, { visible: true }, true).catch(console.error);
     }
   }
 
@@ -893,7 +909,7 @@ export default class TransactionService {
         maxFeePerGas: addHexPrefix(anyNumberToBN(transaction.maxFeePerGas).toString(16)),
         maxPriorityFeePerGas: addHexPrefix(anyNumberToBN(transaction.maxPriorityFeePerGas).toString(16)),
         gasLimit: addHexPrefix(anyNumberToBN(transaction.gas).toString(16)),
-        to: transaction.to !== undefined ? transaction.to : '',
+        to: transaction.to,
         value: addHexPrefix(anyNumberToBN(transaction.value).toString(16)),
         data: transaction.data,
         chainId: _getEvmChainId(chainInfo),
@@ -904,7 +920,7 @@ export default class TransactionService {
         nonce: transaction.nonce ?? 0,
         gasPrice: addHexPrefix(anyNumberToBN(transaction.gasPrice).toString(16)),
         gasLimit: addHexPrefix(anyNumberToBN(transaction.gas).toString(16)),
-        to: transaction.to !== undefined ? transaction.to : '',
+        to: transaction.to,
         value: addHexPrefix(anyNumberToBN(transaction.value).toString(16)),
         data: transaction.data,
         chainId: _getEvmChainId(chainInfo),
@@ -987,7 +1003,7 @@ export default class TransactionService {
       maxFeePerGas: anyNumberToBN(payload.maxFeePerGas).toNumber(),
       maxPriorityFeePerGas: anyNumberToBN(payload.maxPriorityFeePerGas).toNumber(),
       gasLimit: anyNumberToBN(payload.gas).toNumber(),
-      to: payload.to !== undefined ? payload.to : '',
+      to: payload.to,
       value: anyNumberToBN(payload.value).toNumber(),
       data: payload.data,
       chainId: payload.chainId

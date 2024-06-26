@@ -106,15 +106,15 @@ const parseResult = (type: string, input: NestedArray<any>, name: NestedArray<st
     };
   } else {
     return {
-      type: types,
       name: genName(name),
+      type: types,
       value: genInput(input)
     };
   }
 };
 
 export const isContractAddress = async (address: string, evmApi: _EvmApi): Promise<boolean> => {
-  if (!evmApi) {
+  if (!evmApi || !address) {
     return false;
   } else {
     const code = await evmApi.api.eth.getCode(address);
