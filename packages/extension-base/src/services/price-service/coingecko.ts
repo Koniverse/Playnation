@@ -27,29 +27,30 @@ const DEFAULT_CURRENCY = 'USD';
 let useBackupApi = false;
 
 export const getExchangeRateMap = async (): Promise<Record<CurrencyType, ExchangeRateJSON>> => {
-  try {
-    const responseDataExchangeRate = (await axios.get('https://api-cache.subwallet.app/exchange-rate')).data as ExchangeRateItem || {};
-
-    const exchangeRateMap: Record<CurrencyType, ExchangeRateJSON> = Object.keys(responseDataExchangeRate.conversion_rates)
-      .reduce((map, exchangeKey) => {
-        if (!staticData[StaticKey.CURRENCY_SYMBOL][exchangeKey]) {
-          return map;
-        }
-
-        map[exchangeKey as CurrencyType] = {
-          exchange: responseDataExchangeRate.conversion_rates[exchangeKey],
-          label: (staticData[StaticKey.CURRENCY_SYMBOL][exchangeKey] as CurrencyJson).label
-        };
-
-        return map;
-      }, {} as Record<CurrencyType, ExchangeRateJSON>);
-
-    return exchangeRateMap;
-  } catch (e) {
-    console.warn('Failed to get exchange rate');
-
-    return {} as Record<CurrencyType, ExchangeRateJSON>;
-  }
+  return Promise.resolve({} as Record<CurrencyType, ExchangeRateJSON>);
+  // try {
+  //   const responseDataExchangeRate = (await axios.get('https://api-cache.subwallet.app/exchange-rate')).data as ExchangeRateItem || {};
+  //
+  //   const exchangeRateMap: Record<CurrencyType, ExchangeRateJSON> = Object.keys(responseDataExchangeRate.conversion_rates)
+  //     .reduce((map, exchangeKey) => {
+  //       if (!staticData[StaticKey.CURRENCY_SYMBOL][exchangeKey]) {
+  //         return map;
+  //       }
+  //
+  //       map[exchangeKey as CurrencyType] = {
+  //         exchange: responseDataExchangeRate.conversion_rates[exchangeKey],
+  //         label: (staticData[StaticKey.CURRENCY_SYMBOL][exchangeKey] as CurrencyJson).label
+  //       };
+  //
+  //       return map;
+  //     }, {} as Record<CurrencyType, ExchangeRateJSON>);
+  //
+  //   return exchangeRateMap;
+  // } catch (e) {
+  //   console.warn('Failed to get exchange rate');
+  //
+  //   return {} as Record<CurrencyType, ExchangeRateJSON>;
+  // }
 };
 
 export const getPriceMap = async (priceIds: Set<string>, currency: CurrencyType = 'USD'): Promise<Omit<PriceJson, 'exchangeRateMap'>> => {

@@ -16,7 +16,7 @@ import { AIRDROP_REWARD_MODAL_ID, AirdropRewardModal } from '@subwallet/extensio
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, ModalContext } from '@subwallet/react-ui';
-import { Alarm, ArrowCircleRight, CheckCircle, ShareNetwork } from 'phosphor-react';
+import { ArrowCircleRight, CheckCircle, ShareNetwork } from 'phosphor-react';
 import React, { Context, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled, { ThemeContext } from 'styled-components';
@@ -35,7 +35,6 @@ enum TabType {
 }
 
 const enum buttonTypeConst {
-  COMING_SOON = 0,
   ELIGIBLE = 1,
   RAFFLE = 2,
   INELIGIBLE = 3,

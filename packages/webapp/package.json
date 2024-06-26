@@ -21,7 +21,7 @@
     "@subwallet/extension-base": "^1.1.68-2",
     "@subwallet/extension-inject": "^1.1.68-2",
     "@subwallet/extension-web-ui": "^1.1.68-2",
-    "@twa-dev/sdk": "^7.0.0",
+    "@twa-dev/sdk": "^7.0.0"
   },
   "devDependencies": {
     "@polkadot/dev": "^0.65.23",

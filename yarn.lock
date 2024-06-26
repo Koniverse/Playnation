@@ -6184,6 +6184,7 @@ __metadata:
     "@subwallet/extension-mocks": ^1.1.68-2
     "@subwallet/keyring": ^0.1.5
     "@subwallet/ui-keyring": ^0.1.5
+    "@twa-dev/sdk": ^7.0.0
     "@types/uuid": ^9.0.1
     "@walletconnect/sign-client": ^2.8.4
     "@walletconnect/types": ^2.8.4
@@ -6316,10 +6317,12 @@ __metadata:
     "@subwallet/keyring": ^0.1.5
     "@subwallet/react-ui": 5.1.2-b77
     "@subwallet/ui-keyring": ^0.1.5
+    "@twa-dev/sdk": ^7.0.0
     "@types/bn.js": ^5.1.1
     "@types/enzyme": ^3.10.12
     "@types/enzyme-adapter-react-16": ^1.0.6
     "@types/file-saver": ^2.0.5
+    "@types/lodash": ^4.17.0
     "@types/react-copy-to-clipboard": ^5.0.4
     "@types/react-dom": ^18.0.9
     "@types/react-lazy-load-image-component": ^1.5.3
@@ -6340,6 +6343,7 @@ __metadata:
     file-saver: ^2.0.5
     humanize-duration: ^3.31.0
     i18next: ^21.9.2
+    lodash: ^4.17.21
     phosphor-react: ^1.4.1
     querystring: ^0.2.1
     rc-input: ^0.2.2
@@ -6367,10 +6371,12 @@ __metadata:
     redux: ^4.2.0
     redux-persist: ^6.0.0
     redux-toolkit: ^1.1.2
+    rxjs: ^7.8.1
     semantic-ui-react: ^2.1.4
     sinon-chrome: ^3.0.1
     styled-components: ^5.3.6
     usehooks-ts: ^2.9.1
+    zod: ^3.22.4
   languageName: unknown
   linkType: soft
 
@@ -6664,6 +6670,7 @@ __metadata:
     "@subwallet/extension-base": ^1.1.68-2
     "@subwallet/extension-inject": ^1.1.68-2
     "@subwallet/extension-web-ui": ^1.1.68-2
+    "@twa-dev/sdk": ^7.0.0
     assert: ^2.0.0
     babel-loader: ^9.1.3
     browser-resolve: ^2.0.0
@@ -6862,6 +6869,24 @@ __metadata:
   version: 2.0.0
   resolution: "@tootallnate/once@npm:2.0.0"
   checksum: ad87447820dd3f24825d2d947ebc03072b20a42bfc96cbafec16bff8bbda6c1a81fcb0be56d5b21968560c5359a0af4038a68ba150c3e1694fe4c109a063bed8
+  languageName: node
+  linkType: hard
+
+"@twa-dev/sdk@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@twa-dev/sdk@npm:7.0.0"
+  dependencies:
+    "@twa-dev/types": ^7.0.0
+  peerDependencies:
+    react: ">=16.0.0"
+  checksum: d7b855d5fde863a306b2d95f5421757e4c9f7df3aa8eeb9b59f90d53c2c8dbd635d955f20adbabc2a7cbec886fe44b9374486a96359e211ebb28cf3818995275
+  languageName: node
+  linkType: hard
+
+"@twa-dev/types@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@twa-dev/types@npm:7.0.0"
+  checksum: 3f3da1e22717322be2844fdc208eb8b061a16ef27b1eb4f8330f6fcb64228b34cd571b4a2f95254224a37dbde1c04b1e7ed92ce530456444c3f458386f412104
   languageName: node
   linkType: hard
 
@@ -7324,6 +7349,13 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: e009a2bfb50e90ca9b7c6e8f648f8464067271fd99116f881073fa6fa76dc8d0133181dd65e6614d5fb1220d671d67b0124aef7d97dc02d7e342ab143a47779d
+  languageName: node
+  linkType: hard
+
+"@types/lodash@npm:^4.17.0":
+  version: 4.17.5
+  resolution: "@types/lodash@npm:4.17.5"
+  checksum: 3c9bb15772509f0ecb40428531863dbc3f064f2bf34bbccc2ce2b2923c69fb0868aec7e357b1d97fd0d7f7e435a014ea5c1adef8a64715529887179c97a5a823
   languageName: node
   linkType: hard
 
@@ -27938,6 +27970,13 @@ __metadata:
   version: 0.8.15
   resolution: "zen-observable@npm:0.8.15"
   checksum: b7289084bc1fc74a559b7259faa23d3214b14b538a8843d2b001a35e27147833f4107590b1b44bf5bc7f6dfe6f488660d3a3725f268e09b3925b3476153b7821
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.22.4":
+  version: 3.23.8
+  resolution: "zod@npm:3.23.8"
+  checksum: 15949ff82118f59c893dacd9d3c766d02b6fa2e71cf474d5aa888570c469dbf5446ac5ad562bb035bf7ac9650da94f290655c194f4a6de3e766f43febd432c5c
   languageName: node
   linkType: hard
 

@@ -3,7 +3,7 @@
 
 import { _ChainAsset, _ChainInfo } from '@subwallet/chain-list/types';
 import { ApiMap, ServiceInfo } from '@subwallet/extension-base/background/KoniTypes';
-import { CRON_REFRESH_CHAIN_STAKING_METADATA, CRON_REFRESH_NFT_INTERVAL, CRON_SYNC_MANTA_PAY } from '@subwallet/extension-base/constants';
+import { CRON_REFRESH_NFT_INTERVAL, CRON_SYNC_MANTA_PAY } from '@subwallet/extension-base/constants';
 import { KoniSubscription } from '@subwallet/extension-base/koni/background/subscription';
 import { _isChainSupportEvmNft, _isChainSupportNativeNft, _isChainSupportWasmNft } from '@subwallet/extension-base/services/chain-service/utils';
 import { EventItem, EventType } from '@subwallet/extension-base/services/event-service/types';
@@ -130,9 +130,9 @@ export class KoniCron {
       commonReload && this.removeCron('refreshPoolingStakingReward');
 
       if (chainUpdated) {
-        this.stopPoolInfo();
+        // this.stopPoolInfo();
         this.removeCron('fetchPoolInfo');
-        this.addCron('fetchPoolInfo', this.fetchPoolInfo, CRON_REFRESH_CHAIN_STAKING_METADATA);
+        // this.addCron('fetchPoolInfo', this.fetchPoolInfo, CRON_REFRESH_CHAIN_STAKING_METADATA);
       }
 
       // Chains
@@ -144,7 +144,7 @@ export class KoniCron {
 
     this.state.eventService.onLazy(this.eventHandler);
 
-    this.addCron('fetchPoolInfo', this.fetchPoolInfo, CRON_REFRESH_CHAIN_STAKING_METADATA);
+    // this.addCron('fetchPoolInfo', this.fetchPoolInfo, CRON_REFRESH_CHAIN_STAKING_METADATA);
 
     if (!currentAccountInfo?.address) {
       return;
@@ -177,7 +177,7 @@ export class KoniCron {
     }
 
     this.removeAllCrons();
-    this.stopPoolInfo();
+    // this.stopPoolInfo();
 
     this.status = 'stopped';
 
@@ -190,13 +190,13 @@ export class KoniCron {
     }
   };
 
-  fetchPoolInfo = () => {
-    this.state.earningService.runSubscribePoolsInfo().catch(console.error);
-  };
-
-  stopPoolInfo = () => {
-    this.state.earningService.runUnsubscribePoolsInfo();
-  };
+  // fetchPoolInfo = () => {
+  //   this.state.earningService.runSubscribePoolsInfo().catch(console.error);
+  // };
+  //
+  // stopPoolInfo = () => {
+  //   this.state.earningService.runUnsubscribePoolsInfo();
+  // };
 
   refreshNft = (address: string, apiMap: ApiMap, smartContractNfts: _ChainAsset[], chainInfoMap: Record<string, _ChainInfo>) => {
     return () => {
