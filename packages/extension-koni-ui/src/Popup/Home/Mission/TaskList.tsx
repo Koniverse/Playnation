@@ -5,7 +5,7 @@ import { TaskCategory, TaskCategoryInfo } from '@subwallet/extension-koni-ui/con
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import TaskItem from '@subwallet/extension-koni-ui/Popup/Home/Mission/TaskItem';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
@@ -17,36 +17,58 @@ type Props = ThemeProps & {
 const Component = ({ actionReloadPoint, className, taskCategoryInfoMap, taskCategoryMap }: Props): React.ReactElement => {
   const { t } = useTranslation();
 
+  const taskCategoryInfoList = useMemo(() => {
+    const checkInCatId = Object.values(taskCategoryMap).find((tci) => tci.slug === 'check_in')?.id;
+
+    if (!checkInCatId) {
+      return Object.values(taskCategoryInfoMap);
+    }
+
+    return Object.values(taskCategoryInfoMap).sort((a, b) => {
+      if (a.id === checkInCatId) {
+        return -1;
+      }
+
+      if (b.id === checkInCatId) {
+        return 1;
+      }
+
+      return 0;
+    });
+  }, [taskCategoryInfoMap, taskCategoryMap]);
+
   return (
     <div className={className}>
       {
-        Object.values(taskCategoryInfoMap).map((tci) => (
-          <div
-            className={'__task-category-item'}
-            key={tci.id}
-          >
-            <div className='__task-category-info'>
-              <div className='__task-category-name'>
-                {taskCategoryMap[tci.id]?.name}
-              </div>
+        taskCategoryInfoList.map((tci) => (
+          tci.tasks.length > 0 && (
+            <div
+              className={'__task-category-item'}
+              key={tci.id}
+            >
+              <div className='__task-category-info'>
+                <div className='__task-category-name'>
+                  {taskCategoryMap[tci.id]?.name}
+                </div>
 
-              <div className='__complete-missions'>
-                {`${tci.completeCount}/${tci.tasks.length}`} {t('missions')}
+                <div className='__complete-missions'>
+                  {`${tci.completeCount}/${tci.tasks.length}`} {t('missions')}
+                </div>
+              </div>
+              <div className='__tasks-container'>
+                {
+                  tci.tasks.map((t) => (
+                    <TaskItem
+                      actionReloadPoint={actionReloadPoint}
+                      className={'__task-item'}
+                      key={t.id}
+                      task={t}
+                    />
+                  ))
+                }
               </div>
             </div>
-            <div className='__tasks-container'>
-              {
-                tci.tasks.map((t) => (
-                  <TaskItem
-                    actionReloadPoint={actionReloadPoint}
-                    className={'__task-item'}
-                    key={t.id}
-                    task={t}
-                  />
-                ))
-              }
-            </div>
-          </div>
+          )
         ))
       }
     </div>
