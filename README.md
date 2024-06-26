@@ -1,4 +1,6 @@
 ## Playnation gaming wallet
+![12](https://github.com/Koniverse/Playnation/assets/2582652/b492edc6-8a06-4354-a99c-a1aca77ae33e)
+
 Playnation, founded by visionaries from SubWallet and Wallacy Wallet, is a premier gaming multichain wallet platform integrated into Telegram that allows users to to interact with and play Web3 games within the social messaging platform. 2 months after launch, Playnation has acquired 140K users with 2.6M games played. Our clients so far are Polkadot-SDK-based projects, including 1 project that has finished running their campaign and 3 projects scheduled in our campaign pipeline until August.
 
 ## Substrate support and expansion
