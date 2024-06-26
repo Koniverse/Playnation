@@ -100,27 +100,35 @@ const _TaskItem = ({ actionOpenPopup, actionReloadPoint, className, task }: Prop
         }
       }
 
-      const result = await apiSDK.finishTask(taskId, extrinsicHash, networkKey);
+      try {
+        const result = await apiSDK.finishTask(taskId, extrinsicHash, networkKey);
 
-      console.log('finishTask', result, taskId, extrinsicHash, networkKey, shareLeaderboard, task.url, task.gameId);
-      setTaskLoading(false);
-      setCompleted(result.success);
-      actionReloadPoint();
+        setTaskLoading(false);
+        setCompleted(result.success);
+        actionReloadPoint();
 
-      setTimeout(async () => {
-        let urlRedirect = task.url;
+        setTimeout(async () => {
+          let urlRedirect = task.url;
 
-        if (shareLeaderboard && shareLeaderboard.content) {
-          const startEnv = shareLeaderboard.start_time;
-          const endEnv = shareLeaderboard.end_time;
+          if (result.openUrl) {
+            urlRedirect = result.openUrl;
+          }
 
-          urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv, shareLeaderboard.content, task.gameId ?? 0, shareLeaderboard.url);
-        }
+          if (shareLeaderboard && shareLeaderboard.content) {
+            const startEnv = shareLeaderboard.start_time;
+            const endEnv = shareLeaderboard.end_time;
 
-        if (urlRedirect && result.openUrl) {
-          telegramConnector.openLink(urlRedirect);
-        }
-      }, 100);
+            urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv, shareLeaderboard.content, task.gameId ?? 0, shareLeaderboard.url);
+          }
+
+          if (urlRedirect && result.isOpenUrl) {
+            telegramConnector.openLink(urlRedirect);
+          }
+        }, 100);
+      } catch (e) {
+        setTaskLoading(false);
+        setCompleted(false);
+      }
     })().catch(console.error);
   }, [account?.info, actionReloadPoint, notify, t, task.gameId, task.id, task.network, task.onChainType, task.share_leaderboard, task.url]);
 
