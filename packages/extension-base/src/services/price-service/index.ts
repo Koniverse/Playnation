@@ -105,7 +105,7 @@ export class PriceService implements StoppableServiceInterface, PersistDataServi
     })();
   }
 
-  private async calculatePriceMap (currency?: CurrencyType) {
+  private async calculatePriceMap (currencyKey?: CurrencyType) {
     const { price24hMap, priceMap } = this.rawPriceSubject.value;
     const exchangeRateData = this.rawExchangeRateMap.value;
 

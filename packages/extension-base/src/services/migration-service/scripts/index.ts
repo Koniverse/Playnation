@@ -1,9 +1,9 @@
 // Copyright 2019-2022 @subwallet/extension-koni authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import AutoEnableSomeTokens from '@subwallet/extension-base/services/migration-service/scripts/databases/AutoEnableSomeTokens';
+import BeforeKaruraCampaign from '@subwallet/extension-base/services/migration-service/scripts/BeforeKaruraCampaign';
+import MigrateAssetSetting from '@subwallet/extension-base/services/migration-service/scripts/databases/MigrateAssetSetting';
 import MigrateRemoveGenesisHash from '@subwallet/extension-base/services/migration-service/scripts/MigrateRemoveGenesisHash';
-import DeleteEarningData from '@subwallet/extension-base/services/migration-service/scripts/DeleteEarningData';
 import MigrateTransactionHistoryBySymbol from '@subwallet/extension-base/services/migration-service/scripts/MigrateTransactionHistoryBySymbol';
 
 import BaseMigrationJob from '../Base';
@@ -38,5 +38,5 @@ export default <Record<string, typeof BaseMigrationJob>>{
   '1.1.51-03': BeforeKaruraCampaign,
   '1.1.69-03': MigrateAssetSetting,
   '1.1.69-02': MigrateTransactionHistoryBySymbol,
-  '1.1.69-03': MigrateRemoveGenesisHash
+  '1.1.69-04': MigrateRemoveGenesisHash
 };

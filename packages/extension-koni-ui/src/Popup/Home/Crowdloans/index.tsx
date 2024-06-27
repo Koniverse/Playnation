@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { _FundStatus } from '@subwallet/chain-list/types';
-import { CrowdloanItem, EmptyList, FilterModal, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
+import { EmptyList, FilterModal, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
+import CrowdloanItem from '@subwallet/extension-koni-ui/components/Crowdloan/CrowdloanItem';
 import BannerGenerator from '@subwallet/extension-koni-ui/components/StaticContent/BannerGenerator';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { useFilterModal, useGetBannerByScreen, useGetCrowdloanList, useSelector, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
