@@ -12,6 +12,7 @@ import { customFormatDate, formatInteger } from '@subwallet/extension-koni-ui/ut
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
 import { Button, Icon, Image } from '@subwallet/react-ui';
 import CN from 'classnames';
+import { difference } from 'lodash';
 import { CheckCircle } from 'phosphor-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
@@ -122,23 +123,39 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
         }
       }
 
-      try {
-        const result = await apiSDK.finishTask(taskId, extrinsicHash, networkKey);
+      apiSDK.finishTask(taskId, extrinsicHash, networkKey)
+        .then((result) => {
+          setTaskLoading(false);
+          setCompleted(result.success);
+          actionReloadPoint();
 
-        setTaskLoading(false);
-        setCompleted(result.success);
-        actionReloadPoint();
+          if (!result.success && task.zealyType) {
+            setChecking(true);
+          }
 
-        if (!result.success && task.zealyType) {
-          setChecking(true);
-        }
+          if (result.success) {
+            actionReloadPoint();
+          }
 
+          if (task.zealyType) {
+            setTimeout(() => {
+              let urlRedirect = task.url;
+
+              if (result.openUrl) {
+                urlRedirect = result.openUrl;
+              }
+
+              if (urlRedirect && result.isOpenUrl) {
+                window.open(urlRedirect, '_blank');
+              }
+            }, 100);
+          }
+        })
+        .catch(console.error);
+
+      if (!task.zealyId) {
         setTimeout(async () => {
           let urlRedirect = task.url;
-
-          if (result.openUrl) {
-            urlRedirect = result.openUrl;
-          }
 
           if (shareLeaderboard && shareLeaderboard.content) {
             const startEnv = shareLeaderboard.start_time;
@@ -147,17 +164,10 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
             urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv, shareLeaderboard.content, task.gameId ?? 0, shareLeaderboard.url);
           }
 
-          if (urlRedirect && result.isOpenUrl) {
-            if (task.zealyId) {
-              window.open(urlRedirect, '_blank');
-            } else {
-              telegramConnector.openLink(urlRedirect);
-            }
+          if (urlRedirect) {
+            telegramConnector.openLink(urlRedirect);
           }
         }, 100);
-      } catch (e) {
-        setTaskLoading(false);
-        setCompleted(false);
       }
     })().catch(console.error);
   }, [account?.info, actionReloadPoint, notify, t, task.gameId, task.id, task.network, task.onChainType, task.share_leaderboard, task.url]);
