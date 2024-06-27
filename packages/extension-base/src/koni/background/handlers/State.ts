@@ -31,15 +31,14 @@ import { AuthUrls, MetaRequest, SignRequest } from '@subwallet/extension-base/se
 import SettingService from '@subwallet/extension-base/services/setting-service/SettingService';
 import DatabaseService from '@subwallet/extension-base/services/storage-service/DatabaseService';
 import { SubscanService } from '@subwallet/extension-base/services/subscan-service';
-import { SUBSCAN_API_CHAIN_MAP } from '@subwallet/extension-base/services/subscan-service/subscan-chain-map';
 import { SwapService } from '@subwallet/extension-base/services/swap-service';
 import TransactionService from '@subwallet/extension-base/services/transaction-service';
 import { TransactionEventResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import WalletConnectService from '@subwallet/extension-base/services/wallet-connect-service';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import AccountRefStore from '@subwallet/extension-base/stores/AccountRef';
-import { BalanceItem, BalanceMap, EvmFeeInfo } from '@subwallet/extension-base/types';
-import { isAccountAll, stripUrl, TARGET_ENV, wait } from '@subwallet/extension-base/utils';
+import { BalanceItem, BalanceMap, EvmFeeInfo, StorageDataInterface } from '@subwallet/extension-base/types';
+import { isAccountAll, stripUrl, targetIsWeb, wait } from '@subwallet/extension-base/utils';
 import { isContractAddress, parseContractInput } from '@subwallet/extension-base/utils/eth/parseTransaction';
 import { createPromiseHandler } from '@subwallet/extension-base/utils/promise';
 import { MetadataDef, ProviderMeta } from '@subwallet/extension-inject/types';
@@ -54,7 +53,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { TransactionConfig } from 'web3-core';
 
 import { JsonRpcResponse, ProviderInterface, ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
-import { assert, hexStripPrefix, hexToU8a, isHex, logger as createLogger, u8aToHex } from '@polkadot/util';
+import { assert, hexStripPrefix, hexToU8a, isHex, logger as createLogger, noop, u8aToHex } from '@polkadot/util';
 import { Logger } from '@polkadot/util/types';
 import { base64Decode, isEthereumAddress, keyExtractSuri } from '@polkadot/util-crypto';
 import { KeypairType } from '@polkadot/util-crypto/types';
@@ -154,7 +153,7 @@ export default class KoniState {
 
     this.notificationService = new NotificationService();
     this.chainService = new ChainService(this.dbService, this.eventService);
-    this.subscanService = new SubscanService(SUBSCAN_API_CHAIN_MAP);
+    this.subscanService = SubscanService.getInstance();
     this.settingService = new SettingService();
     this.requestService = new RequestService(this.chainService, this.settingService, this.keyringService);
     this.priceService = new PriceService(this.dbService, this.eventService, this.chainService);
@@ -175,7 +174,7 @@ export default class KoniState {
     this.logger = createLogger('State');
 
     // Init state
-    if (TARGET_ENV !== 'mobile') {
+    if (targetIsWeb) {
       this.init().catch(console.error);
     }
   }
@@ -1627,8 +1626,59 @@ export default class KoniState {
     return await this.requestService.completeConfirmation(request);
   }
 
-  private onHandleRemindExportAccount () {
-    const remindStatus = SWStorage.instance.getItem(REMIND_EXPORT_ACCOUNT);
+  private async onMV3Update () {
+    const migrationStatus = await SWStorage.instance.getItem('mv3_migration');
+
+    if (!migrationStatus || migrationStatus !== 'done') {
+      // Open migration tab
+      const url = `${chrome.runtime.getURL('index.html')}#/mv3-migration`;
+
+      await openPopup(url);
+
+      // migrateMV3LocalStorage will be called when user open migration tab with data from localStorage on frontend
+    }
+  }
+
+  public async migrateMV3LocalStorage (data: string) {
+    try {
+      const parsedData = JSON.parse(data) as Record<string, string>;
+
+      parsedData.mv3_migration = 'done';
+
+      await SWStorage.instance.setMap(parsedData);
+
+      // Reload some services use SWStorage
+      // wallet connect
+      this.walletConnectService.initClient().catch(console.error);
+
+      return true;
+    } catch (e) {
+      console.error(e);
+
+      return false;
+    }
+  }
+
+  private async onMV3Install () {
+    await SWStorage.instance.setItem('mv3_migration', 'done');
+
+    // Open expand page
+    const url = `${chrome.runtime.getURL('index.html')}#/welcome`;
+
+    withErrorLog(() => chrome.tabs.create({ url }));
+  }
+
+  public onInstallOrUpdate (details: chrome.runtime.InstalledDetails) {
+    // Open mv3 migration window
+    if (details.reason === 'install') {
+      this.onMV3Install().catch(console.error);
+    } else if (details.reason === 'update') {
+      this.onMV3Update().catch(console.error);
+    }
+  }
+
+  private async onHandleRemindExportAccount () {
+    const remindStatus = await SWStorage.instance.getItem(REMIND_EXPORT_ACCOUNT);
 
     if (!remindStatus || !remindStatus.includes('done')) {
       const handleRemind = (account: CurrentAccountInfo) => {
@@ -1636,8 +1686,10 @@ export default class KoniState {
           // Open remind tab
           const url = `${chrome.runtime.getURL('index.html')}#/remind-export-account`;
 
-          openPopup(url);
-          subscription.unsubscribe();
+          openPopup(url)
+            .then(noop)
+            .catch(console.error)
+            .finally(() => subscription.unsubscribe());
         } else {
           setTimeout(() => {
             subscription.unsubscribe();
@@ -1649,8 +1701,23 @@ export default class KoniState {
     }
   }
 
+  public async setStorageFromWS ({ key, value }: StorageDataInterface) {
+    try {
+      const jsonData = JSON.stringify(value);
+
+      await SWStorage.instance.setItem(key, jsonData);
+
+      return true;
+    } catch (e) {
+      console.error(e);
+
+      return false;
+    }
+  }
+
   public onCheckToRemindUser () {
-    this.onHandleRemindExportAccount();
+    this.onHandleRemindExportAccount()
+      .catch(console.error);
   }
 
   public onInstall () {
@@ -1734,6 +1801,7 @@ export default class KoniState {
     this.waitSleeping = sleeping.promise;
 
     // Stopping services
+    this.campaignService.stop();
     await Promise.all([this.cron.stop(), this.subscription.stop()]);
     await this.pauseAllNetworks(undefined, 'IDLE mode');
     await Promise.all([this.historyService.stop(), this.priceService.stop(), this.balanceService.stop()]);
@@ -1744,7 +1812,7 @@ export default class KoniState {
     this.waitSleeping = null;
   }
 
-  private async _start (isWakeup = false) {
+  private async _start () {
     // Wait sleep finish before start to avoid conflict
     this.generalStatus === ServiceStatus.STOPPING && this.waitSleeping && await this.waitSleeping;
 
@@ -1760,6 +1828,7 @@ export default class KoniState {
       return;
     }
 
+    const isWakeup = this.generalStatus === ServiceStatus.STOPPED;
     const starting = createPromiseHandler<void>();
 
     this.generalStatus = ServiceStatus.STARTING;
@@ -1781,7 +1850,7 @@ export default class KoniState {
   }
 
   public async wakeup () {
-    await this._start(true);
+    await this._start();
   }
 
   public cancelSubscription (id: string): boolean {
@@ -1876,6 +1945,7 @@ export default class KoniState {
     this.accountRefStore.set('refList', []);
 
     if (resetAll) {
+      await this.priceService.setPriceCurrency(DEFAULT_CURRENCY);
       this.settingService.resetWallet();
       await this.priceService.setPriceCurrency(DEFAULT_CURRENCY);
     }

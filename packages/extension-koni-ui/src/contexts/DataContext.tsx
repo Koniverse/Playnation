@@ -1,8 +1,9 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { ping } from '@subwallet/extension-koni-ui/messaging';
 import { persistor, store, StoreName } from '@subwallet/extension-koni-ui/stores';
-import { getMissionPoolData, subscribeAccountsData, subscribeAddressBook, subscribeAssetLogoMaps, subscribeAssetRegistry, subscribeAssetSettings, subscribeAuthorizeRequests, subscribeAuthUrls, subscribeBalance, subscribeBuyServices, subscribeBuyTokens, subscribeChainInfoMap, subscribeChainLogoMaps, subscribeChainStakingMetadata, subscribeChainStateMap, subscribeChainStatusMap, subscribeConfirmationRequests, subscribeConnectWCRequests, subscribeKeyringState, subscribeMantaPayConfig, subscribeMantaPaySyncingState, subscribeMetadataRequests, subscribeMultiChainAssetMap, subscribeNftCollections, subscribeNftItems, subscribePrice, subscribeProcessingCampaign, subscribeSigningRequests, subscribeStaking, subscribeStakingNominatorMetadata, subscribeStakingReward, subscribeSwapPairs, subscribeTransactionRequests, subscribeTxHistory, subscribeUiSettings, subscribeWalletConnectSessions, subscribeWCNotSupportRequests, subscribeXcmRefMap } from '@subwallet/extension-koni-ui/stores/utils';
+import { getMissionPoolData, subscribeAccountsData, subscribeAddressBook, subscribeAssetLogoMaps, subscribeAssetRegistry, subscribeAssetSettings, subscribeAuthorizeRequests, subscribeAuthUrls, subscribeBalance, subscribeBuyServices, subscribeBuyTokens, subscribeCampaignPopupVisibility, subscribeChainInfoMap, subscribeChainLogoMaps, subscribeChainStakingMetadata, subscribeChainStateMap, subscribeChainStatusMap, subscribeConfirmationRequests, subscribeConnectWCRequests, subscribeKeyringState, subscribeMantaPayConfig, subscribeMantaPaySyncingState, subscribeMetadataRequests, subscribeMultiChainAssetMap, subscribeNftCollections, subscribeNftItems, subscribePrice, subscribeProcessingCampaign, subscribeSigningRequests, subscribeStaking, subscribeStakingNominatorMetadata, subscribeStakingReward, subscribeSwapPairs, subscribeTransactionRequests, subscribeTxHistory, subscribeUiSettings, subscribeWalletConnectSessions, subscribeWCNotSupportRequests, subscribeXcmRefMap } from '@subwallet/extension-koni-ui/stores/utils';
 import Bowser from 'bowser';
 import React from 'react';
 import { Provider } from 'react-redux';
@@ -184,6 +185,8 @@ export function initBasicData () {
 export const DataContext = React.createContext(_DataContext);
 
 export const DataContextProvider = ({ children }: DataContextProviderProps) => {
+  ping().catch(console.error);
+
   // Init basic data
   initBasicData();
 
@@ -226,7 +229,7 @@ export const DataContextProvider = ({ children }: DataContextProviderProps) => {
 
   // Features
   _DataContext.addHandler({ ...subscribePrice, name: 'subscribePrice', relatedStores: ['price'] });
-  _DataContext.addHandler({ ...subscribeBalance, name: 'subscribeBalance', relatedStores: ['balance'] });
+  _DataContext.addHandler({ ...subscribeBalance, name: 'subscribeBalance', relatedStores: ['balance'], isStartImmediately: true });
   _DataContext.addHandler({ ...subscribeNftItems, name: 'subscribeNftItems', relatedStores: ['nft'] });
   _DataContext.addHandler({ ...subscribeNftCollections, name: 'subscribeNftCollections', relatedStores: ['nft'] });
   _DataContext.addHandler({ ...subscribeStaking, name: 'subscribeStaking', relatedStores: ['staking'] });

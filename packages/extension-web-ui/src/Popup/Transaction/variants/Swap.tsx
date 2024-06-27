@@ -3,18 +3,19 @@
 
 import { _ChainAsset } from '@subwallet/chain-list/types';
 import { SwapError } from '@subwallet/extension-base/background/errors/SwapError';
-import { NotificationType } from '@subwallet/extension-base/background/KoniTypes';
+import { ExtrinsicType, NotificationType } from '@subwallet/extension-base/background/KoniTypes';
 import { _getAssetDecimals, _getAssetOriginChain, _getAssetSymbol, _getChainNativeTokenSlug, _getOriginChainOfAsset, _isChainEvmCompatible, _parseAssetRefKey } from '@subwallet/extension-base/services/chain-service/utils';
 import { getSwapAlternativeAsset } from '@subwallet/extension-base/services/swap-service/utils';
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
-import { OptimalSwapPath, SlippageType, SwapFeeComponent, SwapFeeType, SwapProviderId, SwapQuote, SwapRequest, SwapStepType } from '@subwallet/extension-base/types/swap';
+import { CommonFeeComponent, CommonOptimalPath, CommonStepType } from '@subwallet/extension-base/types/service-base';
+import { SlippageType, SwapFeeType, SwapProviderId, SwapQuote, SwapRequest } from '@subwallet/extension-base/types/swap';
 import { formatNumberString, isAccountAll, swapCustomFormatter } from '@subwallet/extension-base/utils';
 import { AccountSelector, AddMoreBalanceModal, AddressInput, AlertBox, ChooseFeeTokenModal, HiddenInput, MetaInfo, PageWrapper, QuoteResetTime, SlippageModal, SwapFromField, SwapIdleWarningModal, SwapQuotesSelectorModal, SwapRoute, SwapTermsOfServiceModal, SwapToField } from '@subwallet/extension-web-ui/components';
 import { BN_TEN, BN_ZERO, CONFIRM_SWAP_TERM, DEFAULT_SWAP_PARAMS, SWAP_ALL_QUOTES_MODAL, SWAP_CHOOSE_FEE_TOKEN_MODAL, SWAP_IDLE_WARNING_MODAL, SWAP_MORE_BALANCE_MODAL, SWAP_SLIPPAGE_MODAL, SWAP_TERMS_OF_SERVICE_MODAL } from '@subwallet/extension-web-ui/constants';
 import { DataContext } from '@subwallet/extension-web-ui/contexts/DataContext';
 import { ScreenContext } from '@subwallet/extension-web-ui/contexts/ScreenContext';
 import { WebUIContext } from '@subwallet/extension-web-ui/contexts/WebUIContext';
-import { useChainConnection, useNotification, useSelector, useTransactionContext, useWatchTransaction } from '@subwallet/extension-web-ui/hooks';
+import { useChainConnection, useNotification, usePreCheckAction, useSelector, useTransactionContext, useWatchTransaction } from '@subwallet/extension-web-ui/hooks';
 import { getLatestSwapQuote, handleSwapRequest, handleSwapStep, validateSwapProcess } from '@subwallet/extension-web-ui/messaging/transaction/swap';
 import { FreeBalance, FreeBalanceToEarn, TransactionContent, TransactionFooter } from '@subwallet/extension-web-ui/Popup/Transaction/parts';
 import { DEFAULT_SWAP_PROCESS, SwapActionType, swapReducer } from '@subwallet/extension-web-ui/reducer';
@@ -97,7 +98,7 @@ const Component = () => {
   const [currentSlippage, setCurrentSlippage] = useState<SlippageType>({ slippage: new BigN(0.01), isCustomType: true });
   const [swapError, setSwapError] = useState<SwapError|undefined>(undefined);
   const [isFormInvalid, setIsFormInvalid] = useState<boolean>(false);
-  const [currentOptimalSwapPath, setOptimalSwapPath] = useState<OptimalSwapPath | undefined>(undefined);
+  const [currentOptimalSwapPath, setOptimalSwapPath] = useState<CommonOptimalPath | undefined>(undefined);
   // @ts-ignore
   const [confirmedTerm, setConfirmedTerm] = useLocalStorage(CONFIRM_SWAP_TERM, '');
   const [showQuoteArea, setShowQuoteArea] = useState<boolean>(false);
@@ -141,6 +142,7 @@ const Component = () => {
   const chainValue = useWatchTransaction('chain', form, defaultData);
   const recipientValue = useWatchTransaction('recipient', form, defaultData);
   const { checkChainConnected, turnOnChain } = useChainConnection();
+  const onPreCheck = usePreCheckAction(fromValue);
 
   const [processState, dispatchProcessState] = useReducer(swapReducer, DEFAULT_SWAP_PROCESS);
 
@@ -344,7 +346,7 @@ const Component = () => {
     return totalBalance;
   }, [assetRegistryMap, currentQuote?.feeInfo.feeComponent, priceMap]);
 
-  const getConvertedBalance = useCallback((feeItem: SwapFeeComponent) => {
+  const getConvertedBalance = useCallback((feeItem: CommonFeeComponent) => {
     const asset = assetRegistryMap[feeItem.tokenSlug];
 
     if (asset) {
@@ -799,7 +801,7 @@ const Component = () => {
   };
 
   const isSwapXCM = useMemo(() => {
-    return processState.steps.some((item) => item.type === SwapStepType.XCM);
+    return processState.steps.some((item) => item.type === CommonStepType.XCM);
   }, [processState.steps]);
 
   const renderAlertBox = () => {
@@ -1321,7 +1323,7 @@ const Component = () => {
               className={'__swap-submit-button'}
               disabled={submitLoading || handleRequestLoading || isNotConnectedAltChain}
               loading={submitLoading}
-              onClick={form.submit}
+              onClick={onPreCheck(form.submit, ExtrinsicType.SWAP)}
             >
               {t('Swap')}
             </Button>

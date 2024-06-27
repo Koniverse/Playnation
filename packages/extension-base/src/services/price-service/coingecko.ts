@@ -3,7 +3,6 @@
 
 import { CurrencyJson, CurrencyType, ExchangeRateJSON, PriceJson } from '@subwallet/extension-base/background/KoniTypes';
 import { staticData, StaticKey } from '@subwallet/extension-base/utils/staticData';
-import axios, { AxiosResponse } from 'axios';
 
 interface GeckoItem {
   id: string,
@@ -27,39 +26,39 @@ const DEFAULT_CURRENCY = 'USD';
 let useBackupApi = false;
 
 export const getExchangeRateMap = async (): Promise<Record<CurrencyType, ExchangeRateJSON>> => {
-  return Promise.resolve({} as Record<CurrencyType, ExchangeRateJSON>);
-  // try {
-  //   const responseDataExchangeRate = (await axios.get('https://api-cache.subwallet.app/exchange-rate')).data as ExchangeRateItem || {};
-  //
-  //   const exchangeRateMap: Record<CurrencyType, ExchangeRateJSON> = Object.keys(responseDataExchangeRate.conversion_rates)
-  //     .reduce((map, exchangeKey) => {
-  //       if (!staticData[StaticKey.CURRENCY_SYMBOL][exchangeKey]) {
-  //         return map;
-  //       }
-  //
-  //       map[exchangeKey as CurrencyType] = {
-  //         exchange: responseDataExchangeRate.conversion_rates[exchangeKey],
-  //         label: (staticData[StaticKey.CURRENCY_SYMBOL][exchangeKey] as CurrencyJson).label
-  //       };
-  //
-  //       return map;
-  //     }, {} as Record<CurrencyType, ExchangeRateJSON>);
-  //
-  //   return exchangeRateMap;
-  // } catch (e) {
-  //   console.warn('Failed to get exchange rate');
-  //
-  //   return {} as Record<CurrencyType, ExchangeRateJSON>;
-  // }
+  try {
+    const response = await fetch('https://api-cache.subwallet.app/exchange-rate');
+    const responseDataExchangeRate = (await response.json()) as ExchangeRateItem || {};
+
+    const exchangeRateMap: Record<CurrencyType, ExchangeRateJSON> = Object.keys(responseDataExchangeRate.conversion_rates)
+      .reduce((map, exchangeKey) => {
+        if (!staticData[StaticKey.CURRENCY_SYMBOL][exchangeKey]) {
+          return map;
+        }
+
+        map[exchangeKey as CurrencyType] = {
+          exchange: responseDataExchangeRate.conversion_rates[exchangeKey],
+          label: (staticData[StaticKey.CURRENCY_SYMBOL][exchangeKey] as CurrencyJson).label
+        };
+
+        return map;
+      }, {} as Record<CurrencyType, ExchangeRateJSON>);
+
+    return exchangeRateMap;
+  } catch (e) {
+    console.warn('Failed to get exchange rate');
+
+    return {} as Record<CurrencyType, ExchangeRateJSON>;
+  }
 };
 
 export const getPriceMap = async (priceIds: Set<string>, currency: CurrencyType = 'USD'): Promise<Omit<PriceJson, 'exchangeRateMap'>> => {
   const idStr = Array.from(priceIds).join(',');
-  let rs: AxiosResponse<any, any> | undefined;
+  let rs: Response | undefined;
 
   if (!useBackupApi) {
     try {
-      rs = await axios.get(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=${currency.toLowerCase()}&per_page=250&ids=${idStr}`);
+      rs = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=${currency.toLowerCase()}&per_page=250&ids=${idStr}`);
     } catch (err) {
       useBackupApi = true;
     }
@@ -67,14 +66,14 @@ export const getPriceMap = async (priceIds: Set<string>, currency: CurrencyType 
 
   if (useBackupApi || rs?.status !== 200) {
     useBackupApi = true;
-    rs = await axios.get(`https://chain-data.subwallet.app/api/price/get?ids=${idStr}`);
+    rs = await fetch(`https://chain-data.subwallet.app/api/price/get?ids=${idStr}`);
   }
 
   if (rs?.status !== 200) {
     console.warn('Failed to get token price');
   }
 
-  const responseDataPrice = rs?.data as Array<GeckoItem> || [];
+  const responseDataPrice = (await rs.json()) as Array<GeckoItem> || [];
   const currencyData = staticData[StaticKey.CURRENCY_SYMBOL][currency || DEFAULT_CURRENCY] as CurrencyJson;
   const priceMap: Record<string, number> = {};
   const price24hMap: Record<string, number> = {};

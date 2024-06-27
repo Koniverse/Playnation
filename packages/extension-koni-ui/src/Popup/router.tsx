@@ -3,6 +3,8 @@
 
 import { PHISHING_PAGE_REDIRECT } from '@subwallet/extension-base/defaults';
 import { PageWrapper } from '@subwallet/extension-koni-ui/components';
+import { AppOnlineContentContextProvider } from '@subwallet/extension-koni-ui/contexts/AppOnlineContentProvider';
+import { AppPopupModalContextProvider } from '@subwallet/extension-koni-ui/contexts/AppPopupModalContext';
 import ErrorFallback from '@subwallet/extension-koni-ui/Popup/ErrorFallback';
 import { Root } from '@subwallet/extension-koni-ui/Popup/Root';
 import { i18nPromise } from '@subwallet/extension-koni-ui/utils/common/i18n';
@@ -53,6 +55,7 @@ export class LazyLoader {
 const PhishingDetected = new LazyLoader('PhishingDetected', () => import('@subwallet/extension-koni-ui/Popup/PhishingDetected'));
 const Welcome = new LazyLoader('Welcome', () => import('@subwallet/extension-koni-ui/Popup/Welcome'));
 const CreateDone = new LazyLoader('CreateDone', () => import('@subwallet/extension-koni-ui/Popup/CreateDone'));
+const MV3Migration = new LazyLoader('MV3Migration', () => import('@subwallet/extension-koni-ui/Popup/MV3Migration'));
 const RemindExportAccount = new LazyLoader('RemindExportAccount', () => import('@subwallet/extension-koni-ui/Popup/RemindExportAccount'));
 const BuyTokens = new LazyLoader('BuyTokens', () => import('@subwallet/extension-koni-ui/Popup/BuyTokens'));
 // const Staking = new LazyLoader('Staking', () => import('@subwallet/extension-koni-ui/Popup/Home/Staking'));
@@ -145,17 +148,28 @@ export function Example () {
   </PageWrapper>;
 }
 
+export function RootWrapper () {
+  return (
+    <AppPopupModalContextProvider>
+      <AppOnlineContentContextProvider>
+        <Root />
+      </AppOnlineContentContextProvider>
+    </AppPopupModalContextProvider>
+  );
+}
+
 // Todo: Create error page
 export const router = createBrowserRouter([
   {
     path: '/',
     loader: () => i18nPromise,
-    element: <Root />,
+    element: <RootWrapper />,
     errorElement: <ErrorFallback />,
     children: [
       Welcome.generateRouterObject('/welcome'),
       BuyTokens.generateRouterObject('/buy-tokens'),
       CreateDone.generateRouterObject('/create-done'),
+      MV3Migration.generateRouterObject('/mv3-migration'),
       RemindExportAccount.generateRouterObject('/remind-export-account'),
       {
         ...Home.generateRouterObject('/home'),

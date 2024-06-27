@@ -4,7 +4,7 @@
 import { AssetLogoMap, AssetRefMap, ChainAssetMap, ChainInfoMap, ChainLogoMap, MultiChainAssetMap } from '@subwallet/chain-list';
 import { _AssetRef, _AssetRefPath, _AssetType, _ChainAsset, _ChainInfo, _ChainStatus, _EvmInfo, _MultiChainAsset, _SubstrateChainType, _SubstrateInfo } from '@subwallet/chain-list/types';
 import { AssetSetting, ValidateNetworkResponse } from '@subwallet/extension-base/background/KoniTypes';
-import { _DEFAULT_ACTIVE_CHAINS, _MANTA_ZK_CHAIN_GROUP, _ZK_ASSET_PREFIX, LATEST_CHAIN_DATA_FETCHING_INTERVAL } from '@subwallet/extension-base/services/chain-service/constants';
+import { _DEFAULT_ACTIVE_CHAINS, _ZK_ASSET_PREFIX, LATEST_CHAIN_DATA_FETCHING_INTERVAL } from '@subwallet/extension-base/services/chain-service/constants';
 import { EvmChainHandler } from '@subwallet/extension-base/services/chain-service/handler/EvmChainHandler';
 import { MantaPrivateHandler } from '@subwallet/extension-base/services/chain-service/handler/manta/MantaPrivateHandler';
 import { SubstrateChainHandler } from '@subwallet/extension-base/services/chain-service/handler/SubstrateChainHandler';
@@ -749,6 +749,10 @@ export class ChainService {
         if (!chainState || !chainState.manualTurnOff) {
           await this.updateAssetSetting(assetSlug, { visible: true });
         }
+      } else {
+        if (originChain === 'avail_mainnet') {
+          await this.updateAssetSetting(assetSlug, { visible: true });
+        }
       }
     }
   }
@@ -824,16 +828,16 @@ export class ChainService {
     };
 
     if (chainInfo.substrateInfo !== null && chainInfo.substrateInfo !== undefined) {
-      if (_MANTA_ZK_CHAIN_GROUP.includes(chainInfo.slug) && MODULE_SUPPORT.MANTA_ZK && this.mantaChainHandler) {
-        const apiPromise = await this.mantaChainHandler?.initMantaPay(endpoint, chainInfo.slug);
-        const chainApi = await this.substrateChainHandler.initApi(chainInfo.slug, endpoint, { providerName, externalApiPromise: apiPromise, onUpdateStatus });
+      // if (_MANTA_ZK_CHAIN_GROUP.includes(chainInfo.slug) && MODULE_SUPPORT.MANTA_ZK && this.mantaChainHandler) {
+      //   const apiPromise = await this.mantaChainHandler?.initMantaPay(endpoint, chainInfo.slug);
+      //   const chainApi = await this.substrateChainHandler.initApi(chainInfo.slug, endpoint, { providerName, externalApiPromise: apiPromise, onUpdateStatus });
+      //
+      //   this.substrateChainHandler.setSubstrateApi(chainInfo.slug, chainApi);
+      // } else {
+      const chainApi = await this.substrateChainHandler.initApi(chainInfo.slug, endpoint, { providerName, onUpdateStatus });
 
-        this.substrateChainHandler.setSubstrateApi(chainInfo.slug, chainApi);
-      } else {
-        const chainApi = await this.substrateChainHandler.initApi(chainInfo.slug, endpoint, { providerName, onUpdateStatus });
-
-        this.substrateChainHandler.setSubstrateApi(chainInfo.slug, chainApi);
-      }
+      this.substrateChainHandler.setSubstrateApi(chainInfo.slug, chainApi);
+      // }
     }
 
     /**
@@ -1227,17 +1231,10 @@ export class ChainService {
       .filter((info) => (info.chainStatus === _ChainStatus.ACTIVE))
       .map((chainInfo) => chainInfo.slug);
 
-    // Fill out zk assets from latestAssetRegistry if not supported
-    if (!MODULE_SUPPORT.MANTA_ZK) {
-      Object.keys(latestAssetRegistry).forEach((slug) => {
-        if (_isMantaZkAsset(latestAssetRegistry[slug])) {
-          delete latestAssetRegistry[slug];
-        }
-      });
-    }
+    let finalAssetRegistry: Record<string, _ChainAsset> = {};
 
     if (storedAssetRegistry.length === 0) {
-      this.dataMap.assetRegistry = latestAssetRegistry;
+      finalAssetRegistry = latestAssetRegistry;
     } else {
       const mergedAssetRegistry: Record<string, _ChainAsset> = latestAssetRegistry;
 
@@ -1285,10 +1282,26 @@ export class ChainService {
         }
       }
 
-      this.dataMap.assetRegistry = mergedAssetRegistry;
+      finalAssetRegistry = mergedAssetRegistry;
 
       await this.dbService.removeFromAssetStore(deprecatedAssets);
     }
+
+    // Fill out zk assets from finalAssetRegistry if not supported
+    if (!MODULE_SUPPORT.MANTA_ZK) {
+      const zkAssets: string[] = [];
+
+      Object.entries(finalAssetRegistry).forEach(([slug, assets]) => {
+        if (_isMantaZkAsset(assets)) {
+          zkAssets.push(slug);
+          delete finalAssetRegistry[slug];
+        }
+      });
+
+      await this.dbService.removeFromAssetStore(zkAssets);
+    }
+
+    this.dataMap.assetRegistry = finalAssetRegistry;
   }
 
   private updateChainStateMapSubscription () {

@@ -168,6 +168,8 @@ export const PredefinedLedgerNetwork: LedgerNetwork[] = [
   // }
 ];
 
+export const isLedgerCapable = !!(window as unknown as { USB?: unknown }).USB;
+
 /*
   BLOCK
   *: All network,
@@ -284,7 +286,7 @@ export const BLOCK_ACTION_LEDGER_NETWORKS: Record<ExtrinsicType, string[]> = {
   [ExtrinsicType.UNSTAKE_SDOT]: BLOCK_UNSTAKE_SDOT_LEDGER_NETWORKS,
   [ExtrinsicType.UNSTAKE_STDOT]: BLOCK_UNSTAKE_STDOT_LEDGER_NETWORKS,
 
-  [ExtrinsicType.TOKEN_APPROVE]: BLOCK_APPROVE_LEDGER_NETWORKS,
+  [ExtrinsicType.TOKEN_SPENDING_APPROVAL]: BLOCK_APPROVE_LEDGER_NETWORKS,
   /* STAKING */
 
   [ExtrinsicType.SWAP]: BLOCK_SWAP_LEDGER_NETWORKS,
