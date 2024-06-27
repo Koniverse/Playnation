@@ -293,8 +293,8 @@ export class BookaSdk {
     return this.taskListSubject;
   }
 
-  async completeTask (taskHistoryId: number | undefined) {
-    const taskHistoryCheck = await this.postRequest<{ completed: boolean }>(`${GAME_API_HOST}/api/task/check-complete-task`, { taskHistoryId: taskHistoryId });
+  async completeTask (taskId: number | undefined) {
+    const taskHistoryCheck = await this.postRequest<{ completed: boolean }>(`${GAME_API_HOST}/api/task/check-complete-task`, { taskId });
 
     if (taskHistoryCheck && taskHistoryCheck.completed) {
       await this.reloadAccount();
