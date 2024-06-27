@@ -19,13 +19,12 @@ import styled from 'styled-components';
 type Props = {
   task: Task,
   actionReloadPoint: VoidFunction;
-  actionOpenPopup: (task: Task) => void;
 } & ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
 
-const _TaskItem = ({ actionOpenPopup, actionReloadPoint, className, task }: Props): React.ReactElement => {
+const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const notify = useNotification();
   const [account, setAccount] = useState(apiSDK.account);
@@ -149,7 +148,11 @@ const _TaskItem = ({ actionOpenPopup, actionReloadPoint, className, task }: Prop
           }
 
           if (urlRedirect && result.isOpenUrl) {
-            telegramConnector.openLink(urlRedirect);
+            if (task.zealyId) {
+              window.open(urlRedirect, '_blank');
+            } else {
+              telegramConnector.openLink(urlRedirect);
+            }
           }
         }, 100);
       } catch (e) {
