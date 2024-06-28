@@ -43,7 +43,7 @@ function Component ({ compound,
   // @ts-ignore
   const isShowBalance = useSelector((state) => state.settings.isShowBalance);
   const { assetRegistry } = useSelector((state) => state.assetRegistry);
-  const { priceMap } = useSelector((state) => state.price);
+  const { currencyData, priceMap } = useSelector((state) => state.price);
   const { currentAccount, isAllAccount } = useSelector((state) => state.accountState);
 
   const [, setEarnStorage] = useLocalStorage(EARN_TRANSACTION, DEFAULT_EARN_PARAMS);
@@ -146,6 +146,14 @@ function Component ({ compound,
     } as EarningEntryParam });
   }, [navigate]);
 
+  const isParallelLiquidStaking = useMemo(() => {
+    if (poolInfo.chain === 'parallel' && poolInfo.type === YieldPoolType.LIQUID_STAKING) {
+      return true;
+    }
+
+    return false;
+  }, [poolInfo.chain, poolInfo.type]);
+
   const subHeaderButtons: ButtonProps[] = useMemo(() => {
     return [
       {
@@ -156,10 +164,11 @@ function Component ({ compound,
             type='phosphor'
           />
         ),
-        onClick: onEarnMore
+        onClick: onEarnMore,
+        disabled: isParallelLiquidStaking
       }
     ];
-  }, [onEarnMore]);
+  }, [isParallelLiquidStaking, onEarnMore]);
 
   return (
     <>
@@ -172,7 +181,7 @@ function Component ({ compound,
         subHeaderCenter={false}
         subHeaderIcons={subHeaderButtons}
         subHeaderPaddingVertical={true}
-        title={t<string>('Earning position detail')}
+        title={t<string>('Earning position details')}
       >
         <div className={'__active-stake-info-area'}>
           <div className={'__active-stake-title'}>{t('Active stake')}</div>
@@ -189,7 +198,8 @@ function Component ({ compound,
             className={'__active-stake-converted-value'}
             decimal={0}
             hide={!isShowBalance}
-            prefix={'$'}
+            prefix={(currencyData.isPrefix && currencyData.symbol) || ''}
+            suffix={(!currencyData.isPrefix && currencyData.symbol) || ''}
             value={convertActiveStake}
           />
         </div>
@@ -223,6 +233,7 @@ function Component ({ compound,
 
           <Button
             block={true}
+            disabled={poolInfo.chain === 'parallel' && poolInfo.type === YieldPoolType.LIQUID_STAKING}
             icon={(
               <Icon
                 phosphorIcon={PlusCircle}

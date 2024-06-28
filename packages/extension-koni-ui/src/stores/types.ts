@@ -9,10 +9,13 @@ import { _ChainApiStatus, _ChainState } from '@subwallet/extension-base/services
 import { SWTransactionResult } from '@subwallet/extension-base/services/transaction-service/types';
 import { WalletConnectNotSupportRequest, WalletConnectSessionRequest } from '@subwallet/extension-base/services/wallet-connect-service/types';
 import { BalanceMap, BuyServiceInfo, BuyTokenInfo, EarningRewardHistoryItem, EarningRewardItem, NominationPoolInfo, YieldPoolInfo, YieldPoolTarget, YieldPositionInfo } from '@subwallet/extension-base/types';
+import { SwapPair } from '@subwallet/extension-base/types/swap';
 import { MissionInfo } from '@subwallet/extension-koni-ui/types';
 import { SessionTypes } from '@walletconnect/types';
 
 import { SettingsStruct } from '@polkadot/ui-settings/types';
+
+import { AppBannerData, AppConfirmationData, AppPopupData, PopupHistoryData } from '../types/staticContent';
 
 // todo: move this file to extension-koni-ui/src/types/
 
@@ -127,7 +130,17 @@ export interface BalanceStore extends BaseReduxStore {
 }
 
 export interface CampaignStore extends BaseReduxStore {
-  banners: CampaignBanner[]
+  banners: CampaignBanner[],
+  isPopupVisible: boolean
+}
+
+export interface AppOnlineContent {
+  appPopupData: AppPopupData[];
+  appBannerData: AppBannerData[];
+  appConfirmationData: AppConfirmationData[];
+  popupHistoryMap: Record<string, PopupHistoryData>;
+  bannerHistoryMap: Record<string, PopupHistoryData>;
+  confirmationHistoryMap: Record<string, PopupHistoryData>;
 }
 
 export interface BuyServiceStore extends BaseReduxStore {
@@ -191,4 +204,8 @@ export interface EarningStore extends BaseReduxStore {
 
 export interface MissionPoolStore extends BaseReduxStore {
   missions: MissionInfo[];
+}
+
+export interface SwapStore extends BaseReduxStore {
+  swapPairs: SwapPair[];
 }

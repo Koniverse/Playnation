@@ -18,4 +18,6 @@ export * from './screen';
 export * from './wallet-connect';
 export * from './history';
 export * from './earning';
+export * from './staticContent';
 export * from './game';
+export * from './browser';

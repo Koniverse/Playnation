@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import BeforeKaruraCampaign from '@subwallet/extension-base/services/migration-service/scripts/BeforeKaruraCampaign';
+import MigrateAssetSetting from '@subwallet/extension-base/services/migration-service/scripts/databases/MigrateAssetSetting';
+import MigrateRemoveGenesisHash from '@subwallet/extension-base/services/migration-service/scripts/MigrateRemoveGenesisHash';
+import MigrateTransactionHistoryBySymbol from '@subwallet/extension-base/services/migration-service/scripts/MigrateTransactionHistoryBySymbol';
 
 import BaseMigrationJob from '../Base';
 
@@ -32,5 +35,8 @@ export default <Record<string, typeof BaseMigrationJob>>{
   // '1.1.44-01': MigrateAssetSetting,
   // '1.1.45-01': MigrateTransactionHistoryBySymbol,
   // '1.1.46-01': AutoEnableSomeTokens
-  '1.1.51-03': BeforeKaruraCampaign
+  '1.1.51-03': BeforeKaruraCampaign,
+  '1.1.69-03': MigrateAssetSetting,
+  '1.1.69-02': MigrateTransactionHistoryBySymbol,
+  '1.1.69-04': MigrateRemoveGenesisHash
 };

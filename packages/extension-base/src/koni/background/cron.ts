@@ -129,6 +129,12 @@ export class KoniCron {
       (commonReload || needUpdateNft) && this.removeCron('refreshNft');
       commonReload && this.removeCron('refreshPoolingStakingReward');
 
+      if (chainUpdated) {
+        // this.stopPoolInfo();
+        this.removeCron('fetchPoolInfo');
+        // this.addCron('fetchPoolInfo', this.fetchPoolInfo, CRON_REFRESH_CHAIN_STAKING_METADATA);
+      }
+
       // Chains
       if (this.checkNetworkAvailable(serviceInfo)) { // only add cron jobs if there's at least 1 active network
         (commonReload || needUpdateNft) && this.addCron('refreshNft', this.refreshNft(address, serviceInfo.chainApiMap, this.state.getSmartContractNfts(), this.state.getActiveChainInfoMap()), CRON_REFRESH_NFT_INTERVAL);
@@ -137,6 +143,8 @@ export class KoniCron {
     };
 
     this.state.eventService.onLazy(this.eventHandler);
+
+    // this.addCron('fetchPoolInfo', this.fetchPoolInfo, CRON_REFRESH_CHAIN_STAKING_METADATA);
 
     if (!currentAccountInfo?.address) {
       return;
@@ -169,6 +177,7 @@ export class KoniCron {
     }
 
     this.removeAllCrons();
+    // this.stopPoolInfo();
 
     this.status = 'stopped';
 
@@ -180,6 +189,14 @@ export class KoniCron {
       this.state.syncMantaPay().catch(console.warn);
     }
   };
+
+  // fetchPoolInfo = () => {
+  //   this.state.earningService.runSubscribePoolsInfo().catch(console.error);
+  // };
+  //
+  // stopPoolInfo = () => {
+  //   this.state.earningService.runUnsubscribePoolsInfo();
+  // };
 
   refreshNft = (address: string, apiMap: ApiMap, smartContractNfts: _ChainAsset[], chainInfoMap: Record<string, _ChainInfo>) => {
     return () => {

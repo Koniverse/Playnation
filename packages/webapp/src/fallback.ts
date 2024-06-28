@@ -3,6 +3,8 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 
+const storage = SWStorage.instance;
+
 // eslint-disable-next-line header/header
 if (!global.chrome) {
   // @ts-ignore
@@ -13,12 +15,14 @@ if (!global.chrome) {
 if (!global.chrome.extension) {
   // @ts-ignore
   global.chrome.extension = {
-    getURL: (input: string) => input
+    getURL: (input: string) => `${input}`
   };
 }
 
 // @ts-ignore
 global.chrome.runtime = {
+  lastError: undefined,
+  getURL: (input: string) => `/${input}`,
   // @ts-ignore
   getManifest: () => {
     return {
@@ -41,8 +45,6 @@ global.chrome.tabs = {
     // void
   }
 };
-
-const storage = SWStorage.instance;
 
 global.chrome.storage = {
   local: {
