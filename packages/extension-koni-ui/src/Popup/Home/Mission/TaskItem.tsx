@@ -127,7 +127,6 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
         .then((result) => {
           setTaskLoading(false);
           setCompleted(result.success);
-          actionReloadPoint();
 
           if (!result.success && task.zealyType) {
             setChecking(true);
