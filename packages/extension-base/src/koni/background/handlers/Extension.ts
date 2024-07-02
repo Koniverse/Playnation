@@ -4081,7 +4081,7 @@ export default class KoniExtension {
       transaction: transaction,
       extrinsicType: ExtrinsicType.REMARK_WITH_EVENT,
       chainType: ChainType.SUBSTRATE,
-      resolveOnDone: false,
+      resolveOnHasExtrinsicHash: true,
       data: {}
     });
 

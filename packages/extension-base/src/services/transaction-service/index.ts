@@ -3,13 +3,13 @@
 
 import { EvmProviderError } from '@subwallet/extension-base/background/errors/EvmProviderError';
 import { TransactionError } from '@subwallet/extension-base/background/errors/TransactionError';
-import { AmountData, BasicTxErrorType, ChainType, EvmProviderErrorType, EvmSendTransactionRequest, ExtrinsicStatus, ExtrinsicType, NotificationType, TransactionAdditionalInfo, TransactionDirection, TransactionHistoryItem } from '@subwallet/extension-base/background/KoniTypes';
+import { BasicTxErrorType, ChainType, EvmProviderErrorType, EvmSendTransactionRequest, ExtrinsicStatus, ExtrinsicType, NotificationType, TransactionAdditionalInfo, TransactionDirection, TransactionHistoryItem } from '@subwallet/extension-base/background/KoniTypes';
 import { AccountJson } from '@subwallet/extension-base/background/types';
 import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
 import { checkBalanceWithTransactionFee, checkSigningAccountForTransaction, checkSupportForTransaction, estimateFeeForTransaction } from '@subwallet/extension-base/core/logic-validation/transfer';
 import KoniState from '@subwallet/extension-base/koni/background/handlers/State';
 import { ChainService } from '@subwallet/extension-base/services/chain-service';
-import { _getAssetDecimals, _getAssetSymbol, _getChainNativeTokenBasicInfo, _getEvmChainId, _isChainEvmCompatible } from '@subwallet/extension-base/services/chain-service/utils';
+import { _getAssetDecimals, _getAssetSymbol, _getEvmChainId, _isChainEvmCompatible } from '@subwallet/extension-base/services/chain-service/utils';
 import { EventService } from '@subwallet/extension-base/services/event-service';
 import { HistoryService } from '@subwallet/extension-base/services/history-service';
 import { EXTENSION_REQUEST_URL } from '@subwallet/extension-base/services/request-service/constants';
@@ -20,7 +20,7 @@ import { SWTransaction, SWTransactionInput, SWTransactionResponse, TransactionEm
 import { getExplorerLink, parseTransactionData } from '@subwallet/extension-base/services/transaction-service/utils';
 import { isWalletConnectRequest } from '@subwallet/extension-base/services/wallet-connect-service/helpers';
 import { Web3Transaction } from '@subwallet/extension-base/signers/types';
-import { LeavePoolAdditionalData, RequestStakePoolingBonding, RequestYieldStepSubmit, SpecialYieldPoolInfo, YieldPoolType } from '@subwallet/extension-base/types';
+import { LeavePoolAdditionalData, SpecialYieldPoolInfo } from '@subwallet/extension-base/types';
 import { anyNumberToBN, reformatAddress } from '@subwallet/extension-base/utils';
 import { mergeTransactionAndSignature } from '@subwallet/extension-base/utils/eth/mergeTransactionAndSignature';
 import { isContractAddress, parseContractInput } from '@subwallet/extension-base/utils/eth/parseTransaction';
@@ -212,8 +212,14 @@ export default class TransactionService {
           validatedTransaction.extrinsicHash = data.extrinsicHash;
           resolve();
         });
-      } else {
+      } else if (transaction.resolveOnHasExtrinsicHash) {
         emitter.on('extrinsicHash', (data: TransactionEventResponse) => {
+          validatedTransaction.id = data.id;
+          validatedTransaction.extrinsicHash = data.extrinsicHash;
+          resolve();
+        });
+      } else {
+        emitter.on('signed', (data: TransactionEventResponse) => {
           validatedTransaction.id = data.id;
           validatedTransaction.extrinsicHash = data.extrinsicHash;
           resolve();
@@ -327,8 +333,8 @@ export default class TransactionService {
       startBlock: startBlock || 0
     };
 
-    const nativeAsset = _getChainNativeTokenBasicInfo(chainInfo);
-    const baseNativeAmount = { value: '0', decimals: nativeAsset.decimals, symbol: nativeAsset.symbol };
+    // const nativeAsset = _getChainNativeTokenBasicInfo(chainInfo);
+    // const baseNativeAmount = { value: '0', decimals: nativeAsset.decimals, symbol: nativeAsset.symbol };
 
     // Fill data by extrinsicType
     switch (extrinsicType) {
@@ -380,91 +386,91 @@ export default class TransactionService {
       }
 
         break;
-      case ExtrinsicType.STAKING_BOND: {
-        const data = parseTransactionData<ExtrinsicType.STAKING_BOND>(transaction.data);
-
-        historyItem.amount = { ...baseNativeAmount, value: data.amount || '0' };
-      }
-
-        break;
-      case ExtrinsicType.STAKING_JOIN_POOL: {
-        const data = parseTransactionData<ExtrinsicType.STAKING_JOIN_POOL>(transaction.data);
-
-        historyItem.amount = { ...baseNativeAmount, value: data.amount || '0' };
-        historyItem.to = data.selectedPool.name || data.selectedPool.id.toString();
-      }
-
-        break;
-      case ExtrinsicType.STAKING_UNBOND:
-        {
-          const data = parseTransactionData<ExtrinsicType.STAKING_UNBOND>(transaction.data);
-
-          if (data.isLiquidStaking && data.derivativeTokenInfo && data.exchangeRate && data.inputTokenInfo) {
-            historyItem.amount = {
-              decimals: _getAssetDecimals(data.derivativeTokenInfo),
-              symbol: _getAssetSymbol(data.derivativeTokenInfo),
-              value: data.amount
-            };
-
-            historyItem.additionalInfo = {
-              inputTokenSlug: data.inputTokenInfo.slug,
-              exchangeRate: data.exchangeRate
-            } as TransactionAdditionalInfo[ExtrinsicType.STAKING_UNBOND];
-          } else {
-            historyItem.to = data.validatorAddress || '';
-            historyItem.amount = { ...baseNativeAmount, value: data.amount || '0' };
-          }
-        }
-
-        break;
-      case ExtrinsicType.STAKING_LEAVE_POOL:
-        {
-          const data = parseTransactionData<ExtrinsicType.STAKING_LEAVE_POOL>(transaction.data);
-
-          historyItem.to = data.address || '';
-          historyItem.amount = { ...baseNativeAmount, value: data.amount || '0' };
-        }
-
-        break;
-      case ExtrinsicType.STAKING_CLAIM_REWARD: {
-        const data = parseTransactionData<ExtrinsicType.STAKING_CLAIM_REWARD>(transaction.data);
-
-        historyItem.amount = { ...baseNativeAmount, value: data.unclaimedReward || '0' };
-      }
-
-        break;
-
-      case ExtrinsicType.STAKING_WITHDRAW: {
-        const data = parseTransactionData<ExtrinsicType.STAKING_WITHDRAW>(transaction.data);
-
-        const slug = data.slug;
-        const poolHandler = this.state.earningService.getPoolHandler(slug);
-
-        const amount: AmountData = {
-          ...baseNativeAmount,
-          value: data.unstakingInfo.claimable || '0'
-        };
-
-        if (poolHandler) {
-          const asset = this.state.getAssetBySlug(poolHandler.metadataInfo.inputAsset);
-
-          if (asset) {
-            amount.decimals = asset.decimals || 0;
-            amount.symbol = asset.symbol;
-          }
-        }
-
-        historyItem.to = data.unstakingInfo.validatorAddress || '';
-        historyItem.amount = amount;
-        break;
-      }
-
-      case ExtrinsicType.STAKING_CANCEL_UNSTAKE: {
-        const data = parseTransactionData<ExtrinsicType.STAKING_CANCEL_UNSTAKE>(transaction.data);
-
-        historyItem.amount = { ...baseNativeAmount, value: data.selectedUnstaking.claimable || '0' };
-        break;
-      }
+        // case ExtrinsicType.STAKING_BOND: {
+        //   const data = parseTransactionData<ExtrinsicType.STAKING_BOND>(transaction.data);
+        //
+        //   historyItem.amount = { ...baseNativeAmount, value: data.amount || '0' };
+        // }
+        //
+        //   break;
+        // case ExtrinsicType.STAKING_JOIN_POOL: {
+        //   const data = parseTransactionData<ExtrinsicType.STAKING_JOIN_POOL>(transaction.data);
+        //
+        //   historyItem.amount = { ...baseNativeAmount, value: data.amount || '0' };
+        //   historyItem.to = data.selectedPool.name || data.selectedPool.id.toString();
+        // }
+        //
+        //   break;
+        // case ExtrinsicType.STAKING_UNBOND:
+        //   {
+        //     const data = parseTransactionData<ExtrinsicType.STAKING_UNBOND>(transaction.data);
+        //
+        //     if (data.isLiquidStaking && data.derivativeTokenInfo && data.exchangeRate && data.inputTokenInfo) {
+        //       historyItem.amount = {
+        //         decimals: _getAssetDecimals(data.derivativeTokenInfo),
+        //         symbol: _getAssetSymbol(data.derivativeTokenInfo),
+        //         value: data.amount
+        //       };
+        //
+        //       historyItem.additionalInfo = {
+        //         inputTokenSlug: data.inputTokenInfo.slug,
+        //         exchangeRate: data.exchangeRate
+        //       } as TransactionAdditionalInfo[ExtrinsicType.STAKING_UNBOND];
+        //     } else {
+        //       historyItem.to = data.validatorAddress || '';
+        //       historyItem.amount = { ...baseNativeAmount, value: data.amount || '0' };
+        //     }
+        //   }
+        //
+        //   break;
+        // case ExtrinsicType.STAKING_LEAVE_POOL:
+        //   {
+        //     const data = parseTransactionData<ExtrinsicType.STAKING_LEAVE_POOL>(transaction.data);
+        //
+        //     historyItem.to = data.address || '';
+        //     historyItem.amount = { ...baseNativeAmount, value: data.amount || '0' };
+        //   }
+        //
+        //   break;
+        // case ExtrinsicType.STAKING_CLAIM_REWARD: {
+        //   const data = parseTransactionData<ExtrinsicType.STAKING_CLAIM_REWARD>(transaction.data);
+        //
+        //   historyItem.amount = { ...baseNativeAmount, value: data.unclaimedReward || '0' };
+        // }
+        //
+        //   break;
+        //
+        // case ExtrinsicType.STAKING_WITHDRAW: {
+        //   const data = parseTransactionData<ExtrinsicType.STAKING_WITHDRAW>(transaction.data);
+        //
+        //   const slug = data.slug;
+        //   const poolHandler = this.state.earningService.getPoolHandler(slug);
+        //
+        //   const amount: AmountData = {
+        //     ...baseNativeAmount,
+        //     value: data.unstakingInfo.claimable || '0'
+        //   };
+        //
+        //   if (poolHandler) {
+        //     const asset = this.state.getAssetBySlug(poolHandler.metadataInfo.inputAsset);
+        //
+        //     if (asset) {
+        //       amount.decimals = asset.decimals || 0;
+        //       amount.symbol = asset.symbol;
+        //     }
+        //   }
+        //
+        //   historyItem.to = data.unstakingInfo.validatorAddress || '';
+        //   historyItem.amount = amount;
+        //   break;
+        // }
+        //
+        // case ExtrinsicType.STAKING_CANCEL_UNSTAKE: {
+        //   const data = parseTransactionData<ExtrinsicType.STAKING_CANCEL_UNSTAKE>(transaction.data);
+        //
+        //   historyItem.amount = { ...baseNativeAmount, value: data.selectedUnstaking.claimable || '0' };
+        //   break;
+        // }
 
       case ExtrinsicType.EVM_EXECUTE: {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -534,50 +540,50 @@ export default class TransactionService {
         break;
       }
 
-      case ExtrinsicType.UNSTAKE_VDOT:
-      case ExtrinsicType.UNSTAKE_VMANTA:
-      case ExtrinsicType.UNSTAKE_LDOT:
-      case ExtrinsicType.UNSTAKE_SDOT:
-      case ExtrinsicType.UNSTAKE_STDOT:
-      case ExtrinsicType.REDEEM_STDOT:
-      case ExtrinsicType.REDEEM_LDOT:
-      case ExtrinsicType.REDEEM_SDOT:
-      case ExtrinsicType.REDEEM_VMANTA:
-
-      // eslint-disable-next-line no-fallthrough
-      case ExtrinsicType.REDEEM_VDOT: {
-        const data = parseTransactionData<ExtrinsicType.REDEEM_VDOT>(transaction.data);
-        const yieldPoolInfo = data.poolInfo as SpecialYieldPoolInfo;
-        const minAmountPercents = this.state.earningService.getMinAmountPercent();
-
-        if (yieldPoolInfo.metadata.derivativeAssets) {
-          const derivativeTokenSlug = yieldPoolInfo.metadata.derivativeAssets[0];
-          const derivativeTokenInfo = this.state.chainService.getAssetBySlug(derivativeTokenSlug);
-          const chainInfo = this.state.chainService.getChainInfoByKey(data.poolInfo.chain);
-
-          historyItem.amount = { value: data.amount, symbol: _getAssetSymbol(derivativeTokenInfo), decimals: _getAssetDecimals(derivativeTokenInfo) };
-          eventLogs && !_isChainEvmCompatible(chainInfo) && parseLiquidStakingFastUnstakeEvents(historyItem, eventLogs, chainInfo, extrinsicType);
-
-          const minAmountPercent = minAmountPercents[yieldPoolInfo.slug] || 1;
-          const inputTokenSlug = yieldPoolInfo.metadata.inputAsset;
-          const inputTokenInfo = this.state.chainService.getAssetBySlug(inputTokenSlug);
-          const additionalInfo: LeavePoolAdditionalData = {
-            minAmountPercent,
-            symbol: inputTokenInfo.symbol,
-            decimals: inputTokenInfo.decimals || 0,
-            exchangeRate: yieldPoolInfo.statistic?.assetEarning[0].exchangeRate || 1,
-            slug: yieldPoolInfo.slug,
-            type: yieldPoolInfo.type,
-            chain: yieldPoolInfo.chain,
-            group: yieldPoolInfo.group,
-            isFast: data.fastLeave
-          };
-
-          historyItem.additionalInfo = additionalInfo;
-        }
-
-        break;
-      }
+      // case ExtrinsicType.UNSTAKE_VDOT:
+      // case ExtrinsicType.UNSTAKE_VMANTA:
+      // case ExtrinsicType.UNSTAKE_LDOT:
+      // case ExtrinsicType.UNSTAKE_SDOT:
+      // case ExtrinsicType.UNSTAKE_STDOT:
+      // case ExtrinsicType.REDEEM_STDOT:
+      // case ExtrinsicType.REDEEM_LDOT:
+      // case ExtrinsicType.REDEEM_SDOT:
+      // case ExtrinsicType.REDEEM_VMANTA:
+      //
+      // // eslint-disable-next-line no-fallthrough
+      // case ExtrinsicType.REDEEM_VDOT: {
+      //   const data = parseTransactionData<ExtrinsicType.REDEEM_VDOT>(transaction.data);
+      //   const yieldPoolInfo = data.poolInfo as SpecialYieldPoolInfo;
+      //   const minAmountPercents = this.state.earningService.getMinAmountPercent();
+      //
+      //   if (yieldPoolInfo.metadata.derivativeAssets) {
+      //     const derivativeTokenSlug = yieldPoolInfo.metadata.derivativeAssets[0];
+      //     const derivativeTokenInfo = this.state.chainService.getAssetBySlug(derivativeTokenSlug);
+      //     const chainInfo = this.state.chainService.getChainInfoByKey(data.poolInfo.chain);
+      //
+      //     historyItem.amount = { value: data.amount, symbol: _getAssetSymbol(derivativeTokenInfo), decimals: _getAssetDecimals(derivativeTokenInfo) };
+      //     eventLogs && !_isChainEvmCompatible(chainInfo) && parseLiquidStakingFastUnstakeEvents(historyItem, eventLogs, chainInfo, extrinsicType);
+      //
+      //     const minAmountPercent = minAmountPercents[yieldPoolInfo.slug] || 1;
+      //     const inputTokenSlug = yieldPoolInfo.metadata.inputAsset;
+      //     const inputTokenInfo = this.state.chainService.getAssetBySlug(inputTokenSlug);
+      //     const additionalInfo: LeavePoolAdditionalData = {
+      //       minAmountPercent,
+      //       symbol: inputTokenInfo.symbol,
+      //       decimals: inputTokenInfo.decimals || 0,
+      //       exchangeRate: yieldPoolInfo.statistic?.assetEarning[0].exchangeRate || 1,
+      //       slug: yieldPoolInfo.slug,
+      //       type: yieldPoolInfo.type,
+      //       chain: yieldPoolInfo.chain,
+      //       group: yieldPoolInfo.group,
+      //       isFast: data.fastLeave
+      //     };
+      //
+      //     historyItem.additionalInfo = additionalInfo;
+      //   }
+      //
+      //   break;
+      // }
 
       case ExtrinsicType.TOKEN_SPENDING_APPROVAL: {
         const data = parseTransactionData<ExtrinsicType.TOKEN_SPENDING_APPROVAL>(transaction.data);
@@ -659,21 +665,20 @@ export default class TransactionService {
 
     console.debug(`Transaction "${id}" is submitted with hash ${extrinsicHash || ''}`);
 
-    const transaction = this.getTransaction(id);
-
-    if ([
-      ExtrinsicType.STAKING_JOIN_POOL,
-      ExtrinsicType.STAKING_BOND,
-      ExtrinsicType.JOIN_YIELD_POOL,
-      ExtrinsicType.MINT_LDOT,
-      ExtrinsicType.MINT_QDOT,
-      ExtrinsicType.MINT_SDOT,
-      ExtrinsicType.MINT_STDOT,
-      ExtrinsicType.MINT_VDOT,
-      ExtrinsicType.MINT_VMANTA
-    ].includes(transaction.extrinsicType)) {
-      this.handlePostEarningTransaction(id);
-    }
+    // const transaction = this.getTransaction(id);
+    // if ([
+    //   ExtrinsicType.STAKING_JOIN_POOL,
+    //   ExtrinsicType.STAKING_BOND,
+    //   ExtrinsicType.JOIN_YIELD_POOL,
+    //   ExtrinsicType.MINT_LDOT,
+    //   ExtrinsicType.MINT_QDOT,
+    //   ExtrinsicType.MINT_SDOT,
+    //   ExtrinsicType.MINT_STDOT,
+    //   ExtrinsicType.MINT_VDOT,
+    //   ExtrinsicType.MINT_VMANTA
+    // ].includes(transaction.extrinsicType)) {
+    //   this.handlePostEarningTransaction(id);
+    // }
   }
 
   private handlePostProcessing (id: string) { // must be done after success/failure to make sure the transaction is finalized
@@ -1156,39 +1161,39 @@ export default class TransactionService {
     });
   }
 
-  private handlePostEarningTransaction (id: string) {
-    const transaction = this.getTransaction(id);
-
-    let slug: string;
-
-    // TODO
-    if ('data' in transaction.data) {
-      slug = (transaction.data as RequestYieldStepSubmit).data.slug;
-    } else {
-      slug = (transaction.data as RequestStakePoolingBonding).slug;
-    }
-
-    const poolHandler = this.state.earningService.getPoolHandler(slug);
-
-    if (poolHandler) {
-      const type = poolHandler.type;
-
-      if (type === YieldPoolType.NATIVE_STAKING) {
-        return;
-      }
-    } else {
-      return;
-    }
-
-    this.state.mintCampaignService.unlockDotCampaign.mintNft({
-      transactionId: id,
-      address: transaction.address,
-      slug: slug,
-      network: transaction.chain,
-      extrinsicHash: transaction.extrinsicHash
-    })
-      .catch(console.error);
-  }
+  // private handlePostEarningTransaction (id: string) {
+  //   const transaction = this.getTransaction(id);
+  //
+  //   let slug: string;
+  //
+  //   // TODO
+  //   if ('data' in transaction.data) {
+  //     slug = (transaction.data as RequestYieldStepSubmit).data.slug;
+  //   } else {
+  //     slug = (transaction.data as RequestStakePoolingBonding).slug;
+  //   }
+  //
+  //   const poolHandler = this.state.earningService.getPoolHandler(slug);
+  //
+  //   if (poolHandler) {
+  //     const type = poolHandler.type;
+  //
+  //     if (type === YieldPoolType.NATIVE_STAKING) {
+  //       return;
+  //     }
+  //   } else {
+  //     return;
+  //   }
+  //
+  //   this.state.mintCampaignService.unlockDotCampaign.mintNft({
+  //     transactionId: id,
+  //     address: transaction.address,
+  //     slug: slug,
+  //     network: transaction.chain,
+  //     extrinsicHash: transaction.extrinsicHash
+  //   })
+  //     .catch(console.error);
+  // }
 
   public resetWallet (): void {
     this.transactionSubject.next({});
