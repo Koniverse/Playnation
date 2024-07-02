@@ -125,18 +125,18 @@ export class PriceService implements StoppableServiceInterface, PersistDataServi
       currencyData: staticData[StaticKey.CURRENCY_SYMBOL][currencyKey || DEFAULT_CURRENCY] as CurrencyJson
     };
 
-    if (currencyKey === DEFAULT_CURRENCY) {
-      return finalPriceMap;
-    }
-
-    Object.keys(finalPriceMap.price24hMap).forEach((key: string) => {
-      finalPriceMap.price24hMap[key] *= exchangeRateData[currencyKey].exchange;
-      finalPriceMap.priceMap[key] *= exchangeRateData[currencyKey].exchange;
-    });
-
-    await this.dbService.updatePriceStore(finalPriceMap);
-
     return finalPriceMap;
+    // if (currencyKey === DEFAULT_CURRENCY) {
+    // }
+    //
+    // Object.keys(finalPriceMap.price24hMap).forEach((key: string) => {
+    //   finalPriceMap.price24hMap[key] *= exchangeRateData[currencyKey].exchange;
+    //   finalPriceMap.priceMap[key] *= exchangeRateData[currencyKey].exchange;
+    // });
+    //
+    // await this.dbService.updatePriceStore(finalPriceMap);
+    //
+    // return finalPriceMap;
   }
 
   async getPrice () {
