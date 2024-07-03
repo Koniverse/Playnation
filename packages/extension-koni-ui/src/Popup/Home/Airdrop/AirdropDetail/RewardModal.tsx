@@ -168,9 +168,9 @@ function Component (props: Props): React.ReactElement<Props> {
     }
 
     return {
-      iconSrc: '/images/projects/karura.png',
+      iconSrc: currentAirdrop.icon,
       value: raffle?.rewardAmount || 0,
-      symbol: 'KAR'
+      symbol: currentAirdrop.symbol
     };
   })();
 
