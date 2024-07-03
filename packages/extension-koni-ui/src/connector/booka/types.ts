@@ -257,6 +257,7 @@ export interface AirdropCampaign {
   tokenDistributions: JSON;
   npsDistributions: JSON;
   share: AirdropCampaignShare;
+  token_slug: string,
   status: string;
   createdAt: Date;
   updatedAt: Date;

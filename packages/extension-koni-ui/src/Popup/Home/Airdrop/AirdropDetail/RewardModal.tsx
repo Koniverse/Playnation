@@ -7,7 +7,7 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AirdropCampaign, AirdropRaffle } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, Icon, SwModal } from '@subwallet/react-ui';
+import { Button, Icon, Logo, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { ArrowCircleDown, CheckCircle, ShareNetwork } from 'phosphor-react';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -193,11 +193,19 @@ function Component (props: Props): React.ReactElement<Props> {
         </div>
 
         <div className='__reward-info'>
-          <img
-            alt={'token'}
-            className='__reward-icon'
-            src={rewardInfo.iconSrc}
-          />
+          {raffle?.rewardType === 'NPS' ? (
+            <img
+              alt={'token'}
+              className='__reward-icon'
+              src={rewardInfo.iconSrc}
+            />
+          ) : (
+            <Logo
+              size={28}
+              token={currentAirdrop.token_slug.toLowerCase()}
+            />
+          )}
+
           <span className={'__reward-value'}>{rewardInfo.value}</span>
           <span className={'__reward-symbol'}>{rewardInfo.symbol}</span>
         </div>
