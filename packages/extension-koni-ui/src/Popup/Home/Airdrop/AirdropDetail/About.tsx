@@ -24,26 +24,14 @@ function Component ({ airdropInfo, className }: Props) {
   }, []);
 
   const buttons = useMemo(() => {
-    if (airdropInfo.network === 'karura') {
-      return <>
-        <Button
-          icon={(
-            <Icon
-              customSize={'16px'}
-              phosphorIcon={TelegramLogo}
-              weight={'fill'}
-            />
-          )}
-          size='xs'
-          type='ghost'
-        />
-      </>;
-    }
+    const urlTwitter = airdropInfo.share.url_twitter;
+    const urlTelegram = airdropInfo.share.url_telegram;
+    const urlBrowser = airdropInfo.share.url_website;
 
     return (
       <>
 
-        <Button
+        {urlTwitter && <Button
           icon={(
             <Icon
               customSize={'16px'}
@@ -52,13 +40,13 @@ function Component ({ airdropInfo, className }: Props) {
             />
           )}
           onClick={() => {
-            openLink('https://twitter.com/dotisded');
+            openLink(urlTwitter);
           }}
           size='xs'
           type='ghost'
-        />
+        />}
 
-        <Button
+        {urlTelegram && <Button
           icon={(
             <Icon
               customSize={'16px'}
@@ -67,13 +55,13 @@ function Component ({ airdropInfo, className }: Props) {
             />
           )}
           onClick={() => {
-            openLink('https://t.co/bVwz9Afllz');
+            openLink(urlTelegram);
           }}
           size='xs'
           type='ghost'
-        />
+        />}
 
-        <Button
+        {urlBrowser && <Button
           icon={(
             <Icon
               customSize={'16px'}
@@ -82,11 +70,11 @@ function Component ({ airdropInfo, className }: Props) {
             />
           )}
           onClick={() => {
-            openLink('https://www.dotisded.io/');
+            openLink(urlBrowser);
           }}
           size='xs'
           type='ghost'
-        />
+        />}
       </>
     );
   }, [airdropInfo]);

@@ -4,7 +4,7 @@
 import { SWStorage } from '@subwallet/extension-base/storage';
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AirdropRaffle } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AirdropCampaign, AirdropRaffle } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, SwModal } from '@subwallet/react-ui';
@@ -20,6 +20,7 @@ interface Props extends ThemeProps {
   onClaimLater: VoidFunction;
   raffle: AirdropRaffle | null;
   isLoading?: boolean;
+  currentAirdrop: AirdropCampaign;
 }
 
 type RewardInfo = {
@@ -36,7 +37,7 @@ const telegramConnector = TelegramConnector.instance;
 
 function Component (props: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const { className = '', isLoading, onCancel, onClaim, onClaimLater, raffle } = props;
+  const { className = '', currentAirdrop, isLoading, onCancel, onClaim, onClaimLater, raffle } = props;
   const _onClaimLater = useCallback(() => {
     onClaimLater?.();
   }, [onClaimLater]);
@@ -44,25 +45,34 @@ function Component (props: Props): React.ReactElement<Props> {
   const [loadingShare, setLoadingShare] = useState(false);
 
   const onClickShare = useCallback(async () => {
-    await storage.setItem('isShareClaimed', 'true');
+    if (!currentAirdrop) {
+      return;
+    }
+
+    const key = `isShareClaimed_${currentAirdrop.airdrop_campaign_id}`;
+
+    await storage.setItem(key, 'true');
     setLoadingShare(true);
-    const url = await apiSDK.getShareTwitterClaimURL();
+    const url = await apiSDK.getShareTwitterClaimURL(currentAirdrop);
 
     setIsShareClaimed(true);
     setLoadingShare(false);
 
-    telegramConnector.openLink(url);
-  }, []);
+    if (url) {
+      telegramConnector.openLink(url);
+    }
+  }, [currentAirdrop]);
 
   useEffect(() => {
     const checkShareClaimed = async () => {
-      const isClaimed = await storage.getItem('isShareClaimed') === 'true';
+      const key = `isShareClaimed_${currentAirdrop.airdrop_campaign_id}`;
+      const isClaimed = await storage.getItem(key) === 'true';
 
       setIsShareClaimed(isClaimed);
     };
 
     checkShareClaimed();
-  }, []);
+  }, [currentAirdrop]);
 
   const modalFooter = (() => {
     return (

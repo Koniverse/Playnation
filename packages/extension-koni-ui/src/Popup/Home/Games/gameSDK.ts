@@ -35,7 +35,6 @@ export class GameApp {
   start () {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     window.addEventListener('message', this.listener);
-
   }
 
   stop () {
@@ -46,6 +45,10 @@ export class GameApp {
   onInit (params: SDKInitParams) {
     console.log('Init game with params', params);
     // Todo: Send client id into game
+  }
+
+  getEnergyPerGame () {
+    return this.currentGameInfo.energyPerGame;
   }
 
   onGetPlayer () {
@@ -76,6 +79,7 @@ export class GameApp {
   onGetTournament (): Tournament {
     const account = this.apiSDK.account;
     const currentGame = this.currentGameInfo;
+
     if (!account || !currentGame) {
       throw newError('invalid account or game', errorCodes.SystemError);
     }
@@ -101,19 +105,20 @@ export class GameApp {
 
   onGetIngameItems () {
     const items: InGameItem[] = Object.values(this.gameItemInGame);
+
     return { items };
   }
 
   async onPlay () {
-
     const account = this.apiSDK.account;
     const currentGame = this.currentGameInfo;
     const energy = account?.attributes.energy || 0;
+
     if (energy < currentGame.energyPerGame) {
       throw newError('Not enought energy', errorCodes.NotEnoughEnergy);
     }
-    const gamePlay = await this.apiSDK.playGame(this.currentGameInfo.id, this.currentGameInfo.energyPerGame);
 
+    const gamePlay = await this.apiSDK.playGame(this.currentGameInfo.id, this.currentGameInfo.energyPerGame);
 
     if (!account || !currentGame) {
       throw newError('invalid account or game', errorCodes.SystemError);
@@ -162,6 +167,7 @@ export class GameApp {
 
     // find object by itemId, return gameItemId;
     const gameItemId = this.gameItemInGame[itemId].gameItemId;
+
     if (this.gameItemInGame[itemId] && remaining > 0) {
       success = true;
       this.inventoryQuantityMap[itemId] = remaining - 1;
