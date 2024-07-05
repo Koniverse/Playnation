@@ -12,7 +12,6 @@ import { customFormatDate, formatInteger } from '@subwallet/extension-koni-ui/ut
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
 import { Button, Icon, Image } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { difference } from 'lodash';
 import { CheckCircle } from 'phosphor-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
@@ -32,7 +31,8 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
   const [completed, setCompleted] = useState(!!task.completedAt);
-  const [checking, setChecking] = useState(false);
+
+  const [checking, setChecking] = useState(task && task.airlyftType === 'telegram-sync' && !completed);
 
   useEffect(() => {
     let taskItemUpdaterInterval: NodeJS.Timer;
@@ -128,15 +128,11 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
           setTaskLoading(false);
           setCompleted(result.success);
 
-          if (!result.success && task.zealyType) {
-            setChecking(true);
-          }
-
           if (result.success) {
             actionReloadPoint();
           }
 
-          if (task.zealyType) {
+          if (task.airlyftId) {
             setTimeout(() => {
               let urlRedirect = task.url;
 
@@ -152,7 +148,7 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
         })
         .catch(console.error);
 
-      if (!task.zealyId) {
+      if (!task.airlyftId) {
         setTimeout(async () => {
           let urlRedirect = task.url;
 
