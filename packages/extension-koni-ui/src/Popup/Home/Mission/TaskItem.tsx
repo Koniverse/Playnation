@@ -32,7 +32,7 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
   const { t } = useTranslation();
   const [completed, setCompleted] = useState(!!task.completedAt);
 
-  const [checking, setChecking] = useState(false);
+  const [checking, setChecking] = useState(task && task.airlyftType === 'telegram-sync' && !completed);
 
   useEffect(() => {
     let taskItemUpdaterInterval: NodeJS.Timer;
@@ -130,10 +130,6 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
 
           if (result.success) {
             actionReloadPoint();
-          } else {
-            if (task.airlyftType === 'telegram-sync' || task.airlyftType === 'sync') {
-              setChecking(true);
-            }
           }
 
           if (task.airlyftId) {
