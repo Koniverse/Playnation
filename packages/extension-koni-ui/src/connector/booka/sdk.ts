@@ -676,7 +676,7 @@ export class BookaSdk {
     }
   }
 
-  async fetchCheckEligibility (campaignId: number): Promise<AirdropEligibility[]> {
+  async fetchEligibility (campaignId: number): Promise<AirdropEligibility[]> {
     try {
       const response = await this.postRequest<AirdropEligibility[]>(`${GAME_API_HOST}/api/airdrop/check-eligibility`, { campaign_id: campaignId });
 
@@ -691,9 +691,9 @@ export class BookaSdk {
     }
   }
 
-  async fetchClaimAirdrop (airdrop_log_id: number) {
+  async claimRaffle (airdropLogId: number) {
     try {
-      const claim = await this.postRequest(`${GAME_API_HOST}/api/airdrop/claim`, { airdrop_log_id: airdrop_log_id });
+      const claim = await this.postRequest(`${GAME_API_HOST}/api/airdrop/claim`, { airdrop_log_id: airdropLogId });
 
       await this.fetchAirdropCampaign();
 
@@ -705,7 +705,7 @@ export class BookaSdk {
   }
 
   // airdrop raffle
-  async fetchRaffleAirdrop (campaignId: number) {
+  async raffleAirdrop (campaignId: number) {
     try {
       const raffle = await this.postRequest(`${GAME_API_HOST}/api/airdrop/raffle`, { campaign_id: campaignId });
 
@@ -731,22 +731,6 @@ export class BookaSdk {
 
   subscribeAirdropCampaign () {
     return this.airdropCampaignSubject;
-  }
-
-  subscribeCheckEligibility (campaignId: number) {
-    return this.fetchCheckEligibility(campaignId);
-  }
-
-  subscribeAirdropRaffle (campaignId: number) {
-    return this.fetchRaffleAirdrop(campaignId);
-  }
-
-  subscribeAirdropClaim (airdrop_log_id: number) {
-    return this.fetchClaimAirdrop(airdrop_log_id);
-  }
-
-  subscribeAirdropHistory (campaignId: number) {
-    return this.fetchAirdropHistory(campaignId);
   }
 
   // Singleton

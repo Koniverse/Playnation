@@ -271,6 +271,7 @@ export interface AirdropEligibility {
   totalBoxOpen: number,
   totalBoxClose: number,
   totalBox: number,
+  price: number,
   currentProcess: string
   eligibilityIds?: number[];
 }

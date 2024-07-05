@@ -62,7 +62,6 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const [eligibility, setEligibility] = useState<AirdropEligibility | null>(null);
   const [raffle, setRaffle] = useState<AirdropRaffle | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [claim, setClaim] = useState<boolean>(false);
   const [isLoadingRaffle, setIsLoadingRaffle] = useState<boolean>(false);
   const [airdropHistory, setAirdropHistory] = useState<AirdropRewardHistoryLog | null>(null);
 
@@ -86,7 +85,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 
   const fetchEligibility = useCallback(async () => {
     try {
-      const data = await apiSDK.subscribeCheckEligibility(currentAirdrop.airdrop_campaign_id) as unknown as AirdropEligibility;
+      const data = await apiSDK.fetchEligibility(currentAirdrop.airdrop_campaign_id) as unknown as AirdropEligibility;
 
       if (data) {
         setEligibility(data);
@@ -95,11 +94,11 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
     } catch (error) {
       console.error('Error fetching eligibility:', error);
     }
-  }, [currentAirdrop.airdrop_campaign_id, raffle, inactiveModal, claim]);
+  }, [currentAirdrop]);
 
   const fetchHistory = useCallback(async () => {
     try {
-      const data = await apiSDK.subscribeAirdropHistory(currentAirdrop.airdrop_campaign_id) as AirdropRewardHistoryLog;
+      const data = await apiSDK.fetchAirdropHistory(currentAirdrop.airdrop_campaign_id) as AirdropRewardHistoryLog;
 
       if (data) {
         setAirdropHistory(data);
@@ -157,7 +156,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       return buttonTypeConst.COMING_SOON;
     }
 
-    if (eligibility && eligibility.currentProcess && eligibility.eligibility) {
+    if (eligibility && eligibility.currentProcess) {
       switch (eligibility.currentProcess) {
         case AirdropCampaignProcess.ELIGIBLE:
           return buttonTypeConst.ELIGIBLE;
@@ -178,23 +177,26 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const onRaffle = useCallback(async () => {
     try {
       setIsLoadingRaffle(true);
-      const result = await apiSDK.subscribeAirdropRaffle(currentAirdrop.airdrop_campaign_id) as AirdropRaffle;
+      const raffleResult = await apiSDK.raffleAirdrop(currentAirdrop.airdrop_campaign_id) as AirdropRaffle;
 
-      setRaffle(result);
+      setRaffle(raffleResult);
       activeModal(rewardModalId);
       setIsLoadingRaffle(false);
     } catch (error) {
       setRaffle(null);
       setIsLoadingRaffle(false);
-      console.log('error', error);
+      notify({
+        message: (error as Error).message,
+        type: 'error'
+      });
     }
-  }, [activeModal, currentAirdrop.airdrop_campaign_id]);
+  }, [activeModal, currentAirdrop.airdrop_campaign_id, notify]);
 
   const onCancel = useCallback(() => {
     inactiveModal(rewardModalId);
   }, [inactiveModal]);
 
-  const onClaim = useCallback(async (airdrop_record_id?: number) => {
+  const onClaim = useCallback(async (airdropRecordId?: number) => {
     setIsLoading(true);
 
     try {
@@ -202,13 +204,13 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 
       if (raffle) {
         airdropRecordLogId = raffle.airdropRecordLogId;
-      } else if (airdrop_record_id !== undefined) {
-        airdropRecordLogId = airdrop_record_id;
+      } else if (airdropRecordId !== undefined) {
+        airdropRecordLogId = airdropRecordId;
       } else {
         throw new Error('No airdrop record ID available');
       }
 
-      await apiSDK.subscribeAirdropClaim(airdropRecordLogId);
+      await apiSDK.claimRaffle(airdropRecordLogId);
 
       notify({
         message: t('Claim successfully'),
@@ -217,7 +219,6 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       inactiveModal(rewardModalId);
       setIsLoading(false);
       await fetchHistory();
-      setClaim(true);
     } catch (error) {
       notify({
         message: (error as Error).message,
@@ -225,7 +226,6 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       });
       inactiveModal(rewardModalId);
       setIsLoading(false);
-      setClaim(false);
     }
   }, [raffle, notify, t, inactiveModal, fetchHistory]);
 
@@ -290,7 +290,6 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
               {buttonType === buttonTypeConst.RAFFLE && (
                 <Button
                   block={true}
-                  loading={isLoadingRaffle}
                   disabled={eligibility?.totalBoxOpen === eligibility?.totalBox}
                   icon={
                     <Icon
@@ -299,10 +298,11 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
                       weight='fill'
                     />
                   }
+                  loading={isLoadingRaffle}
                   onClick={onRaffle}
                   shape={'round'}
                 >
-                  {t('Raffle')} {eligibility?.totalBoxOpen}/{eligibility?.totalBox}
+                  {t('Raffle')} {eligibility.price > 0 ? t('with {{price}} NPS', { price: eligibility.price }) : ''} ({eligibility?.totalBoxOpen}/{eligibility?.totalBox})
                 </Button>
               )}
             </>
