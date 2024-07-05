@@ -1,8 +1,6 @@
 // Copyright 2019-2022 @subwallet/extension authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-
-
 export enum EventTypeEnum {
   GAMEPLAY = 'GAMEPLAY',
   TASK = 'TASK',
@@ -212,6 +210,7 @@ export interface LeaderboardPerson {
 
 export interface ReferralRecord {
   point: number;
+  total_count: number;
   referralSuccessTime: number;
   accountInfo: AccountPublicInfo;
 }
@@ -221,6 +220,22 @@ export enum AirdropCampaignStatus {
   INACTIVE = 'INACTIVE',
   CANCELED = 'CANCELED',
 }
+
+export interface AirdropCampaignShare {
+  id: number;
+  content: string;
+  url_share: string;
+  hashtags: string;
+  content_not_show_point: string | null;
+  raffle_content: string;
+  raffle_content_not_show_point: string | null;
+  raffle_url_share: string;
+  raffle_hashtags: string;
+  url_twitter: string;
+  url_website: string;
+  url_telegram: string;
+}
+
 export interface AirdropCampaign {
   id: number;
   airdrop_campaign_id: number;
@@ -243,6 +258,8 @@ export interface AirdropCampaign {
   shortDescription: string;
   tokenDistributions: JSON;
   npsDistributions: JSON;
+  share: AirdropCampaignShare;
+  token_slug: string,
   status: string;
   createdAt: Date;
   updatedAt: Date;

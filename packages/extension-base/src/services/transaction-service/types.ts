@@ -40,6 +40,7 @@ export interface SWTransactionInput extends SwInputBase, Partial<Pick<SWTransact
   edAsWarning?: boolean;
   isTransferAll?: boolean;
   resolveOnDone?: boolean;
+  resolveOnHasExtrinsicHash?: boolean;
   skipFeeValidation?: boolean;
 }
 

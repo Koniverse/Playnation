@@ -123,13 +123,15 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   }, [navigate]);
 
   const onClickShare = useCallback(async () => {
-    if (!currentAirdrop || !currentAirdrop.network) {
+    if (!currentAirdrop) {
       return;
     }
 
-    const url = apiSDK.getShareTwitterAirdropURL(currentAirdrop.network);
+    const url = apiSDK.getShareTwitterAirdropURL(currentAirdrop);
 
-    telegramConnector.openLink(url);
+    if (url) {
+      telegramConnector.openLink(url);
+    }
   }, [currentAirdrop]);
 
   const subHeaderIcons = useMemo(() => {
@@ -290,7 +292,6 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
               {buttonType === buttonTypeConst.RAFFLE && (
                 <Button
                   block={true}
-                  loading={isLoadingRaffle}
                   disabled={eligibility?.totalBoxOpen === eligibility?.totalBox}
                   icon={
                     <Icon
@@ -299,6 +300,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
                       weight='fill'
                     />
                   }
+                  loading={isLoadingRaffle}
                   onClick={onRaffle}
                   shape={'round'}
                 >
@@ -376,6 +378,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
       </div>
 
       <AirdropRewardModal
+        currentAirdrop={currentAirdrop}
         isLoading={isLoading}
         onCancel={onCancel}
         onClaim={onClaim}

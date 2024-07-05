@@ -3,7 +3,7 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, AirdropCampaign, AirdropCampaignShare, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
@@ -321,39 +321,61 @@ export class BookaSdk {
     return `https://t.me/${TELEGRAM_WEBAPP_LINK}?startapp=${this.account?.info.inviteCode || 'booka'}`;
   }
 
-  public getShareTwitterAirdropURL (network: string) {
-    let urlBot = 'https://x.playnation.app/playnation-karura';
-
-    let content = 'A new exciting game is in town, Karura Token Playdrop! Want some fun and a chance to win Karura airdrop? Join me NOW 👇%0A';
-    let hashtag = '';
-
-    if (network !== 'karura') {
-      urlBot = 'https://x.playnation.app/playnation-ded';
-      content = 'Get ready for the DED Airdrop! 🎉 Earn $DED tokens by joining our Egg Hunt event. Don’t miss out on the fun and rewards! 🥚💸';
-      hashtag = '&hashtags=DEDEggHunt,Playnation,DOTisDED,Airdrop';
+  public getShareTwitterAirdropURL (item: AirdropCampaign) {
+    console.log('item', item)
+    if (!item.share) {
+      return;
     }
 
-    const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
+    try {
+      const dataShare = item.share;
+      const urlBot = dataShare.url_share;
 
-    return `http://x.com/share?text=${content}&url=${linkApp}%0A${hashtag}`;
+      const content = dataShare.content;
+      let hashtag = '';
+
+      if (dataShare.hashtags) {
+        hashtag = `&hashtags=${dataShare.hashtags}`;
+      }
+
+      const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
+
+      return `http://x.com/share?text=${content}&url=${linkApp}%0A${hashtag}`;
+    } catch (e) {}
+
+    return null;
   }
 
-  async getShareTwitterClaimURL () {
-    const start = '2024-06-01 03:00:00';
-    const end = '2024-06-15 00:00:00';
-    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate: start, endDate: end, limit: 1 });
-    const personMine = leaderBoard.find((item) => item.mine);
-    let content = 'Just claimed my @KaruraNetwork Playdrop on @playnationapp 🔥 Join me NOW to win future airdrops👇';
-
-    if (personMine) {
-      content = `Just claimed my @KaruraNetwork Playdrop on @playnationapp with ${personMine.point} NPS and ${personMine.rank}th rank on the Karura Token Playdrop leaderboard 🔥 Join me NOW to win future airdrops👇`;
+  async getShareTwitterClaimURL (item: AirdropCampaign) {
+    if (!item.share) {
+      return;
     }
 
-    const urlBot = 'https://x.playnation.app/playnation-claim-karura';
+    const start = item.start_claim;
+    const end = item.end_claim;
+    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate: start, endDate: end, limit: 1 });
+    const personMine = leaderBoard.find((item) => item.mine);
 
-    const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
+    try {
+      const dataShare = item.share;
+      let content = dataShare.raffle_content_not_show_point || dataShare.raffle_content;
 
-    return `http://x.com/share?text=${content}%0A&url=${linkApp}%0A&hashtags=Playnation,Karura,KaruraPlaydrop`;
+      if (personMine) {
+        content = populateTemplateString(dataShare.raffle_content, personMine);
+      }
+
+      let hashtag = '';
+
+      if (dataShare.raffle_hashtags) {
+        hashtag = `&hashtags=${dataShare.raffle_hashtags}`;
+      }
+
+      const urlBot = dataShare.raffle_url_share;
+
+      const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
+
+      return `http://x.com/share?text=${content}%0A&url=${linkApp}${hashtag}`;
+    } catch (e) {}
   }
 
   async getShareTwitterURL (startDate: string, endDate: string, content: string, gameId: number, url: string) {
