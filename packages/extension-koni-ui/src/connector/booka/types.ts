@@ -212,6 +212,7 @@ export interface LeaderboardPerson {
 
 export interface ReferralRecord {
   point: number;
+  total_count: number;
   referralSuccessTime: number;
   accountInfo: AccountPublicInfo;
 }

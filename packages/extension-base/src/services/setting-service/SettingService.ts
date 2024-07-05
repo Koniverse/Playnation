@@ -1,7 +1,9 @@
 // Copyright 2019-2022 @subwallet/extension-base authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { PassPhishing, RequestSettingsType, UiSettings } from '@subwallet/extension-base/background/KoniTypes';
+import { LanguageType, PassPhishing, RequestSettingsType, UiSettings } from '@subwallet/extension-base/background/KoniTypes';
+import { LANGUAGE } from '@subwallet/extension-base/constants';
+import { SWStorage } from '@subwallet/extension-base/storage';
 import PassPhishingStore from '@subwallet/extension-base/stores/PassPhishingStore';
 import SettingsStore from '@subwallet/extension-base/stores/Settings';
 import { Subject } from 'rxjs';
@@ -14,8 +16,17 @@ export default class SettingService {
   private readonly passPhishingStore = new PassPhishingStore();
 
   constructor () {
+    this.initSetting().catch(console.error);
+  }
+
+  private async initSetting () {
+    let old = (await SWStorage.instance.getItem(LANGUAGE) || 'en') as LanguageType;
+
     const updateLanguage = ({ language }: UiSettings) => {
-      i18n.changeLanguage(language).catch(console.error);
+      if (language !== old) {
+        old = language;
+        i18n.changeLanguage(language).catch(console.error);
+      }
     };
 
     this.getSettings(updateLanguage);

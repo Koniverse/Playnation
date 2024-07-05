@@ -155,7 +155,8 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
       }),
       new HtmlWebpackPlugin({
         filename: 'index.html',
-        template: 'public/index.html'
+        template: 'public/index.html',
+        meta: { 'app-version': pkgJson.buildNumber }
       })
     ],
     resolve: {
@@ -166,7 +167,7 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
         ...alias,
         'react/jsx-runtime': require.resolve('react/jsx-runtime')
       }),
-      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx'],
       fallback: {
         crypto: require.resolve('crypto-browserify'),
         path: require.resolve('path-browserify'),
@@ -194,6 +195,9 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
           }
         }
       }
+    },
+    experiments: {
+      asyncWebAssembly: true
     },
     watch: false
   };

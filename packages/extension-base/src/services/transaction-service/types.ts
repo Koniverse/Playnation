@@ -40,6 +40,7 @@ export interface SWTransactionInput extends SwInputBase, Partial<Pick<SWTransact
   edAsWarning?: boolean;
   isTransferAll?: boolean;
   resolveOnDone?: boolean;
+  resolveOnHasExtrinsicHash?: boolean;
   skipFeeValidation?: boolean;
 }
 
@@ -66,3 +67,5 @@ export interface TransactionEventMap {
   success: (response: TransactionEventResponse) => void;
   timeout: (response: TransactionEventResponse) => void;
 }
+
+export type OptionalSWTransaction = SWTransaction['transaction'] | null | undefined;

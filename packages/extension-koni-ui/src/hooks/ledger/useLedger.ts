@@ -5,6 +5,7 @@ import { _ChainInfo } from '@subwallet/chain-list/types';
 import { LedgerNetwork } from '@subwallet/extension-base/background/KoniTypes';
 import { _isChainEvmCompatible } from '@subwallet/extension-base/services/chain-service/utils';
 import { EVMLedger, SubstrateLedger } from '@subwallet/extension-koni-ui/connector';
+import { isLedgerCapable, ledgerIncompatible } from '@subwallet/extension-koni-ui/constants';
 import { useSelector } from '@subwallet/extension-koni-ui/hooks';
 import useGetSupportedLedger from '@subwallet/extension-koni-ui/hooks/ledger/useGetSupportedLedger';
 import { Ledger } from '@subwallet/extension-koni-ui/types';
@@ -34,8 +35,6 @@ interface Result extends StateBase {
   signMessage: Ledger['signMessage'];
 }
 
-const isLedgerCapable = !!(window as unknown as { USB?: unknown }).USB;
-
 const baseState: StateBase = {
   isLedgerCapable,
   isLedgerEnabled: isLedgerCapable
@@ -47,13 +46,10 @@ const getNetwork = (ledgerChains: LedgerNetwork[], slug: string, isEthereumNetwo
   return ledgerChains.find((network) => network.slug === slug || (network.isEthereum && isEthereumNetwork));
 };
 
-const retrieveLedger = (slug: string, ledgerChains: LedgerNetwork[], chainInfoMap: Record<string, _ChainInfo>): Ledger => {
+const retrieveLedger = (slug: string, ledgerChains: LedgerNetwork[], isEthereumNetwork: boolean): Ledger => {
   const { isLedgerCapable } = baseState;
 
-  assert(isLedgerCapable, 'Incompatible browser, only Chrome is supported');
-
-  const chainInfo = chainInfoMap[slug];
-  const isEthereumNetwork = _isChainEvmCompatible(chainInfo);
+  assert(isLedgerCapable, ledgerIncompatible);
 
   const def = getNetwork(ledgerChains, slug, isEthereumNetwork);
 
@@ -72,6 +68,16 @@ export function useLedger (slug?: string, active = true): Result {
   const ledgerChains = useGetSupportedLedger();
   const { chainInfoMap } = useSelector((state) => state.chainStore);
 
+  const isEvmNetwork = useMemo(() => {
+    if (!slug) {
+      return false;
+    }
+
+    const chainInfo = chainInfoMap[slug];
+
+    return _isChainEvmCompatible(chainInfo);
+  }, [chainInfoMap, slug]);
+
   const timeOutRef = useRef<NodeJS.Timer>();
   const destroyRef = useRef<VoidFunction>();
 
@@ -80,6 +86,7 @@ export function useLedger (slug?: string, active = true): Result {
   const [refreshLock, setRefreshLock] = useState(false);
   const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
   const [ledger, setLedger] = useState<Ledger| null>(null);
 
   const getLedger = useCallback(() => {
@@ -98,14 +105,14 @@ export function useLedger (slug?: string, active = true): Result {
       }
 
       try {
-        return retrieveLedger(slug, ledgerChains, chainInfoMap);
+        return retrieveLedger(slug, ledgerChains, isEvmNetwork);
       } catch (error) {
         setError((error as Error).message);
       }
     }
 
     return null;
-  }, [refreshLock, slug, active, ledgerChains, chainInfoMap]);
+  }, [refreshLock, slug, active, ledgerChains, isEvmNetwork]);
 
   const appName = useMemo(() => {
     const unknownNetwork = 'unknown network';
@@ -262,7 +269,7 @@ export function useLedger (slug?: string, active = true): Result {
           console.error(error);
         });
     }, 300);
-  }, [slug, ledgerChains, t, active, chainInfoMap, appName, handleError, getLedger]);
+  }, [slug, t, active, handleError, getLedger]);
 
   useEffect(() => {
     destroyRef.current = () => {

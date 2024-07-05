@@ -2,20 +2,94 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AirdropCampaign } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { TelegramLogo } from 'phosphor-react';
-import React from 'react';
+import { Browser, TelegramLogo, TwitterLogo } from 'phosphor-react';
+import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
   airdropInfo: AirdropCampaign
 };
+const telegramConnector = TelegramConnector.instance;
 
 function Component ({ airdropInfo, className }: Props) {
   const { t } = useTranslation();
+
+  const openLink = useCallback((link: string) => {
+    telegramConnector.openLink(link);
+  }, []);
+
+  const buttons = useMemo(() => {
+    if (airdropInfo.network === 'karura') {
+      return <>
+        <Button
+          icon={(
+            <Icon
+              customSize={'16px'}
+              phosphorIcon={TelegramLogo}
+              weight={'fill'}
+            />
+          )}
+          size='xs'
+          type='ghost'
+        />
+      </>;
+    }
+
+    return (
+      <>
+
+        <Button
+          icon={(
+            <Icon
+              customSize={'16px'}
+              phosphorIcon={TwitterLogo}
+              weight={'fill'}
+            />
+          )}
+          onClick={() => {
+            openLink('https://twitter.com/dotisded');
+          }}
+          size='xs'
+          type='ghost'
+        />
+
+        <Button
+          icon={(
+            <Icon
+              customSize={'16px'}
+              phosphorIcon={TelegramLogo}
+              weight={'fill'}
+            />
+          )}
+          onClick={() => {
+            openLink('https://t.co/bVwz9Afllz');
+          }}
+          size='xs'
+          type='ghost'
+        />
+
+        <Button
+          icon={(
+            <Icon
+              customSize={'16px'}
+              phosphorIcon={Browser}
+              weight={'fill'}
+            />
+          )}
+          onClick={() => {
+            openLink('https://www.dotisded.io/');
+          }}
+          size='xs'
+          type='ghost'
+        />
+      </>
+    );
+  }, [airdropInfo]);
 
   return (
     <div className={CN(className)}>
@@ -48,18 +122,7 @@ function Component ({ airdropInfo, className }: Props) {
           <div className='__social-label'>
             {t('Social')}:
           </div>
-
-          <Button
-            icon={(
-              <Icon
-                customSize={'16px'}
-                phosphorIcon={TelegramLogo}
-                weight={'fill'}
-              />
-            )}
-            size='xs'
-            type='ghost'
-          />
+          {buttons}
         </div>
       </div>
     </div>

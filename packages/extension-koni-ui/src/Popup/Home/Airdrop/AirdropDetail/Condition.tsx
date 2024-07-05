@@ -51,10 +51,6 @@ function Component({ airdropInfo, className }: Props) {
                 <span>{item.end ? customFormatDate(item.end, '#DD# #MMM#') : '__'}</span>
               </div>
             </div>
-            <div className='__eligibility-item-line'>
-              <div className='__eligibility-item-line-label'>{t('Method')}</div>
-              <div className='__eligibility-item-line-value'>Raffle ({item.boxCount})</div>
-            </div>
 
             <div className='__eligibility-item-note'>
               <span className='__eligibility-item-note-label'>{t('Note')}:</span>

@@ -31,6 +31,16 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { setContainerClass } = useContext(HomeContext);
   const notify = useNotification();
 
+  const totalCount = useMemo(() => {
+    if (referralList.length === 0) {
+      return 0;
+    }
+
+    const item = referralList[0];
+
+    return item.total_count;
+  }, [referralList]);
+
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
       setAccount(data);
@@ -116,7 +126,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         </div>
 
         <div className='friend-count'>
-          {referralList.length} {t('Friends')}
+          {totalCount} {t('Friends')}
         </div>
       </div>
 

@@ -19,6 +19,13 @@ export const DefaultLogosMap: Record<string, string> = {
   game_background_image: '/images/subwallet/game-background-image.png',
   token_icon: '/images/games/token-icon.png',
   boxGift: '/images/box.png',
+  xtwitter_transparent: './images/projects/xtwitter_transparent.png',
+  chain_flip: '/images/projects/chainflip-mainnet.png',
+  hydradx: '/images/projects/hydradx.png',
+  currency_brl: '/images/projects/CurrencyBRL.png',
+  currency_cny: '/images/projects/CurrencyCNY.png',
+  currency_hkd: '/images/projects/CurrencyHKD.png',
+  currency_vnd: '/images/projects/CurrencyVND.png'
 };
 
 export const IconMap = {
