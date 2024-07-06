@@ -202,7 +202,7 @@ function Component (props: Props): React.ReactElement<Props> {
           ) : (
             <Logo
               size={28}
-              token={currentAirdrop.token_slug.toLowerCase()}
+              token={currentAirdrop.token_slug ? currentAirdrop.token_slug.toLowerCase() : ''}
             />
           )}
 
