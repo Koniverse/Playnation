@@ -24,9 +24,9 @@ function Component ({ airdropInfo, className }: Props) {
   }, []);
 
   const buttons = useMemo(() => {
-    const urlTwitter = airdropInfo.share.url_twitter;
-    const urlTelegram = airdropInfo.share.url_telegram;
-    const urlBrowser = airdropInfo.share.url_website;
+    const urlTwitter = airdropInfo?.share?.url_twitter || null;
+    const urlTelegram = airdropInfo?.share?.url_telegram || null;
+    const urlBrowser = airdropInfo?.share?.url_website || null;
 
     return (
       <>
