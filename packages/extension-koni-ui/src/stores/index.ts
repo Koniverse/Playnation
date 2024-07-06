@@ -34,8 +34,6 @@ const persistConfig = {
   whitelist: [
     'settings',
     'uiViewState',
-    'staking',
-    'campaign',
     'buyService',
     'staticContent'
   ]
