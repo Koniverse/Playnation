@@ -231,6 +231,7 @@ export interface AirdropCampaignShare {
   raffle_hashtags: string;
   url_twitter: string;
   url_website: string;
+  url_discord: string;
   url_telegram: string;
 }
 

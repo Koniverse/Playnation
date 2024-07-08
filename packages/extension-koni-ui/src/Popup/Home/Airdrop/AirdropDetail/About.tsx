@@ -7,7 +7,7 @@ import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTransla
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Browser, TelegramLogo, TwitterLogo } from 'phosphor-react';
+import {Browser, DiscordLogo, TelegramLogo, TwitterLogo} from 'phosphor-react';
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 
@@ -27,6 +27,7 @@ function Component ({ airdropInfo, className }: Props) {
     const urlTwitter = airdropInfo?.share?.url_twitter || null;
     const urlTelegram = airdropInfo?.share?.url_telegram || null;
     const urlBrowser = airdropInfo?.share?.url_website || null;
+    const urlDiscord = airdropInfo?.share?.url_discord || null;
 
     return (
       <>
@@ -56,6 +57,21 @@ function Component ({ airdropInfo, className }: Props) {
           )}
           onClick={() => {
             openLink(urlTelegram);
+          }}
+          size='xs'
+          type='ghost'
+        />}
+
+        {urlDiscord && <Button
+          icon={(
+            <Icon
+              customSize={'16px'}
+              phosphorIcon={DiscordLogo}
+              weight={'fill'}
+            />
+          )}
+          onClick={() => {
+            openLink(urlDiscord);
           }}
           size='xs'
           type='ghost'
