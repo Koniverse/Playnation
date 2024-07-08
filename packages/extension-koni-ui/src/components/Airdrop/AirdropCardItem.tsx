@@ -34,13 +34,15 @@ function Component ({ className, item, onExplore }: Props) {
     return startTime > Date.now();
   })();
   const onClickShare = useCallback(() => {
-    if (!item || !item.network) {
+    if (!item) {
       return;
     }
 
-    const url = apiSDK.getShareTwitterAirdropURL(item.network);
+    const url = apiSDK.getShareTwitterAirdropURL(item);
 
-    telegramConnector.openLink(url);
+    if (url) {
+      telegramConnector.openLink(url);
+    }
   }, [item]);
 
   return (

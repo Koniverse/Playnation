@@ -7,7 +7,7 @@ import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTransla
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Browser, TelegramLogo, TwitterLogo } from 'phosphor-react';
+import {Browser, DiscordLogo, TelegramLogo, TwitterLogo} from 'phosphor-react';
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 
@@ -24,26 +24,15 @@ function Component ({ airdropInfo, className }: Props) {
   }, []);
 
   const buttons = useMemo(() => {
-    if (airdropInfo.network === 'karura') {
-      return <>
-        <Button
-          icon={(
-            <Icon
-              customSize={'16px'}
-              phosphorIcon={TelegramLogo}
-              weight={'fill'}
-            />
-          )}
-          size='xs'
-          type='ghost'
-        />
-      </>;
-    }
+    const urlTwitter = airdropInfo?.share?.url_twitter || null;
+    const urlTelegram = airdropInfo?.share?.url_telegram || null;
+    const urlBrowser = airdropInfo?.share?.url_website || null;
+    const urlDiscord = airdropInfo?.share?.url_discord || null;
 
     return (
       <>
 
-        <Button
+        {urlTwitter && <Button
           icon={(
             <Icon
               customSize={'16px'}
@@ -52,13 +41,13 @@ function Component ({ airdropInfo, className }: Props) {
             />
           )}
           onClick={() => {
-            openLink('https://twitter.com/dotisded');
+            openLink(urlTwitter);
           }}
           size='xs'
           type='ghost'
-        />
+        />}
 
-        <Button
+        {urlTelegram && <Button
           icon={(
             <Icon
               customSize={'16px'}
@@ -67,13 +56,28 @@ function Component ({ airdropInfo, className }: Props) {
             />
           )}
           onClick={() => {
-            openLink('https://t.co/bVwz9Afllz');
+            openLink(urlTelegram);
           }}
           size='xs'
           type='ghost'
-        />
+        />}
 
-        <Button
+        {urlDiscord && <Button
+          icon={(
+            <Icon
+              customSize={'16px'}
+              phosphorIcon={DiscordLogo}
+              weight={'fill'}
+            />
+          )}
+          onClick={() => {
+            openLink(urlDiscord);
+          }}
+          size='xs'
+          type='ghost'
+        />}
+
+        {urlBrowser && <Button
           icon={(
             <Icon
               customSize={'16px'}
@@ -82,11 +86,11 @@ function Component ({ airdropInfo, className }: Props) {
             />
           )}
           onClick={() => {
-            openLink('https://www.dotisded.io/');
+            openLink(urlBrowser);
           }}
           size='xs'
           type='ghost'
-        />
+        />}
       </>
     );
   }, [airdropInfo]);

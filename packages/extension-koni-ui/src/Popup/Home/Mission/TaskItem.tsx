@@ -32,6 +32,30 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
   const { t } = useTranslation();
   const [completed, setCompleted] = useState(!!task.completedAt);
 
+  const [checking, setChecking] = useState(task && task.airlyftType === 'telegram-sync' && !completed);
+
+  useEffect(() => {
+    let taskItemUpdaterInterval: NodeJS.Timer;
+
+    if (checking) {
+      taskItemUpdaterInterval = setInterval(() => {
+        apiSDK.completeTask(task.id)
+          .then((data: boolean) => {
+            if (data) {
+              // @ts-ignore
+              clearInterval(taskItemUpdaterInterval);
+              setCompleted(true);
+              setChecking(false);
+              actionReloadPoint();
+            }
+          })
+          .catch(console.error);
+      }, 10000);
+    }
+
+    return () => clearInterval(taskItemUpdaterInterval);
+  }, [checking]);
+
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
       setAccount(data);
@@ -100,27 +124,46 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
       }
 
       apiSDK.finishTask(taskId, extrinsicHash, networkKey)
-        .finally(() => {
+        .then((result) => {
           setTaskLoading(false);
-          setCompleted(true);
-          actionReloadPoint();
+          setCompleted(result.success);
+
+          if (result.success) {
+            actionReloadPoint();
+          }
+
+          if (task.airlyftId) {
+            setTimeout(() => {
+              let urlRedirect = task.url;
+
+              if (result.openUrl) {
+                urlRedirect = result.openUrl;
+              }
+
+              if (urlRedirect && result.isOpenUrl) {
+                window.open(urlRedirect, '_blank');
+              }
+            }, 100);
+          }
         })
         .catch(console.error);
 
-      setTimeout(async () => {
-        let urlRedirect = task.url;
+      if (!task.airlyftId) {
+        setTimeout(async () => {
+          let urlRedirect = task.url;
 
-        if (shareLeaderboard && shareLeaderboard.content) {
-          const startEnv = shareLeaderboard.start_time;
-          const endEnv = shareLeaderboard.end_time;
+          if (shareLeaderboard && shareLeaderboard.content) {
+            const startEnv = shareLeaderboard.start_time;
+            const endEnv = shareLeaderboard.end_time;
 
-          urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv, shareLeaderboard.content, task.gameId ?? 0, shareLeaderboard.url);
-        }
+            urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv, shareLeaderboard.content, task.gameId ?? 0, shareLeaderboard.url);
+          }
 
-        if (urlRedirect) {
-          telegramConnector.openLink(urlRedirect);
-        }
-      }, 100);
+          if (urlRedirect) {
+            telegramConnector.openLink(urlRedirect);
+          }
+        }, 100);
+      }
     })().catch(console.error);
   }, [account?.info, actionReloadPoint, notify, t, task.gameId, task.id, task.network, task.onChainType, task.share_leaderboard, task.url]);
 
