@@ -3,73 +3,81 @@
 
 import { AirdropCampaign } from '@subwallet/extension-koni-ui/connector/booka/types';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
+import { DynamicContent } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/DynamicContent';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { customFormatDate } from '@subwallet/extension-koni-ui/utils';
+import { Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle } from 'phosphor-react';
 import React from 'react';
 import styled from 'styled-components';
-import { Icon } from '@subwallet/react-ui';
 
 type Props = ThemeProps & {
   airdropInfo: AirdropCampaign
 };
 
-function Component({ airdropInfo, className }: Props) {
+function Component ({ airdropInfo, className }: Props) {
   const { t } = useTranslation();
 
   const checkEligibility = (eligibilityId: number) => {
     if (airdropInfo && airdropInfo.eligibilityIds) {
       return airdropInfo.eligibilityIds.includes(eligibilityId);
     }
+
     return false;
   };
 
   return (
     <div className={CN(className)}>
+      {airdropInfo.conditionDescription && (<DynamicContent content={airdropInfo.conditionDescription} />)}
       {
-        airdropInfo.eligibilityList.map((item) => (
-          <div
-            className={'__eligibility-item'}
-            key={item.name}
-          >
-            <div className='__eligibility-item-name'>
-              {item.name}
-              {checkEligibility(item.id) && <Icon
-                className={'background-icon -size-3 __eligibility-icon -primary-1 __current-icon'}
-                phosphorIcon={CheckCircle}
-                weight={'fill'}
-              />}
+        !airdropInfo.conditionDescription && <div className={'eligibility-list'}>
+          {
+            airdropInfo.eligibilityList.map((item) => (
+              <div
+                className={'__eligibility-item'}
+                key={item.name}
+              >
+                <div className='__eligibility-item-name'>
+                  {item.name}
+                  {checkEligibility(item.id) && <Icon
+                    className={'background-icon -size-3 __eligibility-icon -primary-1 __current-icon'}
+                    phosphorIcon={CheckCircle}
+                    weight={'fill'}
+                  />}
+                </div>
 
-            </div>
+                <div className='__eligibility-item-line'>
+                  <div className='__eligibility-item-line-label'>{t('Time')}</div>
+                  <div className='__eligibility-item-line-value __eligibility-item-date'>
+                    <span>{item.start ? customFormatDate(item.start, '#DD# #MMM#') : '__'}</span>
+                    <span>-</span>
+                    <span>{item.end ? customFormatDate(item.end, '#DD# #MMM#') : '__'}</span>
+                  </div>
+                </div>
 
-            <div className='__eligibility-item-line'>
-              <div className='__eligibility-item-line-label'>{t('Time')}</div>
-              <div className='__eligibility-item-line-value __eligibility-item-date'>
-                <span>{item.start ? customFormatDate(item.start, '#DD# #MMM#') : '__'}</span>
-                <span>-</span>
-                <span>{item.end ? customFormatDate(item.end, '#DD# #MMM#') : '__'}</span>
+                <div className='__eligibility-item-note'>
+                  <span className='__eligibility-item-note-label'>{t('Note')}:</span>
+                  <span className='__eligibility-item-note-content'>
+                    {item.note || t('A player can win multiple types of rewards')}
+                  </span>
+                </div>
               </div>
-            </div>
-
-            <div className='__eligibility-item-note'>
-              <span className='__eligibility-item-note-label'>{t('Note')}:</span>
-              <span className='__eligibility-item-note-content'>
-                {item.note || t('A player can win multiple types of rewards')}
-              </span>
-            </div>
-          </div>
-        ))
+            ))
+          }
+        </div>
       }
     </div>
   );
 }
 
-export const AirdropDetailCondition = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
+export const AirdropDetailCondition = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return ({
-    marginBottom: token.margin,
-    paddingLeft: token.padding,
-    paddingRight: token.padding,
+    '.eligibility-list': {
+      marginBottom: token.margin,
+      paddingLeft: token.padding,
+      paddingRight: token.padding
+    },
 
     '.__eligibility-item + .__eligibility-item:before': {
       content: '""',

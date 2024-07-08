@@ -255,6 +255,7 @@ export interface AirdropCampaign {
   raffle_count: number;
   start: Date;
   end: Date;
+  conditionDescription: string;
   description: string;
   shortDescription: string;
   tokenDistributions: JSON;

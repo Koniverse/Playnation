@@ -4,10 +4,11 @@
 import { AirdropCampaign } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
+import { DynamicContent } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/DynamicContent';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
-import {Browser, DiscordLogo, TelegramLogo, TwitterLogo} from 'phosphor-react';
+import { Browser, DiscordLogo, TelegramLogo, TwitterLogo } from 'phosphor-react';
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 
@@ -97,16 +98,7 @@ function Component ({ airdropInfo, className }: Props) {
 
   return (
     <div className={CN(className)}>
-      <div className='__dynamic-content-wrapper'>
-        {
-          airdropInfo.description && (
-            <div
-              className={'__dynamic-content'}
-              dangerouslySetInnerHTML={{ __html: airdropInfo.description }}
-            />
-          )
-        }
-      </div>
+      <DynamicContent content={airdropInfo.description} />
 
       <div className='__divider' />
       <div className='__content-footer'>
@@ -133,34 +125,10 @@ function Component ({ airdropInfo, className }: Props) {
   );
 }
 
-export const AirdropDetailAbout = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
+export const AirdropDetailAbout = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return ({
     display: 'flex',
     flexDirection: 'column',
-
-    '.__dynamic-content-wrapper': {
-      paddingLeft: token.padding,
-      paddingRight: token.padding,
-      overflow: 'auto',
-      flex: 1
-    },
-
-    '.__dynamic-content': {
-      'h2, h1': {
-        lineHeight: token.lineHeightLG,
-        color: token.colorTextDark1,
-        fontWeight: token.headingFontWeight,
-        fontSize: token.fontSizeLG,
-        marginBottom: token.marginSM
-      },
-
-      p: {
-        lineHeight: token.lineHeight,
-        color: token.colorTextDark2,
-        fontSize: token.fontSize,
-        marginBottom: token.marginSM
-      }
-    },
 
     '.__divider': {
       backgroundColor: token.colorBgDivider,
