@@ -39,7 +39,7 @@ export const DynamicContent = styled(Component)<Props>(({ theme: { token } }: Pr
         marginBottom: token.marginSM
       },
 
-      p: {
+      'p, li': {
         lineHeight: token.lineHeight,
         color: token.colorTextDark2,
         fontSize: token.fontSize,
