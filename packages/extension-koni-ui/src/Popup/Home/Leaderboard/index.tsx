@@ -24,7 +24,8 @@ const apiSDK = BookaSdk.instance;
 
 enum TabType {
   WEEKLY = 'weekly',
-  DED_PLAYDROP = 'ded_playdrop'
+  DED_PLAYDROP = 'ded_playdrop',
+  VARA_PLAYDROP = 'vara_playdrop',
 }
 
 type GameItemPlaceholderType = {
@@ -43,13 +44,17 @@ const Component = ({ className }: Props): React.ReactElement => {
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
       {
-        label: t('DED Playdrop'),
+        label: t('DED'),
         value: TabType.DED_PLAYDROP
+      },
+      {
+        label: t('VARA'),
+        value: TabType.VARA_PLAYDROP
       },
       {
         label: t('Weekly'),
         value: TabType.WEEKLY
-      }
+      },
     ];
   }, [t]);
 
@@ -92,10 +97,15 @@ const Component = ({ className }: Props): React.ReactElement => {
   useEffect(() => {
     const { end, start } = calculateStartAndEnd(selectedTab);
     let weeklyBoardSub: { unsubscribe: () => void } | null = null;
-    let karuraBoardSub: { unsubscribe: () => void } | null = null;
+    let dedBoardSub: { unsubscribe: () => void } | null = null;
+    let varaBoardSub: { unsubscribe: () => void } | null = null;
 
     if (selectedTab === TabType.DED_PLAYDROP) {
-      karuraBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
+      dedBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
+        setLeaderBoard(data);
+      });
+    } else if (selectedTab === TabType.VARA_PLAYDROP) {
+      varaBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
         setLeaderBoard(data);
       });
     } else {
@@ -109,8 +119,12 @@ const Component = ({ className }: Props): React.ReactElement => {
         weeklyBoardSub.unsubscribe();
       }
 
-      if (karuraBoardSub) {
-        karuraBoardSub.unsubscribe();
+      if (dedBoardSub) {
+        dedBoardSub.unsubscribe();
+      }
+
+      if (varaBoardSub) {
+        varaBoardSub.unsubscribe();
       }
     };
   }, [selectedTab]);
@@ -137,14 +151,27 @@ const Component = ({ className }: Props): React.ReactElement => {
 
     content += 'Leaderboard! Want to join the fun and get a chance to win $DED rewards? Join me now! 🚀';
 
-    const urlShareImage = 'https://x.playnation.app/playnation-ded';
+    let urlShareImage = 'https://x.playnation.app/playnation-ded';
+    let hashtags = 'hashtags=DEDEggHunt,Playnation,DOTisDED,Airdrop';
+
+    if (selectedTab === TabType.VARA_PLAYDROP) {
+      content = '';
+      urlShareImage = 'https://x.playnation.app/playnation-vara';
+      hashtags = 'hashtags=VARAKickToAirdrop,Playnation,VARA,Airdrop';
+
+      if (personMine) {
+        content = `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank} on the VARA Playdrop Leaderboard! `;
+      }
+
+      content += 'Want to join the fun and get a chance to win $VARA rewards? Join me now! 🚀 ';
+    }
 
     const linkShare = `${urlShareImage}?startApp=${account?.info.inviteCode || 'booka'}`;
 
-    const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&hashtags=DEDEggHunt,Playnation,DOTisDED,Airdrop`;
+    const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtags}`;
 
     telegramConnector.openLink(url);
-  }, [leaderBoard, account]);
+  }, [leaderBoard, account, selectedTab]);
 
   return <div className={className}>
     <div className='tab-group-wrapper'>
@@ -156,7 +183,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       />
     </div>
     <div className='top-three-area'>
-      {selectedTab === TabType.DED_PLAYDROP && (
+      {selectedTab !== TabType.WEEKLY && (
         <Button
           className={'__share-button -primary-3'}
           icon={(
