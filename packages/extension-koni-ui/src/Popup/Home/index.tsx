@@ -112,7 +112,7 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
     height: '100%',
 
     '&.leaderboard-screen-wrapper': {
-      '.ant-sw-screen-layout-body': {
+      '> .ant-sw-screen-layout-body > .ant-sw-screen-layout-body-inner': {
         paddingBottom: 0,
 
         '> div': {
@@ -129,7 +129,7 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
       &.airdrop-screen-wrapper,
       &.history-screen-wrapper
     `]: {
-      '> .ant-sw-screen-layout-body': {
+      '> .ant-sw-screen-layout-body > .ant-sw-screen-layout-body-inner': {
         paddingBottom: 56,
 
         '> div': {
@@ -139,6 +139,10 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
     },
 
     '&.game-screen-wrapper.-show-game': {
+      '.ant-sw-screen-layout-body-inner': {
+        position: 'static'
+      },
+
       '.ant-sw-screen-layout-footer, .layout-background-image': {
         opacity: 0,
         pointerEvents: 'none'

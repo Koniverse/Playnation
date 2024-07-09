@@ -294,7 +294,7 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
     backgroundColor: 'transparent'
   },
 
-  '&.-show-tab-bar > .ant-sw-screen-layout-body': {
+  '&.-show-tab-bar > .ant-sw-screen-layout-body > .ant-sw-screen-layout-body-inner': {
     paddingBottom: 90
   },
 
