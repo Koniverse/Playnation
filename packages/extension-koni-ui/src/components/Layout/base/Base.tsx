@@ -213,7 +213,7 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
               backgroundImages.game && (
                 <img
                   alt='game_background_image'
-                  className={'game-background-image'}
+                  className={'game-background-image layout-background-image'}
                   src={DefaultLogosMap.game_background_image}
                 />
               )
@@ -222,7 +222,7 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
               backgroundImages.euro && (
                 <img
                   alt='euro_background_image'
-                  className={'euro-background-image'}
+                  className={'euro-background-image layout-background-image'}
                   src={DefaultLogosMap.euro_background_image}
                 />
               )
