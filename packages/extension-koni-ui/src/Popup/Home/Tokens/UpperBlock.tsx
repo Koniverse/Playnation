@@ -82,8 +82,14 @@ function Component (
     <div className={`tokens-upper-block ${className} ${isShrink ? '-shrink' : ''}`}>
       <img
         alt='game_background_image'
-        className={'__background-image'}
+        className={'__game-background-image'}
         src={DefaultLogosMap.game_background_image}
+      />
+
+      <img
+        alt='euro_background_image'
+        className={'__euro-background-image'}
+        src={DefaultLogosMap.euro_background_image}
       />
 
       <div className='__top-part'>
@@ -277,12 +283,24 @@ export const UpperBlock = styled(Component)<Props>(({ theme: { extendToken, toke
       zIndex: 5
     },
 
-    '.__background-image': {
+    '.__game-background-image': {
       position: 'absolute',
       width: 138,
+      pointerEvents: 'none',
       height: 'auto',
       right: -18,
       top: 12,
+      zIndex: 0
+    },
+
+    '.__euro-background-image': {
+      position: 'absolute',
+      width: 700,
+      pointerEvents: 'none',
+      height: 'auto',
+      opacity: 0.65,
+      left: 'calc(50% - 315px)',
+      bottom: -122,
       zIndex: 0
     },
 
@@ -410,8 +428,12 @@ export const UpperBlock = styled(Component)<Props>(({ theme: { extendToken, toke
     '&.-shrink': {
       paddingBottom: 20,
 
-      '.__background-image': {
+      '.__game-background-image': {
         opacity: 0
+      },
+
+      '.__euro-background-image': {
+        bottom: -162
       },
 
       '.__total-balance-value-container': {

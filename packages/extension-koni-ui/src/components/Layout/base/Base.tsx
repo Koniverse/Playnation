@@ -5,7 +5,7 @@ import { LanguageType } from '@subwallet/extension-base/background/KoniTypes';
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
 import { GameSVG } from '@subwallet/extension-koni-ui/components';
 import { useDefaultNavigate, useSelector } from '@subwallet/extension-koni-ui/hooks';
-import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { LayoutBackgroundImages, LayoutBackgroundStyle, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Icon, SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
@@ -17,20 +17,19 @@ import styled from 'styled-components';
 
 import SelectAccount from '../parts/SelectAccount';
 
-type BackgroundStyle = 'primary' | 'secondary' | 'secondary-with-image'
-
 export interface LayoutBaseProps extends Omit<
 SwScreenLayoutProps,
 'tabBarItems' | 'footer' | 'headerContent' | 'selectedTabBarItem'
 >, ThemeProps {
   children: React.ReactNode | React.ReactNode[];
-  backgroundStyle?: BackgroundStyle;
+  backgroundStyle?: LayoutBackgroundStyle;
+  backgroundImages?: LayoutBackgroundImages;
   onTabSelected?: (key: string) => void
 }
 
 const specialLanguages: Array<LanguageType> = ['ja', 'ru'];
 
-const Component = ({ backgroundStyle, children, className, headerIcons, onBack, onTabSelected, ...props }: LayoutBaseProps) => {
+const Component = ({ backgroundImages, backgroundStyle, children, className, headerIcons, onBack, onTabSelected, ...props }: LayoutBaseProps) => {
   const navigate = useNavigate();
   const { goHome } = useDefaultNavigate();
   const { pathname } = useLocation();
@@ -192,17 +191,9 @@ const Component = ({ backgroundStyle, children, className, headerIcons, onBack, 
         '-show-tab-bar': props.showTabBar,
         '-primary-style': backgroundStyle === 'primary',
         '-secondary-style': backgroundStyle === 'secondary',
-        '-secondary-with-image-style': backgroundStyle === 'secondary-with-image'
+        '-has-game-bgi': backgroundImages?.game,
+        '-has-euro-bgi': backgroundImages?.euro
       })}
-      footer={
-        backgroundStyle === 'secondary-with-image' && (
-          <img
-            alt='game_background_image'
-            className={'game-background-image'}
-            src={DefaultLogosMap.game_background_image}
-          />
-        )
-      }
       headerContent={props.showHeader && <SelectAccount />}
       headerIcons={headerIcons}
       onBack={onBack || defaultOnBack}
@@ -212,12 +203,49 @@ const Component = ({ backgroundStyle, children, className, headerIcons, onBack, 
         onClick: onSelectTab(item.url)
       }))}
     >
-      {children}
+      <div className={'ant-sw-screen-layout-body-inner'}>
+        {children}
+      </div>
+      {
+        backgroundImages && (
+          <>
+            {
+              backgroundImages.game && (
+                <img
+                  alt='game_background_image'
+                  className={'game-background-image'}
+                  src={DefaultLogosMap.game_background_image}
+                />
+              )
+            }
+            {
+              backgroundImages.euro && (
+                <img
+                  alt='euro_background_image'
+                  className={'euro-background-image'}
+                  src={DefaultLogosMap.euro_background_image}
+                />
+              )
+            }
+          </>
+        )
+      }
     </SwScreenLayout>
   );
 };
 
 const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token } }: LayoutBaseProps) => ({
+  '.ant-sw-screen-layout-body': {
+    overflow: 'hidden'
+  },
+
+  '.ant-sw-screen-layout-body-inner': {
+    overflow: 'auto',
+    position: 'relative',
+    height: '100%',
+    zIndex: 5
+  },
+
   '&.-primary-style': {
     background: extendToken.colorBgGradient || token.colorPrimary
   },
@@ -226,20 +254,38 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
     backgroundColor: token.colorBgSecondary
   },
 
-  '&.-secondary-with-image-style': {
-    backgroundColor: token.colorBgSecondary,
-
-    '.ant-sw-screen-layout-body': {
-      position: 'relative',
-      zIndex: 5
-    },
-
+  '&.-has-game-bgi': {
     '.game-background-image': {
       position: 'fixed',
       top: '56%',
       width: 138,
       height: 'auto',
       left: -17,
+      zIndex: 0
+    }
+  },
+
+  '&.-has-euro-bgi.-show-tab-bar': {
+    '.euro-background-image': {
+      position: 'fixed',
+      pointerEvents: 'none',
+      left: 'calc(50% - 370px)',
+      width: 740,
+      height: 'auto',
+      bottom: -155,
+      zIndex: 6
+    }
+  },
+
+  '&.-has-euro-bgi:not(.-show-tab-bar)': {
+    '.euro-background-image': {
+      position: 'fixed',
+      pointerEvents: 'none',
+      left: 'calc(50% - 288px)',
+      width: 576,
+      opacity: 0.65,
+      height: 'auto',
+      bottom: 0,
       zIndex: 0
     }
   },

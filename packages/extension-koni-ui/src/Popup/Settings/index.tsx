@@ -3,6 +3,7 @@
 
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { settingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { EXTENSION_VERSION, SUPPORT_URL } from '@subwallet/extension-koni-ui/constants/common';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
@@ -190,7 +191,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     <PageWrapper className={`settings ${className}`}>
       <>
         <Layout.WithSubHeaderOnly
-          backgroundStyle={'secondary-with-image'}
+          backgroundImages={settingsScreensLayoutBackgroundImages}
+          backgroundStyle={'secondary'}
           onBack={goHome}
           title={t('Settings')}
         >

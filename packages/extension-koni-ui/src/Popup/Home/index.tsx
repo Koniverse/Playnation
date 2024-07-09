@@ -5,6 +5,8 @@ import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
 import { CampaignBannerModal, Layout } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { homeScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType, useGetMantaPayConfig, useHandleMantaPaySync, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
@@ -14,9 +16,8 @@ import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Outlet } from 'react-router';
-import styled from 'styled-components';
-import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
 type Props = ThemeProps;
 
@@ -37,6 +38,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   const banners = useGetBannerByScreen('home');
 
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   const firstBanner = useMemo((): CampaignBanner | undefined => banners[0], [banners]);
 
   const [backgroundStyle, setBackgroundStyle] = useState<LayoutBaseProps['backgroundStyle'] | undefined>();
@@ -54,12 +57,13 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     if (mantaPayConfig && mantaPayConfig.enabled && !mantaPayConfig.isInitialSync && !isZkModeSyncing) {
       handleMantaPaySync(mantaPayConfig.address);
     }
+
     apiSDK.isEnabled.subscribe((isEnabled) => {
-      if(!isEnabled) {
-        navigate('/account-banned')
+      if (!isEnabled) {
+        navigate('/account-banned');
       }
     });
-  }, [handleMantaPaySync, isZkModeSyncing, mantaPayConfig]);
+  }, [handleMantaPaySync, isZkModeSyncing, mantaPayConfig, navigate]);
 
   const onTabSelected = useCallback(
     (key: string) => {
@@ -81,6 +85,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       }}
       >
         <Layout.Home
+          backgroundImages={homeScreensLayoutBackgroundImages}
           backgroundStyle={backgroundStyle}
           className={CN('home', 'home-container', className, containerClass)}
           onClickSearchIcon={onOpenGlobalSearchToken}
@@ -116,7 +121,14 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
       }
     },
 
-    '&.game-screen-wrapper, &.invitation-screen-wrapper, &.mission-screen-wrapper, &.airdrop-screen-wrapper, &.history-screen-wrapper': {
+    [`
+      &.wallet-screen-wrapper,
+      &.game-screen-wrapper,
+      &.invitation-screen-wrapper,
+      &.mission-screen-wrapper,
+      &.airdrop-screen-wrapper,
+      &.history-screen-wrapper
+    `]: {
       '> .ant-sw-screen-layout-body': {
         paddingBottom: 56,
 

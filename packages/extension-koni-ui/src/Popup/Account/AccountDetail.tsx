@@ -5,7 +5,7 @@ import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
 import { AccountRankLevel, GameAccountAvatar, GameEnergyBar, Layout } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AccountRankType, BookaAccount, EnergyConfig, RankInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { accountRankList, rankNameMap, smallRankIconMap } from '@subwallet/extension-koni-ui/constants';
+import { accountRankList, detailScreensLayoutBackgroundImages, rankNameMap, smallRankIconMap } from '@subwallet/extension-koni-ui/constants';
 import { useGetAccountByAddress, useGetEnergyInfo, useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, formatInteger, formatIntegerShort, toShort } from '@subwallet/extension-koni-ui/utils';
@@ -99,6 +99,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
   return (
     <Layout.WithSubHeaderOnly
+      backgroundImages={detailScreensLayoutBackgroundImages}
       backgroundStyle={'primary'}
       className={CN(className)}
       title={t('Account details')}
@@ -261,7 +262,7 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
   return {
     // account
 
-    '.ant-sw-screen-layout-body': {
+    '.ant-sw-screen-layout-body-inner': {
       paddingTop: token.paddingXXS,
       paddingLeft: token.paddingXS,
       paddingRight: token.paddingXS,
