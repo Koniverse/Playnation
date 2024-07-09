@@ -185,7 +185,7 @@ const Crowdloans = styled(Component)<Props>(({ theme: { token } }: Props) => {
       height: '100%'
     },
 
-    '.ant-sw-screen-layout-body': {
+    '.ant-sw-screen-layout-body-inner': {
       overflow: 'hidden'
     },
 

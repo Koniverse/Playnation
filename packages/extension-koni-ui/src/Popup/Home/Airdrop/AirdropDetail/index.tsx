@@ -422,7 +422,7 @@ const WrapperComponent = (props: WrapperProps): React.ReactElement<Props> => {
 
 const AirdropDetail = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return ({
-    '.ant-sw-screen-layout-body': {
+    '.ant-sw-screen-layout-body-inner': {
       paddingLeft: token.paddingXS,
       paddingRight: token.paddingXS,
       display: 'flex',

@@ -82,7 +82,7 @@ const PhishingDetected = styled(_PhishingDetected)<Props>(({ theme }) => {
     position: 'relative',
     border: `1px solid ${token.colorBgInput}`,
 
-    '.ant-sw-screen-layout-body': {
+    '.ant-sw-screen-layout-body-inner': {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

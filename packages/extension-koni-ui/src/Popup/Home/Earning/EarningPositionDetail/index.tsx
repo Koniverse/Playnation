@@ -328,7 +328,7 @@ const Wrapper = ({ className }: Props) => {
 };
 
 const EarningPositionDetail = styled(Wrapper)<Props>(({ theme: { token } }: Props) => ({
-  '.ant-sw-screen-layout-body': {
+  '.ant-sw-screen-layout-body-inner': {
     paddingLeft: token.padding,
     paddingRight: token.padding,
     paddingBottom: token.padding

@@ -171,7 +171,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
 const ManageTokens = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
-    '.ant-sw-screen-layout-body': {
+    '.ant-sw-screen-layout-body-inner': {
       display: 'flex'
     },
 
