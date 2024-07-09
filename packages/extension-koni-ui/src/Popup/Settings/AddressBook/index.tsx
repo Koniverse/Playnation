@@ -254,7 +254,7 @@ const ManageAddressBook = styled(Component)<Props>(({ theme: { extendToken, toke
       borderRadius: 20
     },
 
-    '.ant-sw-screen-layout-body': {
+    '.ant-sw-screen-layout-body-inner': {
       height: '100%',
       display: 'flex',
       flexDirection: 'column'

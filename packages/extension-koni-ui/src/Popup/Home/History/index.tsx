@@ -824,7 +824,7 @@ const History = styled(Component)<Props>(({ theme: { extendToken, token } }: Pro
       }
     },
 
-    '.ant-sw-screen-layout-body': {
+    '.ant-sw-screen-layout-body-inner': {
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden'

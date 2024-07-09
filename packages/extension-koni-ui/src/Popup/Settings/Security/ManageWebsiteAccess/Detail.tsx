@@ -268,7 +268,7 @@ const ManageWebsiteAccessDetail = styled(WrapperComponent)<Props>(({ theme: { to
       backgroundColor: token.colorBgDefault
     },
 
-    '.ant-sw-screen-layout-body': {
+    '.ant-sw-screen-layout-body-inner': {
       paddingTop: token.paddingSM
     },
 

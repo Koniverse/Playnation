@@ -348,7 +348,7 @@ const ConnectLedger = styled(Component)<Props>(({ theme: { token } }: Props) => 
   return {
     '--list-gap': `${token.sizeXS}px`,
 
-    '.ant-sw-screen-layout-body': {
+    '.ant-sw-screen-layout-body-inner': {
       overflow: 'hidden'
     },
 
