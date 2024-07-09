@@ -136,6 +136,13 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
           height: '100%'
         }
       }
+    },
+
+    '&.game-screen-wrapper.-show-game': {
+      '.ant-sw-screen-layout-footer, .layout-background-image': {
+        opacity: 0,
+        pointerEvents: 'none'
+      }
     }
   });
 });

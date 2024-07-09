@@ -128,13 +128,15 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, []);
 
+  const showGame = !!currentGame;
+
   useEffect(() => {
-    setContainerClass('game-screen-wrapper');
+    setContainerClass(showGame ? 'game-screen-wrapper -show-game' : 'game-screen-wrapper');
 
     return () => {
       setContainerClass(undefined);
     };
-  }, [setContainerClass]);
+  }, [setContainerClass, showGame]);
 
   return (
     <div className={className}>
@@ -202,6 +204,7 @@ const Games = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
     },
 
     '.game-play': {
+      backgroundColor: extendToken.colorBgSecondary2,
       position: 'fixed',
       width: '100vw',
       height: '100vh',
