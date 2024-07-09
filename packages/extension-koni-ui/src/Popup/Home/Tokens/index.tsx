@@ -35,6 +35,7 @@ const Component = (): React.ReactElement => {
   useSetCurrentPage('/home/games');
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
+  const { setContainerClass } = useContext(HomeContext);
   const [isShrink, setIsShrink] = useState<boolean>(false);
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -197,6 +198,14 @@ const Component = (): React.ReactElement => {
     };
   }, [handleResize]);
 
+  useEffect(() => {
+    setContainerClass('wallet-screen-wrapper');
+
+    return () => {
+      setContainerClass(undefined);
+    };
+  }, [setContainerClass]);
+
   return (
     <div
       className={'tokens-screen-container'}
@@ -353,7 +362,8 @@ const Tokens = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, tok
       flexDirection: 'column',
       overflowY: 'auto',
       overflowX: 'hidden',
-      paddingTop: 310
+      paddingTop: 310,
+      paddingBottom: 34
     },
 
     '.token-action-bar': {

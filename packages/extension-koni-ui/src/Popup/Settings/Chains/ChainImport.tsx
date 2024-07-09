@@ -7,6 +7,7 @@ import { _generateCustomProviderKey } from '@subwallet/extension-base/services/c
 import { isUrl } from '@subwallet/extension-base/utils';
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import InfoIcon from '@subwallet/extension-koni-ui/components/Icon/InfoIcon';
+import { settingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useFocusFormItem from '@subwallet/extension-koni-ui/hooks/form/useFocusFormItem';
@@ -275,7 +276,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   return (
     <PageWrapper className={`chain_import ${className}`}>
       <Layout.WithSubHeaderOnly
-        backgroundStyle={'secondary-with-image'}
+        backgroundImages={settingsScreensLayoutBackgroundImages}
+        backgroundStyle={'secondary'}
         leftFooterButton={{
           onClick: onBack,
           className: 'ant-sw-screen-layout-footer-left-button -secondary-2',

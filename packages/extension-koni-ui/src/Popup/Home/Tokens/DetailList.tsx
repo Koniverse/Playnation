@@ -57,6 +57,7 @@ function Component (): React.ReactElement {
   const navigate = useNavigate();
 
   const { activeModal, inactiveModal } = useContext(ModalContext);
+  const { setContainerClass } = useContext(HomeContext);
   const { accountBalance: { tokenBalanceMap, tokenGroupBalanceMap }, tokenGroupStructure: { tokenGroupMap } } = useContext(HomeContext);
 
   const assetRegistryMap = useSelector((root: RootState) => root.assetRegistry.assetRegistry);
@@ -324,6 +325,14 @@ function Component (): React.ReactElement {
     };
   }, [handleResize]);
 
+  useEffect(() => {
+    setContainerClass('wallet-screen-wrapper');
+
+    return () => {
+      setContainerClass(undefined);
+    };
+  }, [setContainerClass]);
+
   return (
     <div
       className={'token-detail-container'}
@@ -438,7 +447,8 @@ const Tokens = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, tok
       position: 'relative',
       display: 'flex',
       flexDirection: 'column',
-      paddingTop: 218
+      paddingTop: 218,
+      paddingBottom: 34
     },
 
     '.token-action-bar': {

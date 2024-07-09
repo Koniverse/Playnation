@@ -7,6 +7,7 @@ import { _generateCustomProviderKey, _getChainNativeTokenBasicInfo, _isChainEvmC
 import { isUrl } from '@subwallet/extension-base/utils';
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import InfoIcon from '@subwallet/extension-koni-ui/components/Icon/InfoIcon';
+import { settingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
@@ -248,7 +249,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       resolve={dataContext.awaitStores(['chainStore'])}
     >
       <Layout.Base
-        backgroundStyle={'secondary-with-image'}
+        backgroundImages={settingsScreensLayoutBackgroundImages}
+        backgroundStyle={'secondary'}
         leftFooterButton={{
           onClick: onCancel,
           className: 'ant-sw-screen-layout-footer-left-button -secondary-2',
