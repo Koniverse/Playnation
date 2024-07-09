@@ -13,11 +13,13 @@ type Props = ThemeProps & {
   airdropHistory: AirdropRewardHistoryLog | null;
   onClaim: (airdrop_record_id: number) => void;
 };
-function Component({ airdropHistory, className,onClaim }: Props) {
+
+function Component ({ airdropHistory, className, onClaim }: Props) {
   const { t } = useTranslation();
 
   // object to array
-  const mockItems: AirdropRewardHistoryLog[] = Object.values(airdropHistory || {});
+  const mockItems = Object.values(airdropHistory || {}) as AirdropRewardHistoryLog[];
+
   return (
     <div className={CN(className)}>
       <div className='__reward-history-title'>

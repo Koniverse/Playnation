@@ -4,26 +4,31 @@
 import { GamePoint } from '@subwallet/extension-koni-ui/components';
 import { AirdropRewardHistoryLog } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { customFormatDate, formatInteger } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, Squircle } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle, Gift } from 'phosphor-react';
 import React, { useCallback, useState } from 'react';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+
 type Props = {
   item: AirdropRewardHistoryLog,
   onClaim: (airdrop_record_id: number) => void;
 } & ThemeProps;
 
-const Component = ({ className, item,onClaim }: Props): React.ReactElement => {
+const Component = ({ className, item, onClaim }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const logoMaps = useSelector((state: RootState) => state.settings.logoMaps).assetLogoMap;
 
-  const _onClaim = useCallback(async (airdrop_record_id: number) => {
+  const _onClaim = useCallback(async (airdropRcordId: number) => {
     setIsLoading(true);
+
     try {
-      await  onClaim(airdrop_record_id);
+      await onClaim(airdropRcordId);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -77,7 +82,7 @@ const Component = ({ className, item,onClaim }: Props): React.ReactElement => {
           <GamePoint
             className={'__reward-value'}
             point={`${formatInteger(item.rewardValue || 0)}`}
-            tokenSrc={item.type === 'TOKEN' ? '/images/projects/karura.png' : undefined}
+            tokenSrc={item.type === 'TOKEN' ? logoMaps[(item.tokenSlug || '').toLowerCase()] : undefined}
           />
 
           {renderDate()}
@@ -88,10 +93,10 @@ const Component = ({ className, item,onClaim }: Props): React.ReactElement => {
         {item.status !== 'RECEIVED' && (
           <Button
             className={'-primary-2'}
+            loading={isLoading}
             onClick={() => _onClaim(item.id)}
             shape={'round'}
             size={'xs'}
-            loading={isLoading}
           >
             {t('Claim')}
           </Button>

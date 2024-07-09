@@ -280,6 +280,7 @@ export interface AirdropCampaign {
 export interface AirdropRewardHistoryLog {
   status: 'PENDING' | 'MISSED' | 'RECEIVED',
   type: 'TOKEN' | 'NPS',
+  tokenSlug: string,
   rewardValue: number,
   endTime: string,
   name: string,
