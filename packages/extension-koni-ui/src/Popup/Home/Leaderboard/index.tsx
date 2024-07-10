@@ -44,7 +44,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
       {
-        label: t('VARA'),
+        label: t('Kick-to-Airdrop'),
         value: TabType.VARA_PLAYDROP
       },
       {
