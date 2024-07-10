@@ -444,7 +444,7 @@ export class BookaSdk {
         this.accountSubject.next(account);
         storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
         this.syncHandler.resolve();
-        const { end, start } = calculateStartAndEnd('weekly');
+        const { end, start } = calculateStartAndEnd('vara_playdrop');
 
         await Promise.all([
           this.fetchEnergyConfig(),

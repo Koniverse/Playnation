@@ -38,18 +38,18 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [leaderBoard, setLeaderBoard] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
   const { t } = useTranslation();
   const { setContainerClass } = useContext(HomeContext);
-  const [selectedTab, setSelectedTab] = useState<string>(TabType.DED_PLAYDROP);
+  const [selectedTab, setSelectedTab] = useState<string>(TabType.VARA_PLAYDROP);
   const [account, setAccount] = useState(apiSDK.account);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
       {
-        label: t('DED'),
-        value: TabType.DED_PLAYDROP
-      },
-      {
         label: t('VARA'),
         value: TabType.VARA_PLAYDROP
+      },
+      {
+        label: t('DED'),
+        value: TabType.DED_PLAYDROP
       },
       {
         label: t('Weekly'),
