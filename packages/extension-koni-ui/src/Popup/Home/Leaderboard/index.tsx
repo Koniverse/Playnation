@@ -157,10 +157,10 @@ const Component = ({ className }: Props): React.ReactElement => {
     if (selectedTab === TabType.VARA_PLAYDROP) {
       content = '';
       urlShareImage = 'https://x.playnation.app/playnation-vara';
-      hashtags = 'hashtags=VARAKickToAirdrop,Playnation,VARA,Airdrop';
+      hashtags = 'hashtags=PlaynationKickToAirdrop,Playnation,VARAtoken,Airdrop';
 
       if (personMine) {
-        content = `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank} on the VARA Playdrop Leaderboard! `;
+        content = `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank}  on the Playnation Kick-to-Airdrop Leaderboard! %0A `;
       }
 
       content += 'Want to join the fun and get a chance to win $VARA rewards? Join me now! 🚀 ';
