@@ -351,10 +351,10 @@ export class BookaSdk {
       return;
     }
 
-    const start = item.start_claim;
-    const end = item.end_claim;
-    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate: start, endDate: end, limit: 1 });
-    const personMine = leaderBoard.find((item) => item.mine);
+    const start = item.start_snapshot;
+    const end = item.end_snapshot;
+    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate: start, endDate: end, limit: 1, type: 'all' });
+    const personMine = leaderBoard.find((item) => item.mine === true);
 
     try {
       const dataShare = item.share;
