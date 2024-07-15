@@ -119,6 +119,7 @@ export interface Task {
   taskHistoryId?: number;
   share_leaderboard?: string | null;
   airlyftType?: string | null;
+  airlyftWidgetId?: string | null;
   airlyftId?: string | null;
 }
 

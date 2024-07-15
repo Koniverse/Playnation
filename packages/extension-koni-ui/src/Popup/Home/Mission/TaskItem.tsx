@@ -19,12 +19,13 @@ import styled from 'styled-components';
 type Props = {
   task: Task,
   actionReloadPoint: VoidFunction;
+  openWidget: (widgetId: string) => Promise<void>;
 } & ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
 
-const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactElement => {
+const _TaskItem = ({ actionReloadPoint, className, openWidget, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const notify = useNotification();
   const [account, setAccount] = useState(apiSDK.account);
@@ -32,7 +33,7 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
   const { t } = useTranslation();
   const [completed, setCompleted] = useState(!!task.completedAt);
 
-  const [checking, setChecking] = useState(task && task.airlyftType === 'telegram-sync' && !completed);
+  const [checking, setChecking] = useState(task && task.airlyftType && !completed);
 
   useEffect(() => {
     let taskItemUpdaterInterval: NodeJS.Timer;
@@ -124,26 +125,16 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
       }
 
       apiSDK.finishTask(taskId, extrinsicHash, networkKey)
-        .then((result) => {
+        .then(async (result) => {
+          if (task.airlyftWidgetId && result.isOpenUrl) {
+            await openWidget(task.airlyftWidgetId);
+          }
+
           setTaskLoading(false);
           setCompleted(result.success);
 
           if (result.success) {
             actionReloadPoint();
-          }
-
-          if (task.airlyftId) {
-            setTimeout(() => {
-              let urlRedirect = task.url;
-
-              if (result.openUrl) {
-                urlRedirect = result.openUrl;
-              }
-
-              if (urlRedirect && result.isOpenUrl) {
-                window.open(urlRedirect, '_blank');
-              }
-            }, 100);
           }
         })
         .catch(console.error);

@@ -8,7 +8,7 @@ import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeCo
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { TaskList } from '@subwallet/extension-koni-ui/Popup/Home/Mission/TaskList';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
@@ -81,6 +81,8 @@ function getTaskCategoryInfoMap (tasks: Task[]): Record<number, TaskCategoryInfo
   return result;
 }
 
+const widgetInfoMap: Record<string, object> = {};
+
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const [taskCategoryMap, setTaskCategoryMap] = useState<Record<number, TaskCategory>>({});
@@ -89,6 +91,60 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
   const [reloadAccount, setReloadAccount] = useState<number>(0);
   const { setContainerClass } = useContext(HomeContext);
+
+  const openWidget = useCallback(async (widgetId: string) => {
+    const modal = widgetInfoMap[widgetId];
+
+    if (modal) {
+      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      modal.open();
+    } else {
+      const modalData = await new Promise(async (resolve) => {
+        // @ts-ignore
+        if (window.AirlyftWidget) {
+          // @ts-ignore
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          const widget = await window.AirlyftWidget(widgetId);
+
+          const widgetModal = await widget.createModal({});
+          const widgetRef = widgetModal.ref;
+
+          const triggerButton = widgetRef.querySelector('a');
+
+          if (triggerButton) {
+            triggerButton.style.display = 'none';
+            triggerButton.parentNode.style.height = 'auto';
+          }
+
+          resolve(widgetModal);
+        } else {
+          resolve(null);
+        }
+      });
+
+      if (modalData) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        // @ts-ignore
+        widgetInfoMap[widgetId] = modalData;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        modalData.open();
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+
+    script.src = 'https://assets.airlyft.one/widget/widget.js';
+    script.async = true;
+
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const actionReloadPoint = useCallback(() => {
     setReloadAccount(reloadAccount + 1);
@@ -156,6 +212,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       <div className={'task-list-container'}>
         <TaskList
           actionReloadPoint={actionReloadPoint}
+          openWidget={openWidget}
           taskCategoryInfoMap={taskCategoryInfoMap}
           taskCategoryMap={taskCategoryMap}
         />
