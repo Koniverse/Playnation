@@ -59,7 +59,6 @@
     "@subwallet/extension-inject": "^1.2.10-0",
     "@subwallet/keyring": "^0.1.5",
     "@subwallet/ui-keyring": "^0.1.5",
-    "@twa-dev/sdk": "^7.0.0",
     "@walletconnect/keyvaluestorage": "^1.1.1",
     "@walletconnect/sign-client": "^2.13.1",
     "@walletconnect/types": "^2.13.1",
@@ -98,6 +97,7 @@
   },
   "devDependencies": {
     "@subwallet/extension-mocks": "^1.2.10-0",
+    "@types/telegram-web-app": "^7.3.1",
     "@types/uuid": "^9.0.1"
   }
 }

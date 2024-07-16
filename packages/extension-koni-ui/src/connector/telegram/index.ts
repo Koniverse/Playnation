@@ -3,7 +3,6 @@
 
 // Interact with Telegram with fallback
 import { TelegramWebApp } from '@subwallet/extension-base/utils/telegram';
-import { PopupParams } from '@twa-dev/types';
 
 export interface TelegramThemeConfig {
   headerColor: string;
@@ -67,11 +66,22 @@ export class TelegramConnector {
     }
   }
 
-  autoExpand () {
+  autoActions () {
+    // Auto expand
     if (this.supportBasicMethod) {
       if (!TelegramWebApp.isExpanded) {
         TelegramWebApp.expand();
       }
+    }
+
+    // Enable closing confirmation
+    if (!!TelegramWebApp.enableClosingConfirmation && !TelegramWebApp.isClosingConfirmationEnabled) {
+      TelegramWebApp.enableClosingConfirmation();
+    }
+
+    // Disable vertical swipe
+    if (!!TelegramWebApp.disableVerticalSwipes && TelegramWebApp.isVerticalSwipesEnabled) {
+      TelegramWebApp.disableVerticalSwipes();
     }
   }
 

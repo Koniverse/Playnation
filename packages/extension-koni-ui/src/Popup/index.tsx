@@ -16,7 +16,7 @@ import { router } from './router';
 
 export default function Popup (): React.ReactElement {
   React.useEffect(() => {
-    TelegramConnector.instance.autoExpand();
+    TelegramConnector.instance.autoActions();
   }, []);
 
   return (
