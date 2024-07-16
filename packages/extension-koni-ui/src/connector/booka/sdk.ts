@@ -752,6 +752,14 @@ export class BookaSdk {
       throw error;
     }
   }
+  async getAirlyftToken () {
+    try {
+      return await this.getRequest(`${GAME_API_HOST}/api/airlyft/get-token`) as unknown as Promise<{token: string, success: boolean} | undefined>;
+    } catch (error) {
+      console.error('Error in fetchAirdropHistory:', error);
+      throw error;
+    }
+  }
 
   subscribeAirdropCampaign () {
     return this.airdropCampaignSubject;

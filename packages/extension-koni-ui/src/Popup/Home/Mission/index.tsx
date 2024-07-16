@@ -8,7 +8,7 @@ import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeCo
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { TaskList } from '@subwallet/extension-koni-ui/Popup/Home/Mission/TaskList';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
@@ -107,8 +107,17 @@ const Component = ({ className }: Props): React.ReactElement => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           const widget = await window.AirlyftWidget(widgetId);
 
-          const widgetModal = await widget.createModal({});
-          const widgetRef = widgetModal.ref;
+          const instance = await widget.createModal({});
+          const dataToken = await apiSDK.getAirlyftToken();
+
+          if (dataToken && dataToken.success) {
+            widget.authWithToken(
+              instance,
+              dataToken.token
+            );
+          }
+
+          const widgetRef = instance.ref;
 
           const triggerButton = widgetRef.querySelector('a');
 
@@ -117,7 +126,7 @@ const Component = ({ className }: Props): React.ReactElement => {
             triggerButton.parentNode.style.height = 'auto';
           }
 
-          resolve(widgetModal);
+          resolve(instance);
         } else {
           resolve(null);
         }
