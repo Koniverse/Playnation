@@ -108,15 +108,6 @@ const Component = ({ className }: Props): React.ReactElement => {
           const widget = await window.AirlyftWidget(widgetId);
 
           const instance = await widget.createModal({});
-          const dataToken = await apiSDK.getAirlyftToken();
-
-          if (dataToken && dataToken.success) {
-            widget.authWithToken(
-              instance,
-              dataToken.token
-            );
-          }
-
           const widgetRef = instance.ref;
 
           const triggerButton = widgetRef.querySelector('a');
@@ -124,6 +115,15 @@ const Component = ({ className }: Props): React.ReactElement => {
           if (triggerButton) {
             triggerButton.style.display = 'none';
             triggerButton.parentNode.style.height = 'auto';
+          }
+
+          const dataToken = await apiSDK.getAirlyftToken();
+
+          if (dataToken && dataToken.success) {
+            widget.authWithToken(
+              instance,
+              dataToken.token
+            );
           }
 
           resolve(instance);
