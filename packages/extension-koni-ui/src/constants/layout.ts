@@ -15,3 +15,7 @@ export const settingsScreensLayoutBackgroundImages: LayoutBackgroundImages = {
   game: true,
   euro: true
 };
+
+export const simpleSettingsScreensLayoutBackgroundImages: LayoutBackgroundImages = {
+  game: true
+};

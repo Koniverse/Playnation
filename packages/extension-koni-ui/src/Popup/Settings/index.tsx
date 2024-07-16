@@ -278,7 +278,7 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
 
       '.__scroll-container': {
         overflow: 'auto',
-        paddingTop: token.paddingXS,
+        paddingTop: token.paddingXXS,
         paddingRight: token.padding,
         paddingLeft: token.padding,
         paddingBottom: token.paddingLG
