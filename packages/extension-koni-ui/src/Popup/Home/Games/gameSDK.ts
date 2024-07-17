@@ -62,6 +62,7 @@ export class GameApp {
       balance: point,
       name: `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}` || 'Player',
       avatar: 'https://thispersondoesnotexist.com/',
+      gameEnergy: this.currentGameInfo.energyPerGame,
       level: 1,
       energy: account?.attributes?.energy || 0,
       inventory: Object.entries(this.inventoryQuantityMap)

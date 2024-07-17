@@ -44,6 +44,7 @@ export interface Player {
   name: string;
   level?: number;
   energy?: number;
+  gameEnergy?: number;
   /** Image URL */
   avatar?: string;
   /** total GEM of user */
