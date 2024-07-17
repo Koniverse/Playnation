@@ -21,7 +21,7 @@ const alertTypeAndIconMap = {
   },
   [NotificationType.WARNING]: {
     icon: Warning,
-    weight: undefined
+    weight: 'fill'
   },
   [NotificationType.ERROR]: {
     icon: XCircle,
