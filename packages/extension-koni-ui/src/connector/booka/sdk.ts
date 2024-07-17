@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWStorage } from '@subwallet/extension-base/storage';
-import { createPromiseHandler } from '@subwallet/extension-base/utils';
+import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
 import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
@@ -461,9 +461,16 @@ export class BookaSdk {
     }
 
     const result = await signRaw({
-      address,
-      type: 'payload',
-      data: message
+      metadata: {
+        url: 'https://playnation.app',
+        title: detectTranslate('Playnation Login'),
+        message: detectTranslate('Sign this message to login')
+      },
+      payload: {
+        address,
+        type: 'payload',
+        data: message
+      }
     });
 
     await storage.setItem('loginMessage', message);
