@@ -89,32 +89,37 @@
 
     .startup-screen-mockup-2 {
       position: absolute;
-      width: 90px;
+      width: 71px;
       height: auto;
-      top: 295px;
-      left: -2px;
+      top: 217px;
+      right: 162px;
       z-index: 5;
     }
 
     .startup-screen-mockup-3 {
       position: absolute;
-      width: 187px;
+      width: 148px;
       height: auto;
-      top: 253px;
-      right: 0;
-      left: 0;
-      margin-right: auto;
-      margin-left: auto;
+      top: 292px;
+      right: 4px;
       z-index: 5;
     }
 
     .startup-screen-mockup-4 {
-      width: 700px;
+      opacity: 0.75;
+      width: 477px;
       height: auto;
       position: absolute;
       z-index: 0;
       bottom: 0;
-      left: calc(50% - 350px);
+      right: -53px;
+    }
+
+    @media screen and (max-height: 739px) {
+      .startup-screen-mockup-4 {
+        bottom: auto;
+        top: 378px
+      }
     }
   </style>
 
@@ -179,9 +184,9 @@
     </div>
 
     <img class="startup-screen-mockup-1" src="/images/startup-screen/token-1.png" alt="mockup-1">
-    <img class="startup-screen-mockup-2" src="/images/startup-screen/token-4.png" alt="mockup-2">
-    <img class="startup-screen-mockup-3" src="/images/euro/euro-background-2.png" alt="mockup-3">
-    <img class="startup-screen-mockup-4" src="/images/euro/euro-background.png" alt="mockup-4">
+    <img class="startup-screen-mockup-2" src="/images/startup-screen/token-2.png" alt="mockup-2">
+    <img class="startup-screen-mockup-3" src="/images/startup-screen/token-3.png" alt="mockup-3">
+    <img class="startup-screen-mockup-4" src="/images/startup-screen/bottom-background-image.png" alt="mockup-4">
   </div>
 
   <script>
