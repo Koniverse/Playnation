@@ -108,7 +108,9 @@ const Component = ({ className }: Props): React.ReactElement => {
           const widget = await window.AirlyftWidget(widgetId);
 
           const instance = await widget.createModal({});
-          widget.openSpecificTask(instance, taskId);
+          if (taskId){
+            widget.openSpecificTask(instance, taskId);
+          }
           const widgetRef = instance.ref;
 
           const triggerButton = widgetRef.querySelector('a');
