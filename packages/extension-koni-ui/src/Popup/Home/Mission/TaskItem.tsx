@@ -242,7 +242,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, task }: Props): R
             shape={'round'}
             size={'xs'}
           >
-            {t('Go')}
+            {task.achievement ? (task.buttonView ?? t('Go')) : t('Go')}
           </Button>
         )}
 

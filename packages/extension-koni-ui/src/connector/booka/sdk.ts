@@ -529,7 +529,7 @@ export class BookaSdk {
 
     this.currentGamePlaySubject.next(undefined);
 
-    await Promise.all([this.reloadAccount()]);
+    await Promise.all([this.reloadAccount(), this.fetchTaskList()]);
   }
 
   // --- shop

@@ -93,7 +93,14 @@ export interface ShareLeaderboard {
   url: string;
   start_time: string;
   end_time: string;
+}
 
+interface AchievementData {
+  id: number;
+  from_date: string;
+  to_date: string;
+  value: number;
+  type: string;
 }
 
 export interface Task {
@@ -121,6 +128,8 @@ export interface Task {
   airlyftType?: string | null;
   airlyftWidgetId?: string | null;
   airlyftId?: string | null;
+  buttonView?: string | null;
+  achievement?: AchievementData | null;
 }
 
 export interface TaskCategory {
