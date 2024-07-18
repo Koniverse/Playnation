@@ -127,7 +127,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, task }: Props): R
       apiSDK.finishTask(taskId, extrinsicHash, networkKey)
         .then(async (result) => {
           if (task.airlyftWidgetId && result.isOpenUrl) {
-            await openWidget(task.airlyftWidgetId);
+            await openWidget(task.airlyftWidgetId, task.airlyftId ?? '');
           }
 
           setTaskLoading(false);
