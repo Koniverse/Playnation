@@ -1,27 +1,21 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AlertBox, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
-import InfoIcon from '@subwallet/extension-koni-ui/components/Icon/InfoIcon';
+import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { DEFAULT_HOMEPAGE, DEFAULT_PASSWORD, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
-import { TERMS_OF_SERVICE_URL } from '@subwallet/extension-koni-ui/constants/common';
-import { REQUEST_CREATE_PASSWORD_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
-import { useNotification } from '@subwallet/extension-koni-ui/hooks';
+import { DEFAULT_HOMEPAGE, simpleSettingsScreensLayoutBackgroundImages, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
+import { useDefaultNavigate, useNotification } from '@subwallet/extension-koni-ui/hooks';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useFocusFormItem from '@subwallet/extension-koni-ui/hooks/form/useFocusFormItem';
 import { createAccountSuriV2, createSeedV2, keyringChangeMasterPassword } from '@subwallet/extension-koni-ui/messaging';
-import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { isNoAccount } from '@subwallet/extension-koni-ui/utils/account/account';
 import { simpleCheckForm } from '@subwallet/extension-koni-ui/utils/form/form';
 import { renderBaseConfirmPasswordRules, renderBasePasswordRules } from '@subwallet/extension-koni-ui/utils/form/validators/password';
-import { Checkbox, Form, Icon, Input, ModalContext, SwModal } from '@subwallet/react-ui';
+import { Checkbox, Form, Icon, Input } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CaretLeft, CheckCircle } from 'phosphor-react';
+import { CheckCircle } from 'phosphor-react';
 import { Callbacks, FieldData, RuleObject } from 'rc-field-form/lib/interface';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -30,34 +24,30 @@ type Props = ThemeProps
 enum FormFieldName {
   PASSWORD = 'password',
   CONFIRM_PASSWORD = 'confirm_password',
-  CONFIRM_CHECKBOX = 'confirm_checkbox'
+  ENABLE_BIOMETRIC = 'enable_biometric'
 }
 
 interface CreatePasswordFormState {
   [FormFieldName.PASSWORD]: string;
   [FormFieldName.CONFIRM_PASSWORD]: string;
-  [FormFieldName.CONFIRM_CHECKBOX]: boolean;
+  [FormFieldName.ENABLE_BIOMETRIC]: boolean;
 }
 
 const FooterIcon = (
   <Icon
+    customSize={'20px'}
     phosphorIcon={CheckCircle}
     weight='fill'
   />
 );
 
-const modalId = 'create-password-instruction-modal';
 const formName = 'create-password-form';
 const telegramConnector = TelegramConnector.instance;
 
 const Component: React.FC<Props> = ({ className }: Props) => {
   const { t } = useTranslation();
-  const { activeModal, checkActive, inactiveModal } = useContext(ModalContext);
   const navigate = useNavigate();
-
-  const { accounts } = useSelector((state: RootState) => state.accountState);
-
-  const [noAccount] = useState(isNoAccount(accounts));
+  const { goBack } = useDefaultNavigate();
 
   const notification = useNotification();
 
@@ -94,9 +84,12 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 
   const onSubmit: Callbacks<CreatePasswordFormState>['onFinish'] = useCallback((values: CreatePasswordFormState) => {
     const password = values[FormFieldName.PASSWORD];
-    const checkBox = values[FormFieldName.CONFIRM_CHECKBOX];
+    const enableBiometric = values[FormFieldName.ENABLE_BIOMETRIC];
 
-    if (password && checkBox) {
+    // todo: do something with enableBiometric
+    console.log(enableBiometric);
+
+    if (password) {
       setLoading(true);
       keyringChangeMasterPassword({
         createNew: true,
@@ -131,93 +124,66 @@ const Component: React.FC<Props> = ({ className }: Props) => {
     form.resetFields([FormFieldName.CONFIRM_PASSWORD]);
   }, [form]);
 
-  const openModal = useCallback(() => {
-    activeModal(modalId);
-  }, [activeModal]);
-
-  const closeModal = useCallback(() => {
-    inactiveModal(modalId);
-  }, [inactiveModal]);
-
-  useEffect(() => {
-    if (!noAccount) {
-      activeModal(REQUEST_CREATE_PASSWORD_MODAL);
-    }
-  }, [activeModal, noAccount]);
-
-  useEffect(() => {
-    onSubmit({
-      [FormFieldName.PASSWORD]: DEFAULT_PASSWORD,
-      [FormFieldName.CONFIRM_PASSWORD]: DEFAULT_PASSWORD,
-      [FormFieldName.CONFIRM_CHECKBOX]: true
-    });
-  }, [onSubmit]);
-
-  useFocusFormItem(form, FormFieldName.PASSWORD, !checkActive(REQUEST_CREATE_PASSWORD_MODAL));
+  useFocusFormItem(form, FormFieldName.PASSWORD, true);
 
   return (
     <PageWrapper className={CN(className)}>
       <Layout.WithSubHeaderOnly
+        backgroundImages={simpleSettingsScreensLayoutBackgroundImages}
+        backgroundStyle={'secondary'}
+        onBack={goBack}
         rightFooterButton={{
-          children: t('Continue'),
+          children: t('Finish'),
           onClick: form.submit,
           loading: loading,
           disabled: isDisabled,
+          shape: 'round',
           icon: FooterIcon
         }}
-        showBackButton={false}
-        subHeaderIcons={[
-          {
-            icon: <InfoIcon />,
-            onClick: openModal
-          }
-        ]}
-        title={t('Create a password')}
+        title={t('Create password')}
       >
         <div className='body-container'>
-          <div className='notify'>
-            {t('This password can only unlock your SubWallet on this browser')}
-          </div>
           <Form
             form={form}
             initialValues={{
               [FormFieldName.PASSWORD]: '',
               [FormFieldName.CONFIRM_PASSWORD]: '',
-              [FormFieldName.CONFIRM_CHECKBOX]: 'true'
+              [FormFieldName.ENABLE_BIOMETRIC]: 'true'
             }}
             name={formName}
             onFieldsChange={onUpdate}
             onFinish={onSubmit}
           >
-            <Form.Item
-              name={FormFieldName.PASSWORD}
-              rules={passwordRules}
-              statusHelpAsTooltip={true}
-            >
-              <Input.Password
-                onChange={onChangePassword}
-                placeholder={t('Enter password')}
-                type='password'
-              />
-            </Form.Item>
-            <Form.Item
-              name={FormFieldName.CONFIRM_PASSWORD}
-              rules={confirmPasswordRules}
-              statusHelpAsTooltip={true}
-            >
-              <Input.Password
-                placeholder={t('Confirm password')}
-                type='password'
-              />
-            </Form.Item>
-            <Form.Item>
-              <div className={'annotation'}>
-                {t('Passwords should be at least 8 characters in length, including letters and numbers')}
-              </div>
-            </Form.Item>
+            <div className='field-group'>
+              <Form.Item
+                name={FormFieldName.PASSWORD}
+                rules={passwordRules}
+              >
+                <Input.Password
+                  label={t('Your password')}
+                  onChange={onChangePassword}
+                  placeholder={t('Enter password')}
+                  type='password'
+                />
+              </Form.Item>
+
+              <div className={'field-separator'}></div>
+
+              <Form.Item
+                name={FormFieldName.CONFIRM_PASSWORD}
+                rules={confirmPasswordRules}
+              >
+                <Input.Password
+                  label={t('Confirm password')}
+                  placeholder={t('Enter your password again')}
+                  type='password'
+                />
+              </Form.Item>
+            </div>
+
             <Form.Item
               className={'form-checkbox'}
-              name={FormFieldName.CONFIRM_CHECKBOX}
+              name={FormFieldName.ENABLE_BIOMETRIC}
               rules={[
                 {
                   validator: checkBoxValidator
@@ -229,41 +195,10 @@ const Component: React.FC<Props> = ({ className }: Props) => {
               <Checkbox
                 className={'checkbox'}
               >
-                I understand that SubWallet can’t recover the password. <a
-                  href={TERMS_OF_SERVICE_URL}
-                  rel='noreferrer'
-                  style={{ textDecoration: 'underline' }}
-                  target={'_blank'}
-                >Learn more.</a>
+                Enable biometric login
               </Checkbox>
             </Form.Item>
           </Form>
-          <SwModal
-            closeIcon={(
-              <Icon
-                phosphorIcon={CaretLeft}
-                size='sm'
-              />
-            )}
-            id={modalId}
-            onCancel={closeModal}
-            rightIconProps={{
-              icon: <InfoIcon />
-            }}
-            title={t('Instructions')}
-            wrapClassName={className}
-          >
-            <div className='instruction-container'>
-              <AlertBox
-                description={t('For your wallet protection, SubWallet locks your wallet after 15 minutes of inactivity. You will need this password to unlock it.')}
-                title={t('Why do I need to enter a password?')}
-              />
-              <AlertBox
-                description={t('The password is stored securely on your device. We will not be able to recover it for you, so make sure you remember it!')}
-                title={t('Can I recover a password?')}
-              />
-            </div>
-          </SwModal>
         </div>
       </Layout.WithSubHeaderOnly>
     </PageWrapper>
@@ -273,47 +208,62 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 const CreatePassword = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return {
     '.body-container': {
-      padding: `0 ${token.padding}px`,
-      textAlign: 'center',
-
-      '.page-icon': {
-        display: 'flex',
-        justifyContent: 'center',
-        marginTop: token.margin,
-        '--page-icon-color': token.colorSecondary
-      },
-
-      '.notify': {
-        marginTop: token.margin,
-        marginBottom: token.margin * 2,
-        fontWeight: token.fontWeightStrong,
-        fontSize: token.fontSize,
-        lineHeight: token.lineHeightHeading3,
-        color: token.colorWarningText
-      },
-
-      '.annotation': {
-        fontSize: token.fontSizeSM,
-        color: token.colorTextLight5,
-        textAlign: 'left'
-      },
-      '.form-checkbox': {
-        '.checkbox': {
-          textAlign: 'left',
-          display: 'flex',
-          alignItems: 'center'
-        }
-      }
+      paddingTop: token.paddingXXS,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
     },
 
-    '.ant-form-item:last-child': {
+    '.ant-form-item-explain': {
+      paddingLeft: token.padding,
+      paddingRight: token.padding,
+      paddingBottom: 0
+    },
+
+    '.ant-form-item': {
       marginBottom: 0
     },
 
-    '.instruction-container': {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: token.sizeXS
+    '.ant-input-password': {
+      '&:before': {
+        display: 'none'
+      },
+
+      '.ant-input-prefix': {
+        display: 'none'
+      }
+    },
+
+    '.field-group': {
+      backgroundColor: token.colorBgInput,
+      borderRadius: 20,
+      paddingLeft: token.paddingXXS,
+      paddingRight: token.paddingXXS,
+      paddingBottom: token.padding
+    },
+
+    '.form-checkbox.form-checkbox': {
+      paddingTop: token.paddingSM,
+      paddingLeft: token.padding,
+      paddingRight: token.padding,
+
+      '.checkbox': {
+        textAlign: 'left',
+        display: 'flex',
+        alignItems: 'center'
+      }
+    },
+
+    '.field-separator': {
+      paddingLeft: 24,
+      paddingRight: 24,
+      paddingTop: token.padding,
+
+      '&:before': {
+        content: '""',
+        display: 'block',
+        height: 1,
+        backgroundColor: token.colorBgDivider
+      }
     }
   };
 });

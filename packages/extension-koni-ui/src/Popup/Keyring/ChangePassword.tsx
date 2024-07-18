@@ -1,16 +1,15 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { CloseIcon, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
-import { TERMS_OF_SERVICE_URL } from '@subwallet/extension-koni-ui/constants';
+import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
+import { simpleSettingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { useDefaultNavigate, useFocusFormItem, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { keyringChangeMasterPassword } from '@subwallet/extension-koni-ui/messaging';
 import { FormCallbacks, FormFieldData, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { renderBaseConfirmPasswordRules, renderBasePasswordRules, simpleCheckForm } from '@subwallet/extension-koni-ui/utils';
-import { Checkbox, Form, Icon, Input, PageIcon } from '@subwallet/react-ui';
+import { Form, Icon, Input } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { FloppyDiskBack, ShieldCheck } from 'phosphor-react';
-import { RuleObject } from 'rc-field-form/lib/interface';
+import { CheckCircle, XCircle } from 'phosphor-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -46,13 +45,6 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 
   const newPasswordRules = useMemo(() => renderBasePasswordRules(t('New password'), t), [t]);
   const confirmPasswordRules = useMemo(() => renderBaseConfirmPasswordRules(FormFieldName.PASSWORD, t), [t]);
-  const checkBoxValidator = useCallback((rule: RuleObject, value: boolean): Promise<void> => {
-    if (!value) {
-      return Promise.reject(new Error(t('CheckBox is required')));
-    }
-
-    return Promise.resolve();
-  }, [t]);
 
   const goBack = useCallback(() => {
     navigate('/settings/security');
@@ -101,47 +93,47 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   return (
     <PageWrapper className={CN(className)}>
       <Layout.WithSubHeaderOnly
-        onBack={goBack}
-        rightFooterButton={{
-          children: t('Save'),
-          onClick: form.submit,
-          loading: loading,
-          disabled: isDisabled,
+        backgroundImages={simpleSettingsScreensLayoutBackgroundImages}
+        backgroundStyle={'secondary'}
+        leftFooterButton={{
+          children: t('Cancel'),
+          onClick: goBack,
+          schema: 'secondary',
+          disabled: loading,
+          shape: 'round',
           icon: (
             <Icon
-              phosphorIcon={FloppyDiskBack}
+              customSize={'20px'}
+              phosphorIcon={XCircle}
               weight='fill'
             />
           )
         }}
-        subHeaderIcons={[
-          {
-            icon: <CloseIcon />,
-            onClick: goHome
-          }
-        ]}
+        onBack={goBack}
+        rightFooterButton={{
+          children: t('Submit'),
+          onClick: form.submit,
+          loading: loading,
+          disabled: isDisabled,
+          shape: 'round',
+          icon: (
+            <Icon
+              customSize={'20px'}
+              phosphorIcon={CheckCircle}
+              weight='fill'
+            />
+          )
+        }}
         title={t('Change password')}
       >
         <div className='body-container'>
-          <div className='page-icon'>
-            <PageIcon
-              color='var(--page-icon-color)'
-              iconProps={{
-                weight: 'fill',
-                phosphorIcon: ShieldCheck
-              }}
-            />
-          </div>
-          <div className='title'>
-            {t('Change your password')}
-          </div>
           <Form
+            className={'form-container'}
             form={form}
             initialValues={{
               [FormFieldName.OLD_PASSWORD]: '',
               [FormFieldName.PASSWORD]: '',
-              [FormFieldName.CONFIRM_PASSWORD]: '',
-              [FormFieldName.CONFIRM_CHECKBOX]: ''
+              [FormFieldName.CONFIRM_PASSWORD]: ''
             }}
             name={formName}
             onFieldsChange={onUpdate}
@@ -155,59 +147,38 @@ const Component: React.FC<Props> = ({ className }: Props) => {
                   required: true
                 }
               ]}
-              statusHelpAsTooltip={true}
             >
               <Input.Password
                 disabled={loading}
-                placeholder={t('Current password')}
+                label={t('Your old password')}
+                placeholder={t('Enter your old password')}
                 type='password'
               />
             </Form.Item>
+            <div className={'field-separator'}></div>
             <Form.Item
               name={FormFieldName.PASSWORD}
               rules={newPasswordRules}
-              statusHelpAsTooltip={true}
             >
               <Input.Password
                 disabled={loading}
+                label={t('New password')}
                 onChange={onChangePassword}
-                placeholder={t('New password')}
+                placeholder={t('Enter new password')}
                 type='password'
               />
             </Form.Item>
+            <div className={'field-separator'}></div>
             <Form.Item
               name={FormFieldName.CONFIRM_PASSWORD}
               rules={confirmPasswordRules}
-              statusHelpAsTooltip={true}
             >
               <Input.Password
                 disabled={loading}
-                placeholder={t('Confirm new password')}
+                label={t('Confirm new password')}
+                placeholder={t('Enter your new password again')}
                 type='password'
               />
-            </Form.Item>
-            <Form.Item
-              className={'form-checkbox'}
-              name={FormFieldName.CONFIRM_CHECKBOX}
-              rules={[
-                {
-                  validator: checkBoxValidator
-                }
-              ]}
-              statusHelpAsTooltip={true}
-              valuePropName={'checked'}
-            >
-              <Checkbox
-                className={'checkbox'}
-              >
-                {t('I understand that SubWallet can’t recover the password.')}
-                <a
-                  href={TERMS_OF_SERVICE_URL}
-                  rel='noreferrer'
-                  style={{ textDecoration: 'underline' }}
-                  target={'_blank'}
-                >Learn more.</a>
-              </Checkbox>
             </Form.Item>
             <Form.Item
               help={submitError}
@@ -223,34 +194,49 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 const ChangePassword = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return {
     '.body-container': {
-      padding: `0 ${token.padding}px`,
-      textAlign: 'center',
+      paddingTop: token.paddingXXS,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
+    },
 
-      '.page-icon': {
-        display: 'flex',
-        justifyContent: 'center',
-        marginTop: token.marginSM,
-        '--page-icon-color': token.colorSecondary
+    '.ant-form-item': {
+      marginBottom: 0
+    },
+
+    '.ant-input-password': {
+      '&:before': {
+        display: 'none'
       },
 
-      '.form-checkbox': {
-        '.checkbox': {
-          textAlign: 'left',
-          display: 'flex',
-          alignItems: 'center'
-        }
-      },
-      '.ant-form-item-explain-connected': {
-        paddingBottom: 0
-      },
+      '.ant-input-prefix': {
+        display: 'none'
+      }
+    },
 
-      '.title': {
-        marginTop: token.margin,
-        marginBottom: token.margin * 2,
-        fontWeight: token.fontWeightStrong,
-        fontSize: token.fontSizeHeading3,
-        lineHeight: token.lineHeightHeading3,
-        color: token.colorTextBase
+    '.form-container': {
+      backgroundColor: token.colorBgInput,
+      borderRadius: 20,
+      paddingLeft: token.paddingXXS,
+      paddingRight: token.paddingXXS,
+      paddingBottom: token.padding
+    },
+
+    '.ant-form-item-explain': {
+      paddingLeft: token.padding,
+      paddingRight: token.padding,
+      paddingBottom: 0
+    },
+
+    '.field-separator': {
+      paddingLeft: 24,
+      paddingRight: 24,
+      paddingTop: token.padding,
+
+      '&:before': {
+        content: '""',
+        display: 'block',
+        height: 1,
+        backgroundColor: token.colorBgDivider
       }
     }
   };

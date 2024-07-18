@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Layout, PageWrapper, ResetWalletModal } from '@subwallet/extension-koni-ui/components';
-import { RESET_WALLET_MODAL } from '@subwallet/extension-koni-ui/constants';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useUILock from '@subwallet/extension-koni-ui/hooks/common/useUILock';
 import useFocusById from '@subwallet/extension-koni-ui/hooks/form/useFocusById';
@@ -10,9 +9,10 @@ import { keyringUnlock } from '@subwallet/extension-koni-ui/messaging';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { FormCallbacks, FormFieldData } from '@subwallet/extension-koni-ui/types/form';
 import { simpleCheckForm } from '@subwallet/extension-koni-ui/utils/form/form';
-import { Button, Form, Image, Input, ModalContext } from '@subwallet/react-ui';
+import { Button, Form, Icon, Input } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React, { useCallback, useContext, useState } from 'react';
+import { FingerprintSimple } from 'phosphor-react';
+import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps
@@ -29,7 +29,6 @@ const passwordInputId = 'login-password';
 
 const Component: React.FC<Props> = ({ className }: Props) => {
   const { t } = useTranslation();
-  const { activeModal } = useContext(ModalContext);
 
   const [form] = Form.useForm<LoginFormState>();
 
@@ -70,68 +69,72 @@ const Component: React.FC<Props> = ({ className }: Props) => {
     }, 500);
   }, [onError, t, unlock]);
 
-  const onReset = useCallback(() => {
-    activeModal(RESET_WALLET_MODAL);
-  }, [activeModal]);
-
   useFocusById(passwordInputId);
 
   return (
     <PageWrapper className={CN(className)}>
       <Layout.Base>
-        <div className='bg-image' />
+        <div className='background-image' />
         <div className='body-container'>
-          <div className='logo-container'>
-            <Image
-              src='/images/subwallet/gradient-logo.png'
-              width={80}
-            />
-          </div>
           <div className='title'>
-            {t('Welcome back!')}
+            {t('Welcome back to Playnation')}
           </div>
-          <div className='sub-title'>
-            {t('Enter your password to unlock wallet')}
-          </div>
+
           <Form
+            className={'form-container'}
             form={form}
             initialValues={{ [FormFieldName.PASSWORD]: '' }}
             onFieldsChange={onUpdate}
             onFinish={onSubmit}
           >
-            <Form.Item
-              name={FormFieldName.PASSWORD}
-              rules={[
-                {
-                  message: t('Password is required'),
-                  required: true
-                }
-              ]}
-              statusHelpAsTooltip={true}
-            >
-              <Input.Password
-                containerClassName='password-input'
-                id={passwordInputId}
-                placeholder={t('Password')}
-              />
-            </Form.Item>
+            <div className='field-group'>
+              <div className='password-label'>
+                {t('Password')}
+              </div>
+
+              <Form.Item
+                name={FormFieldName.PASSWORD}
+                rules={[
+                  {
+                    message: t('Password is required'),
+                    required: true
+                  }
+                ]}
+              >
+                <Input.Password
+                  containerClassName='password-input'
+                  id={passwordInputId}
+                  placeholder={t('Enter password to login')}
+                />
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  block={true}
+                  icon={(
+                    <Icon
+                      customSize={'20px'}
+                      phosphorIcon={FingerprintSimple}
+                    />
+                  )}
+                  shape={'round'}
+                  size={'sm'}
+                  type={'ghost'}
+                >
+                  {t('Login with biometric')}
+                </Button>
+              </Form.Item>
+            </div>
+
             <Form.Item>
               <Button
                 block={true}
                 disabled={isDisable}
                 htmlType='submit'
                 loading={loading}
+                shape={'round'}
               >
-                {t('Unlock')}
+                {t('Login')}
               </Button>
-            </Form.Item>
-            <Form.Item>
-              <div
-                className='forgot-password'
-                onClick={onReset}
-              >
-                {t('Don’t remember your password?')}
-              </div>
             </Form.Item>
           </Form>
           <ResetWalletModal />
@@ -141,16 +144,20 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   );
 };
 
-const Login = styled(Component)<Props>(({ theme }: Props) => {
-  const { token } = theme;
-
+const Login = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
     position: 'relative',
 
-    '.bg-image': {
+    '.ant-sw-screen-layout-body': {
+      background: extendToken.colorBgGradient || token.colorPrimary
+    },
+
+    '.background-image': {
+      pointerEvents: 'none',
+      backgroundImage: 'url("/images/games/login-background.png")',
       backgroundRepeat: 'no-repeat',
-      backgroundPosition: 'top',
-      backgroundSize: 'contain',
+      backgroundPosition: 'center -74px',
+      backgroundSize: '506px auto',
       height: '100%',
       position: 'absolute',
       width: '100%',
@@ -158,41 +165,59 @@ const Login = styled(Component)<Props>(({ theme }: Props) => {
       top: 0
     },
 
-    '.body-container': {
-      padding: `0 ${token.padding}px`,
+    '.title': {
+      paddingTop: 270,
+      marginBottom: 50,
+      maxWidth: 342,
       textAlign: 'center',
-      opacity: 0.999,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+      fontSize: 32,
+      lineHeight: '42px',
+      fontWeight: 700,
+      color: token.colorTextDark1
+    },
 
-      '.logo-container': {
-        marginTop: 100,
-        color: token.colorTextBase
+    '.body-container': {
+      position: 'relative',
+      paddingBottom: 24
+    },
+
+    '.form-container': {
+      paddingLeft: token.padding,
+      paddingRight: token.padding
+    },
+
+    '.ant-form-item': {
+      marginBottom: token.marginXS
+    },
+
+    '.field-group': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      borderRadius: 20,
+      paddingTop: token.padding,
+      paddingLeft: token.padding,
+      paddingRight: token.padding,
+      paddingBottom: token.paddingXXS,
+      marginBottom: 24,
+
+      '.password-label': {
+        fontSize: token.fontSizeSM,
+        lineHeight: token.lineHeightSM,
+        color: token.colorTextDark1,
+        marginBottom: token.marginXS
       },
 
-      '.title': {
-        marginTop: token.margin,
-        fontWeight: token.fontWeightStrong,
-        fontSize: token.fontSizeHeading3,
-        lineHeight: token.lineHeightHeading3,
-        color: token.colorTextBase
+      '.ant-input-password': {
+        backgroundColor: token.colorBgSecondary,
+
+        '.ant-input-prefix': {
+          display: 'none'
+        }
       },
 
-      '.sub-title': {
-        marginTop: token.marginXS,
-        fontSize: token.fontSizeHeading5,
-        lineHeight: token.lineHeightHeading5,
-        color: token.colorTextLight3
-      },
-
-      '.password-input': {
-        marginTop: 62
-      },
-
-      '.forgot-password': {
-        cursor: 'pointer',
-        fontSize: token.fontSizeHeading5,
-        lineHeight: token.lineHeightHeading5,
-        color: token.colorTextLight4,
-        marginTop: 27
+      '.ant-form-item': {
+        marginBottom: token.marginXS
       }
     }
   };

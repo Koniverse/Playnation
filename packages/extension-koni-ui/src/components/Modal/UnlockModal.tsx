@@ -6,7 +6,8 @@ import { keyringUnlock } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { FormCallbacks, FormFieldData, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { simpleCheckForm } from '@subwallet/extension-koni-ui/utils';
-import { Button, Form, Input, ModalContext, SwIconProps, SwModal } from '@subwallet/react-ui';
+import { Button, Form, Icon, Input, ModalContext, SwIconProps, SwModal } from '@subwallet/react-ui';
+import { FingerprintSimple } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -106,28 +107,52 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           onFieldsChange={onUpdate}
           onFinish={onSubmit}
         >
-          <Form.Item
-            name={FormFieldName.PASSWORD}
-            rules={[
-              {
-                message: t('Password is required'),
-                required: true
-              }
-            ]}
-            statusHelpAsTooltip={true}
-          >
-            <Input.Password
-              containerClassName='password-input'
-              id={passwordInputId}
-              placeholder={t('Password')}
-            />
-          </Form.Item>
+
+          <div className='field-group'>
+            <div className='password-label'>
+              {t('Password')}
+            </div>
+
+            <Form.Item
+              name={FormFieldName.PASSWORD}
+              rules={[
+                {
+                  message: t('Password is required'),
+                  required: true
+                }
+              ]}
+            >
+              <Input.Password
+                containerClassName='password-input'
+                id={passwordInputId}
+                placeholder={t('Enter password')}
+              />
+            </Form.Item>
+            <Form.Item>
+              <Button
+                block={true}
+                icon={(
+                  <Icon
+                    customSize={'20px'}
+                    phosphorIcon={FingerprintSimple}
+                  />
+                )}
+                shape={'round'}
+                size={'sm'}
+                type={'ghost'}
+              >
+                {t('Unlock with biometrics')}
+              </Button>
+            </Form.Item>
+          </div>
+
           <Form.Item>
             <Button
               block={true}
               disabled={isDisable}
               htmlType='submit'
               loading={loading}
+              shape={'round'}
             >
               {t('Unlock')}
             </Button>
@@ -138,10 +163,39 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   );
 }
 
-export const UnlockModal = styled(Component)<Props>(({ theme: { token } }: Props) => {
+export const UnlockModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '.__action-item + .__action-item': {
       marginTop: token.marginXS
+    },
+
+    '.field-group': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      borderRadius: 20,
+      paddingTop: token.padding,
+      paddingLeft: token.padding,
+      paddingRight: token.padding,
+      paddingBottom: token.paddingXXS,
+      marginBottom: 24,
+
+      '.password-label': {
+        fontSize: token.fontSizeSM,
+        lineHeight: token.lineHeightSM,
+        color: token.colorTextDark1,
+        marginBottom: token.marginXS
+      },
+
+      '.ant-input-password': {
+        backgroundColor: token.colorBgSecondary,
+
+        '.ant-input-prefix': {
+          display: 'none'
+        }
+      },
+
+      '.ant-form-item': {
+        marginBottom: token.marginXS
+      }
     }
   });
 });

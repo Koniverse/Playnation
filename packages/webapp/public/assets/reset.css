@@ -822,6 +822,10 @@ div.ant-notification-notice {
   justify-content: center;
 }
 
+.setting-group-item .ant-web3-block-right-item .ant-switch {
+  margin-right: 12px;
+}
+
 /* button */
 
 .ant-btn.ant-btn {
