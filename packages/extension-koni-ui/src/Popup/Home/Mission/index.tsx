@@ -109,7 +109,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
           const instance = await widget.createModal({});
           if (taskId){
-            widget.openSpecificTask(instance, taskId);
+            // widget.openSpecificTask(instance, taskId);
           }
           const widgetRef = instance.ref;
 
