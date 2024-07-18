@@ -12,7 +12,7 @@ type Props = ThemeProps & {
   taskCategoryMap: Record<number, TaskCategory>;
   taskCategoryInfoMap: Record<number, TaskCategoryInfo>;
   actionReloadPoint: VoidFunction;
-  openWidget: (widgetId: string) => Promise<void>;
+  openWidget: (widgetId: string, taskId: string) => Promise<void>;
 };
 
 const Component = ({ actionReloadPoint, className, taskCategoryInfoMap, taskCategoryMap, openWidget }: Props): React.ReactElement => {

@@ -92,7 +92,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [reloadAccount, setReloadAccount] = useState<number>(0);
   const { setContainerClass } = useContext(HomeContext);
 
-  const openWidget = useCallback(async (widgetId: string) => {
+  const openWidget = useCallback(async (widgetId: string, taskId: string) => {
     const modal = widgetInfoMap[widgetId];
 
     if (modal) {
@@ -108,6 +108,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           const widget = await window.AirlyftWidget(widgetId);
 
           const instance = await widget.createModal({});
+          widget.openSpecificTask(instance, taskId);
           const widgetRef = instance.ref;
 
           const triggerButton = widgetRef.querySelector('a');
