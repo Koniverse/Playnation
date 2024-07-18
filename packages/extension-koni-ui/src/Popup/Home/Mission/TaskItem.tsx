@@ -19,7 +19,7 @@ import styled from 'styled-components';
 type Props = {
   task: Task,
   actionReloadPoint: VoidFunction;
-  openWidget: (widgetId: string) => Promise<void>;
+  openWidget: (widgetId: string, taskId: string) => Promise<void>;
 } & ThemeProps;
 
 const apiSDK = BookaSdk.instance;
