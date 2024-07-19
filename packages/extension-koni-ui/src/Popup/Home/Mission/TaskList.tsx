@@ -13,9 +13,10 @@ type Props = ThemeProps & {
   taskCategoryInfoMap: Record<number, TaskCategoryInfo>;
   actionReloadPoint: VoidFunction;
   openWidget: (widgetId: string, taskId: string) => Promise<void>;
+  reloadTask: number;
 };
 
-const Component = ({ actionReloadPoint, className, taskCategoryInfoMap, taskCategoryMap, openWidget }: Props): React.ReactElement => {
+const Component = ({ actionReloadPoint, className, taskCategoryInfoMap, taskCategoryMap, openWidget, reloadTask }: Props): React.ReactElement => {
   const { t } = useTranslation();
 
   const taskCategoryInfoList = useMemo(() => {
@@ -61,9 +62,10 @@ const Component = ({ actionReloadPoint, className, taskCategoryInfoMap, taskCate
                   tci.tasks.map((t) => (
                     <TaskItem
                       actionReloadPoint={actionReloadPoint}
-                      openWidget={openWidget}
                       className={'__task-item'}
                       key={t.id}
+                      openWidget={openWidget}
+                      reloadTask={reloadTask}
                       task={t}
                     />
                   ))

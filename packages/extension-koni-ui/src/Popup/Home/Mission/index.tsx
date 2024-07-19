@@ -99,7 +99,6 @@ const Component = ({ className }: Props): React.ReactElement => {
     window.addEventListener('message', async (event: MessageEvent) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (event.data?.type === 'AIR_WIDGET_CLOSE' && isOpenWidget) {
-        await Promise.all([apiSDK.fetchTaskList(true)]);
         setReloadTask(reloadTask + 1);
 
         setIsOpenWidget(false);
@@ -187,7 +186,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   const actionReloadPoint = useCallback(() => {
     setReloadAccount(reloadAccount + 1);
-  }, [reloadAccount,  reloadTask]);
+  }, [reloadAccount]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -229,7 +228,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       taskListSub.unsubscribe();
       clearInterval(taskListUpdaterInterval);
     };
-  }, [reloadTask]);
+  }, []);
 
   useEffect(() => {
     setContainerClass('mission-screen-wrapper');
@@ -252,6 +251,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         <TaskList
           actionReloadPoint={actionReloadPoint}
           openWidget={openWidget}
+          reloadTask={reloadTask}
           taskCategoryInfoMap={taskCategoryInfoMap}
           taskCategoryMap={taskCategoryMap}
         />

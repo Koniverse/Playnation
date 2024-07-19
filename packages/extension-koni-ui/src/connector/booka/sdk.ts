@@ -279,17 +279,13 @@ export class BookaSdk {
     return this.taskCategoryListSubject;
   }
 
-  async fetchTaskList (isReloadAccount = false) {
+  async fetchTaskList () {
     await this.waitForSync;
     const taskList = await this.getRequest<Task[]>(`${GAME_API_HOST}/api/task/history`);
 
     if (taskList) {
       this.taskListSubject.next(taskList);
       storage.setItem(CACHE_KEYS.taskList, JSON.stringify(taskList)).catch(console.error);
-    }
-
-    if (isReloadAccount){
-      await this.reloadAccount();
     }
   }
 

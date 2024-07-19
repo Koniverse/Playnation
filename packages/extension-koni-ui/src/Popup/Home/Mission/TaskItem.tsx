@@ -20,18 +20,39 @@ type Props = {
   task: Task,
   actionReloadPoint: VoidFunction;
   openWidget: (widgetId: string, taskId: string) => Promise<void>;
+  reloadTask: number;
 } & ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
 
-const _TaskItem = ({ actionReloadPoint, className, openWidget, task }: Props): React.ReactElement => {
+const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const notify = useNotification();
   const [account, setAccount] = useState(apiSDK.account);
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
   const [completed, setCompleted] = useState(!!task.completedAt);
+
+  const [checking, setChecking] = useState(task && task.airlyftType && !completed);
+
+  useEffect(() => {
+    if (checking && reloadTask > 0) {
+      apiSDK.completeTask(task.id)
+        .then((data: boolean) => {
+          if (data) {
+            setCompleted(true);
+            setChecking(false);
+            actionReloadPoint();
+          }
+        })
+        .catch(console.error);
+    }
+
+    return () => {
+
+    };
+  }, [checking, reloadTask]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
