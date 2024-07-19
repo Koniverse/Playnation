@@ -34,5 +34,6 @@ export * from './StakingItem';
 export * from './TokenItem';
 export * from './WalletConnect';
 export * from './Shop';
+export * from './Leaderboard';
 export * from './Games';
 export * from './Airdrop';

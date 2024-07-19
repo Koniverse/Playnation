@@ -62,7 +62,7 @@ const Component = ({ className, isFirst, isPlaceholder, leaderboardInfo, rank }:
   );
 };
 
-export const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
+const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     '.__rank': {
       fontWeight: token.headingFontWeight,
@@ -105,3 +105,5 @@ export const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendTo
     }
   };
 });
+
+export default TopAccountItem;

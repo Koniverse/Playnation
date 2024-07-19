@@ -6,14 +6,20 @@ import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
-import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { LEADERBOARD_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { SwModal } from '@subwallet/react-ui';
+import CN from 'classnames';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-type Props = ThemeProps;
+type Props = ThemeProps & {
+  gameId: number;
+  leaderboardType?: string;
+  onCancel: VoidFunction;
+};
 
 const apiSDK = BookaSdk.instance;
 
@@ -25,11 +31,9 @@ enum TabType {
 
 const telegramConnector = TelegramConnector.instance;
 
-const Component = ({ className }: Props): React.ReactElement => {
-  useSetCurrentPage('/home/leaderboard');
+const Component = ({ className, gameId, leaderboardType, onCancel }: Props): React.ReactElement => {
   const [leaderboardItems, setLeaderboardItems] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
   const { t } = useTranslation();
-  const { setContainerClass } = useContext(HomeContext);
   const [selectedTab, setSelectedTab] = useState<string>(TabType.VARA_PLAYDROP);
   const [account, setAccount] = useState(apiSDK.account);
 
@@ -71,15 +75,15 @@ const Component = ({ className }: Props): React.ReactElement => {
     let varaBoardSub: { unsubscribe: () => void } | null = null;
 
     if (selectedTab === TabType.DED_PLAYDROP) {
-      dedBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
+      dedBoardSub = apiSDK.subscribeLeaderboard(start, end, gameId, 100, leaderboardType).subscribe((data) => {
         setLeaderboardItems(data);
       });
     } else if (selectedTab === TabType.VARA_PLAYDROP) {
-      varaBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
+      varaBoardSub = apiSDK.subscribeLeaderboard(start, end, gameId, 100, leaderboardType).subscribe((data) => {
         setLeaderboardItems(data);
       });
     } else {
-      weeklyBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
+      weeklyBoardSub = apiSDK.subscribeLeaderboard(start, end, gameId, 100, leaderboardType).subscribe((data) => {
         setLeaderboardItems(data);
       });
     }
@@ -97,15 +101,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         varaBoardSub.unsubscribe();
       }
     };
-  }, [selectedTab]);
-
-  useEffect(() => {
-    setContainerClass('leaderboard-screen-wrapper');
-
-    return () => {
-      setContainerClass(undefined);
-    };
-  }, [setContainerClass]);
+  }, [gameId, leaderboardType, selectedTab]);
 
   const onClickShare = useCallback(() => {
     if (!leaderboardItems || !account) {
@@ -144,22 +140,45 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [leaderboardItems, account, selectedTab]);
 
   return (
-    <LeaderboardContent
-      className={className}
-      leaderboardItems={leaderboardItems}
-      onClickShare={onClickShare}
-      onSelectTab={onSelectTab}
-      selectedTab={selectedTab}
-      showShareButton={selectedTab !== TabType.WEEKLY}
-      tabGroupItems={tabGroupItems}
-    />
+    <SwModal
+      className={CN(className)}
+      id={LEADERBOARD_MODAL}
+      onCancel={onCancel}
+      title={t('Leaderboard')}
+    >
+      <LeaderboardContent
+        className={'leaderboard-content-container'}
+        leaderboardItems={leaderboardItems}
+        onClickShare={onClickShare}
+        onSelectTab={onSelectTab}
+        selectedTab={selectedTab}
+        showShareButton={selectedTab !== TabType.WEEKLY}
+        tabGroupItems={tabGroupItems}
+      />
+    </SwModal>
   );
 };
 
-const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
+const LeaderboardModal = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
+    '.ant-sw-modal-body': {
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
+      paddingBottom: 0
+    },
 
+    '.leaderboard-content-container': {
+      background: extendToken.colorBgGradient || token.colorPrimary,
+      height: '100%',
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      paddingTop: token.padding
+    },
+
+    '.leaderboard-item-list-container': {
+      paddingBottom: 24
+    }
   };
 });
 
-export default Leaderboard;
+export default LeaderboardModal;
