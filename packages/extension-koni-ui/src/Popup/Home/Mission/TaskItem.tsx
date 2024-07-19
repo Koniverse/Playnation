@@ -33,30 +33,6 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, task }: Props): R
   const { t } = useTranslation();
   const [completed, setCompleted] = useState(!!task.completedAt);
 
-  const [checking, setChecking] = useState(task && task.airlyftType && !completed);
-
-  useEffect(() => {
-    let taskItemUpdaterInterval: NodeJS.Timer;
-
-    if (checking) {
-      taskItemUpdaterInterval = setInterval(() => {
-        apiSDK.completeTask(task.id)
-          .then((data: boolean) => {
-            if (data) {
-              // @ts-ignore
-              clearInterval(taskItemUpdaterInterval);
-              setCompleted(true);
-              setChecking(false);
-              actionReloadPoint();
-            }
-          })
-          .catch(console.error);
-      }, 10000);
-    }
-
-    return () => clearInterval(taskItemUpdaterInterval);
-  }, [checking]);
-
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
       setAccount(data);

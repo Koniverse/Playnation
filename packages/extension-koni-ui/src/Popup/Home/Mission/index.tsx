@@ -91,6 +91,18 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
   const [reloadAccount, setReloadAccount] = useState<number>(0);
   const { setContainerClass } = useContext(HomeContext);
+  const [isOpenWidget, setIsOpenWidget] = useState<boolean>(false);
+
+  useEffect(() => {
+    window.addEventListener('message', async (event: MessageEvent) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (event.data?.type === 'AIR_WIDGET_CLOSE' && isOpenWidget) {
+        await Promise.all([apiSDK.fetchTaskList(true)]);
+      }
+
+      setIsOpenWidget(false);
+    });
+  }, [isOpenWidget]);
 
   const openWidget = useCallback(async (widgetId: string, taskId: string) => {
     const modal = widgetInfoMap[widgetId];
@@ -99,6 +111,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       // @ts-ignore
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       modal.open();
+      setIsOpenWidget(true);
     } else {
       const modalData = await new Promise(async (resolve) => {
         // @ts-ignore
@@ -108,9 +121,11 @@ const Component = ({ className }: Props): React.ReactElement => {
           const widget = await window.AirlyftWidget(widgetId);
 
           const instance = await widget.createModal({});
-          if (taskId){
+
+          if (taskId) {
             widget.openSpecificTask(instance, taskId);
           }
+
           const widgetRef = instance.ref;
 
           const triggerButton = widgetRef.querySelector('a');
@@ -141,6 +156,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         widgetInfoMap[widgetId] = modalData;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         modalData.open();
+        setIsOpenWidget(true);
       }
     }
   }, []);
