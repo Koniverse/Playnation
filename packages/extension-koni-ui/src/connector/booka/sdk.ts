@@ -297,6 +297,10 @@ export class BookaSdk {
     const taskHistoryCheck = await this.postRequest<{ completed: boolean }>(`${GAME_API_HOST}/api/task/check-complete-task`, { taskId });
 
     if (taskHistoryCheck && taskHistoryCheck.completed) {
+      await this.fetchTaskCategoryList();
+
+      await this.fetchTaskList();
+
       await this.reloadAccount();
 
       return true;

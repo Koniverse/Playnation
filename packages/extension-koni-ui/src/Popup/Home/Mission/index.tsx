@@ -215,6 +215,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
     const taskListSub = apiSDK.subscribeTaskList().subscribe((data) => {
       clearInterval(taskListUpdaterInterval);
+      console.log('data', data)
 
       setTaskCategoryInfoMap(getTaskCategoryInfoMap(data));
 
@@ -228,7 +229,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       taskListSub.unsubscribe();
       clearInterval(taskListUpdaterInterval);
     };
-  }, []);
+  }, [reloadTask]);
 
   useEffect(() => {
     setContainerClass('mission-screen-wrapper');
