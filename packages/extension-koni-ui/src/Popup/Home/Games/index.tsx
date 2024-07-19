@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { GameAccountBlock, GameCardItem, LeaderboardModal, ShopModal } from '@subwallet/extension-koni-ui/components';
+import { LeaderboardModalProps } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardModal';
 import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig, Game, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
@@ -15,6 +16,9 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import styled from 'styled-components';
 
 type Props = ThemeProps;
+type _LeaderboardModalProps = LeaderboardModalProps & {
+  gameId: number;
+};
 
 const apiSDK = BookaSdk.instance;
 const shopModalId = ShopModalId;
@@ -56,11 +60,11 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [gameItemMap, setGameItemMap] = useState<Record<string, GameItem[]>>(apiSDK.gameItemMap);
   const [gameInventoryItemList, setGameInventoryItemList] = useState<GameInventoryItem[]>(apiSDK.gameInventoryItemList);
   const [currentShopGameId, setCurrentShopGameId] = useState<number>();
-  const [currentLeaderboardGameId, setCurrentLeaderboardGameId] = useState<number>();
   const { activeModal, inactiveModal } = useContext(ModalContext);
   const [account, setAccount] = useState(apiSDK.account);
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
   const { setContainerClass } = useContext(HomeContext);
+  const [leaderboardModalProps, setLeaderboardModalProps] = useState<_LeaderboardModalProps | undefined>();
 
   const exitGame = useCallback(() => {
     if (gameIframe.current) {
@@ -101,14 +105,18 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [activeModal]);
 
-  const onOpenLeaderboard = useCallback((gameId?: number) => {
-    setCurrentLeaderboardGameId(gameId);
+  const onOpenLeaderboard = useCallback((game: Game) => {
+    setLeaderboardModalProps({
+      gameId: game.id,
+      modalTitle: game.name,
+      leaderboardItems: []
+    });
     activeModal(leaderboardModalId);
   }, [activeModal]);
 
   const onCloseLeaderboard = useCallback(() => {
     inactiveModal(leaderboardModalId);
-    setCurrentLeaderboardGameId(undefined);
+    setLeaderboardModalProps(undefined);
   }, [inactiveModal]);
 
   useEffect(() => {
@@ -142,6 +150,31 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   const showGame = !!currentGame;
+
+  useEffect(() => {
+    let leaderboardSub: { unsubscribe: () => void } | null = null;
+
+    if (leaderboardModalProps?.gameId !== undefined) {
+      leaderboardSub = apiSDK.subscribeLeaderboard(undefined, undefined, leaderboardModalProps.gameId, 100).subscribe((data) => {
+        setLeaderboardModalProps((prev) => {
+          if (!prev) {
+            return undefined;
+          }
+
+          return ({
+            ...prev,
+            leaderboardItems: data
+          });
+        });
+      });
+    }
+
+    return () => {
+      if (leaderboardSub) {
+        leaderboardSub.unsubscribe();
+      }
+    };
+  }, [leaderboardModalProps?.gameId]);
 
   useEffect(() => {
     setContainerClass(showGame ? 'game-screen-wrapper -show-game' : 'game-screen-wrapper');
@@ -191,9 +224,9 @@ const Component = ({ className }: Props): React.ReactElement => {
       />
 
       {
-        currentLeaderboardGameId !== undefined && (
+        !!leaderboardModalProps && (
           <LeaderboardModal
-            gameId={currentLeaderboardGameId}
+            {...leaderboardModalProps}
             onCancel={onCloseLeaderboard}
           />
         )

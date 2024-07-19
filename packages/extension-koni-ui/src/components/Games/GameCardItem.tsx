@@ -13,15 +13,15 @@ import styled from 'styled-components';
 type Props = ThemeProps & {
   item: Game;
   onPlay: VoidFunction;
-  onOpenLeaderboard: (gameId?: number) => void;
+  onOpenLeaderboard: (game: Game) => void;
 };
 
 function Component ({ className, item, onOpenLeaderboard, onPlay }: Props) {
   const { t } = useTranslation();
 
   const _openLeaderboard = useCallback(() => {
-    onOpenLeaderboard(item.id);
-  }, [item.id, onOpenLeaderboard]);
+    onOpenLeaderboard(item);
+  }, [item, onOpenLeaderboard]);
 
   const isComingSoon = (() => {
     if (!item.startTime) {

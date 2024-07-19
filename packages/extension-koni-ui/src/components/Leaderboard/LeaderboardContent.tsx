@@ -14,20 +14,24 @@ import styled from 'styled-components';
 
 import TopAccountItem from './TopAccountItem';
 
-type Props = ThemeProps & {
+export type LeaderboardContentProps = {
   showShareButton?: boolean;
   onClickShare?: VoidFunction;
   leaderboardItems: LeaderboardPerson[];
-  tabGroupItems: TabGroupItemType[];
-  onSelectTab: (value: string) => void;
-  selectedTab: string;
+  tabGroupInfo?: {
+    tabGroupItems: TabGroupItemType[];
+    onSelectTab: (value: string) => void;
+    selectedTab: string;
+  }
 };
+
+type Props = ThemeProps & LeaderboardContentProps;
 
 type GameItemPlaceholderType = {
   rank: number;
 };
 
-const Component = ({ className, leaderboardItems, onClickShare, onSelectTab, selectedTab, showShareButton, tabGroupItems }: Props): React.ReactElement => {
+const Component = ({ className, leaderboardItems, onClickShare, showShareButton, tabGroupInfo }: Props): React.ReactElement => {
   const filteredLeaderboardItems = leaderboardItems.filter((item) => item.point > 0);
 
   const placeholderItems = (() => {
@@ -51,14 +55,18 @@ const Component = ({ className, leaderboardItems, onClickShare, onSelectTab, sel
   })();
 
   return <div className={className}>
-    <div className='tab-group-wrapper'>
-      <TabGroup
-        className={'tab-group'}
-        items={tabGroupItems}
-        onSelect={onSelectTab}
-        selectedItem={selectedTab}
-      />
-    </div>
+    {
+      !!tabGroupInfo && (
+        <div className='tab-group-wrapper'>
+          <TabGroup
+            className={'tab-group'}
+            items={tabGroupInfo.tabGroupItems}
+            onSelect={tabGroupInfo.onSelectTab}
+            selectedItem={tabGroupInfo.selectedTab}
+          />
+        </div>
+      )
+    }
     <div className='top-three-area'>
       {showShareButton && (
         <Button

@@ -143,15 +143,19 @@ const Component = ({ className }: Props): React.ReactElement => {
     telegramConnector.openLink(url);
   }, [leaderboardItems, account, selectedTab]);
 
+  const tabGroupInfo = useMemo(() => ({
+    onSelectTab,
+    selectedTab,
+    tabGroupItems
+  }), [onSelectTab, selectedTab, tabGroupItems]);
+
   return (
     <LeaderboardContent
       className={className}
       leaderboardItems={leaderboardItems}
       onClickShare={onClickShare}
-      onSelectTab={onSelectTab}
-      selectedTab={selectedTab}
       showShareButton={selectedTab !== TabType.WEEKLY}
-      tabGroupItems={tabGroupItems}
+      tabGroupInfo={tabGroupInfo}
     />
   );
 };
