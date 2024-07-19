@@ -82,6 +82,7 @@ function getTaskCategoryInfoMap (tasks: Task[]): Record<number, TaskCategoryInfo
 }
 
 const widgetInfoMap: Record<string, object> = {};
+const widgetModalInfoMap: Record<string, object> = {};
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
@@ -105,9 +106,15 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [isOpenWidget]);
 
   const openWidget = useCallback(async (widgetId: string, taskId: string) => {
-    const modal = widgetInfoMap[widgetId];
+    const modal = widgetModalInfoMap[widgetId];
+    const widget = widgetInfoMap[widgetId];
 
-    if (modal) {
+    if (modal && widget) {
+      if (taskId) {
+        // @ts-ignore
+        widget.openSpecificTask(modal, taskId);
+      }
+
       // @ts-ignore
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       modal.open();
@@ -119,6 +126,8 @@ const Component = ({ className }: Props): React.ReactElement => {
           // @ts-ignore
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           const widget = await window.AirlyftWidget(widgetId);
+
+          widgetInfoMap[widgetId] = widget;
 
           const instance = await widget.createModal({});
 
@@ -153,7 +162,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       if (modalData) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         // @ts-ignore
-        widgetInfoMap[widgetId] = modalData;
+        widgetModalInfoMap[widgetId] = modalData;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         modalData.open();
         setIsOpenWidget(true);
