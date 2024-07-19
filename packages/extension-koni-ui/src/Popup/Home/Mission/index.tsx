@@ -93,17 +93,19 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [reloadAccount, setReloadAccount] = useState<number>(0);
   const { setContainerClass } = useContext(HomeContext);
   const [isOpenWidget, setIsOpenWidget] = useState<boolean>(false);
+  const [reloadTask, setReloadTask] = useState(0);
 
   useEffect(() => {
     window.addEventListener('message', async (event: MessageEvent) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (event.data?.type === 'AIR_WIDGET_CLOSE' && isOpenWidget) {
         await Promise.all([apiSDK.fetchTaskList(true)]);
-      }
+        setReloadTask(reloadTask + 1);
 
-      setIsOpenWidget(false);
+        setIsOpenWidget(false);
+      }
     });
-  }, [isOpenWidget]);
+  }, [isOpenWidget, reloadTask]);
 
   const openWidget = useCallback(async (widgetId: string, taskId: string) => {
     const modal = widgetModalInfoMap[widgetId];
@@ -185,7 +187,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   const actionReloadPoint = useCallback(() => {
     setReloadAccount(reloadAccount + 1);
-  }, [reloadAccount]);
+  }, [reloadAccount,  reloadTask]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -227,7 +229,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       taskListSub.unsubscribe();
       clearInterval(taskListUpdaterInterval);
     };
-  }, []);
+  }, [reloadTask]);
 
   useEffect(() => {
     setContainerClass('mission-screen-wrapper');
