@@ -53,9 +53,8 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   const onSubmit: FormCallbacks<ChangePasswordFormState>['onFinish'] = useCallback((values: ChangePasswordFormState) => {
     const password = values[FormFieldName.PASSWORD];
     const oldPassword = values[FormFieldName.OLD_PASSWORD];
-    const checkBox = values[FormFieldName.CONFIRM_CHECKBOX];
 
-    if (password && oldPassword && checkBox) {
+    if (password && oldPassword) {
       setLoading(true);
       setTimeout(() => {
         keyringChangeMasterPassword({
@@ -73,7 +72,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
         }).finally(() => {
           setLoading(false);
         });
-      }, 1000);
+      }, 300);
     }
   }, [form, goHome]);
 

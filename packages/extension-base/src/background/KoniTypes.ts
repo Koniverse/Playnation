@@ -1685,6 +1685,8 @@ export interface KeyringState {
   isReady: boolean;
   hasMasterPassword: boolean;
   isLocked: boolean;
+
+  useCustomPassword: boolean
 }
 
 export interface UIViewState {
@@ -1813,7 +1815,7 @@ export enum NotificationType {
   INFO = 'info',
   SUCCESS = 'success',
   WARNING = 'warning',
-  ERROR = 'error',
+  ERROR = 'error'
 }
 
 export interface NotificationButton {

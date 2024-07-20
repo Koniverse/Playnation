@@ -1,23 +1,27 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { RequestChangeMasterPassword } from '@subwallet/extension-base/background/KoniTypes';
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { DEFAULT_HOMEPAGE, simpleSettingsScreensLayoutBackgroundImages, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
+import { DEFAULT_HOMEPAGE, DEFAULT_PASSWORD, simpleSettingsScreensLayoutBackgroundImages, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
 import { useDefaultNavigate, useNotification } from '@subwallet/extension-koni-ui/hooks';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useFocusFormItem from '@subwallet/extension-koni-ui/hooks/form/useFocusFormItem';
 import { createAccountSuriV2, createSeedV2, keyringChangeMasterPassword } from '@subwallet/extension-koni-ui/messaging';
+import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { simpleCheckForm } from '@subwallet/extension-koni-ui/utils/form/form';
 import { renderBaseConfirmPasswordRules, renderBasePasswordRules } from '@subwallet/extension-koni-ui/utils/form/validators/password';
 import { Checkbox, Form, Icon, Input } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle } from 'phosphor-react';
-import { Callbacks, FieldData, RuleObject } from 'rc-field-form/lib/interface';
-import React, { useCallback, useMemo, useState } from 'react';
+import { Callbacks, FieldData } from 'rc-field-form/lib/interface';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import {useBiometric} from "@subwallet/extension-koni-ui/hooks/biometric";
 
 type Props = ThemeProps
 
@@ -51,22 +55,25 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 
   const notification = useNotification();
 
+  const { accounts, hasMasterPassword, useCustomPassword } = useSelector((state: RootState) => state.accountState);
   const passwordRules = useMemo(() => renderBasePasswordRules(t('Password'), t), [t]);
   const confirmPasswordRules = useMemo(() => renderBaseConfirmPasswordRules(FormFieldName.PASSWORD, t), [t]);
-  const checkBoxValidator = useCallback((rule: RuleObject, value: boolean): Promise<void> => {
-    if (!value) {
-      return Promise.reject(new Error(t('CheckBox is required')));
-    }
-
-    return Promise.resolve();
-  }, [t]);
+  // const checkBoxValidator = useCallback((rule: RuleObject, value: boolean): Promise<void> => {
+  //   if (!value) {
+  //     return Promise.reject(new Error(t('CheckBox is required')));
+  //   }
+  //
+  //   return Promise.resolve();
+  // }, [t]);
   const [form] = Form.useForm<CreatePasswordFormState>();
   const [isDisabled, setIsDisable] = useState(true);
+  const {supportBiometric} = useBiometric();
 
   const [loading, setLoading] = useState(false);
 
   const onComplete = useCallback(() => {
-    (async () => {
+    // Auto create account if no account
+    accounts.length === 0 && (async () => {
       // Create default account
       const seedPhrase = await createSeedV2(undefined, undefined, [SUBSTRATE_ACCOUNT_TYPE]);
       const accountName = telegramConnector.userInfo?.username || 'Account 1';
@@ -80,21 +87,40 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 
       navigate(DEFAULT_HOMEPAGE);
     })().catch(console.error);
-  }, [navigate]);
+  }, [accounts.length, navigate]);
 
-  const onSubmit: Callbacks<CreatePasswordFormState>['onFinish'] = useCallback((values: CreatePasswordFormState) => {
+  useEffect(() => {
+    form.setFieldsValue({
+      [FormFieldName.ENABLE_BIOMETRIC]: supportBiometric
+    });
+  }, [form, supportBiometric]);
+
+  const onSubmit: Callbacks<CreatePasswordFormState>['onFinish'] = useCallback(async (values: CreatePasswordFormState) => {
     const password = values[FormFieldName.PASSWORD];
     const enableBiometric = values[FormFieldName.ENABLE_BIOMETRIC];
 
-    // todo: do something with enableBiometric
-    console.log(enableBiometric);
-
     if (password) {
       setLoading(true);
-      keyringChangeMasterPassword({
+
+      // Handle enable biometric
+      if (supportBiometric && enableBiometric) {
+        await telegramConnector.setBiometricToken(password);
+      }
+
+      let params: RequestChangeMasterPassword = {
         createNew: true,
         newPassword: password
-      }).then((res) => {
+      };
+
+      if (hasMasterPassword && !useCustomPassword) {
+        params = {
+          createNew: false,
+          newPassword: password,
+          oldPassword: DEFAULT_PASSWORD
+        };
+      }
+
+      keyringChangeMasterPassword(params).then((res) => {
         if (!res.status) {
           notification({
             message: res.errors[0],
@@ -112,12 +138,17 @@ const Component: React.FC<Props> = ({ className }: Props) => {
         setLoading(false);
       });
     }
-  }, [onComplete, notification]);
+  }, [supportBiometric, hasMasterPassword, useCustomPassword, notification, onComplete]);
 
   const onUpdate: Callbacks<CreatePasswordFormState>['onFieldsChange'] = useCallback((changedFields: FieldData[], allFields: FieldData[]) => {
-    const { empty, error } = simpleCheckForm(allFields);
+    // @ts-ignore
+    const checkFields = allFields.filter(({ name }) => name[0] !== FormFieldName.ENABLE_BIOMETRIC);
 
-    setIsDisable(error || empty);
+    if (checkFields.length > 0) {
+      const { empty, error } = simpleCheckForm(checkFields);
+
+      setIsDisable(error || empty);
+    }
   }, []);
 
   const onChangePassword = useCallback(() => {
@@ -148,7 +179,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
             initialValues={{
               [FormFieldName.PASSWORD]: '',
               [FormFieldName.CONFIRM_PASSWORD]: '',
-              [FormFieldName.ENABLE_BIOMETRIC]: 'true'
+              [FormFieldName.ENABLE_BIOMETRIC]: supportBiometric
             }}
             name={formName}
             onFieldsChange={onUpdate}
@@ -184,18 +215,14 @@ const Component: React.FC<Props> = ({ className }: Props) => {
             <Form.Item
               className={'form-checkbox'}
               name={FormFieldName.ENABLE_BIOMETRIC}
-              rules={[
-                {
-                  validator: checkBoxValidator
-                }
-              ]}
               statusHelpAsTooltip={true}
               valuePropName={'checked'}
             >
               <Checkbox
                 className={'checkbox'}
+                disabled={!supportBiometric}
               >
-                Enable biometric login
+                {t('Enable biometric login')}
               </Checkbox>
             </Form.Item>
           </Form>

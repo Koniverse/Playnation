@@ -26,6 +26,8 @@ export const ALL_NETWORK_KEY = 'all';
 export const ALL_GENESIS_HASH = null;
 export const IGNORE_GET_SUBSTRATE_FEATURES_LIST: string[] = ['astarEvm', 'ethereum', 'ethereum_goerli', 'binance', 'binance_test', 'boba_rinkeby', 'boba', 'bobabase', 'bobabeam'];
 export const IGNORE_QR_SIGNER: string[] = [];
+export const CUSTOM_PASSWORD_KEY = 'keyring_using_custom_password';
+export const DEFAULT_PASSWORD = 'PlayNation#^(';
 
 export const XCM_MIN_AMOUNT_RATIO = 1.2;
 export const XCM_FEE_RATIO = 2;

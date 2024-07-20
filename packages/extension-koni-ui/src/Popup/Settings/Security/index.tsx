@@ -60,7 +60,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
   const { activeModal, inactiveModal } = useContext(ModalContext);
 
-  const { accounts } = useSelector((state: RootState) => state.accountState);
+  const { accounts, useCustomPassword } = useSelector((state: RootState) => state.accountState);
   const [isUseBiometric, setUseBiometric] = useState<boolean>(false);
   const [loadingBiometric, setLoadingBiometric] = useState(false);
   const { timeAutoLock, unlockType } = useSelector((state: RootState) => state.settings);

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useBiometric } from '@subwallet/extension-koni-ui/hooks/biometric';
 import { keyringUnlock } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { FormCallbacks, FormFieldData, ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -12,7 +13,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import useFocusById from '../../hooks/form/useFocusById';
+import { focusInput } from '../../hooks/form/useFocusById';
 
 export type ActionItemType = {
   key: string,
@@ -43,6 +44,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const [form] = Form.useForm<LoginFormState>();
   const [loading, setLoading] = useState(false);
   const [isDisable, setIsDisable] = useState(true);
+  const { getToken, usingBiometric } = useBiometric();
 
   const closeModal = useCallback(
     () => {
@@ -70,27 +72,43 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     (document.getElementById(passwordInputId) as HTMLInputElement)?.select();
   }, [form]);
 
-  const onSubmit: FormCallbacks<LoginFormState>['onFinish'] = useCallback((values: LoginFormState) => {
+  const unlockWithPassword = useCallback((password: string) => {
     setLoading(true);
-    setTimeout(() => {
-      keyringUnlock({
-        password: values[FormFieldName.PASSWORD]
+    keyringUnlock({
+      password
+    })
+      .then((data) => {
+        if (!data.status) {
+          onError(data.errors[0]);
+        } else {
+          // Todo: ask to login with biometric
+        }
       })
-        .then((data) => {
-          if (!data.status) {
-            onError(data.errors[0]);
-          }
-        })
-        .catch((e: Error) => {
-          onError(e.message);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }, 500);
+      .catch((e: Error) => {
+        onError(e.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [onError]);
 
-  useFocusById(passwordInputId);
+  const unlockWithBiometric = useCallback(() => {
+    getToken().then((token) => {
+      token && unlockWithPassword(token);
+    }).catch(console.error);
+  }, [getToken, unlockWithPassword]);
+
+  useEffect(() => {
+    if (usingBiometric && isLocked && checkActive(UNLOCK_MODAL_ID)) {
+      unlockWithBiometric();
+    } else {
+      focusInput(passwordInputId, 300);
+    }
+  }, [usingBiometric, isLocked, checkActive, getToken, unlockWithPassword]);
+
+  const onSubmit: FormCallbacks<LoginFormState>['onFinish'] = useCallback((values: LoginFormState) => {
+    unlockWithPassword(values[FormFieldName.PASSWORD]);
+  }, [unlockWithPassword]);
 
   return (
     <SwModal
@@ -128,7 +146,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
                 placeholder={t('Enter password')}
               />
             </Form.Item>
-            <Form.Item>
+            {usingBiometric && (<Form.Item>
               <Button
                 block={true}
                 icon={(
@@ -137,13 +155,14 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
                     phosphorIcon={FingerprintSimple}
                   />
                 )}
+                onClick={unlockWithBiometric}
                 shape={'round'}
                 size={'sm'}
                 type={'ghost'}
               >
                 {t('Unlock with biometrics')}
               </Button>
-            </Form.Item>
+            </Form.Item>)}
           </div>
 
           <Form.Item>
