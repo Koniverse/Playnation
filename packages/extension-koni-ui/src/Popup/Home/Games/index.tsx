@@ -11,6 +11,7 @@ import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeCo
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
 import { ModalContext } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
@@ -155,7 +156,9 @@ const Component = ({ className }: Props): React.ReactElement => {
     let leaderboardSub: { unsubscribe: () => void } | null = null;
 
     if (leaderboardModalProps?.gameId !== undefined) {
-      leaderboardSub = apiSDK.subscribeLeaderboard(undefined, undefined, leaderboardModalProps.gameId, 100).subscribe((data) => {
+      const { end, start } = calculateStartAndEnd('weekly');
+
+      leaderboardSub = apiSDK.subscribeLeaderboard(start, end, leaderboardModalProps.gameId, 100, 'game').subscribe((data) => {
         setLeaderboardModalProps((prev) => {
           if (!prev) {
             return undefined;
