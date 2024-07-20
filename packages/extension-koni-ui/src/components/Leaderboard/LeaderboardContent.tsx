@@ -17,7 +17,7 @@ import TopAccountItem from './TopAccountItem';
 
 export type LeaderboardTabGroupItemType = TabGroupItemType & {
   leaderboardInfo: {
-    showShare?: boolean;
+    onClickShare?: (mine?: LeaderboardPerson) => void;
     startDate?: string;
     endDate?: string;
     type?: string;
@@ -25,7 +25,6 @@ export type LeaderboardTabGroupItemType = TabGroupItemType & {
 }
 
 export type LeaderboardContentProps = {
-  onClickShare?: (selectedTab: string, mine?: LeaderboardPerson) => void;
   gameId?: number;
   tabGroupItems: LeaderboardTabGroupItemType[];
   defaultSelectedTab: string;
@@ -39,7 +38,7 @@ type GameItemPlaceholderType = {
 
 const apiSDK = BookaSdk.instance;
 
-const Component = ({ className, defaultSelectedTab, gameId, onClickShare, tabGroupItems }: Props): React.ReactElement => {
+const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Props): React.ReactElement => {
   const [selectedTab, setSelectedTab] = useState<string>(defaultSelectedTab);
   const [leaderboardItems, setLeaderboardItems] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
 
@@ -70,8 +69,8 @@ const Component = ({ className, defaultSelectedTab, gameId, onClickShare, tabGro
   }, [selectedTab, tabGroupItems]);
 
   const _onClickShare = useCallback(() => {
-    onClickShare?.(selectedTab, leaderboardItems.find((item) => item.mine));
-  }, [leaderboardItems, onClickShare, selectedTab]);
+    currentTabInfo?.leaderboardInfo?.onClickShare?.(leaderboardItems.find((item) => item.mine));
+  }, [currentTabInfo?.leaderboardInfo, leaderboardItems]);
 
   useEffect(() => {
     setSelectedTab(defaultSelectedTab);
@@ -111,7 +110,7 @@ const Component = ({ className, defaultSelectedTab, gameId, onClickShare, tabGro
       )
     }
     <div className='top-three-area'>
-      {currentTabInfo?.leaderboardInfo.showShare && (
+      {!!currentTabInfo?.leaderboardInfo.onClickShare && (
         <Button
           className={'__share-button -primary-3'}
           icon={(

@@ -33,6 +33,43 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [account, setAccount] = useState(apiSDK.account);
   const [tabGroupItems, setTabGroupItems] = useState<LeaderboardTabGroupItemType[]>([]);
 
+  const onClickShare = useCallback((selectedTab: string) => {
+    return (personMine?: LeaderboardPerson) => {
+      if (!account) {
+        return;
+      }
+
+      let content = '';
+
+      if (personMine) {
+        content += `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank} on the DED Egg Hunt Airdrop`;
+      }
+
+      content += 'Leaderboard! Want to join the fun and get a chance to win $DED rewards? Join me now! 🚀';
+
+      let urlShareImage = 'https://x.playnation.app/playnation-ded';
+      let hashtags = 'hashtags=DEDEggHunt,Playnation,DOTisDED,Airdrop';
+
+      if (selectedTab === TabType.VARA_PLAYDROP) {
+        content = '';
+        urlShareImage = 'https://x.playnation.app/playnation-vara';
+        hashtags = 'hashtags=PlaynationKickToAirdrop,Playnation,VARAtoken,Airdrop';
+
+        if (personMine) {
+          content = `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank}  on the Playnation Kick-to-Airdrop Leaderboard! %0A `;
+        }
+
+        content += 'Want to join the fun and get a chance to win $VARA rewards? Join me now! 🚀 ';
+      }
+
+      const linkShare = `${urlShareImage}?startApp=${account?.info.inviteCode || 'booka'}`;
+
+      const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtags}`;
+
+      telegramConnector.openLink(url);
+    };
+  }, [account]);
+
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
       setAccount(data);
@@ -50,14 +87,14 @@ const Component = ({ className }: Props): React.ReactElement => {
           label: t('Kick-to-Airdrop'),
           value: TabType.VARA_PLAYDROP,
           leaderboardInfo: {
-            showShare: true
+            onClickShare: onClickShare(TabType.VARA_PLAYDROP)
           }
         },
         {
           label: t('DED'),
           value: TabType.DED_PLAYDROP,
           leaderboardInfo: {
-            showShare: true
+            onClickShare: onClickShare(TabType.DED_PLAYDROP)
           }
         },
         {
@@ -92,7 +129,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     return () => {
       clearInterval(timer);
     };
-  }, [t]);
+  }, [onClickShare, t]);
 
   useEffect(() => {
     setContainerClass('leaderboard-screen-wrapper');
@@ -102,46 +139,10 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [setContainerClass]);
 
-  const onClickShare = useCallback((selectedTab: string, personMine?: LeaderboardPerson) => {
-    if (!account) {
-      return;
-    }
-
-    let content = '';
-
-    if (personMine) {
-      content += `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank} on the DED Egg Hunt Airdrop`;
-    }
-
-    content += 'Leaderboard! Want to join the fun and get a chance to win $DED rewards? Join me now! 🚀';
-
-    let urlShareImage = 'https://x.playnation.app/playnation-ded';
-    let hashtags = 'hashtags=DEDEggHunt,Playnation,DOTisDED,Airdrop';
-
-    if (selectedTab === TabType.VARA_PLAYDROP) {
-      content = '';
-      urlShareImage = 'https://x.playnation.app/playnation-vara';
-      hashtags = 'hashtags=PlaynationKickToAirdrop,Playnation,VARAtoken,Airdrop';
-
-      if (personMine) {
-        content = `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank}  on the Playnation Kick-to-Airdrop Leaderboard! %0A `;
-      }
-
-      content += 'Want to join the fun and get a chance to win $VARA rewards? Join me now! 🚀 ';
-    }
-
-    const linkShare = `${urlShareImage}?startApp=${account?.info.inviteCode || 'booka'}`;
-
-    const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtags}`;
-
-    telegramConnector.openLink(url);
-  }, [account]);
-
   return (
     <LeaderboardContent
       className={className}
       defaultSelectedTab={TabType.VARA_PLAYDROP}
-      onClickShare={onClickShare}
       tabGroupItems={tabGroupItems}
     />
   );

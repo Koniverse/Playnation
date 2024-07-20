@@ -1,13 +1,12 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GameAccountBlock, GameCardItem, LeaderboardModal, ShopModal } from '@subwallet/extension-koni-ui/components';
-import { LeaderboardModalProps } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardModal';
+import { GameAccountBlock, GameCardItem, ShopModal } from '@subwallet/extension-koni-ui/components';
 import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig, Game, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { LEADERBOARD_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
+import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -20,7 +19,6 @@ type Props = ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 const shopModalId = ShopModalId;
-const leaderboardModalId = LEADERBOARD_MODAL;
 
 const orderGameList = (data: Game[]): Game[] => {
   const now = Date.now();
@@ -58,11 +56,11 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [gameItemMap, setGameItemMap] = useState<Record<string, GameItem[]>>(apiSDK.gameItemMap);
   const [gameInventoryItemList, setGameInventoryItemList] = useState<GameInventoryItem[]>(apiSDK.gameInventoryItemList);
   const [currentShopGameId, setCurrentShopGameId] = useState<number>();
-  const { activeModal, inactiveModal } = useContext(ModalContext);
+  const { activeModal } = useContext(ModalContext);
   const [account, setAccount] = useState(apiSDK.account);
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
   const { setContainerClass } = useContext(HomeContext);
-  const [leaderboardModalProps, setLeaderboardModalProps] = useState<LeaderboardModalProps | undefined>();
+  const { openLeaderboardModal } = useContext(WalletModalContext);
 
   const exitGame = useCallback(() => {
     if (gameIframe.current) {
@@ -106,7 +104,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const onOpenLeaderboard = useCallback((game: Game) => {
     const { end: endDate, start: startDate } = calculateStartAndEnd('weekly');
 
-    setLeaderboardModalProps({
+    openLeaderboardModal({
       gameId: game.id,
       modalTitle: game.name,
       tabGroupItems: [{
@@ -120,13 +118,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       }],
       defaultSelectedTab: 'default'
     });
-    activeModal(leaderboardModalId);
-  }, [activeModal]);
-
-  const onCloseLeaderboard = useCallback(() => {
-    inactiveModal(leaderboardModalId);
-    setLeaderboardModalProps(undefined);
-  }, [inactiveModal]);
+  }, [openLeaderboardModal]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -206,15 +198,6 @@ const Component = ({ className }: Props): React.ReactElement => {
         gameInventoryItemList={gameInventoryItemList}
         gameItemMap={gameItemMap}
       />
-
-      {
-        !!leaderboardModalProps && (
-          <LeaderboardModal
-            {...leaderboardModalProps}
-            onCancel={onCloseLeaderboard}
-          />
-        )
-      }
     </div>
   );
 };
