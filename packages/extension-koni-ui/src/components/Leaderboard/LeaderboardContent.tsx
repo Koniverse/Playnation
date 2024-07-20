@@ -4,25 +4,31 @@
 import { TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { ShareNetwork } from 'phosphor-react';
-import React from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import TopAccountItem from './TopAccountItem';
 
-export type LeaderboardContentProps = {
-  showShareButton?: boolean;
-  onClickShare?: VoidFunction;
-  leaderboardItems: LeaderboardPerson[];
-  tabGroupInfo?: {
-    tabGroupItems: TabGroupItemType[];
-    onSelectTab: (value: string) => void;
-    selectedTab: string;
+export type LeaderboardTabGroupItemType = TabGroupItemType & {
+  leaderboardInfo: {
+    showShare?: boolean;
+    startDate?: string;
+    endDate?: string;
+    type?: string;
   }
+}
+
+export type LeaderboardContentProps = {
+  onClickShare?: (selectedTab: string, mine?: LeaderboardPerson) => void;
+  gameId?: number;
+  tabGroupItems: LeaderboardTabGroupItemType[];
+  defaultSelectedTab: string;
 };
 
 type Props = ThemeProps & LeaderboardContentProps;
@@ -31,7 +37,12 @@ type GameItemPlaceholderType = {
   rank: number;
 };
 
-const Component = ({ className, leaderboardItems, onClickShare, showShareButton, tabGroupInfo }: Props): React.ReactElement => {
+const apiSDK = BookaSdk.instance;
+
+const Component = ({ className, defaultSelectedTab, gameId, onClickShare, tabGroupItems }: Props): React.ReactElement => {
+  const [selectedTab, setSelectedTab] = useState<string>(defaultSelectedTab);
+  const [leaderboardItems, setLeaderboardItems] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
+
   const filteredLeaderboardItems = leaderboardItems.filter((item) => item.point > 0);
 
   const placeholderItems = (() => {
@@ -54,21 +65,53 @@ const Component = ({ className, leaderboardItems, onClickShare, showShareButton,
     return items;
   })();
 
+  const currentTabInfo = useMemo(() => {
+    return tabGroupItems.find((i) => i.value === selectedTab);
+  }, [selectedTab, tabGroupItems]);
+
+  const _onClickShare = useCallback(() => {
+    onClickShare?.(selectedTab, leaderboardItems.find((item) => item.mine));
+  }, [leaderboardItems, onClickShare, selectedTab]);
+
+  useEffect(() => {
+    setSelectedTab(defaultSelectedTab);
+  }, [defaultSelectedTab]);
+
+  useEffect(() => {
+    let leaderboardSub: { unsubscribe: () => void } | null = null;
+
+    if (currentTabInfo) {
+      leaderboardSub = apiSDK.subscribeLeaderboard(
+        currentTabInfo.leaderboardInfo.startDate,
+        currentTabInfo.leaderboardInfo.endDate,
+        gameId || 0, 100,
+        currentTabInfo.leaderboardInfo.type).subscribe((data) => {
+        setLeaderboardItems(data);
+      });
+    }
+
+    return () => {
+      if (leaderboardSub) {
+        leaderboardSub.unsubscribe();
+      }
+    };
+  }, [currentTabInfo, gameId]);
+
   return <div className={className}>
     {
-      !!tabGroupInfo && (
+      tabGroupItems.length > 1 && (
         <div className='tab-group-wrapper'>
           <TabGroup
             className={'tab-group'}
-            items={tabGroupInfo.tabGroupItems}
-            onSelect={tabGroupInfo.onSelectTab}
-            selectedItem={tabGroupInfo.selectedTab}
+            items={tabGroupItems}
+            onSelect={setSelectedTab}
+            selectedItem={selectedTab}
           />
         </div>
       )
     }
     <div className='top-three-area'>
-      {showShareButton && (
+      {currentTabInfo?.leaderboardInfo.showShare && (
         <Button
           className={'__share-button -primary-3'}
           icon={(
@@ -77,7 +120,7 @@ const Component = ({ className, leaderboardItems, onClickShare, showShareButton,
               size={'md'}
             />
           )}
-          onClick={onClickShare}
+          onClick={_onClickShare}
           shape={'round'}
           size={'xs'}
         />

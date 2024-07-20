@@ -17,9 +17,6 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import styled from 'styled-components';
 
 type Props = ThemeProps;
-type _LeaderboardModalProps = LeaderboardModalProps & {
-  gameId: number;
-};
 
 const apiSDK = BookaSdk.instance;
 const shopModalId = ShopModalId;
@@ -65,7 +62,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [account, setAccount] = useState(apiSDK.account);
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
   const { setContainerClass } = useContext(HomeContext);
-  const [leaderboardModalProps, setLeaderboardModalProps] = useState<_LeaderboardModalProps | undefined>();
+  const [leaderboardModalProps, setLeaderboardModalProps] = useState<LeaderboardModalProps | undefined>();
 
   const exitGame = useCallback(() => {
     if (gameIframe.current) {
@@ -107,10 +104,21 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [activeModal]);
 
   const onOpenLeaderboard = useCallback((game: Game) => {
+    const { end: endDate, start: startDate } = calculateStartAndEnd('weekly');
+
     setLeaderboardModalProps({
       gameId: game.id,
       modalTitle: game.name,
-      leaderboardItems: []
+      tabGroupItems: [{
+        label: 'default',
+        value: 'default',
+        leaderboardInfo: {
+          endDate,
+          startDate,
+          type: 'game'
+        }
+      }],
+      defaultSelectedTab: 'default'
     });
     activeModal(leaderboardModalId);
   }, [activeModal]);
@@ -151,33 +159,6 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   const showGame = !!currentGame;
-
-  useEffect(() => {
-    let leaderboardSub: { unsubscribe: () => void } | null = null;
-
-    if (leaderboardModalProps?.gameId !== undefined) {
-      const { end, start } = calculateStartAndEnd('weekly');
-
-      leaderboardSub = apiSDK.subscribeLeaderboard(start, end, leaderboardModalProps.gameId, 100, 'game').subscribe((data) => {
-        setLeaderboardModalProps((prev) => {
-          if (!prev) {
-            return undefined;
-          }
-
-          return ({
-            ...prev,
-            leaderboardItems: data
-          });
-        });
-      });
-    }
-
-    return () => {
-      if (leaderboardSub) {
-        leaderboardSub.unsubscribe();
-      }
-    };
-  }, [leaderboardModalProps?.gameId]);
 
   useEffect(() => {
     setContainerClass(showGame ? 'game-screen-wrapper -show-game' : 'game-screen-wrapper');

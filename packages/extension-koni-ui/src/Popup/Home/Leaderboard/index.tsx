@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LeaderboardContent } from '@subwallet/extension-koni-ui/components';
-import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
+import { LeaderboardTabGroupItemType } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardContent';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
@@ -10,7 +10,7 @@ import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeCo
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
@@ -27,32 +27,11 @@ const telegramConnector = TelegramConnector.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/leaderboard');
-  const [leaderboardItems, setLeaderboardItems] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
   const { t } = useTranslation();
   const { setContainerClass } = useContext(HomeContext);
-  const [selectedTab, setSelectedTab] = useState<string>(TabType.VARA_PLAYDROP);
+
   const [account, setAccount] = useState(apiSDK.account);
-
-  const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
-    return [
-      {
-        label: t('Kick-to-Airdrop'),
-        value: TabType.VARA_PLAYDROP
-      },
-      {
-        label: t('DED'),
-        value: TabType.DED_PLAYDROP
-      },
-      {
-        label: t('Weekly'),
-        value: TabType.WEEKLY
-      }
-    ];
-  }, [t]);
-
-  const onSelectTab = useCallback((value: string) => {
-    setSelectedTab(value);
-  }, []);
+  const [tabGroupItems, setTabGroupItems] = useState<LeaderboardTabGroupItemType[]>([]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -65,39 +44,55 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   useEffect(() => {
-    const { end, start } = calculateStartAndEnd(selectedTab);
-    let weeklyBoardSub: { unsubscribe: () => void } | null = null;
-    let dedBoardSub: { unsubscribe: () => void } | null = null;
-    let varaBoardSub: { unsubscribe: () => void } | null = null;
+    const getTabGroupInfo = (): LeaderboardTabGroupItemType[] => {
+      const baseItems: LeaderboardTabGroupItemType[] = [
+        {
+          label: t('Kick-to-Airdrop'),
+          value: TabType.VARA_PLAYDROP,
+          leaderboardInfo: {
+            showShare: true
+          }
+        },
+        {
+          label: t('DED'),
+          value: TabType.DED_PLAYDROP,
+          leaderboardInfo: {
+            showShare: true
+          }
+        },
+        {
+          label: t('Weekly'),
+          value: TabType.WEEKLY,
+          leaderboardInfo: {
 
-    if (selectedTab === TabType.DED_PLAYDROP) {
-      dedBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
-        setLeaderboardItems(data);
+          }
+        }
+      ];
+
+      return baseItems.map((item) => {
+        const { end: endDate, start: startDate } = calculateStartAndEnd(item.value);
+
+        return {
+          ...item,
+          leaderboardInfo: {
+            ...item.leaderboardInfo,
+            startDate,
+            endDate
+          }
+        };
       });
-    } else if (selectedTab === TabType.VARA_PLAYDROP) {
-      varaBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
-        setLeaderboardItems(data);
-      });
-    } else {
-      weeklyBoardSub = apiSDK.subscribeLeaderboard(start, end, 0, 100).subscribe((data) => {
-        setLeaderboardItems(data);
-      });
-    }
+    };
+
+    setTabGroupItems(getTabGroupInfo());
+
+    const timer: NodeJS.Timer = setInterval(() => {
+      setTabGroupItems(getTabGroupInfo());
+    }, 10000);
 
     return () => {
-      if (weeklyBoardSub) {
-        weeklyBoardSub.unsubscribe();
-      }
-
-      if (dedBoardSub) {
-        dedBoardSub.unsubscribe();
-      }
-
-      if (varaBoardSub) {
-        varaBoardSub.unsubscribe();
-      }
+      clearInterval(timer);
     };
-  }, [selectedTab]);
+  }, [t]);
 
   useEffect(() => {
     setContainerClass('leaderboard-screen-wrapper');
@@ -107,12 +102,11 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [setContainerClass]);
 
-  const onClickShare = useCallback(() => {
-    if (!leaderboardItems || !account) {
+  const onClickShare = useCallback((selectedTab: string, personMine?: LeaderboardPerson) => {
+    if (!account) {
       return;
     }
 
-    const personMine = leaderboardItems.find((item) => item.mine);
     let content = '';
 
     if (personMine) {
@@ -141,21 +135,14 @@ const Component = ({ className }: Props): React.ReactElement => {
     const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtags}`;
 
     telegramConnector.openLink(url);
-  }, [leaderboardItems, account, selectedTab]);
-
-  const tabGroupInfo = useMemo(() => ({
-    onSelectTab,
-    selectedTab,
-    tabGroupItems
-  }), [onSelectTab, selectedTab, tabGroupItems]);
+  }, [account]);
 
   return (
     <LeaderboardContent
       className={className}
-      leaderboardItems={leaderboardItems}
+      defaultSelectedTab={TabType.VARA_PLAYDROP}
       onClickShare={onClickShare}
-      showShareButton={selectedTab !== TabType.WEEKLY}
-      tabGroupInfo={tabGroupInfo}
+      tabGroupItems={tabGroupItems}
     />
   );
 };
