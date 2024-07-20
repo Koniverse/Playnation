@@ -1,30 +1,29 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { NotificationType, WalletUnlockType } from '@subwallet/extension-base/background/KoniTypes';
+import { WalletUnlockType } from '@subwallet/extension-base/background/KoniTypes';
 import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
 import { isSameAddress } from '@subwallet/extension-base/utils';
-import { AlertModal } from '@subwallet/extension-koni-ui/components';
 import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
+import { SecurityContextProvider } from '@subwallet/extension-koni-ui/contexts/SecurityContext';
 import { usePredefinedModal, WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContext';
-import { useAlert, useSubscribeLanguage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useSubscribeLanguage } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useUILock from '@subwallet/extension-koni-ui/hooks/common/useUILock';
 import { subscribeNotifications } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { isAccountAll, isNoAccount, removeStorage } from '@subwallet/extension-koni-ui/utils';
-import { changeHeaderLogo, ModalContext } from '@subwallet/react-ui';
+import { changeHeaderLogo } from '@subwallet/react-ui';
 import { NotificationProps } from '@subwallet/react-ui/es/notification/NotificationProvider';
 import CN from 'classnames';
-import { CheckCircle, ShieldStar, XCircle } from 'phosphor-react';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
 changeHeaderLogo(<Logo2D />);
@@ -81,13 +80,10 @@ function removeLoadingPlaceholder (animation: boolean): void {
   }
 }
 
-const ROOT_ALERT_MODAL_ID = 'root_alert_modal_id';
-
 function DefaultRoute ({ children }: { children: React.ReactNode }): React.ReactElement {
   const dataContext = useContext(DataContext);
   const location = useLocation();
   const { isOpenPModal, openPModal } = usePredefinedModal();
-  const { activeModal } = useContext(ModalContext);
   const notify = useNotification();
   const [rootLoading, setRootLoading] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -104,9 +100,6 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const noAccount = useMemo(() => isNoAccount(accounts), [accounts]);
   const { isUILocked } = useUILock();
   const needUnlock = isUILocked || (isLocked && unlockType === WalletUnlockType.ALWAYS_REQUIRED);
-  const { alertProps, closeAlert, openAlert } = useAlert(ROOT_ALERT_MODAL_ID);
-  const { t } = useTranslation();
-  const navigate = useNavigate();
 
   const syncAddress = useRef<string | undefined>();
 
@@ -184,46 +177,6 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
 
     RouteState.lastPathName = location.pathname;
   }, [location]);
-
-  // Create password modal reminder
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (hasMasterPassword && !useCustomPassword) {
-        openAlert({
-          title: t('Protect your account'),
-          type: NotificationType.INFO,
-          contentTitle: 'Create a password to protect your account',
-          content: t('A strong password keeps your Playnation account safe. After creating your password, you can enable biometric login.'),
-          iconProps: {
-            phosphorIcon: ShieldStar,
-            weight: 'fill'
-          },
-          cancelButton: {
-            text: t('Maybe later'),
-            schema: 'secondary',
-            icon: XCircle,
-            iconWeight: 'fill',
-            onClick: () => {
-              closeAlert();
-            }
-          },
-          okButton: {
-            text: t('Create now'),
-            icon: CheckCircle,
-            iconWeight: 'fill',
-            onClick: () => {
-              navigate(createPasswordUrl);
-              closeAlert();
-            }
-          }
-        });
-      }
-    }, 3000);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [useCustomPassword, activeModal, openAlert, t, closeAlert, navigate, hasMasterPassword]);
 
   const redirectPath = useMemo<string | null>(() => {
     const pathName = location.pathname;
@@ -316,10 +269,6 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   } else {
     return <MainWrapper className={CN('main-page-container')}>
       {children}
-      {!!alertProps && <AlertModal
-        modalId={ROOT_ALERT_MODAL_ID}
-        {...alertProps}
-      />}
     </MainWrapper>;
   }
 }
@@ -328,10 +277,12 @@ export function Root (): React.ReactElement {
   // Implement WalletModalContext in Root component to make it available for all children and can use react-router-dom and ModalContextProvider
 
   return (
-    <WalletModalContext>
-      <DefaultRoute>
-        <Outlet />
-      </DefaultRoute>
-    </WalletModalContext>
+    <SecurityContextProvider>
+      <WalletModalContext>
+        <DefaultRoute>
+          <Outlet />
+        </DefaultRoute>
+      </WalletModalContext>
+    </SecurityContextProvider>
   );
 }

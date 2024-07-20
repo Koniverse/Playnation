@@ -27,6 +27,10 @@ export const ALL_GENESIS_HASH = null;
 export const IGNORE_GET_SUBSTRATE_FEATURES_LIST: string[] = ['astarEvm', 'ethereum', 'ethereum_goerli', 'binance', 'binance_test', 'boba_rinkeby', 'boba', 'bobabase', 'bobabeam'];
 export const IGNORE_QR_SIGNER: string[] = [];
 export const CUSTOM_PASSWORD_KEY = 'keyring_using_custom_password';
+export const REMIND_BIOMETRIC_TIME = 'keyring_remind_using_custom_password';
+export const REMIND_PASSWORD_TIME = 'keyring_remind_using_custom_password';
+export const PASSWORD_UPDATE_TIME_CLOUD = 'keyring_password_update_time';
+export const PASSWORD_UPDATE_TIME_BIO_LOCAL = 'keyring_password_update_time';
 export const DEFAULT_PASSWORD = 'PlayNation#^(';
 
 export const XCM_MIN_AMOUNT_RATIO = 1.2;

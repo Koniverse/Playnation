@@ -5,6 +5,7 @@ import { WalletUnlockType } from '@subwallet/extension-base/background/KoniTypes
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { EDIT_AUTO_LOCK_TIME_MODAL, EDIT_UNLOCK_TYPE_MODAL, settingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
+import { useBiometric } from '@subwallet/extension-koni-ui/hooks/biometric';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
 import { saveAutoLockTime, saveUnlockType } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
@@ -61,7 +62,7 @@ const Component: React.FC<Props> = (props: Props) => {
   const { activeModal, inactiveModal } = useContext(ModalContext);
 
   const { accounts, useCustomPassword } = useSelector((state: RootState) => state.accountState);
-  const [isUseBiometric, setUseBiometric] = useState<boolean>(false);
+  const { removeToken, setupBiometric, supportBiometric, usingBiometric } = useBiometric();
   const [loadingBiometric, setLoadingBiometric] = useState(false);
   const { timeAutoLock, unlockType } = useSelector((state: RootState) => state.settings);
 
@@ -86,29 +87,36 @@ const Component: React.FC<Props> = (props: Props) => {
     }
   }), [t]);
 
-  const items = useMemo((): SecurityItem[] => [
-    {
-      icon: Key,
-      key: SecurityType.WALLET_PASSWORD,
-      title: t('Change wallet password'),
-      url: '/keyring/change-password',
-      disabled: noAccount
-    },
-    {
-      icon: LockLaminated,
-      key: SecurityType.AUTO_LOCK,
-      title: t('Auto lock'),
-      url: '',
-      disabled: false
-    },
-    {
-      icon: LockKeyOpen,
-      key: SecurityType.UNLOCK_TYPE,
-      title: t('Authenticate with password'),
-      url: '',
-      disabled: false
+  const items = useMemo((): SecurityItem[] => {
+    const menuList = [
+      {
+        icon: Key,
+        key: SecurityType.WALLET_PASSWORD,
+        title: useCustomPassword ? t('Change wallet password') : t('Set wallet password'),
+        url: useCustomPassword ? '/keyring/change-password' : '/keyring/create-password',
+        disabled: noAccount
+      }
+    ];
+
+    if (useCustomPassword) {
+      menuList.push({
+        icon: LockLaminated,
+        key: SecurityType.AUTO_LOCK,
+        title: t('Auto lock'),
+        url: '',
+        disabled: false
+      });
+      menuList.push({
+        icon: LockKeyOpen,
+        key: SecurityType.UNLOCK_TYPE,
+        title: t('Authenticate with password'),
+        url: '',
+        disabled: false
+      });
     }
-  ], [noAccount, t]);
+
+    return menuList;
+  }, [noAccount, t, useCustomPassword]);
 
   const onBack = useCallback(() => {
     if (canGoBack) {
@@ -124,9 +132,16 @@ const Component: React.FC<Props> = (props: Props) => {
 
   const updateBiometricState = useCallback(() => {
     setLoadingBiometric(true);
-    setUseBiometric((prev) => !prev);
-    setLoadingBiometric(false);
-  }, []);
+
+    if (usingBiometric) {
+      removeToken().finally(() => {
+        setLoadingBiometric(false);
+      });
+    } else {
+      setupBiometric();
+      setLoadingBiometric(false);
+    }
+  }, [removeToken, setupBiometric, usingBiometric]);
 
   const onOpenAutoLockTimeModal = useCallback(() => {
     activeModal(editAutoLockTimeModalId);
@@ -218,7 +233,7 @@ const Component: React.FC<Props> = (props: Props) => {
           <div className='setting-group-container'>
             {items.map(onRenderItem)}
 
-            <SettingItem
+            {useCustomPassword && supportBiometric && (<SettingItem
               className={CN('setting-group-item')}
               leftItemIcon={(
                 <BackgroundIcon
@@ -232,12 +247,12 @@ const Component: React.FC<Props> = (props: Props) => {
               name={t('Use Biometric')}
               rightItem={(
                 <Switch
-                  checked={isUseBiometric}
+                  checked={usingBiometric}
                   loading={loadingBiometric}
                   onClick={updateBiometricState}
                 />
               )}
-            />
+            />)}
           </div>
         </div>
         <SwModal

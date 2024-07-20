@@ -35,7 +35,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 
   const [loading, setLoading] = useState(false);
   const [isDisable, setIsDisable] = useState(true);
-  const { getToken, usingBiometric } = useBiometric();
+  const { getToken, onUnlockSuccess, reportWrongBiometric, usingBiometric, isTokenUpdateToDate } = useBiometric();
   const { unlock } = useUILock();
 
   const onUpdate: FormCallbacks<LoginFormState>['onFieldsChange'] = useCallback((changedFields: FormFieldData[], allFields: FormFieldData[]) => {
@@ -49,7 +49,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
     (document.getElementById(passwordInputId) as HTMLInputElement)?.select();
   }, [form]);
 
-  const unlockWithPassword = useCallback((password: string) => {
+  const unlockWithPassword = useCallback((password: string, usingBio = false) => {
     setLoading(true);
     keyringUnlock({
       password
@@ -57,7 +57,12 @@ const Component: React.FC<Props> = ({ className }: Props) => {
       .then((data) => {
         if (!data.status) {
           onError(t(data.errors[0]));
+
+          if (usingBio) {
+            reportWrongBiometric();
+          }
         } else {
+          onUnlockSuccess(password, usingBio);
           unlock();
         }
       })
@@ -67,20 +72,20 @@ const Component: React.FC<Props> = ({ className }: Props) => {
       .finally(() => {
         setLoading(false);
       });
-  }, [onError, t, unlock]);
+  }, [onError, onUnlockSuccess, reportWrongBiometric, t, unlock]);
 
   const unlockWithBioMetric = useCallback(() => {
     getToken().then((token) => {
-      token && unlockWithPassword(token);
+      token && unlockWithPassword(token, true);
     }).catch(console.error);
   }, [getToken, unlockWithPassword]);
 
   // Auto unlock with biometric
   useEffect(() => {
-    if (usingBiometric) {
+    if (usingBiometric && isTokenUpdateToDate) {
       unlockWithBioMetric();
     }
-  }, [usingBiometric, getToken, unlockWithBioMetric]);
+  }, [usingBiometric, getToken, unlockWithBioMetric, isTokenUpdateToDate]);
 
   const onSubmit: FormCallbacks<LoginFormState>['onFinish'] = useCallback((values: LoginFormState) => {
     unlockWithPassword(values[FormFieldName.PASSWORD]);
@@ -124,7 +129,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
                   placeholder={t('Enter password to login')}
                 />
               </Form.Item>
-              {usingBiometric && (<Form.Item>
+              {usingBiometric && isTokenUpdateToDate && (<Form.Item>
                 <Button
                   block={true}
                   icon={(
@@ -133,6 +138,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
                       phosphorIcon={FingerprintSimple}
                     />
                   )}
+                  onClick={unlockWithBioMetric}
                   shape={'round'}
                   size={'sm'}
                   type={'ghost'}

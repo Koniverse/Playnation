@@ -44,7 +44,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const [form] = Form.useForm<LoginFormState>();
   const [loading, setLoading] = useState(false);
   const [isDisable, setIsDisable] = useState(true);
-  const { getToken, usingBiometric } = useBiometric();
+  const { getToken, onUnlockSuccess, reportWrongBiometric, requireSyncPassword , isTokenUpdateToDate, usingBiometric } = useBiometric();
 
   const closeModal = useCallback(
     () => {
@@ -56,10 +56,10 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   // Auto close modal if unlocked
   useEffect(() => {
-    if (!isLocked && checkActive(UNLOCK_MODAL_ID)) {
+    if (!isLocked && !requireSyncPassword && checkActive(UNLOCK_MODAL_ID)) {
       inactiveModal(UNLOCK_MODAL_ID);
     }
-  }, [checkActive, inactiveModal, isLocked]);
+  }, [checkActive, inactiveModal, isLocked, requireSyncPassword]);
 
   const onUpdate: FormCallbacks<LoginFormState>['onFieldsChange'] = useCallback((changedFields: FormFieldData[], allFields: FormFieldData[]) => {
     const { empty, error } = simpleCheckForm(allFields);
@@ -72,16 +72,19 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     (document.getElementById(passwordInputId) as HTMLInputElement)?.select();
   }, [form]);
 
-  const unlockWithPassword = useCallback((password: string) => {
-    setLoading(true);
+  const unlockWithPassword = useCallback((password: string, usingBio = false) => {
     keyringUnlock({
       password
     })
       .then((data) => {
         if (!data.status) {
           onError(data.errors[0]);
+
+          if (usingBio) {
+            reportWrongBiometric();
+          }
         } else {
-          // Todo: ask to login with biometric
+          onUnlockSuccess(password, usingBio);
         }
       })
       .catch((e: Error) => {
@@ -90,21 +93,21 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       .finally(() => {
         setLoading(false);
       });
-  }, [onError]);
+  }, [onError, onUnlockSuccess, reportWrongBiometric]);
 
   const unlockWithBiometric = useCallback(() => {
     getToken().then((token) => {
-      token && unlockWithPassword(token);
+      token && unlockWithPassword(token, true);
     }).catch(console.error);
   }, [getToken, unlockWithPassword]);
 
   useEffect(() => {
-    if (usingBiometric && isLocked && checkActive(UNLOCK_MODAL_ID)) {
+    if (usingBiometric && isTokenUpdateToDate && isLocked && checkActive(UNLOCK_MODAL_ID)) {
       unlockWithBiometric();
     } else {
       focusInput(passwordInputId, 300);
     }
-  }, [usingBiometric, isLocked, checkActive, getToken, unlockWithPassword]);
+  }, [usingBiometric, isLocked, checkActive, getToken, unlockWithPassword, unlockWithBiometric, isTokenUpdateToDate]);
 
   const onSubmit: FormCallbacks<LoginFormState>['onFinish'] = useCallback((values: LoginFormState) => {
     unlockWithPassword(values[FormFieldName.PASSWORD]);
@@ -146,7 +149,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
                 placeholder={t('Enter password')}
               />
             </Form.Item>
-            {usingBiometric && (<Form.Item>
+            {usingBiometric && isTokenUpdateToDate && (<Form.Item>
               <Button
                 block={true}
                 icon={(

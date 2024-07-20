@@ -6,6 +6,7 @@ import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { DEFAULT_HOMEPAGE, DEFAULT_PASSWORD, simpleSettingsScreensLayoutBackgroundImages, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
 import { useDefaultNavigate, useNotification } from '@subwallet/extension-koni-ui/hooks';
+import { useBiometric } from '@subwallet/extension-koni-ui/hooks/biometric';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useFocusFormItem from '@subwallet/extension-koni-ui/hooks/form/useFocusFormItem';
 import { createAccountSuriV2, createSeedV2, keyringChangeMasterPassword } from '@subwallet/extension-koni-ui/messaging';
@@ -21,7 +22,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import {useBiometric} from "@subwallet/extension-koni-ui/hooks/biometric";
 
 type Props = ThemeProps
 
@@ -67,7 +67,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   // }, [t]);
   const [form] = Form.useForm<CreatePasswordFormState>();
   const [isDisabled, setIsDisable] = useState(true);
-  const {supportBiometric} = useBiometric();
+  const { setToken, supportBiometric } = useBiometric();
 
   const [loading, setLoading] = useState(false);
 
@@ -104,7 +104,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 
       // Handle enable biometric
       if (supportBiometric && enableBiometric) {
-        await telegramConnector.setBiometricToken(password);
+        await setToken(password);
       }
 
       let params: RequestChangeMasterPassword = {
@@ -138,7 +138,18 @@ const Component: React.FC<Props> = ({ className }: Props) => {
         setLoading(false);
       });
     }
-  }, [supportBiometric, hasMasterPassword, useCustomPassword, notification, onComplete]);
+  }, [supportBiometric, hasMasterPassword, useCustomPassword, setToken, notification, onComplete]);
+
+  // Trigger in the first time
+  useEffect(() => {
+    if (!hasMasterPassword && accounts.length === 0) {
+      onSubmit({
+        [FormFieldName.PASSWORD]: DEFAULT_PASSWORD,
+        [FormFieldName.CONFIRM_PASSWORD]: DEFAULT_PASSWORD,
+        [FormFieldName.ENABLE_BIOMETRIC]: false
+      });
+    }
+  }, [accounts.length, hasMasterPassword, onSubmit]);
 
   const onUpdate: Callbacks<CreatePasswordFormState>['onFieldsChange'] = useCallback((changedFields: FieldData[], allFields: FieldData[]) => {
     // @ts-ignore

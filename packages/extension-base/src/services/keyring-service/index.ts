@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CurrentAccountInfo, KeyringState } from '@subwallet/extension-base/background/KoniTypes';
-import { ALL_ACCOUNT_KEY, CUSTOM_PASSWORD_KEY } from '@subwallet/extension-base/constants';
+import { ALL_ACCOUNT_KEY, CUSTOM_PASSWORD_KEY, PASSWORD_UPDATE_TIME_CLOUD } from '@subwallet/extension-base/constants';
 import { EventService } from '@subwallet/extension-base/services/event-service';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { CurrentAccountStore } from '@subwallet/extension-base/stores';
@@ -91,6 +91,7 @@ export class KeyringService {
   async setUsingCustomPassword (usingCustomPassword: boolean) {
     this.usingCustomPassword = usingCustomPassword;
     await cloudStorage.setItem(CUSTOM_PASSWORD_KEY, String(usingCustomPassword));
+    await cloudStorage.setItem(PASSWORD_UPDATE_TIME_CLOUD, Date.now().toString());
     this.updateKeyringState();
   }
 
