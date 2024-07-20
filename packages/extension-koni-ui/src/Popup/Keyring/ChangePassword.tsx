@@ -41,7 +41,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   const [form] = Form.useForm<ChangePasswordFormState>();
   const [isDisabled, setIsDisable] = useState(true);
   const [submitError, setSubmitError] = useState('');
-  const { onUnlockSuccess } = useBiometric();
+  const { setToken } = useBiometric();
 
   const [loading, setLoading] = useState(false);
 
@@ -67,7 +67,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
           if (!res.status) {
             form.setFields([{ name: FormFieldName.OLD_PASSWORD, errors: res.errors }]);
           } else {
-            onUnlockSuccess(password, false);
+            setToken(password).catch(console.error);
             goHome();
           }
         }).catch((e: Error) => {
@@ -77,7 +77,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
         });
       }, 300);
     }
-  }, [form, goHome, onUnlockSuccess]);
+  }, [form, goHome, setToken]);
 
   const onUpdate: FormCallbacks<ChangePasswordFormState>['onFieldsChange'] = useCallback((changedFields: FormFieldData[], allFields: FormFieldData[]) => {
     const { empty, error } = simpleCheckForm(allFields);
