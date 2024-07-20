@@ -212,7 +212,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
 const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    overflow: 'hidden',
+    overflow: 'auto',
     display: 'flex',
     flexDirection: 'column',
     paddingLeft: token.paddingXS,
@@ -356,6 +356,10 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
 
     '.friend-item': {
       marginBottom: token.marginXS
+    },
+
+    '@media (max-height: 669px)': {
+      display: 'block'
     }
   };
 });

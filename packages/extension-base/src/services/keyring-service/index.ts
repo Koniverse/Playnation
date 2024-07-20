@@ -2,15 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CurrentAccountInfo, KeyringState } from '@subwallet/extension-base/background/KoniTypes';
-import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
+import { ALL_ACCOUNT_KEY, CUSTOM_PASSWORD_KEY, PASSWORD_UPDATE_TIME_CLOUD } from '@subwallet/extension-base/constants';
 import { EventService } from '@subwallet/extension-base/services/event-service';
+import { SWStorage } from '@subwallet/extension-base/storage';
 import { CurrentAccountStore } from '@subwallet/extension-base/stores';
+import { createPromiseHandler } from '@subwallet/extension-base/utils';
 import { InjectedAccountWithMeta } from '@subwallet/extension-inject/types';
 import { keyring } from '@subwallet/ui-keyring';
 import { SubjectInfo } from '@subwallet/ui-keyring/observable/types';
 import { BehaviorSubject } from 'rxjs';
 
 import { stringShorten } from '@polkadot/util';
+
+const cloudStorage = SWStorage.instance;
 
 export class KeyringService {
   private readonly currentAccountStore = new CurrentAccountStore();
@@ -20,11 +24,14 @@ export class KeyringService {
   public readonly accountSubject = keyring.accounts.subject;
   private beforeAccount: SubjectInfo = this.accountSubject.value;
   private injected: boolean;
+  private usingCustomPassword = false;
+  private checkUsingCustomPassword = createPromiseHandler<boolean>();
 
   readonly keyringStateSubject = new BehaviorSubject<KeyringState>({
     isReady: false,
     hasMasterPassword: false,
-    isLocked: false
+    isLocked: false,
+    useCustomPassword: false
   });
 
   getPair = keyring.getPair.bind(keyring);
@@ -36,6 +43,11 @@ export class KeyringService {
         rs && this.currentAccountSubject.next(rs);
       });
       this.subscribeAccounts().catch(console.error);
+    }).catch(console.error);
+
+    cloudStorage.getItem(CUSTOM_PASSWORD_KEY).then((rs) => {
+      this.usingCustomPassword = rs === 'true';
+      this.checkUsingCustomPassword.resolve(this.usingCustomPassword);
     }).catch(console.error);
   }
 
@@ -76,19 +88,34 @@ export class KeyringService {
     return this.keyringStateSubject.value;
   }
 
+  async setUsingCustomPassword (usingCustomPassword: boolean) {
+    this.usingCustomPassword = usingCustomPassword;
+    await cloudStorage.setItem(CUSTOM_PASSWORD_KEY, String(usingCustomPassword));
+    await cloudStorage.setItem(PASSWORD_UPDATE_TIME_CLOUD, Date.now().toString());
+    this.updateKeyringState();
+  }
+
   updateKeyringState (isReady = true) {
     if (!this.keyringState.isReady && isReady) {
-      this.eventService.waitCryptoReady.then(() => {
+      Promise.all([this.eventService.waitCryptoReady, this.checkUsingCustomPassword]).then(() => {
         this.eventService.emit('keyring.ready', true);
         this.eventService.emit('account.ready', true);
-      }).catch(console.error);
-    }
 
-    this.keyringStateSubject.next({
-      hasMasterPassword: !!keyring.keyring?.hasMasterPassword,
-      isLocked: !!keyring.keyring?.isLocked,
-      isReady: isReady
-    });
+        this.keyringStateSubject.next({
+          useCustomPassword: this.usingCustomPassword,
+          hasMasterPassword: !!keyring.keyring?.hasMasterPassword,
+          isLocked: !!keyring.keyring?.isLocked,
+          isReady: isReady
+        });
+      }).catch(console.error);
+    } else {
+      this.keyringStateSubject.next({
+        useCustomPassword: this.usingCustomPassword,
+        hasMasterPassword: !!keyring.keyring?.hasMasterPassword,
+        isLocked: !!keyring.keyring?.isLocked,
+        isReady: isReady
+      });
+    }
   }
 
   get accounts (): SubjectInfo {

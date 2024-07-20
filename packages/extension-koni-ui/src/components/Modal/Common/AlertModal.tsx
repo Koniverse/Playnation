@@ -21,7 +21,7 @@ const alertTypeAndIconMap = {
   },
   [NotificationType.WARNING]: {
     icon: Warning,
-    weight: undefined
+    weight: 'fill'
   },
   [NotificationType.ERROR]: {
     icon: XCircle,
@@ -41,7 +41,7 @@ const Component: React.FC<Props> = (props: Props) => {
     modalId,
     okButton,
     title,
-    type = NotificationType.INFO } = props;
+    type = NotificationType.INFO, iconProps, contentTitle } = props;
 
   const { inactiveModal } = useContext(ModalContext);
 
@@ -52,7 +52,7 @@ const Component: React.FC<Props> = (props: Props) => {
   return (
     <>
       <SwModal
-        className={CN(className)}
+        className={CN(className, '-light-theme')}
         closable={closable}
         destroyOnClose={true}
         footer={
@@ -69,6 +69,7 @@ const Component: React.FC<Props> = (props: Props) => {
                 )}
                 onClick={cancelButton.onClick}
                 schema={cancelButton.schema || 'secondary'}
+                shape={'round'}
               >
                 {cancelButton.text}
               </Button>
@@ -84,6 +85,7 @@ const Component: React.FC<Props> = (props: Props) => {
               )}
               onClick={okButton?.onClick}
               schema={okButton.schema}
+              shape={'round'}
             >
               {okButton.text}
             </Button>
@@ -102,25 +104,37 @@ const Component: React.FC<Props> = (props: Props) => {
           })}
           >
             <PageIcon
-              color='var(--page-icon-color)'
-              iconProps={{
+              color={''}
+              iconProps={iconProps || {
                 weight: alertTypeAndIconMap[type].weight as IconProps['weight'],
                 phosphorIcon: alertTypeAndIconMap[type].icon
               }}
             />
           </div>
 
-          {content}
+          {
+            !!contentTitle && (
+              <div className='__content-title'>
+                {contentTitle}
+              </div>
+            )
+          }
+
+          <div className='__content'>
+            {content}
+          </div>
         </div>
       </SwModal>
     </>
   );
 };
 
-const AlertModal = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
     '.ant-sw-modal-body': {
-      paddingBottom: 0
+      paddingBottom: token.paddingXS,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
     },
 
     '.ant-sw-modal-footer': {
@@ -130,32 +144,42 @@ const AlertModal = styled(Component)<Props>(({ theme: { token } }: Props) => {
     },
 
     '.__modal-content': {
+      background: extendToken.colorBgGradient || token.colorPrimary,
       fontSize: token.fontSize,
       lineHeight: token.lineHeightHeading6,
       textAlign: 'center',
-      color: token.colorTextDescription,
-      paddingTop: token.padding,
-      paddingLeft: token.padding,
-      paddingRight: token.padding
+      paddingTop: 32,
+      paddingLeft: 20,
+      paddingRight: 20,
+      paddingBottom: 32,
+      borderRadius: 24
+    },
+
+    '.ant-page-icon': {
+      backgroundColor: extendToken.colorBgSecondary1,
+
+      '.anticon': {
+        fontSize: '60px !important'
+      }
     },
 
     '.__alert-icon': {
       display: 'flex',
       justifyContent: 'center',
-      marginBottom: 20,
+      color: token.colorTextDark1,
+      marginBottom: 24
+    },
 
-      '&.-info': {
-        '--page-icon-color': token.geekblue
-      },
-      '&.-success': {
-        '--page-icon-color': token.colorSuccess
-      },
-      '&.-warning': {
-        '--page-icon-color': token.colorWarning
-      },
-      '&.-error': {
-        '--page-icon-color': token.colorError
-      }
+    '.__content-title': {
+      color: token.colorTextDark1,
+      fontSize: token.fontSizeLG,
+      lineHeight: token.lineHeightLG,
+      fontWeight: token.headingFontWeight,
+      marginBottom: token.margin
+    },
+
+    '.__content': {
+      color: token.colorTextDark2
     }
   };
 });

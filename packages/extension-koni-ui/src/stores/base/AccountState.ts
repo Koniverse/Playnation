@@ -8,6 +8,8 @@ import { AccountState, ReduxStatus } from '@subwallet/extension-koni-ui/stores/t
 import { isAccountAll } from '@subwallet/extension-koni-ui/utils';
 
 const initialState: AccountState = {
+  useCustomPassword: false,
+
   // CurrentAccount
   currentAccount: null,
   isAllAccount: false,

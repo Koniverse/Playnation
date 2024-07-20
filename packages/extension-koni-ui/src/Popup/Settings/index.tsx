@@ -251,7 +251,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
               })
             }
             <div className={'__version'}>
-              PlayNation v {EXTENSION_VERSION}
+              Playnation v{EXTENSION_VERSION}
             </div>
           </div>
         </Layout.WithSubHeaderOnly>
@@ -278,7 +278,7 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
 
       '.__scroll-container': {
         overflow: 'auto',
-        paddingTop: token.paddingXS,
+        paddingTop: token.paddingXXS,
         paddingRight: token.padding,
         paddingLeft: token.padding,
         paddingBottom: token.paddingLG

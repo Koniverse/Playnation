@@ -247,7 +247,9 @@ const Component = function ({ className }: Props) {
           return t('Transaction confirm');
       }
     } else {
-      return t(titleMap[confirmation.type] || '');
+      const title = confirmation.item?.metadata?.title;
+
+      return t(title || titleMap[confirmation.type] || '');
     }
   }, [confirmation, t, transactionRequest]);
 

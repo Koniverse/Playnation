@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-base authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AuthRequestV2, ConfirmationDefinitions, ConfirmationsQueue, ConfirmationsQueueItemOptions, ConfirmationType, RequestConfirmationComplete } from '@subwallet/extension-base/background/KoniTypes';
+import { AuthRequestV2, ConfirmationDefinitions, ConfirmationMetadata, ConfirmationsQueue, ConfirmationsQueueItemOptions, ConfirmationType, RequestConfirmationComplete } from '@subwallet/extension-base/background/KoniTypes';
 import { AccountAuthType, AccountJson, AuthorizeRequest, MetadataRequest, RequestAuthorizeTab, RequestSign, ResponseSigning, SigningRequest } from '@subwallet/extension-base/background/types';
 import { ChainService } from '@subwallet/extension-base/services/chain-service';
 import { KeyringService } from '@subwallet/extension-base/services/keyring-service';
@@ -158,8 +158,8 @@ export default class RequestService {
     return this.#substrateRequestHandler.allSubstrateRequests;
   }
 
-  public sign (url: string, request: RequestSign, account: AccountJson, id?: string): Promise<ResponseSigning> {
-    return this.#substrateRequestHandler.sign(url, request, account, id);
+  public sign (url: string, request: RequestSign, account: AccountJson, id?: string, metadata?: ConfirmationMetadata): Promise<ResponseSigning> {
+    return this.#substrateRequestHandler.sign(url, request, account, id, metadata);
   }
 
   public get numSubstrateRequests (): number {

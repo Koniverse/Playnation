@@ -1685,6 +1685,8 @@ export interface KeyringState {
   isReady: boolean;
   hasMasterPassword: boolean;
   isLocked: boolean;
+
+  useCustomPassword: boolean
 }
 
 export interface UIViewState {
@@ -1813,7 +1815,7 @@ export enum NotificationType {
   INFO = 'info',
   SUCCESS = 'success',
   WARNING = 'warning',
-  ERROR = 'error',
+  ERROR = 'error'
 }
 
 export interface NotificationButton {
@@ -2045,6 +2047,23 @@ export interface ResponseSubscribeHistory {
 }
 
 /* Campaign */
+
+/* Internal Signing */
+export interface ConfirmationMetadata {
+  title?: string,
+  message?: string,
+}
+
+export interface InternalSignRequestMetadata extends ConfirmationMetadata{
+  url: string,
+}
+
+export interface InternalSignRequest<T> {
+  metadata: InternalSignRequestMetadata
+  payload: T
+}
+
+/* Internal Signing */
 
 /* Core types */
 export type _Address = string;
@@ -2400,8 +2419,8 @@ export interface KoniRequestSignatures {
   /* Database Service */
 
   /* Internal Signing */
-  'pri(bytes.sign)': [SignerPayloadRaw, ResponseSigning];
-  'pri(extrinsic.sign)': [SignerPayloadJSON, ResponseSigning];
+  'pri(bytes.sign)': [InternalSignRequest<SignerPayloadRaw>, ResponseSigning];
+  'pri(extrinsic.sign)': [InternalSignRequest<SignerPayloadJSON>, ResponseSigning];
   /* Internal Signing */
 
   /* Swap */

@@ -9,6 +9,7 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
+import { SecurityContextProvider } from '@subwallet/extension-koni-ui/contexts/SecurityContext';
 import { usePredefinedModal, WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContext';
 import { useSubscribeLanguage } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
@@ -94,7 +95,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
 
   const { unlockType } = useSelector((state: RootState) => state.settings);
   const { hasConfirmations, hasInternalConfirmations } = useSelector((state: RootState) => state.requestState);
-  const { accounts, currentAccount, hasMasterPassword, isLocked } = useSelector((state: RootState) => state.accountState);
+  const { accounts, currentAccount, hasMasterPassword, isLocked, useCustomPassword } = useSelector((state: RootState) => state.accountState);
   const [initAccount, setInitAccount] = useState(currentAccount);
   const noAccount = useMemo(() => isNoAccount(accounts), [accounts]);
   const { isUILocked } = useUILock();
@@ -194,7 +195,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       redirectTarget = migratePasswordUrl;
     } else if (hasMasterPassword && needUnlock) {
       redirectTarget = loginUrl;
-    } else if (hasMasterPassword && pathName === createPasswordUrl) {
+    } else if (hasMasterPassword && useCustomPassword && pathName === createPasswordUrl) {
       redirectTarget = DEFAULT_ROUTER_PATH;
     } else if (!hasMasterPassword) {
       if (noAccount) {
@@ -250,7 +251,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     } else {
       return null;
     }
-  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, noAccount, hasInternalConfirmations, isOpenPModal, hasConfirmations, openPModal]);
+  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, openPModal]);
 
   // Remove transaction persist state
   useEffect(() => {
@@ -276,10 +277,12 @@ export function Root (): React.ReactElement {
   // Implement WalletModalContext in Root component to make it available for all children and can use react-router-dom and ModalContextProvider
 
   return (
-    <WalletModalContext>
-      <DefaultRoute>
-        <Outlet />
-      </DefaultRoute>
-    </WalletModalContext>
+    <SecurityContextProvider>
+      <WalletModalContext>
+        <DefaultRoute>
+          <Outlet />
+        </DefaultRoute>
+      </WalletModalContext>
+    </SecurityContextProvider>
   );
 }
