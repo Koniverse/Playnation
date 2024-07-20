@@ -175,6 +175,12 @@ export const GameCardItem = styled(Component)<Props>(({ theme: { token } }: Prop
       '.__game-banner': {
         filter: 'blur(8px)'
       }
+    },
+
+    '@media (max-width: 369px)': {
+      '.__game-banner': {
+        width: 160
+      }
     }
   });
 });
