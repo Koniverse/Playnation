@@ -463,8 +463,8 @@ export class BookaSdk {
     const result = await signRaw({
       metadata: {
         url: 'https://playnation.app',
-        title: detectTranslate('Playnation Login'),
-        message: detectTranslate('Sign this message to login')
+        title: detectTranslate('Approve sign-in request'),
+        message: detectTranslate('Hit Approve to sign in to Playnation with the following account')
       },
       payload: {
         address,
