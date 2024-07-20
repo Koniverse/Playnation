@@ -33,7 +33,7 @@ function Component ({ className, request, type }: Props) {
           {t('Signature required')}
         </div>
         <div className='description'>
-          {t('You are approving a request with the following account')}
+          {t(request.metadata?.message || 'You are approving a request with the following account')}
         </div>
         <AccountItemWithName
           accountName={account.name}
