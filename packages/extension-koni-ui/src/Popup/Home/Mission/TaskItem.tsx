@@ -19,12 +19,14 @@ import styled from 'styled-components';
 type Props = {
   task: Task,
   actionReloadPoint: VoidFunction;
+  openWidget: (widgetId: string, taskId: string) => Promise<void>;
+  reloadTask: number;
 } & ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
 
-const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactElement => {
+const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const notify = useNotification();
   const [account, setAccount] = useState(apiSDK.account);
@@ -32,29 +34,25 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
   const { t } = useTranslation();
   const [completed, setCompleted] = useState(!!task.completedAt);
 
-  const [checking, setChecking] = useState(task && task.airlyftType === 'telegram-sync' && !completed);
+  const [checking, setChecking] = useState(task && task.airlyftType && !completed);
 
   useEffect(() => {
-    let taskItemUpdaterInterval: NodeJS.Timer;
-
-    if (checking) {
-      taskItemUpdaterInterval = setInterval(() => {
-        apiSDK.completeTask(task.id)
-          .then((data: boolean) => {
-            if (data) {
-              // @ts-ignore
-              clearInterval(taskItemUpdaterInterval);
-              setCompleted(true);
-              setChecking(false);
-              actionReloadPoint();
-            }
-          })
-          .catch(console.error);
-      }, 10000);
+    if (checking && reloadTask > 0) {
+      apiSDK.completeTask(task.id)
+        .then((data: boolean) => {
+          if (data) {
+            setCompleted(true);
+            setChecking(false);
+            actionReloadPoint();
+          }
+        })
+        .catch(console.error);
     }
 
-    return () => clearInterval(taskItemUpdaterInterval);
-  }, [checking]);
+    return () => {
+
+    };
+  }, [checking, reloadTask]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -124,26 +122,16 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
       }
 
       apiSDK.finishTask(taskId, extrinsicHash, networkKey)
-        .then((result) => {
+        .then(async (result) => {
+          if (task.airlyftWidgetId && result.isOpenUrl) {
+            await openWidget(task.airlyftWidgetId, task.airlyftId ?? '');
+          }
+
           setTaskLoading(false);
           setCompleted(result.success);
 
           if (result.success) {
             actionReloadPoint();
-          }
-
-          if (task.airlyftId) {
-            setTimeout(() => {
-              let urlRedirect = task.url;
-
-              if (result.openUrl) {
-                urlRedirect = result.openUrl;
-              }
-
-              if (urlRedirect && result.isOpenUrl) {
-                window.open(urlRedirect, '_blank');
-              }
-            }, 100);
           }
         })
         .catch(console.error);
@@ -251,7 +239,7 @@ const _TaskItem = ({ actionReloadPoint, className, task }: Props): React.ReactEl
             shape={'round'}
             size={'xs'}
           >
-            {t('Go')}
+            {task.achievement ? (task.buttonView ?? t('Go')) : t('Go')}
           </Button>
         )}
 

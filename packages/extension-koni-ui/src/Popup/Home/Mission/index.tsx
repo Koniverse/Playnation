@@ -81,6 +81,9 @@ function getTaskCategoryInfoMap (tasks: Task[]): Record<number, TaskCategoryInfo
   return result;
 }
 
+const widgetInfoMap: Record<string, object> = {};
+const widgetModalInfoMap: Record<string, object> = {};
+
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const [taskCategoryMap, setTaskCategoryMap] = useState<Record<number, TaskCategory>>({});
@@ -89,6 +92,97 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
   const [reloadAccount, setReloadAccount] = useState<number>(0);
   const { setContainerClass } = useContext(HomeContext);
+  const [isOpenWidget, setIsOpenWidget] = useState<boolean>(false);
+  const [reloadTask, setReloadTask] = useState(0);
+
+  useEffect(() => {
+    window.addEventListener('message', async (event: MessageEvent) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (event.data?.type === 'AIR_WIDGET_CLOSE' && isOpenWidget) {
+        setReloadTask(reloadTask + 1);
+
+        setIsOpenWidget(false);
+      }
+    });
+  }, [isOpenWidget, reloadTask]);
+
+  const openWidget = useCallback(async (widgetId: string, taskId: string) => {
+    const modal = widgetModalInfoMap[widgetId];
+    const widget = widgetInfoMap[widgetId];
+
+    if (modal && widget) {
+      if (taskId) {
+        // @ts-ignore
+        widget.openSpecificTask(modal, taskId);
+      }
+
+      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      modal.open();
+      setIsOpenWidget(true);
+    } else {
+      const modalData = await new Promise(async (resolve) => {
+        // @ts-ignore
+        if (window.AirlyftWidget) {
+          // @ts-ignore
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          const widget = await window.AirlyftWidget(widgetId);
+
+          widgetInfoMap[widgetId] = widget;
+
+          const instance = await widget.createModal({});
+
+          if (taskId) {
+            widget.openSpecificTask(instance, taskId);
+          }
+
+          const widgetRef = instance.ref;
+
+          const triggerButton = widgetRef.querySelector('a');
+
+          if (triggerButton) {
+            triggerButton.style.display = 'none';
+            triggerButton.parentNode.style.height = 'auto';
+          }
+
+          const dataToken = await apiSDK.getAirlyftToken();
+
+          if (dataToken && dataToken.success) {
+            widget.authWithToken(
+              instance,
+              dataToken.token
+            );
+          }
+
+          resolve(instance);
+        } else {
+          resolve(null);
+        }
+      });
+
+      if (modalData) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        // @ts-ignore
+        widgetModalInfoMap[widgetId] = modalData;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        modalData.open();
+        setIsOpenWidget(true);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+
+    script.src = 'https://assets.airlyft.one/widget/widget.js';
+    script.async = true;
+
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const actionReloadPoint = useCallback(() => {
     setReloadAccount(reloadAccount + 1);
@@ -121,6 +215,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
     const taskListSub = apiSDK.subscribeTaskList().subscribe((data) => {
       clearInterval(taskListUpdaterInterval);
+      console.log('data', data)
 
       setTaskCategoryInfoMap(getTaskCategoryInfoMap(data));
 
@@ -134,7 +229,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       taskListSub.unsubscribe();
       clearInterval(taskListUpdaterInterval);
     };
-  }, []);
+  }, [reloadTask]);
 
   useEffect(() => {
     setContainerClass('mission-screen-wrapper');
@@ -156,6 +251,8 @@ const Component = ({ className }: Props): React.ReactElement => {
       <div className={'task-list-container'}>
         <TaskList
           actionReloadPoint={actionReloadPoint}
+          openWidget={openWidget}
+          reloadTask={reloadTask}
           taskCategoryInfoMap={taskCategoryInfoMap}
           taskCategoryMap={taskCategoryMap}
         />

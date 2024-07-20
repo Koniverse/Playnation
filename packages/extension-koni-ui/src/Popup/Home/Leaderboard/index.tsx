@@ -38,18 +38,18 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [leaderBoard, setLeaderBoard] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
   const { t } = useTranslation();
   const { setContainerClass } = useContext(HomeContext);
-  const [selectedTab, setSelectedTab] = useState<string>(TabType.DED_PLAYDROP);
+  const [selectedTab, setSelectedTab] = useState<string>(TabType.VARA_PLAYDROP);
   const [account, setAccount] = useState(apiSDK.account);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
       {
-        label: t('DED'),
-        value: TabType.DED_PLAYDROP
+        label: t('Kick-to-Airdrop'),
+        value: TabType.VARA_PLAYDROP
       },
       {
-        label: t('VARA'),
-        value: TabType.VARA_PLAYDROP
+        label: t('DED'),
+        value: TabType.DED_PLAYDROP
       },
       {
         label: t('Weekly'),
@@ -157,10 +157,10 @@ const Component = ({ className }: Props): React.ReactElement => {
     if (selectedTab === TabType.VARA_PLAYDROP) {
       content = '';
       urlShareImage = 'https://x.playnation.app/playnation-vara';
-      hashtags = 'hashtags=VARAKickToAirdrop,Playnation,VARA,Airdrop';
+      hashtags = 'hashtags=PlaynationKickToAirdrop,Playnation,VARAtoken,Airdrop';
 
       if (personMine) {
-        content = `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank} on the VARA Playdrop Leaderboard! `;
+        content = `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank}  on the Playnation Kick-to-Airdrop Leaderboard! %0A `;
       }
 
       content += 'Want to join the fun and get a chance to win $VARA rewards? Join me now! 🚀 ';

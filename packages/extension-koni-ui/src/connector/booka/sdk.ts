@@ -3,7 +3,7 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { AccountRankType, AirdropCampaign, AirdropCampaignShare, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
@@ -297,6 +297,10 @@ export class BookaSdk {
     const taskHistoryCheck = await this.postRequest<{ completed: boolean }>(`${GAME_API_HOST}/api/task/check-complete-task`, { taskId });
 
     if (taskHistoryCheck && taskHistoryCheck.completed) {
+      await this.fetchTaskCategoryList();
+
+      await this.fetchTaskList();
+
       await this.reloadAccount();
 
       return true;
@@ -351,10 +355,10 @@ export class BookaSdk {
       return;
     }
 
-    const start = item.start_claim;
-    const end = item.end_claim;
-    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate: start, endDate: end, limit: 1 });
-    const personMine = leaderBoard.find((item) => item.mine);
+    const start = item.start_snapshot;
+    const end = item.end_snapshot;
+    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, { startDate: start, endDate: end, limit: 1, type: 'all' });
+    const personMine = leaderBoard.find((item) => item.mine === true);
 
     try {
       const dataShare = item.share;
@@ -444,7 +448,7 @@ export class BookaSdk {
         this.accountSubject.next(account);
         storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
         this.syncHandler.resolve();
-        const { end, start } = calculateStartAndEnd('weekly');
+        const { end, start } = calculateStartAndEnd('vara_playdrop');
 
         await Promise.all([
           this.fetchEnergyConfig(),
@@ -529,7 +533,7 @@ export class BookaSdk {
 
     this.currentGamePlaySubject.next(undefined);
 
-    await Promise.all([this.reloadAccount()]);
+    await Promise.all([this.reloadAccount(), this.fetchTaskList()]);
   }
 
   // --- shop
@@ -747,6 +751,14 @@ export class BookaSdk {
   async fetchAirdropHistory (campaignId: number) {
     try {
       return await this.postRequest(`${GAME_API_HOST}/api/airdrop/history`, { campaign_id: campaignId });
+    } catch (error) {
+      console.error('Error in fetchAirdropHistory:', error);
+      throw error;
+    }
+  }
+  async getAirlyftToken () {
+    try {
+      return await this.getRequest(`${GAME_API_HOST}/api/airlyft/get-token`) as unknown as Promise<{token: string, success: boolean} | undefined>;
     } catch (error) {
       console.error('Error in fetchAirdropHistory:', error);
       throw error;

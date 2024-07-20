@@ -65,7 +65,6 @@ export const TabGroup = styled(Component)<Props>(({ theme: { extendToken, token 
       paddingLeft: 11,
       paddingRight: 11,
       borderRadius: 50,
-      overflow: 'hidden',
       flex: 1,
       height: 30,
       display: 'flex',
@@ -77,7 +76,6 @@ export const TabGroup = styled(Component)<Props>(({ theme: { extendToken, token 
       lineHeight: token.lineHeight,
       'white-space': 'nowrap',
       textOverflow: 'ellipsis',
-      overflow: 'hidden',
       flex: 1,
       textAlign: 'center'
     },

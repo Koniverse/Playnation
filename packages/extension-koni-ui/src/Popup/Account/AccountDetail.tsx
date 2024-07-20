@@ -65,7 +65,7 @@ const Component: React.FC<Props> = (props: Props) => {
   });
 
   const currentRank = account?.attributes.rank || 'iron';
-  const currentPoint = account?.attributes.point || 0;
+  const currentPoint = account?.attributes.accumulatePoint || 0;
 
   const pointPercent = useMemo(() => {
     const currentRankInfo = rankInfoMap?.[currentRank];

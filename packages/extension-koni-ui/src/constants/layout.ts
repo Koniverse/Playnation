@@ -4,14 +4,13 @@
 import { LayoutBackgroundImages } from '@subwallet/extension-koni-ui/types';
 
 export const detailScreensLayoutBackgroundImages: LayoutBackgroundImages = {
-  euro: true
+
 };
 
 export const homeScreensLayoutBackgroundImages: LayoutBackgroundImages = {
-  euro: true
+
 };
 
 export const settingsScreensLayoutBackgroundImages: LayoutBackgroundImages = {
-  game: true,
-  euro: true
+  game: true
 };

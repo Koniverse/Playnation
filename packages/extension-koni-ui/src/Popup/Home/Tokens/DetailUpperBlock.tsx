@@ -1,7 +1,6 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useGetEnergyInfo, useTranslation } from '@subwallet/extension-koni-ui/hooks';
@@ -70,12 +69,6 @@ function Component (
 
   return (
     <div className={`tokens-upper-block ${className} ${isShrink ? '-shrink' : ''}`}>
-      <img
-        alt='euro_background_image'
-        className={'__euro-background-image'}
-        src={DefaultLogosMap.euro_background_image}
-      />
-
       <div className='__top-part'>
         <div className={'__balance-label-wrapper'}>
           <div className='__balance-label'>
@@ -193,17 +186,6 @@ export const DetailUpperBlock = styled(Component)<Props>(({ theme: { extendToken
     borderRadius: 20,
     position: 'relative',
     overflow: 'hidden',
-
-    '.__euro-background-image': {
-      position: 'absolute',
-      width: 700,
-      pointerEvents: 'none',
-      height: 'auto',
-      opacity: 0.65,
-      left: 'calc(50% - 315px)',
-      bottom: -162,
-      zIndex: 0
-    },
 
     '.__top-part': {
       display: 'flex',
