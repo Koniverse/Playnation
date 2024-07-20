@@ -223,7 +223,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
               </Form.Item>
             </div>
 
-            <Form.Item
+            {supportBiometric && (<Form.Item
               className={'form-checkbox'}
               name={FormFieldName.ENABLE_BIOMETRIC}
               statusHelpAsTooltip={true}
@@ -231,11 +231,10 @@ const Component: React.FC<Props> = ({ className }: Props) => {
             >
               <Checkbox
                 className={'checkbox'}
-                disabled={!supportBiometric}
               >
                 {t('Enable biometric login')}
               </Checkbox>
-            </Form.Item>
+            </Form.Item>)}
           </Form>
         </div>
       </Layout.WithSubHeaderOnly>
