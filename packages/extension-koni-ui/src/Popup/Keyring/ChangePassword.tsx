@@ -4,6 +4,7 @@
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { simpleSettingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { useDefaultNavigate, useFocusFormItem, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useBiometric } from '@subwallet/extension-koni-ui/hooks/biometric';
 import { keyringChangeMasterPassword } from '@subwallet/extension-koni-ui/messaging';
 import { FormCallbacks, FormFieldData, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { renderBaseConfirmPasswordRules, renderBasePasswordRules, simpleCheckForm } from '@subwallet/extension-koni-ui/utils';
@@ -40,6 +41,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   const [form] = Form.useForm<ChangePasswordFormState>();
   const [isDisabled, setIsDisable] = useState(true);
   const [submitError, setSubmitError] = useState('');
+  const { onUnlockSuccess } = useBiometric();
 
   const [loading, setLoading] = useState(false);
 
@@ -65,6 +67,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
           if (!res.status) {
             form.setFields([{ name: FormFieldName.OLD_PASSWORD, errors: res.errors }]);
           } else {
+            onUnlockSuccess(password, false);
             goHome();
           }
         }).catch((e: Error) => {
@@ -74,7 +77,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
         });
       }, 300);
     }
-  }, [form, goHome]);
+  }, [form, goHome, onUnlockSuccess]);
 
   const onUpdate: FormCallbacks<ChangePasswordFormState>['onFieldsChange'] = useCallback((changedFields: FormFieldData[], allFields: FormFieldData[]) => {
     const { empty, error } = simpleCheckForm(allFields);

@@ -47,10 +47,16 @@ const checkTokenUpToDate = async () => {
 };
 
 const updateLocalTokenFlag = async () => {
-  const cloudRs = await cloudStorage.getItem(PASSWORD_UPDATE_TIME_CLOUD);
+  const cloudRs = (await cloudStorage.getItem(PASSWORD_UPDATE_TIME_CLOUD));
 
   if (cloudRs) {
     localStorage.setItem(PASSWORD_UPDATE_TIME_BIO_LOCAL, cloudRs);
+  } else {
+    // Update in the first time
+    const time = Date.now().toString();
+
+    localStorage.setItem(PASSWORD_UPDATE_TIME_BIO_LOCAL, time);
+    await cloudStorage.setItem(PASSWORD_UPDATE_TIME_CLOUD, time);
   }
 };
 
@@ -95,6 +101,7 @@ export function SecurityContextProvider ({ children }: SecurityContextProviderPr
   const setToken = useCallback(async (token: string) => {
     await biometricHandler.setBiometricToken(token);
     await updateLocalTokenFlag();
+    setIsTokenUpdateToDate(true);
     setUsingBiometric(true);
     setRequireSyncPassword(false);
     localStorage.removeItem(REMIND_BIOMETRIC_TIME);
