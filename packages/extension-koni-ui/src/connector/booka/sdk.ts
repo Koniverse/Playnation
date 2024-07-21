@@ -326,7 +326,6 @@ export class BookaSdk {
   }
 
   public getShareTwitterAirdropURL (item: AirdropCampaign) {
-    console.log('item', item)
     if (!item.share) {
       return;
     }
@@ -482,7 +481,7 @@ export class BookaSdk {
     try {
       loginMap = JSON.parse((await storage.getItem('loginMap') || '{}')) as Record<string, string>;
     } catch (e) {
-      console.log('sync error', e);
+      console.warn('sync error', e);
     }
 
     if (loginMessage === message && loginMap[address]) {
@@ -600,7 +599,6 @@ export class BookaSdk {
     const gameItem = await this.getRequest<{ success: boolean, items: any }>(`${GAME_API_HOST}/api/shop/get-item-in-game`);
 
     if (gameItem) {
-      console.log('gameItem', gameItem);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       this.gameItemInGame.next(gameItem.items);
     }
@@ -682,7 +680,7 @@ export class BookaSdk {
   }
 
   subscribeRankInfoMap () {
-    this.fetchRankInfoMap().catch(console.log);
+    this.fetchRankInfoMap().catch(console.warn);
 
     return this.rankInfoSubject;
   }

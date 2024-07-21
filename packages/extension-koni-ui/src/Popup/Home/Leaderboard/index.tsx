@@ -122,9 +122,10 @@ const Component = ({ className }: Props): React.ReactElement => {
 
     setTabGroupItems(getTabGroupInfo());
 
+    // Auto refresh every 10 minute for weekly leaderboard only
     const timer: NodeJS.Timer = setInterval(() => {
       setTabGroupItems(getTabGroupInfo());
-    }, 10000);
+    }, 600000);
 
     return () => {
       clearInterval(timer);
