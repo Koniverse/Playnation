@@ -6,9 +6,11 @@ import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig, Game, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
+import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
 import { ModalContext } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
@@ -53,11 +55,12 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
   const [gameItemMap, setGameItemMap] = useState<Record<string, GameItem[]>>(apiSDK.gameItemMap);
   const [gameInventoryItemList, setGameInventoryItemList] = useState<GameInventoryItem[]>(apiSDK.gameInventoryItemList);
-  const [currentGameShopId, setCurrentGameShopId] = useState<number>();
+  const [currentShopGameId, setCurrentShopGameId] = useState<number>();
   const { activeModal } = useContext(ModalContext);
   const [account, setAccount] = useState(apiSDK.account);
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
   const { setContainerClass } = useContext(HomeContext);
+  const { openLeaderboardModal } = useContext(WalletModalContext);
 
   const exitGame = useCallback(() => {
     if (gameIframe.current) {
@@ -93,10 +96,29 @@ const Component = ({ className }: Props): React.ReactElement => {
   // @ts-ignore
   const onOpenShop = useCallback((gameId?: number) => {
     return () => {
-      setCurrentGameShopId(gameId);
+      setCurrentShopGameId(gameId);
       activeModal(shopModalId);
     };
   }, [activeModal]);
+
+  const onOpenLeaderboard = useCallback((game: Game) => {
+    const { end: endDate, start: startDate } = calculateStartAndEnd('weekly');
+
+    openLeaderboardModal({
+      gameId: game.id,
+      modalTitle: game.name,
+      tabGroupItems: [{
+        label: 'default',
+        value: 'default',
+        leaderboardInfo: {
+          endDate,
+          startDate,
+          type: 'game'
+        }
+      }],
+      defaultSelectedTab: 'default'
+    });
+  }, [openLeaderboardModal]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -154,6 +176,7 @@ const Component = ({ className }: Props): React.ReactElement => {
               className={'game-card-item'}
               item={g}
               key={g.id}
+              onOpenLeaderboard={onOpenLeaderboard}
               onPlay={playGame(g)}
             />
           ))
@@ -171,7 +194,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
       <ShopModal
         energyConfig={energyConfig}
-        gameId={currentGameShopId}
+        gameId={currentShopGameId}
         gameInventoryItemList={gameInventoryItemList}
         gameItemMap={gameItemMap}
       />
