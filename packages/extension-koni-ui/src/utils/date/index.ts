@@ -66,11 +66,19 @@ export function calculateStartAndEnd (key: string) {
 
     case 'vara_playdrop': {
       const startEnv = process.env.VARA_PLAYDROP_START_DATE || '2024-07-10 10:00:00' as string;
-      const endEnv = process.env.VARA_PLAYDROP_END_DATE || '2024-07-24 10:00:00' as string;
+      const endEnv = process.env.VARA_PLAYDROP_END_DATE || '2024-07-31 10:00:00' as string;
       const startDate = new Date(startEnv);
       const endDate = new Date(endEnv);
 
       return { start: formatFully(startDate), end: formatFully(endDate) };
+    }
+
+    case 'invite_to_play': {
+      const dayOfWeek = today.getUTCDay(); // 0 (Chủ Nhật) đến 6 (Thứ Bảy)
+      const start = new Date(Date.UTC(year, month, day - dayOfWeek + (dayOfWeek === 0 ? -6 : 1))); // Adjust if today is Sunday
+      const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate() + 6));
+
+      return { start: formatDate(start, false), end: formatDate(end, true) };
     }
 
     default:
