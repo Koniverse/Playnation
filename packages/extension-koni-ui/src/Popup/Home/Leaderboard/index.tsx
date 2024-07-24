@@ -109,9 +109,11 @@ const Component = ({ className }: Props): React.ReactElement => {
       return baseItems.map((item) => {
         const { end: endDate, start: startDate } = calculateStartAndEnd(item.value);
         let type = 'all';
+        let gameId = 0;
 
         if (item.value === TabType.INVITE_TO_PLAY){
           type = 'inviteToPlay';
+          gameId = 5;
         }
 
         return {
@@ -120,7 +122,8 @@ const Component = ({ className }: Props): React.ReactElement => {
             ...item.leaderboardInfo,
             startDate,
             endDate,
-            type
+            type,
+            gameId
           }
         };
       });
