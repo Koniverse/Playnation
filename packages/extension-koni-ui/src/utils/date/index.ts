@@ -73,6 +73,14 @@ export function calculateStartAndEnd (key: string) {
       return { start: formatFully(startDate), end: formatFully(endDate) };
     }
 
+    case 'invite_to_play': {
+      const dayOfWeek = today.getUTCDay(); // 0 (Chủ Nhật) đến 6 (Thứ Bảy)
+      const start = new Date(Date.UTC(year, month, day - dayOfWeek + (dayOfWeek === 0 ? -6 : 1))); // Adjust if today is Sunday
+      const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate() + 6));
+
+      return { start: formatDate(start, false), end: formatDate(end, true) };
+    }
+
     default:
       throw new Error('Invalid key. Must be "weekly", "monthly", or "yearly".');
   }
