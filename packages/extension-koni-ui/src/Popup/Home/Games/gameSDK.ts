@@ -1,7 +1,8 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { BuyInGameItemResponse, ErrorCode, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, Player, PlaynationSDKError, PlayResponse, SDKInitParams, Tournament, UseInGameItemResponse } from '@playnation/game-sdk';
+import { BuyInGameItemResponse, ErrorCode, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, Player, PlaynationSDKError, PlayResponse, SDKInitParams, Tournament, UpdateStatePayload, UseInGameItemResponse } from '@playnation/game-sdk';
+import { GameState } from '@playnation/game-sdk/dist/types';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { camelCase } from 'lodash';
@@ -56,6 +57,7 @@ export class GameApp {
     const playerId = `${account?.info?.telegramUsername || 'player1'}-${account?.info.id || 0}`;
     const gameData = (account?.gameData || []).find((item) => item.gameId === this.currentGameInfo.id);
     const point = gameData?.point || 0;
+    const state = localStorage.getItem(`game-state-${this.currentGameInfo.id}`) || undefined;
 
     const player: Player = {
       id: playerId,
@@ -72,6 +74,7 @@ export class GameApp {
           quantity
         })),
       balanceNPS: account?.attributes.point || 0,
+      state: state ? JSON.parse(state) as GameState<any> : undefined
     };
 
     return player;
@@ -159,6 +162,13 @@ export class GameApp {
     };
 
     return res;
+  }
+
+  onUpdateState ({ gamePlayId, state }: UpdateStatePayload) {
+    const currentGame = this.currentGameInfo;
+
+    localStorage.setItem(`game-state-${currentGame.id}`, JSON.stringify(state));
+    // Todo: implement server sync later
   }
 
   async onUseIngameItem (req: {itemId: string, gameplayId?: string }) {
