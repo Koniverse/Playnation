@@ -80,6 +80,7 @@ export interface Game {
   startTime: string | null;
   endTime: string | null;
   active: boolean;
+  pointConversionRate: number;
 }
 
 export enum TaskHistoryStatus {

@@ -24,6 +24,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.2.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@ledgerhq/hw-app-eth": "^6.35.0",
+    "@playnation/game-sdk": "^1.0.5",
     "@polkadot/api-contract": "^11.0.3",
     "@polkadot/hw-ledger": "^12.6.2",
     "@polkadot/networks": "^12.6.2",

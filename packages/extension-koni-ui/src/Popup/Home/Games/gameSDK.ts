@@ -1,9 +1,9 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { BuyInGameItemResponse, ErrorCode, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, Player, PlaynationSDKError, PlayResponse, SDKInitParams, Tournament, UseInGameItemResponse } from '@playnation/game-sdk';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { BuyInGameItemResponse, ErrorCode, GameError, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, Player, PlayResponse, SDKInitParams, Tournament, UseInGameItemResponse } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
 import { camelCase } from 'lodash';
 import z from 'zod';
 
@@ -21,7 +21,7 @@ export class GameApp {
   private apiSDK: BookaSdk;
   private currentGameInfo: Game;
   private inventoryQuantityMap: Record<string, number> = {};
-  private gameItemInGame: { [key: string]: any } = {};
+  private gameItemInGame: Record<string, InGameItem> = {};
 
   constructor (options: GameAppOptions) {
     this.options = options;
@@ -62,17 +62,17 @@ export class GameApp {
       balance: point,
       name: `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}` || 'Player',
       avatar: 'https://thispersondoesnotexist.com/',
+      energy: account?.attributes?.energy || 0,
+      pointConversionRate: this.currentGameInfo.pointConversionRate || 0,
       gameEnergy: this.currentGameInfo.energyPerGame,
       level: 1,
-      energy: account?.attributes?.energy || 0,
       inventory: Object.entries(this.inventoryQuantityMap)
         .map(([id, quantity]) => ({
           itemId: id,
           quantity
-        }))
+        })),
+      balanceNPS: account?.attributes.point || 0,
     };
-
-    console.log('GetPlayer', player);
 
     return player;
   }
@@ -82,7 +82,7 @@ export class GameApp {
     const currentGame = this.currentGameInfo;
 
     if (!account || !currentGame) {
-      throw newError('invalid account or game', errorCodes.SystemError);
+      throw newError('invalid account or game', ErrorCode.SYSTEM_ERROR);
     }
 
     const tickets = Math.floor((account.attributes.energy + 0.3) / currentGame.energyPerGame);
@@ -105,7 +105,7 @@ export class GameApp {
   }
 
   onGetIngameItems () {
-    const items: InGameItem[] = Object.values(this.gameItemInGame);
+    const items = Object.values(this.gameItemInGame);
 
     return { items };
   }
@@ -116,20 +116,21 @@ export class GameApp {
     const energy = account?.attributes.energy || 0;
 
     if (energy < currentGame.energyPerGame) {
-      throw newError('Not enought energy', errorCodes.NotEnoughEnergy);
+      throw newError('Not enought energy', ErrorCode.NOT_ENOUGH_ENERGY);
     }
 
     const gamePlay = await this.apiSDK.playGame(this.currentGameInfo.id, this.currentGameInfo.energyPerGame);
 
     if (!account || !currentGame) {
-      throw newError('invalid account or game', errorCodes.SystemError);
+      throw newError('invalid account or game', ErrorCode.SYSTEM_ERROR);
     }
 
-    const tickets = Math.floor(account.attributes.energy) - 1;
+    const remainingEnergy = account.attributes.energy - currentGame.energyPerGame;
 
     const res: PlayResponse = {
       token: gamePlay.token,
-      remainingTickets: tickets
+      remainingTickets: Math.floor(remainingEnergy / currentGame.energyPerGame),
+      energy: remainingEnergy
     };
 
     return res;
@@ -140,14 +141,14 @@ export class GameApp {
   }
 
   onBuyTickets () {
-    throw newError('not supported', errorCodes.SystemError);
+    throw newError('not supported', ErrorCode.SYSTEM_ERROR);
   }
 
   onBuyIngameItem (itemId: string, gameplayId?: string): BuyInGameItemResponse {
     console.log('buy item', itemId, gameplayId);
 
     if (!this.gameItemInGame[itemId]) {
-      throw newError('invalid item id', errorCodes.InvalidRequest);
+      throw newError('invalid item id', ErrorCode.INVALID_REQUEST);
     }
 
     this.inventoryQuantityMap[itemId] = (this.inventoryQuantityMap[itemId] || 0) + 1;
@@ -160,14 +161,15 @@ export class GameApp {
     return res;
   }
 
-  onUseIngameItem (req: {itemId: string, gameplayId?: string }): UseInGameItemResponse {
+  async onUseIngameItem (req: {itemId: string, gameplayId?: string }) {
     let success = false;
     const { itemId } = req;
 
     const remaining = this.inventoryQuantityMap[itemId] || 0;
 
     // find object by itemId, return gameItemId;
-    const gameItemId = this.gameItemInGame[itemId].gameItemId;
+    // @ts-ignore
+    const gameItemId = this.gameItemInGame[itemId].gameItemId as number;
 
     if (this.gameItemInGame[itemId] && remaining > 0) {
       success = true;
@@ -182,9 +184,7 @@ export class GameApp {
       }))
     };
 
-    console.log(itemId, res);
-
-    this.apiSDK.useInventoryItem(gameItemId);
+    await this.apiSDK.useInventoryItem(gameItemId);
 
     return res;
   }
@@ -197,11 +197,11 @@ export class GameApp {
     const currentGame = this.apiSDK.currentGamePlay;
 
     if (!currentGame) {
-      throw newError('game not started', errorCodes.InvalidRequest);
+      throw newError('game not started', ErrorCode.INVALID_REQUEST);
     }
 
     if (currentGame.token !== result.gameToken) {
-      throw newError('invalid game token', errorCodes.InvalidRequest);
+      throw newError('invalid game token', ErrorCode.INVALID_REQUEST);
     }
 
     // Todo: sign result
@@ -264,7 +264,7 @@ export class GameApp {
       if (!handler || typeof handler !== 'function') {
         throw newError(
           `missing handle func ${handleMethod} for action ${action}`,
-          errorCodes.SystemError
+          ErrorCode.SYSTEM_ERROR
         );
       }
 
@@ -272,7 +272,7 @@ export class GameApp {
       res = await handler.call(this, data);
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/restrict-template-expressions
-      res = { error: `${e}`, code: (e as GameError)?.code || -1 };
+      res = { error: `${e}`, code: (e as PlaynationSDKError)?.code || -1 };
       console.error('handle error', e);
     }
 
@@ -287,20 +287,5 @@ export class GameApp {
 }
 
 function newError (msg: string, code?: ErrorCode) {
-  const err = new GameError(msg);
-
-  err.code = code;
-
-  return err;
+  return new PlaynationSDKError(msg, code);
 }
-
-const errorCodes = {
-  SystemError: -1, // something went wrong
-  InvalidRequest: 10,
-  TourNotAvailable: 100, // tournament has ended or disabled
-  NotEnoughGEM: 110, // no enought GEM to buy tickets or items
-  InvalidScore: 120, // score was not accepted (cheat detected)
-  UserReject: 130, // User reject transaction (buy tickets or items)
-  NotEnoughTicket: 140, // Not enough ticket to play game
-  NotEnoughEnergy: 150
-};

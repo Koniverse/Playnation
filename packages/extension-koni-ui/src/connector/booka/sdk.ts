@@ -1,12 +1,12 @@
 // Copyright 2019-2022 @subwallet/extension authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { InGameItem } from '@playnation/game-sdk';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
 import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
-import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
 import { calculateStartAndEnd, formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
@@ -40,7 +40,7 @@ export class BookaSdk {
   private gameItemMapSubject = new BehaviorSubject<Record<string, GameItem[]>>({});
   private gameInventoryItemListSubject = new BehaviorSubject<GameInventoryItem[]>([]);
   private gameInventoryItemInGame = new BehaviorSubject<GameInventoryItem['inventoryInGame']>({});
-  private gameItemInGame = new BehaviorSubject<Partial<Record<string, InGameItem>>>({});
+  private gameItemInGame = new BehaviorSubject<Record<string, InGameItem>>({});
   private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
@@ -318,7 +318,7 @@ export class BookaSdk {
 
     await this.reloadAccount();
 
-    return data as {success:boolean, isOpenUrl: boolean, openUrl: string, message: string};
+    return data as {success: boolean, isOpenUrl: boolean, openUrl: string, message: string};
   }
 
   getInviteURL (): string {
@@ -754,6 +754,7 @@ export class BookaSdk {
       throw error;
     }
   }
+
   async getAirlyftToken () {
     try {
       return await this.getRequest(`${GAME_API_HOST}/api/airlyft/get-token`) as unknown as Promise<{token: string, success: boolean} | undefined>;
