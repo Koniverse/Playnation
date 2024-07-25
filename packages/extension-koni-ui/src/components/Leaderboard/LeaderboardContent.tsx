@@ -110,20 +110,6 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
       )
     }
     <div className='top-three-area'>
-      {!!currentTabInfo?.leaderboardInfo.onClickShare && (
-        <Button
-          className={'__share-button -primary-3'}
-          icon={(
-            <Icon
-              phosphorIcon={ShareNetwork}
-              size={'md'}
-            />
-          )}
-          onClick={_onClickShare}
-          shape={'round'}
-          size={'xs'}
-        />
-      )}
       <div className='top-account-item-wrapper'>
         {
           <TopAccountItem
@@ -154,7 +140,9 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
       </div>
     </div>
 
-    <div className={'leaderboard-item-list-container'}>
+    <div
+      className={'leaderboard-item-list-container'}
+    >
       {filteredLeaderboardItems.length >= 3 && filteredLeaderboardItems.slice(3).map((item) => (
         <div
           className={CN('leaderboard-item-wrapper', {
@@ -163,6 +151,24 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
           key={item.rank}
         >
           <GameAccount
+            actionNode={!!currentTabInfo?.leaderboardInfo.onClickShare && item.mine
+              ? (
+                <Button
+                  className={'__share-button'}
+                  icon={(
+                    <Icon
+                      customSize={'20px'}
+                      phosphorIcon={ShareNetwork}
+                      weight={'fill'}
+                    />
+                  )}
+                  onClick={_onClickShare}
+                  shape={'round'}
+                  size={'xs'}
+                  type={'ghost'}
+                />
+              )
+              : undefined}
             avatar={item.accountInfo.avatar}
             className={CN('leaderboard-item')}
             name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
@@ -198,8 +204,10 @@ const LeaderboardContent = styled(Component)<ThemeProps>(({ theme: { extendToken
 
     '.tab-group-wrapper': {
       paddingLeft: token.padding,
-      paddingRight: token.padding
+      paddingRight: token.padding,
+      marginBottom: token.margin
     },
+
     '.top-button-share': {
       paddingLeft: token.padding,
       paddingRight: token.padding
@@ -218,20 +226,13 @@ const LeaderboardContent = styled(Component)<ThemeProps>(({ theme: { extendToken
     },
 
     '.top-three-area': {
-      minHeight: 252,
       display: 'flex',
       alignItems: 'flex-end',
-      paddingTop: token.size,
       paddingBottom: token.size,
       justifyContent: 'center',
       paddingLeft: token.paddingXS,
       paddingRight: token.paddingXS,
-      position: 'relative',
-      '.__share-button': {
-        position: 'absolute',
-        right: token.padding,
-        top: 0
-      }
+      position: 'relative'
     },
 
     '.leaderboard-item-wrapper': {
@@ -241,6 +242,7 @@ const LeaderboardContent = styled(Component)<ThemeProps>(({ theme: { extendToken
     '.leaderboard-item-wrapper.-is-sticky': {
       position: 'sticky',
       bottom: token.size,
+      top: 0,
       zIndex: 100,
 
       '.leaderboard-item': {
@@ -256,6 +258,10 @@ const LeaderboardContent = styled(Component)<ThemeProps>(({ theme: { extendToken
           border: `1px solid ${token.colorBgBorder}`
         }
       }
+    },
+
+    '.__share-button': {
+      marginRight: -10
     },
 
     '.leaderboard-item-list-container': {
