@@ -13,7 +13,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Copy, Plus, UserCirclePlus, Users } from 'phosphor-react';
+import { Copy, Plus, SmileySad, UserCirclePlus } from 'phosphor-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 
@@ -164,7 +164,7 @@ const Component = ({ className }: Props): React.ReactElement => {
             size={18}
           />
           <div className='friend-count'>
-            {totalCount} {t('Friends')}
+            {totalCount} {t(totalCount > 1 ? 'frens' : 'fren')}
           </div>
         </div>
 
@@ -208,7 +208,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       >
         <div className='invitation-area'>
           <div className='invitation-text'>
-            {t('Invite your friends and play together!')}
+            {t('Invite frens and play together!')}
           </div>
 
           <div className='invitation-reward'>
@@ -253,7 +253,7 @@ const Component = ({ className }: Props): React.ReactElement => {
               shape={'round'}
               size={'xs'}
             >
-              {t('Copy Link')}
+              {t('Copy link')}
             </Button>
           </div>
         </div>
@@ -262,7 +262,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           className={'friend-list-title'}
           ref={stickyRef}
         >
-          {t('Your friends list')}
+          {t('Invite list')}
         </div>
 
         <div className={CN('friend-list-container', { '-empty': !referralList.length })}>
@@ -280,9 +280,9 @@ const Component = ({ className }: Props): React.ReactElement => {
             !referralList.length && (
               <EmptyList
                 className={'empty-list-block'}
-                emptyMessage={t('Please invite now')}
-                emptyTitle={t('You have no friends yet')}
-                phosphorIcon={Users}
+                emptyMessage={t('Invite now')}
+                emptyTitle={t('Uh oh, no frens invited')}
+                phosphorIcon={SmileySad}
               />
             )
           }
@@ -457,10 +457,13 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
       paddingRight: 24,
       paddingTop: token.paddingXS,
       fontWeight: token.headingFontWeight,
-      paddingBottom: token.paddingXXS
+      paddingBottom: token.paddingXXS,
+      zIndex: 10
     },
 
     '.friend-list-container': {
+      marginTop: -5, // fix issue on ios, mac
+      paddingTop: 5,
       flex: 1,
       backgroundColor: extendToken.colorBgSecondary1,
       paddingLeft: token.padding,
