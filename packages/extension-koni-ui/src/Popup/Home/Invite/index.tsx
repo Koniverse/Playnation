@@ -62,9 +62,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       return 0;
     }
 
-    const rank = account.attributes?.rank || 'iron';
-
-    return rankPointMap[rank] || 0;
+    return rankPointMap.iron || 0;
   }, [account]);
 
   const inviteURL = useMemo(() => {
