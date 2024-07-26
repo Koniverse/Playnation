@@ -3,7 +3,23 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import {
+  AccountRankType,
+  AirdropCampaign,
+  AirdropEligibility,
+  BookaAccount,
+  ConfigRecord,
+  EnergyConfig,
+  Game,
+  GameInventoryItem,
+  GameItem,
+  GamePlay,
+  LeaderboardPerson,
+  RankInfo,
+  ReferralRecord,
+  Task,
+  TaskCategory
+} from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
@@ -25,7 +41,8 @@ const CACHE_KEYS = {
   taskList: 'data--task-list-cache',
   gameList: 'data--game-list-cache',
   energyConfig: 'data--energy-config-cache',
-  rankInfoMap: 'data--rank-info-map-cache'
+  rankInfoMap: 'data--rank-info-map-cache',
+  configList: 'data--config-list-cache'
 };
 
 export class BookaSdk {
@@ -36,6 +53,7 @@ export class BookaSdk {
   private gameListSubject = new BehaviorSubject<Game[]>([]);
   private currentGamePlaySubject = new BehaviorSubject<GamePlay | undefined>(undefined);
   private leaderBoardSubject = new BehaviorSubject<LeaderboardPerson[]>([]);
+  private configSubject = new BehaviorSubject<ConfigRecord[]>([]);
   private referralListSubject = new BehaviorSubject<ReferralRecord[]>([]);
   private gameItemMapSubject = new BehaviorSubject<Record<string, GameItem[]>>({});
   private gameInventoryItemListSubject = new BehaviorSubject<GameInventoryItem[]>([]);
@@ -50,7 +68,7 @@ export class BookaSdk {
   constructor () {
     storage.getItem('cache-version').then((version) => {
       if (cacheVersion === version) {
-        storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game, energyConfig, rankInfoMap]) => {
+        storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game, energyConfig, rankInfoMap, configList]) => {
           if (account) {
             try {
               const accountData = JSON.parse(account) as BookaAccount;
@@ -98,6 +116,16 @@ export class BookaSdk {
               this.energyConfigSubject.next(_energyConfig);
             } catch (e) {
               console.error('Failed to parse energy config', e);
+            }
+          }
+
+          if (configList) {
+            try {
+              const _configList = JSON.parse(configList) as ConfigRecord[];
+
+              this.energyConfigSubject.next(_configList);
+            } catch (e) {
+              console.error('Failed to parse config list', e);
             }
           }
 
@@ -263,6 +291,24 @@ export class BookaSdk {
 
   subscribeGameList () {
     return this.gameListSubject;
+  }
+
+  async fetchConfigList () {
+    const configList = await this.getRequest<Game[]>(`${GAME_API_HOST}/api/config/fetch`);
+
+    if (configList) {
+      this.configSubject.next(configList);
+      console.log('configList', configList);
+      storage.setItem(CACHE_KEYS.configList, JSON.stringify(configList)).catch(console.error);
+    }
+  }
+
+  public get configList () {
+    return this.configSubject.value;
+  }
+
+  subscribeConfigList () {
+    return this.configSubject;
   }
 
   async fetchTaskCategoryList () {
@@ -455,7 +501,8 @@ export class BookaSdk {
           this.fetchGameList(),
           this.fetchTaskCategoryList(),
           this.fetchTaskList(),
-          this.fetchLeaderboard(start, end, 0, 100)
+          this.fetchLeaderboard(start, end, 0, 100),
+          this.fetchConfigList()
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
           // this.fetchGameItemInGameList()
