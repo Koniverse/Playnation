@@ -738,7 +738,7 @@ export class BookaSdk {
 
   async getAirlyftToken () {
     try {
-      return await this.getRequest(`${GAME_API_HOST}/api/airlyft/get-token`) as unknown as Promise<{token: string, success: boolean} | undefined>;
+      return await this.getRequest<{token: string, success: boolean} | undefined>(`${GAME_API_HOST}/api/airlyft/get-token`);
     } catch (error) {
       console.error('Error in fetchAirdropHistory:', error);
       throw error;

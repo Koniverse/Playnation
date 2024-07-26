@@ -73,21 +73,21 @@ function Component ({ className, item, onOpenLeaderboard, onPlay }: Props) {
           </Button>
 
           {
-            !isComingSoon && (
-              <Button
-                className={'-primary-3'}
-                icon={(
-                  <Icon
-                    customSize={'20px'}
-                    phosphorIcon={ChartBar}
-                    weight={'fill'}
-                  />
-                )}
-                onClick={_openLeaderboard}
-                shape={'circle'}
-                size={'xs'}
-              />
-            )
+            // !isComingSoon && (
+            //   <Button
+            //     className={'-primary-3'}
+            //     icon={(
+            //       <Icon
+            //         customSize={'20px'}
+            //         phosphorIcon={ChartBar}
+            //         weight={'fill'}
+            //       />
+            //     )}
+            //     onClick={_openLeaderboard}
+            //     shape={'circle'}
+            //     size={'xs'}
+            //   />
+            // )
           }
         </div>
 

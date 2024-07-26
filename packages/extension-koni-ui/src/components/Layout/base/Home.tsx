@@ -85,7 +85,7 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, onC
 
             <Tooltip
               className={'invite-tooltip'}
-              open={!isVisitedInvitationScreen}
+              open={false}
               overlayClassName={'tooltip-overlay'}
               placement={'bottomRight'}
               title={t('Invite your friend')}
