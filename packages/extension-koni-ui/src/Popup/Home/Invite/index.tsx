@@ -129,7 +129,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       backgroundStyle={'primary'}
       className={CN(className)}
       subHeaderIcons={subHeaderIcons}
-      title={t('Invite friends')}
+      title={t('Invite frens')}
     >
       <img
         alt='game_background_image'
