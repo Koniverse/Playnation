@@ -3,6 +3,7 @@
 
 import { Layout } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
+import { VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ButtonProps, Icon, ModalContext, Tooltip } from '@subwallet/react-ui';
@@ -11,6 +12,7 @@ import React, { useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { useLocalStorage } from 'usehooks-ts';
 
 type Props = {
   children?: React.ReactNode;
@@ -28,6 +30,7 @@ type Props = {
 
 const Component = ({ backgroundImages, backgroundStyle, children, className, onClickFilterIcon, onClickSearchIcon, onTabSelected, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar }: Props) => {
   const navigate = useNavigate();
+  const [isVisitedInvitationScreen, setIsVisitedInvitationScreen] = useLocalStorage(VISIT_INVITATION_SCREEN_FLAG, false);
   // @ts-ignore
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
@@ -40,7 +43,8 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, onC
 
   const onOpenInvite = useCallback(() => {
     navigate('/invite');
-  }, [navigate]);
+    setIsVisitedInvitationScreen(true);
+  }, [navigate, setIsVisitedInvitationScreen]);
 
   const headerIcons = useMemo<ButtonProps[]>(() => {
     const icons: ButtonProps[] = [];
@@ -81,7 +85,7 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, onC
 
             <Tooltip
               className={'invite-tooltip'}
-              open={true}
+              open={!isVisitedInvitationScreen}
               overlayClassName={'tooltip-overlay'}
               placement={'bottomRight'}
               title={t('Invite your friend')}
@@ -91,12 +95,13 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, onC
             </Tooltip>
           </>
         ),
+        className: 'invite-button',
         onClick: onOpenInvite
       });
     }
 
     return icons;
-  }, [showFilterIcon, showSearchIcon, showGiftIcon, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, t, onOpenInvite]);
+  }, [showFilterIcon, showSearchIcon, showGiftIcon, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, isVisitedInvitationScreen, t, onOpenInvite]);
 
   const onClickListIcon = useCallback(() => {
     navigate('/settings/list');
@@ -123,5 +128,12 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, onC
 };
 
 export const Home = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token } }: LayoutBaseProps) => ({
+  '.invite-button': {
+    position: 'relative'
+  },
 
+  '.invite-tooltip': {
+    position: 'absolute',
+    right: 0
+  }
 }));

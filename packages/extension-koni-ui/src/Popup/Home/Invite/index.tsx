@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { GameAccountAvatar, GamePoint, Layout } from '@subwallet/extension-koni-ui/components';
+import { EmptyList, GameAccountAvatar, GamePoint, Layout } from '@subwallet/extension-koni-ui/components';
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, ReferralRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
@@ -13,7 +13,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Copy, Plus, UserCirclePlus } from 'phosphor-react';
+import { Copy, Plus, UserCirclePlus, Users } from 'phosphor-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 
@@ -208,7 +208,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       >
         <div className='invitation-area'>
           <div className='invitation-text'>
-            {t('Invite your friends and play together !')}
+            {t('Invite your friends and play together!')}
           </div>
 
           <div className='invitation-reward'>
@@ -221,45 +221,41 @@ const Component = ({ className }: Props): React.ReactElement => {
             />
           </div>
 
-          {
-            account && (
-              <div className='invitation-buttons'>
-                <Button
-                  block={true}
-                  icon={(
-                    <Icon
-                      customSize={'20px'}
-                      phosphorIcon={UserCirclePlus}
-                      weight={'fill'}
-                    />
-                  )}
-                  onClick={inviteFriend}
-                  schema={'primary'}
-                  shape={'round'}
-                  size={'xs'}
-                >
-                  {t('Invite now')}
-                </Button>
+          <div className='invitation-buttons'>
+            <Button
+              block={true}
+              icon={(
+                <Icon
+                  customSize={'20px'}
+                  phosphorIcon={UserCirclePlus}
+                  weight={'fill'}
+                />
+              )}
+              onClick={inviteFriend}
+              schema={'primary'}
+              shape={'round'}
+              size={'xs'}
+            >
+              {t('Invite now')}
+            </Button>
 
-                <Button
-                  block={true}
-                  icon={(
-                    <Icon
-                      customSize={'20px'}
-                      phosphorIcon={Copy}
-                      weight={'fill'}
-                    />
-                  )}
-                  onClick={copyLink}
-                  schema={'secondary'}
-                  shape={'round'}
-                  size={'xs'}
-                >
-                  {t('Copy Link')}
-                </Button>
-              </div>
-            )
-          }
+            <Button
+              block={true}
+              icon={(
+                <Icon
+                  customSize={'20px'}
+                  phosphorIcon={Copy}
+                  weight={'fill'}
+                />
+              )}
+              onClick={copyLink}
+              schema={'secondary'}
+              shape={'round'}
+              size={'xs'}
+            >
+              {t('Copy Link')}
+            </Button>
+          </div>
         </div>
 
         <div
@@ -269,7 +265,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           {t('Your friends list')}
         </div>
 
-        <div className={'friend-list-container'}>
+        <div className={CN('friend-list-container', { '-empty': !referralList.length })}>
           {referralList.map((item, index) => (
             <GameAccount
               avatar={item.accountInfo.avatar}
@@ -279,6 +275,17 @@ const Component = ({ className }: Props): React.ReactElement => {
               point={item.point}
             />
           ))}
+
+          {
+            !referralList.length && (
+              <EmptyList
+                className={'empty-list-block'}
+                emptyMessage={t('Please invite now')}
+                emptyTitle={t('You have no friends yet')}
+                phosphorIcon={Users}
+              />
+            )
+          }
         </div>
       </div>
     </Layout.WithSubHeaderOnly>
@@ -461,8 +468,22 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
       paddingBottom: token.paddingXS
     },
 
+    '.friend-list-container.-empty': {
+      flex: '0 1 auto',
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
+      marginBottom: token.margin
+    },
+
     '.friend-item': {
       marginBottom: token.marginXS
+    },
+
+    '.empty-list-block': {
+      paddingTop: 24,
+      paddingBottom: 24,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS
     }
   };
 });
