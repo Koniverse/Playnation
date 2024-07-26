@@ -21,6 +21,7 @@ export type LeaderboardTabGroupItemType = TabGroupItemType & {
     startDate?: string;
     endDate?: string;
     type?: string;
+    gameId?: number;
   }
 }
 
@@ -83,7 +84,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
       leaderboardSub = apiSDK.subscribeLeaderboard(
         currentTabInfo.leaderboardInfo.startDate,
         currentTabInfo.leaderboardInfo.endDate,
-        gameId || 0, 100,
+        gameId || currentTabInfo.leaderboardInfo.gameId || 0, 100,
         currentTabInfo.leaderboardInfo.type).subscribe((data) => {
         setLeaderboardItems(data);
       });
