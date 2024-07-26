@@ -113,7 +113,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
         if (item.value === TabType.INVITE_TO_PLAY){
           type = 'inviteToPlay';
-          gameId = 5;
+          gameId = 7;
         }
 
         return {
