@@ -55,6 +55,7 @@ export const TabGroup = styled(Component)<Props>(({ theme: { extendToken, token 
     padding: '6px 10px',
     backgroundColor: extendToken.colorBgTranslucent,
     borderRadius: 24,
+    overflow: 'auto',
 
     '.__tab-item': {
       cursor: 'pointer',

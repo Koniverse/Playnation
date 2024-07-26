@@ -39,17 +39,21 @@ const Component = ({ className, isFirst, isPlaceholder, leaderboardInfo, rank }:
         '-is-first': isFirst
       })}
     >
-      <div className={'__rank'}>
-        {rank || leaderboardInfo?.rank}
-      </div>
+      <div className='__avatar-wrapper'>
+        <GameAccountAvatar
+          avatarPath={leaderboardInfo?.accountInfo.avatar}
+          className={'__avatar'}
+          hasBoxShadow
+          isPlaceholder={isPlaceholder}
+          size={'custom'}
+        />
 
-      <GameAccountAvatar
-        avatarPath={leaderboardInfo?.accountInfo.avatar}
-        className={'__avatar'}
-        hasBoxShadow
-        isPlaceholder={isPlaceholder}
-        size={isFirst ? 7 : 5}
-      />
+        <div className={'__rank-wrapper'}>
+          <div className={'__rank'}>
+            {rank || leaderboardInfo?.rank}
+          </div>
+        </div>
+      </div>
 
       <div className={'__account-name'}>
         {accountName}
@@ -64,31 +68,37 @@ const Component = ({ className, isFirst, isPlaceholder, leaderboardInfo, rank }:
 
 const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    '.__rank': {
-      fontWeight: token.headingFontWeight,
-      fontSize: token.fontSizeLG,
-      lineHeight: token.lineHeightLG,
-      color: token.colorTextDark2,
-      marginBottom: token.marginXS,
-      textAlign: 'center'
-    },
-
-    '.__avatar': {
+    '.__avatar-wrapper': {
       marginLeft: 'auto',
       marginRight: 'auto',
-      marginBottom: token.marginXS
+      marginBottom: token.marginXS,
+      position: 'relative',
+      width: 'fit-content'
     },
 
-    '&.-is-first ': {
-      '.__rank': {
-        fontSize: token.fontSizeHeading4,
-        lineHeight: token.lineHeightHeading4
-      }
+    '.__rank-wrapper': {
+      position: 'absolute',
+      right: 0,
+      bottom: 0,
+      borderRadius: '100%',
+      backgroundColor: extendToken.colorBgSecondary2
+    },
+
+    '.__rank': {
+      position: 'absolute',
+      color: token.colorPrimary,
+      fontWeight: token.headingFontWeight,
+      top: 0,
+      bottom: 0,
+      display: 'flex',
+      alignItems: 'center',
+      left: '50%',
+      transform: 'translateX(-50%)'
     },
 
     '.__account-name': {
-      fontSize: token.fontSizeLG,
-      lineHeight: token.lineHeightLG,
+      fontSize: token.fontSize,
+      lineHeight: token.lineHeight,
       color: token.colorTextDark2,
       marginBottom: token.marginXXS,
       overflow: 'hidden',
@@ -102,6 +112,60 @@ const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, to
       lineHeight: token.lineHeightSM,
       color: token.colorTextDark4,
       justifyContent: 'center'
+    },
+
+    '&:not(.-is-first)': {
+      '.__avatar': {
+        borderWidth: 2,
+        width: 64,
+        height: 64,
+        minWidth: 64,
+
+        '.__inner': {
+          borderWidth: 3
+        },
+
+        '.__avatar-image': {
+          borderWidth: 2
+        }
+      },
+
+      '.__rank-wrapper': {
+        width: 24,
+        height: 24
+      },
+
+      '.__rank': {
+        fontSize: token.fontSize,
+        lineHeight: token.lineHeight
+      }
+    },
+
+    '&.-is-first': {
+      '.__rank-wrapper': {
+        width: 28,
+        height: 28
+      },
+
+      '.__avatar': {
+        borderWidth: 2,
+        width: 92,
+        height: 92,
+        minWidth: 92,
+
+        '.__inner': {
+          borderWidth: 4
+        },
+
+        '.__avatar-image': {
+          borderWidth: 2
+        }
+      },
+
+      '.__rank': {
+        fontSize: token.fontSizeLG,
+        lineHeight: token.lineHeightLG
+      }
     }
   };
 });
