@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { GameAccountBlock } from '@subwallet/extension-koni-ui/components';
+import { AirlyftConnector } from '@subwallet/extension-koni-ui/connector/airlyft';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig, Task, TaskCategory, TaskCategoryInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
@@ -81,8 +82,7 @@ function getTaskCategoryInfoMap (tasks: Task[]): Record<number, TaskCategoryInfo
   return result;
 }
 
-const widgetInfoMap: Record<string, object> = {};
-const widgetModalInfoMap: Record<string, object> = {};
+const airlyftConnector = AirlyftConnector.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
@@ -96,93 +96,19 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [reloadTask, setReloadTask] = useState(0);
 
   useEffect(() => {
-    window.addEventListener('message', async (event: MessageEvent) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (event.data?.type === 'AIR_WIDGET_CLOSE' && isOpenWidget) {
-        setReloadTask(reloadTask + 1);
+    airlyftConnector.openingModal.subscribe((modal) => {
+      setIsOpenWidget((before) => {
+        const after = !!modal;
 
-        setIsOpenWidget(false);
-      }
+        // on close modal
+        if (before && !after) {
+          setReloadTask((x) => x + 1);
+        }
+
+        return after;
+      });
     });
   }, [isOpenWidget, reloadTask]);
-
-  const openWidget = useCallback(async (widgetId: string, taskId: string) => {
-    const modal = widgetModalInfoMap[widgetId];
-    const widget = widgetInfoMap[widgetId];
-
-    if (modal && widget) {
-      if (taskId) {
-        // @ts-ignore
-        widget.openSpecificTask(modal, taskId);
-      }
-
-      // @ts-ignore
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      modal.open();
-      setIsOpenWidget(true);
-    } else {
-      const modalData = await new Promise(async (resolve) => {
-        // @ts-ignore
-        if (window.AirlyftWidget) {
-          // @ts-ignore
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-          const widget = await window.AirlyftWidget(widgetId);
-
-          widgetInfoMap[widgetId] = widget;
-
-          const instance = await widget.createModal({});
-
-          if (taskId) {
-            widget.openSpecificTask(instance, taskId);
-          }
-
-          const widgetRef = instance.ref;
-
-          const triggerButton = widgetRef.querySelector('a');
-
-          if (triggerButton) {
-            triggerButton.style.display = 'none';
-            triggerButton.parentNode.style.height = 'auto';
-          }
-
-          const dataToken = await apiSDK.getAirlyftToken();
-
-          if (dataToken && dataToken.success) {
-            widget.authWithToken(
-              instance,
-              dataToken.token
-            );
-          }
-
-          resolve(instance);
-        } else {
-          resolve(null);
-        }
-      });
-
-      if (modalData) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        // @ts-ignore
-        widgetModalInfoMap[widgetId] = modalData;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        modalData.open();
-        setIsOpenWidget(true);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const script = document.createElement('script');
-
-    script.src = 'https://assets.airlyft.one/widget/widget.js';
-    script.async = true;
-
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
   const actionReloadPoint = useCallback(() => {
     setReloadAccount(reloadAccount + 1);
@@ -215,7 +141,6 @@ const Component = ({ className }: Props): React.ReactElement => {
 
     const taskListSub = apiSDK.subscribeTaskList().subscribe((data) => {
       clearInterval(taskListUpdaterInterval);
-      console.log('data', data)
 
       setTaskCategoryInfoMap(getTaskCategoryInfoMap(data));
 
@@ -251,7 +176,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       <div className={'task-list-container'}>
         <TaskList
           actionReloadPoint={actionReloadPoint}
-          openWidget={openWidget}
+          openWidget={airlyftConnector.openTask}
           reloadTask={reloadTask}
           taskCategoryInfoMap={taskCategoryInfoMap}
           taskCategoryMap={taskCategoryMap}
