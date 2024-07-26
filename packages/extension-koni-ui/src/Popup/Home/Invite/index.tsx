@@ -462,6 +462,8 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
     },
 
     '.friend-list-container': {
+      marginTop: -5, // fix issue on ios, mac
+      paddingTop: 5,
       flex: 1,
       backgroundColor: extendToken.colorBgSecondary1,
       paddingLeft: token.padding,
