@@ -203,8 +203,8 @@ const LeaderboardContent = styled(Component)<ThemeProps>(({ theme: { extendToken
     flexDirection: 'column',
 
     '.tab-group-wrapper': {
-      paddingLeft: token.padding,
-      paddingRight: token.padding,
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
       marginBottom: token.margin
     },
 
