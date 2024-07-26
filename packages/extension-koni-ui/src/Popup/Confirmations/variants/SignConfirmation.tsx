@@ -49,7 +49,7 @@ function Component ({ className, request }: Props) {
     <>
       <div className={CN('confirmation-content', className)}>
         <div className='description'>
-          {t('You are approving a request with the following account')}
+          {t(request.metadata?.message || 'You are approving a request with the following account')}
         </div>
         <AccountItemWithName
           accountName={account.name}
