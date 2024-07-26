@@ -42,6 +42,7 @@ const apiSDK = BookaSdk.instance;
 const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Props): React.ReactElement => {
   const [selectedTab, setSelectedTab] = useState<string>(defaultSelectedTab);
   const [leaderboardItems, setLeaderboardItems] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
+  const [mine, setMine] = useState<LeaderboardPerson | null>(null);
 
   const filteredLeaderboardItems = leaderboardItems.filter((item) => item.point > 0);
 
@@ -87,6 +88,13 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
         gameId || currentTabInfo.leaderboardInfo.gameId || 0, 100,
         currentTabInfo.leaderboardInfo.type).subscribe((data) => {
         setLeaderboardItems(data);
+
+        // Find mine
+        const mine = data.find((item) => item.mine);
+
+        if (mine) {
+          setMine(mine);
+        }
       });
     }
 
@@ -111,6 +119,22 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
       )
     }
     <div className='top-three-area'>
+      {(mine && mine.rank <= 3) && <div className='top-three-share-button'>
+        <Button
+          className={'top-button-share'}
+          icon={(
+            <Icon
+              customSize={'20px'}
+              phosphorIcon={ShareNetwork}
+              weight={'fill'}
+            />
+          )}
+          onClick={_onClickShare}
+          shape={'round'}
+          size={'xs'}
+          type={'ghost'}
+        />
+      </div>}
       <div className='top-account-item-wrapper'>
         {
           <TopAccountItem
@@ -234,6 +258,13 @@ const LeaderboardContent = styled(Component)<ThemeProps>(({ theme: { extendToken
       paddingLeft: token.paddingXS,
       paddingRight: token.paddingXS,
       position: 'relative'
+    },
+
+    '.top-three-share-button': {
+      position: 'absolute',
+      top: -10,
+      right: 0,
+      zIndex: 10
     },
 
     '.leaderboard-item-wrapper': {

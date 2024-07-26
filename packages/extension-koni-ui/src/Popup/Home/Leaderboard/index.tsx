@@ -93,6 +93,9 @@ const Component = ({ className }: Props): React.ReactElement => {
         {
           label: t('Invite to play'),
           value: TabType.INVITE_TO_PLAY,
+          leaderboardInfo: {
+
+          }
         },
         {
           label: t('Weekly'),
@@ -108,7 +111,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         let type = 'all';
         let gameId = 0;
 
-        if (item.value === TabType.INVITE_TO_PLAY){
+        if (item.value === TabType.INVITE_TO_PLAY) {
           type = 'inviteToPlay';
           gameId = 7;
         }
