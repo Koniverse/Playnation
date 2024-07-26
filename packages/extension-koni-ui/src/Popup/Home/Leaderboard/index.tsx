@@ -84,18 +84,15 @@ const Component = ({ className }: Props): React.ReactElement => {
     const getTabGroupInfo = (): LeaderboardTabGroupItemType[] => {
       const baseItems: LeaderboardTabGroupItemType[] = [
         {
-          label: t('Kick-to-Airdrop'),
+          label: t('Vara football'),
           value: TabType.VARA_PLAYDROP,
           leaderboardInfo: {
             onClickShare: onClickShare(TabType.VARA_PLAYDROP)
           }
         },
         {
-          label: t('Invite to Play'),
+          label: t('Invite to play'),
           value: TabType.INVITE_TO_PLAY,
-          leaderboardInfo: {
-            onClickShare: onClickShare(TabType.INVITE_TO_PLAY)
-          }
         },
         {
           label: t('Weekly'),
