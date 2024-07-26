@@ -2,20 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
+import { GameAccountAvatar, GamePoint, Layout } from '@subwallet/extension-koni-ui/components';
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, ReferralRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { rankPointMap } from '@subwallet/extension-koni-ui/constants';
-import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
+import { detailScreensLayoutBackgroundImages, rankPointMap } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Copy, UserPlus } from 'phosphor-react';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Copy, Plus, UserCirclePlus } from 'phosphor-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
@@ -24,11 +23,13 @@ const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
-  useSetCurrentPage('/home/invite');
+  useSetCurrentPage('/invite');
   const { t } = useTranslation();
   const [referralList, setReferralList] = useState<ReferralRecord[]>(apiSDK.referralList);
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isSticky, setIsSticky] = useState(false);
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
-  const { setContainerClass } = useContext(HomeContext);
   const notify = useNotification();
 
   const totalCount = useMemo(() => {
@@ -85,16 +86,53 @@ const Component = ({ className }: Props): React.ReactElement => {
     });
   }, [notify, t]);
 
+  const subHeaderIcons = useMemo(() => {
+    return [{
+      icon: (
+        <Icon
+          customSize={'24px'}
+          phosphorIcon={Plus}
+        />
+      ),
+      onClick: inviteFriend
+    }];
+  }, [inviteFriend]);
+
   useEffect(() => {
-    setContainerClass('invitation-screen-wrapper');
+    const currentElement = stickyRef.current;
+    const scrollContainer = scrollContainerRef.current;
+
+    const handleScroll = () => {
+      if (currentElement && scrollContainer) {
+        const stickyTop = currentElement.getBoundingClientRect().top;
+        const containerTop = scrollContainer.getBoundingClientRect().top;
+        const isStickyNow = stickyTop <= containerTop;
+
+        console.log('isStickyNow', isStickyNow, stickyTop, containerTop);
+
+        setIsSticky(isStickyNow);
+      }
+    };
+
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+    }
 
     return () => {
-      setContainerClass(undefined);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
     };
-  }, [setContainerClass]);
+  }, []);
 
   return (
-    <div className={className}>
+    <Layout.WithSubHeaderOnly
+      backgroundImages={detailScreensLayoutBackgroundImages}
+      backgroundStyle={'primary'}
+      className={CN(className)}
+      subHeaderIcons={subHeaderIcons}
+      title={t('Invite friends')}
+    >
       <img
         alt='game_background_image'
         className={'__background-image-1'}
@@ -107,119 +145,158 @@ const Component = ({ className }: Props): React.ReactElement => {
         src={DefaultLogosMap.game_background_image}
       />
 
-      <div className='account-info-area'>
-        <GameAccountAvatar
-          avatarPath={account?.info.photoUrl || undefined}
-          className={'account-avatar'}
-          hasBoxShadow
-          size={5}
-        />
-        <div className='account-point'>
-          <div className='account-point-value'>
-            {formatIntegerShort(account?.attributes.point || 0)}
-          </div>
-          <img
-            alt={'token'}
-            className='account-point-token'
-            src={DefaultLogosMap.token_icon}
+      <div className={CN('account-info-area', {
+        '-sticky': isSticky
+      })}
+      >
+        <div className='account-info-area-left-part'>
+          <GameAccountAvatar
+            avatarPath={account?.info.photoUrl || undefined}
+            className={'account-avatar'}
+            size={'custom'}
           />
+
+        </div>
+        <div className='account-info-area-center-part'>
+          <GamePoint
+            className={'account-point'}
+            point={formatIntegerShort(account?.attributes.point || 0)}
+            size={18}
+          />
+          <div className='friend-count'>
+            {totalCount} {t('Friends')}
+          </div>
         </div>
 
-        <div className='friend-count'>
-          {totalCount} {t('Friends')}
+        <div className={CN('account-info-area-right-part', {
+          hidden: !isSticky
+        })}
+        >
+          <Button
+            icon={(
+              <Icon
+                customSize={'24px'}
+                phosphorIcon={UserCirclePlus}
+                weight={'fill'}
+              />
+            )}
+            onClick={inviteFriend}
+            shape={'round'}
+            size={'xs'}
+            type={'ghost'}
+          />
+
+          <Button
+            icon={(
+              <Icon
+                customSize={'24px'}
+                phosphorIcon={Copy}
+                weight={'fill'}
+              />
+            )}
+            onClick={copyLink}
+            shape={'round'}
+            size={'xs'}
+            type={'ghost'}
+          />
         </div>
       </div>
 
-      <div className='invitation-area'>
-        <div className='invitation-text'>
-          {t('Invite your friends and play together !')}
-        </div>
-
-        <div className='invitation-reward'>
-          {t('Up to')} {formatIntegerShort(invitePoint)}
-
-          <img
-            alt='token'
-            className={'invitation-reward-token'}
-            src={DefaultLogosMap.token_icon}
-          />
-        </div>
-
-        {
-          account && (
-            <div className='invitation-buttons'>
-              <Button
-                block={true}
-                icon={(
-                  <Icon
-                    customSize={'20px'}
-                    phosphorIcon={UserPlus}
-                  />
-                )}
-                onClick={inviteFriend}
-                schema={'primary'}
-                shape={'round'}
-                size={'xs'}
-              >
-                {t('Invite now')}
-              </Button>
-
-              <Button
-                block={true}
-                icon={(
-                  <Icon
-                    customSize={'20px'}
-                    phosphorIcon={Copy}
-                    weight={'fill'}
-                  />
-                )}
-                onClick={copyLink}
-                schema={'secondary'}
-                shape={'round'}
-                size={'xs'}
-              >
-                {t('Copy Link')}
-              </Button>
-            </div>
-          )
-        }
-      </div>
-
-      {
-        !!referralList.length && (
-          <div className={'friend-list-area'}>
-            <div className={'friend-list-title'}>
-              {t('Your friends list')}
-            </div>
-
-            <div className={'friend-list-scroller'}>
-              {referralList.map((item, index) => (
-                <GameAccount
-                  avatar={item.accountInfo.avatar}
-                  className={CN('friend-item')}
-                  key={`${item.accountInfo.id}-${index}`}
-                  name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
-                  point={item.point}
-                />
-              ))}
-            </div>
+      <div
+        className='scroll-container'
+        ref={scrollContainerRef}
+      >
+        <div className='invitation-area'>
+          <div className='invitation-text'>
+            {t('Invite your friends and play together !')}
           </div>
-        )
-      }
-    </div>
+
+          <div className='invitation-reward'>
+            {t('Up to')} {formatIntegerShort(invitePoint)}
+
+            <img
+              alt='token'
+              className={'invitation-reward-token'}
+              src={DefaultLogosMap.token_icon}
+            />
+          </div>
+
+          {
+            account && (
+              <div className='invitation-buttons'>
+                <Button
+                  block={true}
+                  icon={(
+                    <Icon
+                      customSize={'20px'}
+                      phosphorIcon={UserCirclePlus}
+                      weight={'fill'}
+                    />
+                  )}
+                  onClick={inviteFriend}
+                  schema={'primary'}
+                  shape={'round'}
+                  size={'xs'}
+                >
+                  {t('Invite now')}
+                </Button>
+
+                <Button
+                  block={true}
+                  icon={(
+                    <Icon
+                      customSize={'20px'}
+                      phosphorIcon={Copy}
+                      weight={'fill'}
+                    />
+                  )}
+                  onClick={copyLink}
+                  schema={'secondary'}
+                  shape={'round'}
+                  size={'xs'}
+                >
+                  {t('Copy Link')}
+                </Button>
+              </div>
+            )
+          }
+        </div>
+
+        <div
+          className={'friend-list-title'}
+          ref={stickyRef}
+        >
+          {t('Your friends list')}
+        </div>
+
+        <div className={'friend-list-container'}>
+          {referralList.map((item, index) => (
+            <GameAccount
+              avatar={item.accountInfo.avatar}
+              className={CN('friend-item')}
+              key={`${item.accountInfo.id}-${index}`}
+              name={`${item.accountInfo.firstName || ''} ${item.accountInfo.lastName || ''}`}
+              point={item.point}
+            />
+          ))}
+        </div>
+      </div>
+    </Layout.WithSubHeaderOnly>
   );
 };
 
 const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    paddingLeft: token.paddingXS,
-    paddingRight: token.paddingXS,
-    position: 'relative',
+    '.ant-sw-screen-layout-body-inner': {
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      paddingLeft: token.paddingXS,
+      paddingRight: token.paddingXS,
+      position: 'relative'
+    },
 
-    '& > div': {
+    '.ant-sw-screen-layout-body-inner > div': {
       position: 'relative',
       zIndex: 5
     },
@@ -242,49 +319,83 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
     },
 
     '.account-info-area': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      borderRadius: 20,
+      paddingTop: token.paddingSM,
+      paddingBottom: token.paddingSM,
+      paddingRight: token.padding,
+      paddingLeft: token.padding,
       display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      paddingTop: token.paddingXXS,
-      paddingBottom: token.padding
+      overflow: 'hidden',
+      marginBottom: token.margin,
+      gap: token.sizeSM,
+      alignItems: 'center'
+    },
+
+    '.account-info-area-center-part': {
+      flex: 1,
+      overflow: 'hidden'
+    },
+
+    '.account-info-area-right-part': {
+      marginRight: -token.marginXS
     },
 
     '.account-avatar': {
-      marginBottom: token.marginXS
+      borderWidth: 2,
+      width: 80,
+      height: 80,
+      minWidth: 80,
+
+      '.__inner': {
+        borderWidth: 4
+      },
+
+      '.__avatar-image': {
+        borderWidth: 2
+      }
     },
 
     '.account-point': {
-      display: 'flex',
-      gap: token.sizeXXS,
-      alignItems: 'center',
-      marginBottom: token.margin
-    },
+      marginBottom: token.marginXXS,
 
-    '.account-point-value': {
-      color: token.colorTextDark2,
-      fontSize: token.fontSize,
-      lineHeight: token.lineHeight,
-      fontWeight: token.headingFontWeight
-    },
-
-    '.account-point-token': {
-      minWidth: 20,
-      height: 20
+      '.__point-value': {
+        fontSize: token.fontSizeHeading3,
+        lineHeight: token.lineHeightHeading3,
+        fontWeight: token.headingFontWeight,
+        color: token.colorTextDark1
+      }
     },
 
     '.friend-count': {
       color: token.colorTextDark1,
-      fontSize: token.fontSizeHeading3,
-      lineHeight: token.lineHeightHeading3,
+      fontSize: token.fontSizeLG,
+      lineHeight: '21px',
       fontWeight: token.headingFontWeight,
       overflow: 'hidden',
       'white-space': 'nowrap',
-      textOverflow: 'ellipsis',
-      textAlign: 'center',
-      paddingTop: token.paddingXXS,
-      paddingBottom: token.paddingXXS,
-      paddingLeft: token.padding,
-      paddingRight: token.padding
+      textOverflow: 'ellipsis'
+    },
+
+    '.account-info-area.-sticky': {
+      '.account-avatar': {
+        width: 64,
+        height: 64,
+        minWidth: 64,
+
+        '.__inner': {
+          borderWidth: 3
+        }
+      }
+    },
+
+    '.scroll-container': {
+      flex: 1,
+      overflow: 'auto',
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      display: 'flex',
+      flexDirection: 'column'
     },
 
     '.invitation-area': {
@@ -324,34 +435,30 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
       gap: token.sizeSM
     },
 
-    '.friend-list-area': {
-      backgroundColor: token.colorWhite,
+    '.friend-list-title': {
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
-      paddingTop: token.paddingXS,
-      paddingBottom: 34,
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden'
-    },
-
-    '.friend-list-title': {
-      minHeight: 40,
+      position: 'sticky',
+      top: 0,
+      minHeight: 52,
+      backgroundColor: extendToken.colorBgSecondary1,
       display: 'flex',
       alignItems: 'center',
       fontSize: token.fontSizeLG,
       lineHeight: token.lineHeightLG,
       paddingLeft: 24,
       paddingRight: 24,
+      paddingTop: token.paddingXS,
       fontWeight: token.headingFontWeight,
-      marginBottom: token.marginXS
+      paddingBottom: token.paddingXXS
     },
 
-    '.friend-list-scroller': {
-      overflow: 'auto',
+    '.friend-list-container': {
+      flex: 1,
+      backgroundColor: extendToken.colorBgSecondary1,
       paddingLeft: token.padding,
-      paddingRight: token.padding
+      paddingRight: token.padding,
+      paddingBottom: token.paddingXS
     },
 
     '.friend-item': {
