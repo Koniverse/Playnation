@@ -9,7 +9,7 @@ import styled from 'styled-components';
 
 type Props = ThemeProps & {
   avatarPath?: string;
-  size?: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  size?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 'custom';
   hasBoxShadow?: boolean;
   isPlaceholder?: boolean;
 };

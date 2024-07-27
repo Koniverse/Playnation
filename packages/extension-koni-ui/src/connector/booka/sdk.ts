@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWStorage } from '@subwallet/extension-base/storage';
-import { createPromiseHandler } from '@subwallet/extension-base/utils';
-import { AccountRankType, AirdropCampaign, AirdropCampaignShare, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
+import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
@@ -17,8 +17,9 @@ export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnat
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
 
-// Incase of changing the cache version, we need to clear the cache
-const cacheVersion = '1.1';
+// Increase of changing the cache version, we need to clear the cache
+// From version 1.2 use localStorage instead of cloudStorage for cache
+const cacheVersion = '1.2';
 const CACHE_KEYS = {
   account: 'data--account-cache',
   taskCategoryList: 'data--task-category-list-cache',
@@ -27,6 +28,20 @@ const CACHE_KEYS = {
   energyConfig: 'data--energy-config-cache',
   rankInfoMap: 'data--rank-info-map-cache'
 };
+
+function parseCache<T> (key: string): T | undefined {
+  const data = localStorage.getItem(key);
+
+  if (data) {
+    try {
+      return JSON.parse(data) as T;
+    } catch (e) {
+      console.error('Failed to parse cache', e);
+    }
+  }
+
+  return undefined;
+}
 
 export class BookaSdk {
   private syncHandler = createPromiseHandler<void>();
@@ -48,76 +63,31 @@ export class BookaSdk {
   isEnabled = new BehaviorSubject<boolean>(true);
 
   constructor () {
-    storage.getItem('cache-version').then((version) => {
-      if (cacheVersion === version) {
-        storage.getItems(Object.values(CACHE_KEYS)).then(([account, taskCategory, tasks, game, energyConfig, rankInfoMap]) => {
-          if (account) {
-            try {
-              const accountData = JSON.parse(account) as BookaAccount;
+    const version = localStorage.getItem('cache-version');
 
-              this.accountSubject.next(accountData);
-            } catch (e) {
-              console.error('Failed to parse account data', e);
-            }
-          }
+    if (cacheVersion === version) {
+      const account = parseCache<BookaAccount>(CACHE_KEYS.account);
+      const taskCategoryList = parseCache<TaskCategory[]>(CACHE_KEYS.taskCategoryList);
+      const tasks = parseCache<Task[]>(CACHE_KEYS.taskList);
+      const game = parseCache<Game[]>(CACHE_KEYS.gameList);
+      const energyConfig = parseCache<EnergyConfig>(CACHE_KEYS.energyConfig);
+      const rankInfoMap = parseCache<Record<AccountRankType, RankInfo>>(CACHE_KEYS.rankInfoMap);
 
-          if (taskCategory) {
-            try {
-              const taskCategoryList = JSON.parse(taskCategory) as TaskCategory[];
+      account && this.accountSubject.next(account);
+      taskCategoryList && this.taskCategoryListSubject.next(taskCategoryList);
+      tasks && this.taskListSubject.next(tasks);
+      game && this.gameListSubject.next(game);
+      energyConfig && this.energyConfigSubject.next(energyConfig);
+      rankInfoMap && this.rankInfoSubject.next(rankInfoMap);
+    } else {
+      console.debug('Clearing cache');
+      storage.removeItems(Object.keys(CACHE_KEYS).concat(['cache-version'])).catch(console.error);
+      Object.keys(CACHE_KEYS).forEach((key) => {
+        localStorage.removeItem(key);
+      });
 
-              this.taskCategoryListSubject.next(taskCategoryList);
-            } catch (e) {
-              console.error('Failed to parse task list', e);
-            }
-          }
-
-          if (tasks) {
-            try {
-              const taskList = JSON.parse(tasks) as Task[];
-
-              this.taskListSubject.next(taskList);
-            } catch (e) {
-              console.error('Failed to parse task list', e);
-            }
-          }
-
-          if (game) {
-            try {
-              const gameList = JSON.parse(game) as Game[];
-
-              this.gameListSubject.next(gameList);
-            } catch (e) {
-              console.error('Failed to parse game list', e);
-            }
-          }
-
-          if (energyConfig) {
-            try {
-              const _energyConfig = JSON.parse(energyConfig) as EnergyConfig;
-
-              this.energyConfigSubject.next(_energyConfig);
-            } catch (e) {
-              console.error('Failed to parse energy config', e);
-            }
-          }
-
-          if (rankInfoMap) {
-            try {
-              const _rankInfoMap = JSON.parse(rankInfoMap) as Record<AccountRankType, RankInfo>;
-
-              this.rankInfoSubject.next(_rankInfoMap);
-            } catch (e) {
-              console.error('Failed to parse rankInfoMap', e);
-            }
-          }
-        }).catch(console.error);
-      } else {
-        console.debug('Clearing cache');
-        storage.removeItems(Object.keys(CACHE_KEYS)).then(() => {
-          storage.setItem('cache-version', cacheVersion).catch(console.error);
-        }).catch(console.error);
-      }
-    }).catch(console.error);
+      localStorage.setItem('cache-version', cacheVersion);
+    }
   }
 
   public get waitForSync () {
@@ -232,7 +202,7 @@ export class BookaSdk {
     }
 
     this.accountSubject.next(account);
-    storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
+    localStorage.setItem(CACHE_KEYS.account, JSON.stringify(account));
   }
 
   subscribeAccount () {
@@ -244,7 +214,7 @@ export class BookaSdk {
 
     if (energyConfig) {
       this.energyConfigSubject.next(energyConfig);
-      storage.setItem(CACHE_KEYS.energyConfig, JSON.stringify(energyConfig)).catch(console.error);
+      localStorage.setItem(CACHE_KEYS.energyConfig, JSON.stringify(energyConfig));
     }
   }
 
@@ -257,7 +227,7 @@ export class BookaSdk {
 
     if (gameList) {
       this.gameListSubject.next(gameList);
-      storage.setItem(CACHE_KEYS.gameList, JSON.stringify(gameList)).catch(console.error);
+      localStorage.setItem(CACHE_KEYS.gameList, JSON.stringify(gameList));
     }
   }
 
@@ -271,7 +241,7 @@ export class BookaSdk {
 
     if (taskCategoryList) {
       this.taskCategoryListSubject.next(taskCategoryList);
-      storage.setItem(CACHE_KEYS.taskCategoryList, JSON.stringify(taskCategoryList)).catch(console.error);
+      localStorage.setItem(CACHE_KEYS.taskCategoryList, JSON.stringify(taskCategoryList));
     }
   }
 
@@ -285,7 +255,7 @@ export class BookaSdk {
 
     if (taskList) {
       this.taskListSubject.next(taskList);
-      storage.setItem(CACHE_KEYS.taskList, JSON.stringify(taskList)).catch(console.error);
+      localStorage.setItem(CACHE_KEYS.taskList, JSON.stringify(taskList));
     }
   }
 
@@ -297,6 +267,10 @@ export class BookaSdk {
     const taskHistoryCheck = await this.postRequest<{ completed: boolean }>(`${GAME_API_HOST}/api/task/check-complete-task`, { taskId });
 
     if (taskHistoryCheck && taskHistoryCheck.completed) {
+      await this.fetchTaskCategoryList();
+
+      await this.fetchTaskList();
+
       await this.reloadAccount();
 
       return true;
@@ -314,7 +288,7 @@ export class BookaSdk {
 
     await this.reloadAccount();
 
-    return data as {success:boolean, isOpenUrl: boolean, openUrl: string, message: string};
+    return data as {success: boolean, isOpenUrl: boolean, openUrl: string, message: string};
   }
 
   getInviteURL (): string {
@@ -322,7 +296,6 @@ export class BookaSdk {
   }
 
   public getShareTwitterAirdropURL (item: AirdropCampaign) {
-    console.log('item', item)
     if (!item.share) {
       return;
     }
@@ -348,7 +321,7 @@ export class BookaSdk {
 
   async getShareTwitterClaimURL (item: AirdropCampaign) {
     if (!item.share) {
-      return;
+      return undefined;
     }
 
     const start = item.start_snapshot;
@@ -375,7 +348,9 @@ export class BookaSdk {
       const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
 
       return `http://x.com/share?text=${content}%0A&url=${linkApp}${hashtag}`;
-    } catch (e) {}
+    } catch (e) {
+      return undefined;
+    }
   }
 
   async getShareTwitterURL (startDate: string, endDate: string, content: string, gameId: number, url: string) {
@@ -442,7 +417,7 @@ export class BookaSdk {
 
       if (account) {
         this.accountSubject.next(account);
-        storage.setItem(CACHE_KEYS.account, JSON.stringify(account)).catch(console.error);
+        localStorage.setItem(CACHE_KEYS.account, JSON.stringify(account));
         this.syncHandler.resolve();
         const { end, start } = calculateStartAndEnd('vara_playdrop');
 
@@ -461,9 +436,11 @@ export class BookaSdk {
         await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchAirdropCampaign()]);
       }
     } catch (error: any) {
-      if (error.message === 'ACCOUNT_BANNED') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (error?.message === 'ACCOUNT_BANNED') {
         this.isEnabled.next(false);
-        this.syncHandler.reject(error.message);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        this.syncHandler.reject(error?.message);
       }
 
       throw error;
@@ -478,7 +455,7 @@ export class BookaSdk {
     try {
       loginMap = JSON.parse((await storage.getItem('loginMap') || '{}')) as Record<string, string>;
     } catch (e) {
-      console.log('sync error', e);
+      console.warn('sync error', e);
     }
 
     if (loginMessage === message && loginMap[address]) {
@@ -486,9 +463,16 @@ export class BookaSdk {
     }
 
     const result = await signRaw({
-      address,
-      type: 'payload',
-      data: message
+      metadata: {
+        url: 'https://playnation.app',
+        title: detectTranslate('Playnation Login'),
+        message: detectTranslate('Sign this message to login')
+      },
+      payload: {
+        address,
+        type: 'payload',
+        data: message
+      }
     });
 
     await storage.setItem('loginMessage', message);
@@ -529,7 +513,7 @@ export class BookaSdk {
 
     this.currentGamePlaySubject.next(undefined);
 
-    await Promise.all([this.reloadAccount()]);
+    await Promise.all([this.reloadAccount(), this.fetchTaskList()]);
   }
 
   // --- shop
@@ -596,7 +580,6 @@ export class BookaSdk {
     const gameItem = await this.getRequest<{ success: boolean, items: any }>(`${GAME_API_HOST}/api/shop/get-item-in-game`);
 
     if (gameItem) {
-      console.log('gameItem', gameItem);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       this.gameItemInGame.next(gameItem.items);
     }
@@ -678,7 +661,7 @@ export class BookaSdk {
   }
 
   subscribeRankInfoMap () {
-    this.fetchRankInfoMap().catch(console.log);
+    this.fetchRankInfoMap().catch(console.warn);
 
     return this.rankInfoSubject;
   }
@@ -747,6 +730,15 @@ export class BookaSdk {
   async fetchAirdropHistory (campaignId: number) {
     try {
       return await this.postRequest(`${GAME_API_HOST}/api/airdrop/history`, { campaign_id: campaignId });
+    } catch (error) {
+      console.error('Error in fetchAirdropHistory:', error);
+      throw error;
+    }
+  }
+
+  async getAirlyftToken () {
+    try {
+      return await this.getRequest<{token: string, success: boolean} | undefined>(`${GAME_API_HOST}/api/airlyft/get-token`);
     } catch (error) {
       console.error('Error in fetchAirdropHistory:', error);
       throw error;

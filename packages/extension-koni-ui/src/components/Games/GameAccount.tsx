@@ -15,9 +15,10 @@ type GamePointProps = ThemeProps & {
   point?: number;
   avatar?: string;
   isPlaceholder?: boolean;
+  actionNode?: React.ReactNode
 };
 
-function Component ({ avatar, className, isPlaceholder, name, point, prefix }: GamePointProps) {
+function Component ({ actionNode, avatar, className, isPlaceholder, name, point, prefix }: GamePointProps) {
   return (
     <div className={CN(className)}>
       {prefix && <span className={'__prefix'}>{prefix}</span>}
@@ -30,6 +31,8 @@ function Component ({ avatar, className, isPlaceholder, name, point, prefix }: G
       <span className={'__point'}>
         {isPlaceholder ? '---' : formatIntegerShort(point)}
       </span>
+
+      {actionNode}
     </div>
   );
 }

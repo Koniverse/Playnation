@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-base authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { ConfirmationMetadata } from '@subwallet/extension-base/background/KoniTypes';
 import RequestExtrinsicSign from '@subwallet/extension-base/background/RequestExtrinsicSign';
 import { AccountJson, RequestSign, Resolver, ResponseSigning, SigningRequest } from '@subwallet/extension-base/background/types';
 import RequestService from '@subwallet/extension-base/services/request-service';
@@ -32,7 +33,7 @@ export default class SubstrateRequestHandler {
   public get allSubstrateRequests (): SigningRequest[] {
     return Object
       .values(this.#substrateRequests)
-      .map(({ account, id, request, url }) => ({ account, id, request, url, isInternal: isInternalRequest(url) }));
+      .map(({ account, id, metadata, request, url }) => ({ account, id, request, url, isInternal: isInternalRequest(url), metadata }));
   }
 
   private updateIconSign (shouldClose?: boolean): void {
@@ -63,7 +64,7 @@ export default class SubstrateRequestHandler {
     return Object.keys(this.#substrateRequests).length;
   }
 
-  public async sign (url: string, request: RequestSign, account: AccountJson, _id?: string): Promise<ResponseSigning> {
+  public async sign (url: string, request: RequestSign, account: AccountJson, _id?: string, metadata?: ConfirmationMetadata): Promise<ResponseSigning> {
     const id = _id || getId();
     const isAlwaysRequired = await this.#requestService.settingService.isAlwaysRequired;
 
@@ -77,7 +78,8 @@ export default class SubstrateRequestHandler {
         account,
         id,
         request,
-        url
+        url,
+        metadata
       };
 
       this.updateIconSign();

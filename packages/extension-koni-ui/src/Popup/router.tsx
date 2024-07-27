@@ -177,7 +177,6 @@ export const router = createBrowserRouter([
           Games.generateRouterObject('games'),
           Mission.generateRouterObject('mission'),
           Leaderboard.generateRouterObject('leaderboard'),
-          Invite.generateRouterObject('invite'),
           Tokens.generateRouterObject('tokens'),
           TokenDetailList.generateRouterObject('tokens/detail/:slug'),
           AirDrop.generateRouterObject('airdrop'),
@@ -221,6 +220,9 @@ export const router = createBrowserRouter([
             element: <Example />
           }
         ]
+      },
+      {
+        ...Invite.generateRouterObject('invite')
       },
       {
         ...AirDropDetail.generateRouterObject('airdrop/detail/:id')

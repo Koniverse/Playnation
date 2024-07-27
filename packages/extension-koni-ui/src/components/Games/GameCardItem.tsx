@@ -6,17 +6,22 @@ import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTransla
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Lightning } from 'phosphor-react';
-import React from 'react';
+import { ChartBar, Lightning } from 'phosphor-react';
+import React, { useCallback } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
   item: Game;
   onPlay: VoidFunction;
+  onOpenLeaderboard: (game: Game) => void;
 };
 
-function Component ({ className, item, onPlay }: Props) {
+function Component ({ className, item, onOpenLeaderboard, onPlay }: Props) {
   const { t } = useTranslation();
+
+  const _openLeaderboard = useCallback(() => {
+    onOpenLeaderboard(item);
+  }, [item, onOpenLeaderboard]);
 
   const isComingSoon = (() => {
     if (!item.startTime) {
@@ -56,15 +61,36 @@ function Component ({ className, item, onPlay }: Props) {
           {isComingSoon ? '' : item.description}
         </div>
 
-        <Button
-          className={'__play-button'}
-          disabled={isComingSoon}
-          onClick={onPlay}
-          shape={'round'}
-          size={'xs'}
-        >
-          {t('Play now')}
-        </Button>
+        <div className='__buttons'>
+          <Button
+            className={'__play-button'}
+            disabled={isComingSoon}
+            onClick={onPlay}
+            shape={'round'}
+            size={'xs'}
+          >
+            {t('Play now')}
+          </Button>
+
+          {
+            // !isComingSoon && (
+            //   <Button
+            //     className={'-primary-3'}
+            //     icon={(
+            //       <Icon
+            //         customSize={'20px'}
+            //         phosphorIcon={ChartBar}
+            //         weight={'fill'}
+            //       />
+            //     )}
+            //     onClick={_openLeaderboard}
+            //     shape={'circle'}
+            //     size={'xs'}
+            //   />
+            // )
+          }
+        </div>
+
       </div>
       <div className='__right-part'>
         <div
@@ -140,9 +166,20 @@ export const GameCardItem = styled(Component)<Props>(({ theme: { token } }: Prop
       clipPath: 'path("M23.1673 20.0267C25.1079 8.46694 35.1146 0 46.8362 0H191.641V184H24.006C9.1641 184 -2.11992 170.664 0.337191 156.027L23.1673 20.0267Z")'
     },
 
+    '.__buttons': {
+      display: 'flex',
+      gap: token.sizeXS
+    },
+
     '&.-is-coming-soon': {
       '.__game-banner': {
         filter: 'blur(8px)'
+      }
+    },
+
+    '@media (max-width: 369px)': {
+      '.__game-banner': {
+        width: 160
       }
     }
   });

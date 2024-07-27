@@ -6021,7 +6021,7 @@ __metadata:
     "@subwallet/extension-mocks": ^1.2.10-0
     "@subwallet/keyring": ^0.1.5
     "@subwallet/ui-keyring": ^0.1.5
-    "@twa-dev/sdk": ^7.0.0
+    "@types/telegram-web-app": ^7.3.1
     "@types/uuid": ^9.0.1
     "@walletconnect/keyvaluestorage": ^1.1.1
     "@walletconnect/sign-client": ^2.13.1
@@ -6155,7 +6155,6 @@ __metadata:
     "@subwallet/keyring": ^0.1.5
     "@subwallet/react-ui": 5.1.2-b77
     "@subwallet/ui-keyring": ^0.1.5
-    "@twa-dev/sdk": ^7.0.0
     "@types/bn.js": ^5.1.1
     "@types/enzyme": ^3.10.12
     "@types/enzyme-adapter-react-16": ^1.0.6
@@ -6169,6 +6168,7 @@ __metadata:
     "@types/sinon-chrome": ^2.2.11
     "@types/store": ^2.0.2
     "@types/styled-components": ^5.1.26
+    "@types/telegram-web-app": ^7.3.1
     "@types/url-parse": ^1.4.11
     "@walletconnect/types": ^2.13.1
     "@wojtekmaj/enzyme-adapter-react-17": ^0.8.0
@@ -6512,7 +6512,6 @@ __metadata:
     "@subwallet/extension-base": ^1.2.10-0
     "@subwallet/extension-inject": ^1.2.10-0
     "@subwallet/extension-web-ui": ^1.2.10-0
-    "@twa-dev/sdk": ^7.0.0
     assert: ^2.0.0
     babel-loader: ^9.1.3
     browser-resolve: ^2.0.0
@@ -6711,24 +6710,6 @@ __metadata:
   version: 2.0.0
   resolution: "@tootallnate/once@npm:2.0.0"
   checksum: ad87447820dd3f24825d2d947ebc03072b20a42bfc96cbafec16bff8bbda6c1a81fcb0be56d5b21968560c5359a0af4038a68ba150c3e1694fe4c109a063bed8
-  languageName: node
-  linkType: hard
-
-"@twa-dev/sdk@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "@twa-dev/sdk@npm:7.0.0"
-  dependencies:
-    "@twa-dev/types": ^7.0.0
-  peerDependencies:
-    react: ">=16.0.0"
-  checksum: d7b855d5fde863a306b2d95f5421757e4c9f7df3aa8eeb9b59f90d53c2c8dbd635d955f20adbabc2a7cbec886fe44b9374486a96359e211ebb28cf3818995275
-  languageName: node
-  linkType: hard
-
-"@twa-dev/types@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "@twa-dev/types@npm:7.0.0"
-  checksum: 3f3da1e22717322be2844fdc208eb8b061a16ef27b1eb4f8330f6fcb64228b34cd571b4a2f95254224a37dbde1c04b1e7ed92ce530456444c3f458386f412104
   languageName: node
   linkType: hard
 
@@ -7569,6 +7550,13 @@ __metadata:
   version: 4.2.4
   resolution: "@types/stylis@npm:4.2.4"
   checksum: 0734b4136192f97f4c8792ea41f1293091dfda53434ede08281fa42689d31f16cd1ad0e058de88c11980c18aae29e62a87027b235b98ab0cb237641b6ec44bcb
+  languageName: node
+  linkType: hard
+
+"@types/telegram-web-app@npm:^7.3.1":
+  version: 7.3.1
+  resolution: "@types/telegram-web-app@npm:7.3.1"
+  checksum: feb050ddeb44a91d4c46b78d3f906c00c6298bb0ea7c6fce9e87252400ddb4c4f5678428ba053d15217c2eff3db2724dcb62611846ab9defb9c479e4fe89cf37
   languageName: node
   linkType: hard
 

@@ -1,15 +1,16 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AttachAccountModal, ClaimDappStakingRewardsModal, CreateAccountModal, DeriveAccountModal, ImportAccountModal, ImportSeedModal, NewSeedModal, RemindBackupSeedPhraseModal, RequestCameraAccessModal, RequestCreatePasswordModal } from '@subwallet/extension-koni-ui/components';
+import { AttachAccountModal, ClaimDappStakingRewardsModal, CreateAccountModal, DeriveAccountModal, ImportAccountModal, ImportSeedModal, LeaderboardModal, NewSeedModal, RemindBackupSeedPhraseModal, RequestCameraAccessModal, RequestCreatePasswordModal } from '@subwallet/extension-koni-ui/components';
+import { LeaderboardModalProps } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardModal';
 import { CustomizeModal } from '@subwallet/extension-koni-ui/components/Modal/Customize/CustomizeModal';
-import { EARNING_INSTRUCTION_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { EARNING_INSTRUCTION_MODAL, LEADERBOARD_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { useGetConfig, useSetSessionLatest } from '@subwallet/extension-koni-ui/hooks';
 import Confirmations from '@subwallet/extension-koni-ui/Popup/Confirmations';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ModalContext, SwModal, useExcludeModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 
@@ -21,6 +22,18 @@ interface Props {
 
 export const PREDEFINED_MODAL_NAMES = ['debugger', 'transaction', 'confirmations'];
 type PredefinedModalName = typeof PREDEFINED_MODAL_NAMES[number];
+
+export interface WalletModalContextType {
+  openLeaderboardModal: (props: LeaderboardModalProps) => void
+  closeLeaderboardModal: VoidFunction
+}
+
+export const WalletModalContext = React.createContext<WalletModalContextType>({
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  openLeaderboardModal: () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  closeLeaderboardModal: () => {}
+});
 
 export const usePredefinedModal = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -52,13 +65,14 @@ export const usePredefinedModal = () => {
   return { openPModal, isOpenPModal };
 };
 
-export const WalletModalContext = ({ children }: Props) => {
-  const { activeModal, hasActiveModal, inactiveAll, inactiveModals } = useContext(ModalContext);
+export const WalletModalContextProvider = ({ children }: Props) => {
+  const { activeModal, hasActiveModal, inactiveAll, inactiveModal, inactiveModals } = useContext(ModalContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const { hasConfirmations } = useSelector((state: RootState) => state.requestState);
   const { hasMasterPassword, isLocked } = useSelector((state: RootState) => state.accountState);
   const { getConfig } = useGetConfig();
   const { onHandleSessionLatest, setTimeBackUp } = useSetSessionLatest();
+  const [leaderboardModalProps, setLeaderboardModalProps] = useState<LeaderboardModalProps | undefined>();
 
   useExcludeModal('confirmations');
   useExcludeModal(EARNING_INSTRUCTION_MODAL);
@@ -70,6 +84,21 @@ export const WalletModalContext = ({ children }: Props) => {
       return prev;
     });
   }, [setSearchParams]);
+
+  const openLeaderboardModal = useCallback((props: LeaderboardModalProps) => {
+    setLeaderboardModalProps(props);
+    activeModal(LEADERBOARD_MODAL);
+  }, [activeModal]);
+
+  const closeLeaderboardModal = useCallback(() => {
+    inactiveModal(LEADERBOARD_MODAL);
+    setLeaderboardModalProps(undefined);
+  }, [inactiveModal]);
+
+  const contextValue = useMemo(() => ({
+    openLeaderboardModal,
+    closeLeaderboardModal
+  }), [closeLeaderboardModal, openLeaderboardModal]);
 
   useEffect(() => {
     if (hasMasterPassword && isLocked) {
@@ -98,7 +127,7 @@ export const WalletModalContext = ({ children }: Props) => {
 
   // todo: will remove ClaimDappStakingRewardsModal after Astar upgrade to v3
 
-  return <>
+  return <WalletModalContext.Provider value={contextValue}>
     <div
       id='popup-container'
       style={{ zIndex: hasActiveModal ? undefined : -1 }}
@@ -127,5 +156,14 @@ export const WalletModalContext = ({ children }: Props) => {
     <RequestCameraAccessModal />
     <CustomizeModal />
     <UnlockModal />
-  </>;
+
+    {
+      !!leaderboardModalProps && (
+        <LeaderboardModal
+          {...leaderboardModalProps}
+          onCancel={closeLeaderboardModal}
+        />
+      )
+    }
+  </WalletModalContext.Provider>;
 };

@@ -3,7 +3,6 @@
 
 // Interact with Telegram with fallback
 import { TelegramWebApp } from '@subwallet/extension-base/utils/telegram';
-import { PopupParams } from '@twa-dev/types';
 
 export interface TelegramThemeConfig {
   headerColor: string;
@@ -67,11 +66,22 @@ export class TelegramConnector {
     }
   }
 
-  autoExpand () {
+  autoActions () {
+    // Auto expand
     if (this.supportBasicMethod) {
       if (!TelegramWebApp.isExpanded) {
         TelegramWebApp.expand();
       }
+    }
+
+    // Enable closing confirmation
+    if (!!TelegramWebApp.enableClosingConfirmation && !TelegramWebApp.isClosingConfirmationEnabled) {
+      TelegramWebApp.enableClosingConfirmation();
+    }
+
+    // Disable vertical swipe
+    if (!!TelegramWebApp.disableVerticalSwipes && TelegramWebApp.isVerticalSwipesEnabled) {
+      TelegramWebApp.disableVerticalSwipes();
     }
   }
 
@@ -101,6 +111,90 @@ export class TelegramConnector {
       alert(`${params.title || ''}: ${params.message}`);
       callback();
     }
+  }
+
+  async isBiometricAvailable () {
+    const biometricManager = await this.getBiometricManager();
+
+    return !!(biometricManager?.isBiometricAvailable);
+  }
+
+  async getBiometricManager () {
+    const biometricManager = TelegramWebApp.BiometricManager;
+
+    if (!biometricManager) {
+      return null;
+    }
+
+    if (!biometricManager.isInited) {
+      await new Promise<void>((resolve) => {
+        biometricManager.init(() => {
+          resolve();
+        });
+      });
+    }
+
+    return biometricManager;
+  }
+
+  async checkUsingBiometric () {
+    const biometricManager = await this.getBiometricManager();
+
+    if (!biometricManager) {
+      return false;
+    }
+
+    return biometricManager.isBiometricTokenSaved;
+  }
+
+  async setBiometricToken (token: string) {
+    const biometricManager = await this.getBiometricManager();
+
+    if (!biometricManager) {
+      return false;
+    }
+
+    let isAccessGranted = biometricManager.isAccessGranted;
+
+    if (!biometricManager.isAccessRequested) {
+      isAccessGranted = await new Promise<boolean>((resolve) => {
+        biometricManager.requestAccess({
+          reason: 'Would you like to use biometric to unlock your account?'
+        }, (rs) => {
+          resolve(rs);
+        });
+      });
+    }
+
+    if (isAccessGranted) {
+      return await new Promise<boolean>((resolve) => {
+        biometricManager.updateBiometricToken(token, (applied) => {
+          resolve(applied);
+        });
+      });
+    } else {
+      return false;
+    }
+  }
+
+  async getBiometricToken (): Promise<string | undefined> {
+    const biometricManager = await this.getBiometricManager();
+
+    if (!biometricManager) {
+      return undefined;
+    }
+
+    return await new Promise((resolve) => {
+      biometricManager.authenticate({
+        reason: 'Please authenticate to unlock your account'
+      }, (isAuthenticated, biometricToken) => {
+        if (isAuthenticated) {
+          resolve(biometricToken);
+        } else {
+          resolve(undefined);
+        }
+      });
+    });
   }
 
   // Singleton

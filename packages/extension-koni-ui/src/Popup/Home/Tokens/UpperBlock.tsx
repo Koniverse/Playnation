@@ -86,12 +86,6 @@ function Component (
         src={DefaultLogosMap.game_background_image}
       />
 
-      <img
-        alt='euro_background_image'
-        className={'__euro-background-image'}
-        src={DefaultLogosMap.euro_background_image}
-      />
-
       <div className='__top-part'>
         <div className={'__total-balance-label-wrapper'}>
           <div className='__total-balance-label'>
@@ -293,17 +287,6 @@ export const UpperBlock = styled(Component)<Props>(({ theme: { extendToken, toke
       zIndex: 0
     },
 
-    '.__euro-background-image': {
-      position: 'absolute',
-      width: 700,
-      pointerEvents: 'none',
-      height: 'auto',
-      opacity: 0.65,
-      left: 'calc(50% - 315px)',
-      bottom: -122,
-      zIndex: 0
-    },
-
     '.__top-part': {
       display: 'flex',
       justifyContent: 'space-between',
@@ -430,10 +413,6 @@ export const UpperBlock = styled(Component)<Props>(({ theme: { extendToken, toke
 
       '.__game-background-image': {
         opacity: 0
-      },
-
-      '.__euro-background-image': {
-        bottom: -162
       },
 
       '.__total-balance-value-container': {
