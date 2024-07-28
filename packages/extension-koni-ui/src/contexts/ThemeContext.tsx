@@ -94,7 +94,7 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       }
     },
 
-    '.__tooltip-overlay-remind': {
+    '.tooltip-overlay': {
       '.ant-tooltip-inner': {
         fontSize: token.fontSizeXS,
         lineHeight: token.lineHeightXS,

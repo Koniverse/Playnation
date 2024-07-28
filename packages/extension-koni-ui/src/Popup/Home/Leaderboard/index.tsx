@@ -19,7 +19,7 @@ const apiSDK = BookaSdk.instance;
 
 enum TabType {
   WEEKLY = 'weekly',
-  DED_PLAYDROP = 'ded_playdrop',
+  INVITE_TO_PLAY = 'invite_to_play',
   VARA_PLAYDROP = 'vara_playdrop',
 }
 
@@ -84,17 +84,17 @@ const Component = ({ className }: Props): React.ReactElement => {
     const getTabGroupInfo = (): LeaderboardTabGroupItemType[] => {
       const baseItems: LeaderboardTabGroupItemType[] = [
         {
-          label: t('Kick-to-Airdrop'),
+          label: t('Vara football'),
           value: TabType.VARA_PLAYDROP,
           leaderboardInfo: {
             onClickShare: onClickShare(TabType.VARA_PLAYDROP)
           }
         },
         {
-          label: t('DED'),
-          value: TabType.DED_PLAYDROP,
+          label: t('Invite to play'),
+          value: TabType.INVITE_TO_PLAY,
           leaderboardInfo: {
-            onClickShare: onClickShare(TabType.DED_PLAYDROP)
+
           }
         },
         {
@@ -108,13 +108,22 @@ const Component = ({ className }: Props): React.ReactElement => {
 
       return baseItems.map((item) => {
         const { end: endDate, start: startDate } = calculateStartAndEnd(item.value);
+        let type = 'all';
+        let gameId = 0;
+
+        if (item.value === TabType.INVITE_TO_PLAY) {
+          type = 'inviteToPlay';
+          gameId = 7;
+        }
 
         return {
           ...item,
           leaderboardInfo: {
             ...item.leaderboardInfo,
             startDate,
-            endDate
+            endDate,
+            type,
+            gameId
           }
         };
       });

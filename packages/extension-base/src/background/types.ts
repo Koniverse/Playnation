@@ -11,7 +11,7 @@ import type { SignerPayloadJSON, SignerPayloadRaw } from '@polkadot/types/types'
 import type { HexString } from '@polkadot/util/types';
 import type { KeypairType } from '@polkadot/util-crypto/types';
 
-import { CurrentNetworkInfo, KoniRequestSignatures, NetworkJson } from '@subwallet/extension-base/background/KoniTypes';
+import { ConfirmationMetadata, CurrentNetworkInfo, KoniRequestSignatures, NetworkJson } from '@subwallet/extension-base/background/KoniTypes';
 
 import { TypeRegistry } from '@polkadot/types';
 
@@ -102,6 +102,7 @@ export interface ConfirmationRequestBase {
   id: string;
   url: string;
   isInternal?: boolean;
+  metadata?: ConfirmationMetadata
 }
 
 export interface AuthorizeRequest extends ConfirmationRequestBase {

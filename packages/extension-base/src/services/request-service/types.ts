@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-base authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { ConfirmationMetadata } from '@subwallet/extension-base/background/KoniTypes';
 import { AccountAuthType, AccountJson, RequestSign, Resolver, ResponseSigning } from '@subwallet/extension-base/background/types';
 import { MetadataDef } from '@subwallet/extension-inject/types';
 
@@ -9,6 +10,7 @@ export interface SignRequest extends Resolver<ResponseSigning> {
   id: string;
   request: RequestSign;
   url: string;
+  metadata?: ConfirmationMetadata
 }
 
 export interface MetaRequest extends Resolver<boolean> {
