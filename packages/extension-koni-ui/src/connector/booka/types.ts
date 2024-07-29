@@ -81,6 +81,7 @@ export interface Game {
   endTime: string | null;
   active: boolean;
   pointConversionRate: number;
+  gameType: 'casual' | 'farming';
 }
 
 export enum TaskHistoryStatus {
@@ -160,6 +161,7 @@ export interface GamePlay {
   endTime?: Date;
   point?: number;
   success?: boolean;
+  state: any;
 }
 
 export interface GameData {

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { InGameItem } from '@playnation/game-sdk';
+import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
 import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
@@ -514,6 +515,19 @@ export class BookaSdk {
     this.currentGamePlaySubject.next(undefined);
 
     await Promise.all([this.reloadAccount(), this.fetchTaskList()]);
+  }
+
+  async getLastState (gameId: number) {
+    return await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/get-last-state`, {
+      gameId
+    });
+  }
+
+  async submitState (gamePlayId: number, stateData: GameState<any>) {
+    return await this.postRequest<{success: boolean}>(`${GAME_API_HOST}/api/game/submit-state`, {
+      gamePlayId,
+      stateData
+    });
   }
 
   // --- shop

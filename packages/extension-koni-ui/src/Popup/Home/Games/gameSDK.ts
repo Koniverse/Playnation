@@ -3,6 +3,7 @@
 
 import { BuyInGameItemResponse, ErrorCode, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, Player, PlaynationSDKError, PlayResponse, SDKInitParams, Tournament, UpdateStatePayload, UseInGameItemResponse } from '@playnation/game-sdk';
 import { GameState } from '@playnation/game-sdk/dist/types';
+import {addLazy, createPromiseHandler, removeLazy} from '@subwallet/extension-base/utils';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { camelCase } from 'lodash';
@@ -24,6 +25,9 @@ export class GameApp {
   private inventoryQuantityMap: Record<string, number> = {};
   private gameItemInGame: Record<string, InGameItem> = {};
 
+  private gameStateHandler = createPromiseHandler<GameState<any>>();
+  private lastState: GameState<any> | undefined;
+
   constructor (options: GameAppOptions) {
     this.options = options;
     this.viewport = options.viewport;
@@ -31,6 +35,23 @@ export class GameApp {
     this.currentGameInfo = options.currentGameInfo;
     this.inventoryQuantityMap = this.apiSDK.gameInventoryItemInGameList;
     this.gameItemInGame = this.apiSDK.gameItemInGameList;
+
+    if (this.currentGameInfo.gameType === 'farming') {
+      (async () => {
+        const lastGamplay = await options.apiSDK.getLastState(options.currentGameInfo.id);
+
+        await this.onPlay();
+
+        const state = lastGamplay?.state
+          ? {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            data: lastGamplay.state
+          }
+          : {};
+
+        this.gameStateHandler.resolve(state as GameState<any>);
+      })().catch(console.error);
+    }
   }
 
   start () {
@@ -52,12 +73,13 @@ export class GameApp {
     return this.currentGameInfo.energyPerGame;
   }
 
-  onGetPlayer () {
+  async onGetPlayer () {
     const account = this.apiSDK.account;
     const playerId = `${account?.info?.telegramUsername || 'player1'}-${account?.info.id || 0}`;
     const gameData = (account?.gameData || []).find((item) => item.gameId === this.currentGameInfo.id);
     const point = gameData?.point || 0;
-    const state = localStorage.getItem(`game-state-${this.currentGameInfo.id}`) || undefined;
+
+    const state = await this.gameStateHandler.promise;
 
     const player: Player = {
       id: playerId,
@@ -74,7 +96,7 @@ export class GameApp {
           quantity
         })),
       balanceNPS: account?.attributes.point || 0,
-      state: state ? JSON.parse(state) as GameState<any> : undefined
+      state
     };
 
     return player;
@@ -165,10 +187,15 @@ export class GameApp {
   }
 
   onUpdateState ({ gamePlayId, state }: UpdateStatePayload) {
-    const currentGame = this.currentGameInfo;
+    const currentGamePlay = this.apiSDK.currentGamePlay;
 
-    localStorage.setItem(`game-state-${currentGame.id}`, JSON.stringify(state));
-    // Todo: implement server sync later
+    this.lastState = state;
+
+    if (currentGamePlay?.id) {
+      addLazy(`update-state-${currentGamePlay.id}`, () => {
+        this.apiSDK.submitState(currentGamePlay.id, state).catch(console.error);
+      }, 1200, 9000, true);
+    }
   }
 
   async onUseIngameItem (req: {itemId: string, gameplayId?: string }) {
@@ -235,6 +262,10 @@ export class GameApp {
   }
 
   onExit () {
+    if (this.apiSDK.currentGamePlay?.id) {
+      removeLazy(`update-state-${this.apiSDK.currentGamePlay.id}`, true);
+    }
+
     this.stop();
     this.options.onExit();
   }
