@@ -10,7 +10,7 @@ import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegr
 import { detailScreensLayoutBackgroundImages, rankPointMap } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { copyToClipboard, formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
+import { copyToClipboard, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { Copy, Plus, SmileySad, UserCirclePlus } from 'phosphor-react';
@@ -158,7 +158,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         <div className='account-info-area-center-part'>
           <GamePoint
             className={'account-point'}
-            point={formatIntegerShort(account?.attributes.point || 0)}
+            point={toDisplayNumber(account?.attributes.point || 0)}
             size={18}
           />
           <div className='friend-count'>
@@ -210,7 +210,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           </div>
 
           <div className='invitation-reward'>
-            {t('Up to')} {formatIntegerShort(invitePoint)}
+            {t('Up to')} {toDisplayNumber(invitePoint)}
 
             <img
               alt='token'

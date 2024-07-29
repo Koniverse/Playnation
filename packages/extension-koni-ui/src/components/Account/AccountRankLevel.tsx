@@ -5,7 +5,7 @@ import { GamePoint } from '@subwallet/extension-koni-ui/components';
 import { AccountRankType, RankInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { largeRankIconMap, rankNameMap } from '@subwallet/extension-koni-ui/constants';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { formatInteger } from '@subwallet/extension-koni-ui/utils';
+import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle } from 'phosphor-react';
@@ -48,7 +48,7 @@ const Component: React.FC<Props> = ({ className, isCurrent, rank, rankInfoMap }:
 
       <GamePoint
         className={'__game-point'}
-        point={rank === 'unknown' ? '---' : `${formatInteger(rankInfoMap[rank]?.minPoint || 0)}`}
+        point={rank === 'unknown' ? '---' : `${toDisplayNumber(rankInfoMap[rank]?.minPoint || 0)}`}
       />
     </div>
   );
