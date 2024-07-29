@@ -3,7 +3,7 @@
 
 import { BuyInGameItemResponse, ErrorCode, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, Player, PlaynationSDKError, PlayResponse, SDKInitParams, Tournament, UpdateStatePayload, UseInGameItemResponse } from '@playnation/game-sdk';
 import { GameState } from '@playnation/game-sdk/dist/types';
-import {addLazy, createPromiseHandler, removeLazy} from '@subwallet/extension-base/utils';
+import { addLazy, createPromiseHandler, removeLazy } from '@subwallet/extension-base/utils';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { camelCase } from 'lodash';
@@ -26,7 +26,7 @@ export class GameApp {
   private gameItemInGame: Record<string, InGameItem> = {};
 
   private gameStateHandler = createPromiseHandler<GameState<any>>();
-  private lastState: GameState<any> | undefined;
+  private theLastSignature = '';
 
   constructor (options: GameAppOptions) {
     this.options = options;
@@ -38,18 +38,23 @@ export class GameApp {
 
     if (this.currentGameInfo.gameType === 'farming') {
       (async () => {
-        const lastGamplay = await options.apiSDK.getLastState(options.currentGameInfo.id);
+        const lastGameplay = await options.apiSDK.getLastState(options.currentGameInfo.id);
 
         await this.onPlay();
 
-        const state = lastGamplay?.state
-          ? {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            data: lastGamplay.state
-          }
-          : {};
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const stateData = lastGameplay?.state;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        let stateStr = stateData;
 
-        this.gameStateHandler.resolve(state as GameState<any>);
+        if (stateData) {
+          if (typeof stateData === 'object') {
+            stateStr = JSON.stringify(stateData);
+          }
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        this.gameStateHandler.resolve({ data: stateStr } as GameState<any>);
       })().catch(console.error);
     }
   }
@@ -189,9 +194,8 @@ export class GameApp {
   onUpdateState ({ gamePlayId, state }: UpdateStatePayload) {
     const currentGamePlay = this.apiSDK.currentGamePlay;
 
-    this.lastState = state;
-
-    if (currentGamePlay?.id) {
+    if (currentGamePlay?.id && this.theLastSignature !== state.signature) {
+      this.theLastSignature = state.signature;
       addLazy(`update-state-${currentGamePlay.id}`, () => {
         this.apiSDK.submitState(currentGamePlay.id, state).catch(console.error);
       }, 1200, 9000, true);
@@ -298,7 +302,7 @@ export class GameApp {
     try {
       const handleMethod = camelCase('on_' + action);
 
-      console.log('handleMethod', handleMethod, action, data, requestId);
+      // console.log('handleMethod', handleMethod, action, data, requestId);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
       const handler = (this as any)[handleMethod];
 
