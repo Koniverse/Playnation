@@ -225,6 +225,29 @@ export interface ReferralRecord {
   accountInfo: AccountPublicInfo;
 }
 
+export interface Leaderboard {
+  __component: string;
+  id: number;
+  name: string;
+  from_date: Date;
+  to_date: Date;
+  type: string;
+  slug: string;
+  content_share: string;
+  content_not_show_point: string;
+  hashtags: string;
+  url: null | string;
+  gameId: number;
+  timeRange: 'weekly' |'monthly'|'yearly';
+}
+
+export interface ConfigRecord {
+  id: number;
+  name: string;
+  slug: string;
+  value: Leaderboard[] | undefined;
+}
+
 export enum AirdropCampaignStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',

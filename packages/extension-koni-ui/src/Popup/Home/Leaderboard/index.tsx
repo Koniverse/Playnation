@@ -9,6 +9,7 @@ import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegr
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
 import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
@@ -16,12 +17,6 @@ import styled from 'styled-components';
 type Props = ThemeProps;
 
 const apiSDK = BookaSdk.instance;
-
-enum TabType {
-  WEEKLY = 'weekly',
-  INVITE_TO_PLAY = 'invite_to_play',
-  VARA_PLAYDROP = 'vara_playdrop',
-}
 
 const telegramConnector = TelegramConnector.instance;
 
@@ -31,40 +26,30 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { setContainerClass } = useContext(HomeContext);
 
   const [account, setAccount] = useState(apiSDK.account);
+  const [configList, setConfigList] = useState(apiSDK.configList);
   const [tabGroupItems, setTabGroupItems] = useState<LeaderboardTabGroupItemType[]>([]);
 
-  const onClickShare = useCallback((selectedTab: string) => {
+  const onClickShare = useCallback((contentShare: string, contentNotShowPoint: string, urlShare: string | undefined, hashtags: string | undefined) => {
     return (personMine?: LeaderboardPerson) => {
       if (!account) {
         return;
       }
 
-      let content = '';
+      let content = contentNotShowPoint;
 
       if (personMine) {
-        content += `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank} on the DED Egg Hunt Airdrop`;
+        content = populateTemplateString(contentShare, personMine);
       }
 
-      content += 'Leaderboard! Want to join the fun and get a chance to win $DED rewards? Join me now! 🚀';
+      let hashtagsContent = '';
 
-      let urlShareImage = 'https://x.playnation.app/playnation-ded';
-      let hashtags = 'hashtags=DEDEggHunt,Playnation,DOTisDED,Airdrop';
-
-      if (selectedTab === TabType.VARA_PLAYDROP) {
-        content = '';
-        urlShareImage = 'https://x.playnation.app/playnation-vara';
-        hashtags = 'hashtags=PlaynationKickToAirdrop,Playnation,VARAtoken,Airdrop';
-
-        if (personMine) {
-          content = `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank}  on the Playnation Kick-to-Airdrop Leaderboard! %0A `;
-        }
-
-        content += 'Want to join the fun and get a chance to win $VARA rewards? Join me now! 🚀 ';
+      if (hashtags) {
+        hashtagsContent = `hashtags=${hashtags}`;
       }
 
-      const linkShare = `${urlShareImage}?startApp=${account?.info.inviteCode || 'booka'}`;
+      const linkShare = `${urlShare}?startApp=${account?.info.inviteCode || 'booka'}`;
 
-      const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtags}`;
+      const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtagsContent}`;
 
       telegramConnector.openLink(url);
     };
@@ -75,58 +60,53 @@ const Component = ({ className }: Props): React.ReactElement => {
       setAccount(data);
     });
 
+    const configSub = apiSDK.subscribeConfigList().subscribe((data) => {
+      setConfigList(data);
+    });
+
     return () => {
       accountSub.unsubscribe();
+      configSub.unsubscribe();
     };
   }, []);
 
   useEffect(() => {
     const getTabGroupInfo = (): LeaderboardTabGroupItemType[] => {
-      const baseItems: LeaderboardTabGroupItemType[] = [
-        {
-          label: t('Kick-to-Airdrop'),
-          value: TabType.VARA_PLAYDROP,
-          leaderboardInfo: {
-            onClickShare: onClickShare(TabType.VARA_PLAYDROP)
-          }
-        },
-        {
-          label: t('Invite to Play'),
-          value: TabType.INVITE_TO_PLAY,
-          leaderboardInfo: {
-            onClickShare: onClickShare(TabType.INVITE_TO_PLAY)
-          }
-        },
-        {
-          label: t('Weekly'),
-          value: TabType.WEEKLY,
-          leaderboardInfo: {
+      const leaderBoard = configList.find((item) => item.slug === 'leaderboard');
 
+      if (leaderBoard) {
+        // @ts-ignore
+        return leaderBoard?.value.map((item) => {
+          let startDate = item.from_date;
+          let endDate = item.to_date;
+          let _onClickShare = null;
+
+          if (item.content_share) {
+            _onClickShare = onClickShare(item.content_share, item.content_not_show_point, item.url, item.hashtags);
           }
-        }
-      ];
 
-      return baseItems.map((item) => {
-        const { end: endDate, start: startDate } = calculateStartAndEnd(item.value);
-        let type = 'all';
-        let gameId = 0;
+          if (item.timeRange) {
+            const { end, start } = calculateStartAndEnd(item.timeRange);
 
-        if (item.value === TabType.INVITE_TO_PLAY){
-          type = 'inviteToPlay';
-          gameId = 5;
-        }
-
-        return {
-          ...item,
-          leaderboardInfo: {
-            ...item.leaderboardInfo,
-            startDate,
-            endDate,
-            type,
-            gameId
+            startDate = start;
+            endDate = end;
           }
-        };
-      });
+
+          return {
+            label: item.name,
+            value: item.slug,
+            leaderboardInfo: {
+              onClickShare: _onClickShare,
+              startDate,
+              endDate,
+              type: item.type,
+              gameId: item.gameId
+            }
+          };
+        });
+      }
+
+      return [];
     };
 
     setTabGroupItems(getTabGroupInfo());
@@ -139,7 +119,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     return () => {
       clearInterval(timer);
     };
-  }, [onClickShare, t]);
+  }, [onClickShare, t, configList]);
 
   useEffect(() => {
     setContainerClass('leaderboard-screen-wrapper');
@@ -152,7 +132,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   return (
     <LeaderboardContent
       className={className}
-      defaultSelectedTab={TabType.VARA_PLAYDROP}
+      defaultSelectedTab={tabGroupItems.length > 0 ? tabGroupItems[0].value : ''}
       tabGroupItems={tabGroupItems}
     />
   );

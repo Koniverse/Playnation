@@ -3,7 +3,23 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
-import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import {
+  AccountRankType,
+  AirdropCampaign,
+  AirdropEligibility,
+  BookaAccount,
+  ConfigRecord,
+  EnergyConfig,
+  Game,
+  GameInventoryItem,
+  GameItem,
+  GamePlay,
+  LeaderboardPerson,
+  RankInfo,
+  ReferralRecord,
+  Task,
+  TaskCategory
+} from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
@@ -26,7 +42,8 @@ const CACHE_KEYS = {
   taskList: 'data--task-list-cache',
   gameList: 'data--game-list-cache',
   energyConfig: 'data--energy-config-cache',
-  rankInfoMap: 'data--rank-info-map-cache'
+  rankInfoMap: 'data--rank-info-map-cache',
+  configList: 'data--config-list-cache'
 };
 
 function parseCache<T> (key: string): T | undefined {
@@ -60,6 +77,7 @@ export class BookaSdk {
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
+  private configSubject = new BehaviorSubject<ConfigRecord[]>([]);
   isEnabled = new BehaviorSubject<boolean>(true);
 
   constructor () {
@@ -72,6 +90,7 @@ export class BookaSdk {
       const game = parseCache<Game[]>(CACHE_KEYS.gameList);
       const energyConfig = parseCache<EnergyConfig>(CACHE_KEYS.energyConfig);
       const rankInfoMap = parseCache<Record<AccountRankType, RankInfo>>(CACHE_KEYS.rankInfoMap);
+      const configList = parseCache<ConfigRecord[]>(CACHE_KEYS.configList);
 
       account && this.accountSubject.next(account);
       taskCategoryList && this.taskCategoryListSubject.next(taskCategoryList);
@@ -79,6 +98,7 @@ export class BookaSdk {
       game && this.gameListSubject.next(game);
       energyConfig && this.energyConfigSubject.next(energyConfig);
       rankInfoMap && this.rankInfoSubject.next(rankInfoMap);
+      configList && this.configSubject.next(configList);
     } else {
       console.debug('Clearing cache');
       storage.removeItems(Object.keys(CACHE_KEYS).concat(['cache-version'])).catch(console.error);
@@ -427,6 +447,7 @@ export class BookaSdk {
           this.fetchGameList(),
           this.fetchTaskCategoryList(),
           this.fetchTaskList(),
+          this.fetchConfigList(),
           this.fetchLeaderboard(start, end, 0, 100)
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
@@ -445,6 +466,22 @@ export class BookaSdk {
 
       throw error;
     }
+  }
+  async fetchConfigList () {
+    const configList = await this.getRequest<Game[]>(`${GAME_API_HOST}/api/config/fetch`);
+
+    if (configList) {
+      this.configSubject.next(configList);
+      storage.setItem(CACHE_KEYS.configList, JSON.stringify(configList)).catch(console.error);
+    }
+  }
+
+  public get configList () {
+    return this.configSubject.value;
+  }
+
+  subscribeConfigList () {
+    return this.configSubject;
   }
 
   async requestSignature (address: string, message: string): Promise<string> {
