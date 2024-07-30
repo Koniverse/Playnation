@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-koni authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import BeforeCreditcoinCampaign from '@subwallet/extension-base/services/migration-service/scripts/BeforeCreditcoinCampaign';
 import BeforeKaruraCampaign from '@subwallet/extension-base/services/migration-service/scripts/BeforeKaruraCampaign';
 import BeforeVaraCampaign from '@subwallet/extension-base/services/migration-service/scripts/BeforeVaraCampaign';
 import MigrateAssetSetting from '@subwallet/extension-base/services/migration-service/scripts/databases/MigrateAssetSetting';
@@ -40,5 +41,6 @@ export default <Record<string, typeof BaseMigrationJob>>{
   '1.1.69-03': MigrateAssetSetting,
   '1.1.69-02': MigrateTransactionHistoryBySymbol,
   '1.1.69-04': MigrateRemoveGenesisHash,
-  '1.2.10-p3': BeforeVaraCampaign
+  '1.2.10-p3': BeforeVaraCampaign,
+  '1.2.10-p4': BeforeCreditcoinCampaign
 };
