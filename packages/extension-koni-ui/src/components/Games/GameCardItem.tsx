@@ -9,6 +9,7 @@ import CN from 'classnames';
 import { ChartBar, Lightning } from 'phosphor-react';
 import React, { useCallback } from 'react';
 import styled from 'styled-components';
+import game from "@subwallet/extension-koni-ui/components/SVG/Game";
 
 type Props = ThemeProps & {
   item: Game;
@@ -73,7 +74,7 @@ function Component ({ className, item, onOpenLeaderboard, onPlay }: Props) {
           </Button>
 
           {
-            !isComingSoon && (
+            !isComingSoon && item.leaderboards.length > 0 && (
               <Button
                 className={'-primary-3'}
                 icon={(
