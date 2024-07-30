@@ -33,7 +33,6 @@ const forceChainInfoMap = (() => {
     'statemint',
     'statemine',
     'vara_network',
-    'creditcoin',
     'creditcoinTest'
   ];
 

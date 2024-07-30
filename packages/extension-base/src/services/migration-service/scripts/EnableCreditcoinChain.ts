@@ -4,5 +4,5 @@
 import EnableChain from './EnableChain';
 
 export default class EnableCreditcoinChain extends EnableChain {
-  slug = 'creditcoin';
+  slug = 'creditcoinTest';
 }

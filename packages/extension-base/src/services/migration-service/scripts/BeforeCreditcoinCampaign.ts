@@ -7,6 +7,6 @@ export default class BeforeCreditcoinCampaign extends BaseMigrationJob {
   public override async run (): Promise<void> {
     const state = this.state;
 
-    await state.chainService.updateAssetSetting('creditcoin-NATIVE-CTC', { visible: true });
+    await state.chainService.updateAssetSetting('creditcoinTest-NATIVE-CTC', { visible: true });
   }
 }
