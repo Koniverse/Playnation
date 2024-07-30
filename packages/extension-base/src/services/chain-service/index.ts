@@ -33,6 +33,8 @@ const forceChainInfoMap = (() => {
     'statemint',
     'statemine',
     'vara_network',
+    'creditcoin',
+    'creditcoinTest'
   ];
 
   return Object.fromEntries(enableList.map((slug) => {
