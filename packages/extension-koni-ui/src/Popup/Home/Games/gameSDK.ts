@@ -3,6 +3,7 @@
 
 import { BuyInGameItemResponse, ErrorCode, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, Player, PlaynationSDKError, PlayResponse, SDKInitParams, Tournament, UpdateStatePayload, UseInGameItemResponse } from '@playnation/game-sdk';
 import { GameState } from '@playnation/game-sdk/dist/types';
+import { SWStorage } from '@subwallet/extension-base/storage';
 import { addLazy, createPromiseHandler, removeLazy } from '@subwallet/extension-base/utils';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
@@ -15,6 +16,8 @@ export interface GameAppOptions {
   currentGameInfo: Game;
   onExit: () => void;
 }
+
+const cloudStorage = SWStorage.instance;
 
 export class GameApp {
   private listener = this._onMessage.bind(this);
@@ -37,25 +40,7 @@ export class GameApp {
     this.gameItemInGame = this.apiSDK.gameItemInGameList;
 
     if (this.currentGameInfo.gameType === 'farming') {
-      (async () => {
-        const lastGameplay = await options.apiSDK.getLastState(options.currentGameInfo.id);
-
-        await this.onPlay();
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const stateData = lastGameplay?.state;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        let stateStr = stateData;
-
-        if (stateData) {
-          if (typeof stateData === 'object') {
-            stateStr = JSON.stringify(stateData);
-          }
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        this.gameStateHandler.resolve({ data: stateStr } as GameState<any>);
-      })().catch(console.error);
+      this.getLatestGameState().catch(console.error);
     }
   }
 
@@ -193,11 +178,14 @@ export class GameApp {
 
   onUpdateState ({ gamePlayId, state }: UpdateStatePayload) {
     const currentGamePlay = this.apiSDK.currentGamePlay;
+    const currentGame = this.currentGameInfo;
 
     if (currentGamePlay?.id && this.theLastSignature !== state.signature) {
       this.theLastSignature = state.signature;
       addLazy(`update-state-${currentGamePlay.id}`, () => {
         this.apiSDK.submitState(currentGamePlay.id, state).catch(console.error);
+        // Save state to user storage as fallback
+        cloudStorage.setItem(`game-state-${currentGame.id}`, JSON.stringify(state)).catch(console.error);
       }, 1200, 9000, true);
     }
   }
@@ -277,6 +265,57 @@ export class GameApp {
   onExitToListGames () {
     this.stop();
     this.options.onExit();
+  }
+
+  async getLatestGameState () {
+    const skd = this.apiSDK;
+    const gameId = this.currentGameInfo.id;
+
+    async function getStorageState () {
+      const data = await cloudStorage.getItem(`game-state-${gameId}`);
+
+      if (data) {
+        try {
+          return JSON.parse(data) as GameState<any>;
+        } catch (e) {
+        }
+      }
+
+      return undefined;
+    }
+
+    async function getAPIState () {
+      const lastGameplay = await skd.getLastState(gameId);
+
+      if (lastGameplay?.state) {
+        let stateStr = lastGameplay.state as object | string;
+
+        if (typeof stateStr === 'object') {
+          stateStr = JSON.stringify(stateStr);
+        }
+
+        return {
+          data: stateStr,
+          signature: lastGameplay.stateSignature,
+          timestamp: lastGameplay.stateTimestamp
+        } as unknown as GameState<any>;
+      }
+
+      return undefined;
+    }
+
+    const [storageState, apiState] = await Promise.all([getStorageState(), getAPIState()]);
+
+    let state = apiState;
+
+    // Prefer storage state if it's newer or api state is not available
+    if (!apiState || (storageState?.timestamp && apiState?.timestamp && storageState.timestamp > apiState.timestamp)) {
+      state = storageState;
+    }
+
+    await this.onPlay();
+
+    this.gameStateHandler.resolve(state || {} as GameState<any>);
   }
 
   private async _onMessage (event: MessageEvent) {

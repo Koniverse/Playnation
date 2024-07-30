@@ -162,6 +162,8 @@ export interface GamePlay {
   point?: number;
   success?: boolean;
   state: any;
+  stateSignature?: string;
+  stateTimestamp?: string;
 }
 
 export interface GameData {
