@@ -2,14 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { GameAccountBlock, GameCardItem, ShopModal } from '@subwallet/extension-koni-ui/components';
+import { LeaderboardTabGroupItemType } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardContent';
 import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { EnergyConfig, Game, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { EnergyConfig, Game, GameInventoryItem, GameItem, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
 import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
 import { ModalContext } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -19,6 +22,7 @@ type Props = ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 const shopModalId = ShopModalId;
+const telegramConnector = TelegramConnector.instance;
 
 const orderGameList = (data: Game[]): Game[] => {
   const now = Date.now();
@@ -102,21 +106,46 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [activeModal]);
 
   const onOpenLeaderboard = useCallback((game: Game) => {
-    const { end: endDate, start: startDate } = calculateStartAndEnd('weekly');
+    let defaultTab = '';
+
+    const tabGroupItems = game.leaderboards.map((item) => {
+      let startDate = item.from_date;
+      let endDate = item.to_date;
+      let _onClickShare = null;
+
+      if (!defaultTab) {
+        defaultTab = item.slug;
+      }
+
+      if (item.content_share) {
+        _onClickShare = onClickShare(item.content_share, item.content_not_show_point, item.url, item.hashtags);
+      }
+
+      if (item.timeRange) {
+        const { end, start } = calculateStartAndEnd(item.timeRange);
+
+        startDate = start;
+        endDate = end;
+      }
+
+      return {
+        label: item.name,
+        value: item.slug,
+        leaderboardInfo: {
+          onClickShare: _onClickShare,
+          startDate,
+          endDate,
+          type: item.type,
+          gameId: item.gameId
+        }
+      };
+    }) as unknown as LeaderboardTabGroupItemType[];
 
     openLeaderboardModal({
       gameId: game.id,
       modalTitle: game.name,
-      tabGroupItems: [{
-        label: 'default',
-        value: 'default',
-        leaderboardInfo: {
-          endDate,
-          startDate,
-          type: 'game'
-        }
-      }],
-      defaultSelectedTab: 'default'
+      tabGroupItems: tabGroupItems,
+      defaultSelectedTab: defaultTab
     });
   }, [openLeaderboardModal]);
 
@@ -147,6 +176,27 @@ const Component = ({ className }: Props): React.ReactElement => {
       gameListSub.unsubscribe();
       gameItemMapSub.unsubscribe();
       gameInventoryItemListSub.unsubscribe();
+    };
+  }, []);
+  const onClickShare = useCallback((contentShare: string, contentNotShowPoint: string, urlShare: string | undefined, hashtags: string | undefined) => {
+    return (personMine?: LeaderboardPerson) => {
+      let content = contentNotShowPoint;
+
+      if (personMine) {
+        content = populateTemplateString(contentShare, personMine);
+      }
+
+      let hashtagsContent = '';
+
+      if (hashtags) {
+        hashtagsContent = `hashtags=${hashtags}`;
+      }
+
+      const linkShare = `${urlShare}?startApp=${account?.info.inviteCode || 'booka'}`;
+
+      const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtagsContent}`;
+
+      telegramConnector.openLink(url);
     };
   }, []);
 
