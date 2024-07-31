@@ -39,9 +39,7 @@ export class GameApp {
     this.inventoryQuantityMap = this.apiSDK.gameInventoryItemInGameList;
     this.gameItemInGame = this.apiSDK.gameItemInGameList;
 
-    if (this.currentGameInfo.gameType === 'farming') {
-      this.getLatestGameState().catch(console.error);
-    }
+    this.getLatestGameState().catch(console.error);
   }
 
   start () {
@@ -271,6 +269,12 @@ export class GameApp {
     const skd = this.apiSDK;
     const gameId = this.currentGameInfo.id;
 
+    if (this.currentGameInfo.gameType !== 'farming') {
+      this.gameStateHandler.resolve({} as GameState<any>);
+
+      return;
+    }
+
     async function getStorageState () {
       const data = await cloudStorage.getItem(`game-state-${gameId}`);
 
@@ -341,7 +345,7 @@ export class GameApp {
     try {
       const handleMethod = camelCase('on_' + action);
 
-      // console.log('handleMethod', handleMethod, action, data, requestId);
+      console.log('handleMethod', handleMethod, action, data, requestId);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
       const handler = (this as any)[handleMethod];
 
