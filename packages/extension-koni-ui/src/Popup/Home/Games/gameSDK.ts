@@ -345,7 +345,7 @@ export class GameApp {
     try {
       const handleMethod = camelCase('on_' + action);
 
-      console.log('handleMethod', handleMethod, action, data, requestId);
+      // console.log('handleMethod', handleMethod, action, data, requestId);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
       const handler = (this as any)[handleMethod];
 
