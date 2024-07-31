@@ -63,7 +63,7 @@ export class GameApp {
 
   async onGetPlayer () {
     const account = this.apiSDK.account;
-    const playerId = `${account?.info?.telegramUsername || 'player1'}-${account?.info.id || 0}`;
+    const playerId = `${account?.info?.telegramId || 'player'}-${account?.info.id || 0}`;
     const gameData = (account?.gameData || []).find((item) => item.gameId === this.currentGameInfo.id);
     const point = gameData?.point || 0;
 
@@ -228,6 +228,7 @@ export class GameApp {
     }
 
     if (currentGame.token !== result.gameToken) {
+      console.warn('Unmatch', currentGame.token, result.gameToken);
       throw newError('invalid game token', ErrorCode.INVALID_REQUEST);
     }
 
