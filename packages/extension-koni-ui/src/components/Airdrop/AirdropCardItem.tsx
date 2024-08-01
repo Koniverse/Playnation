@@ -97,7 +97,7 @@ function Component ({ className, item, onExplore }: Props) {
             shape={'round'}
             size={'xs'}
           >
-            {t('Explore')}
+            {isComingSoon ? t('Coming soon') : t('Explore')}
           </Button>
 
           {
@@ -123,14 +123,6 @@ function Component ({ className, item, onExplore }: Props) {
           className={'__banner'}
           style={{ backgroundImage: `url("${item.banner}")` }}
         />
-
-        {
-          isComingSoon && (
-            <div className={'__coming-soon-tag'}>
-              {t('Coming soon')}
-            </div>
-          )
-        }
       </div>
     </div>
   );
@@ -217,34 +209,12 @@ export const AirdropCardItem = styled(Component)<Props>(({ theme: { extendToken,
       position: 'relative'
     },
 
-    '.__coming-soon-tag': {
-      position: 'absolute',
-      right: 0,
-      bottom: 20,
-      paddingLeft: token.padding,
-      paddingRight: token.paddingSM,
-      borderTopLeftRadius: 20,
-      borderBottomLeftRadius: 20,
-      backgroundColor: extendToken.colorBgSecondary2,
-      color: token.colorPrimary,
-      fontSize: token.fontSize,
-      lineHeight: token.lineHeight,
-      paddingTop: 6,
-      paddingBottom: 6
-    },
-
     '.__banner': {
       width: 153,
       backgroundSize: 'cover',
       backgroundPosition: 'center right',
       height: '100%',
       clipPath: 'path("M24.9302 20.5871C26.6276 8.77198 36.7499 0 48.6863 0H153V215H24.6944C10.0815 215 -1.13975 202.051 0.938259 187.587L24.9302 20.5871Z")'
-    },
-
-    '&.-is-coming-soon': {
-      '.__banner': {
-        filter: 'blur(8px)'
-      }
     }
   });
 });
