@@ -8,7 +8,7 @@ import { AccountRankType, BookaAccount, EnergyConfig, RankInfo } from '@subwalle
 import { accountRankList, detailScreensLayoutBackgroundImages, rankNameMap, smallRankIconMap } from '@subwallet/extension-koni-ui/constants';
 import { useGetAccountByAddress, useGetEnergyInfo, useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { copyToClipboard, formatInteger, formatIntegerShort, toShort } from '@subwallet/extension-koni-ui/utils';
+import { copyToClipboard, toDisplayNumber, toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, Progress } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { Copy, Lightning } from 'phosphor-react';
@@ -170,10 +170,10 @@ const Component: React.FC<Props> = (props: Props) => {
                     weight={'fill'}
                   />
 
-                  <span>{formatIntegerShort(currentEnergy || 0)}</span>
+                  <span>{toDisplayNumber(currentEnergy || 0)}</span>
                 </span>
                 <span className='max-energy'>
-                /{formatIntegerShort(energyConfig?.maxEnergy || 0)}
+                /{toDisplayNumber(energyConfig?.maxEnergy || 0)}
                 </span>
               </div>
             </div>
@@ -211,11 +211,11 @@ const Component: React.FC<Props> = (props: Props) => {
                 />
 
                 <span className='current-point'>
-                  {formatInteger(currentPoint)}
+                  {toDisplayNumber(currentPoint)}
                 </span>
 
                 <span className='tagret-point'>
-                  /{formatInteger(rankInfoMap?.[currentRank].maxPoint || 0)}
+                  /{toDisplayNumber(rankInfoMap?.[currentRank].maxPoint || 0)}
                 </span>
               </div>
             </div>

@@ -4,7 +4,7 @@
 import { GameAccountAvatar, GamePoint } from '@subwallet/extension-koni-ui/components';
 import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
+import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
 import React from 'react';
 import styled from 'styled-components';
@@ -30,7 +30,7 @@ const Component = ({ className, isFirst, isPlaceholder, leaderboardInfo, rank }:
       return '---';
     }
 
-    return formatIntegerShort(leaderboardInfo?.point);
+    return toDisplayNumber(leaderboardInfo?.point);
   })();
 
   return (
