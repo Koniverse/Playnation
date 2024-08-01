@@ -7,7 +7,7 @@ import { useGetEnergyInfo, useTranslation } from '@subwallet/extension-koni-ui/h
 import { saveShowBalance } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
+import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, Number } from '@subwallet/react-ui';
 import { SwNumberProps } from '@subwallet/react-ui/es/number';
 import { CopySimple, Eye, EyeSlash, Lightning, PaperPlaneTilt, ShoppingCartSimple } from 'phosphor-react';
@@ -98,10 +98,10 @@ function Component (
               weight={'fill'}
             />
 
-            <span>{formatIntegerShort(currentEnergy || 0)}</span>
+            <span>{toDisplayNumber(currentEnergy || 0)}</span>
           </span>
           <span className='__max-energy-value'>
-              /{formatIntegerShort(energyConfig?.maxEnergy || 0)}
+              /{toDisplayNumber(energyConfig?.maxEnergy || 0)}
           </span>
         </div>
       </div>

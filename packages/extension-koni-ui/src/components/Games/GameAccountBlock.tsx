@@ -6,7 +6,7 @@ import { GameAccountAvatar, GameEnergyBar } from '@subwallet/extension-koni-ui/c
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useGetEnergyInfo } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
+import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { Lightning } from 'phosphor-react';
@@ -42,7 +42,7 @@ function Component ({ accountInfo, className, maxEnergy }: Props) {
       <div className='__right-part'>
         <div className='__point-info'>
           <div className='__point-value'>
-            {formatIntegerShort(accountInfo?.attributes.point || 0)}
+            {toDisplayNumber(accountInfo?.attributes.point || 0)}
           </div>
           <img
             alt={'avatar'}
@@ -74,10 +74,10 @@ function Component ({ accountInfo, className, maxEnergy }: Props) {
                 weight={'fill'}
               />
 
-              <span>{formatIntegerShort(currentEnergy || 0)}</span>
+              <span>{toDisplayNumber(currentEnergy || 0)}</span>
             </span>
             <span className='__max-energy'>
-              /{formatIntegerShort(maxEnergy || 0)}
+              /{toDisplayNumber(maxEnergy || 0)}
             </span>
           </div>
         </div>

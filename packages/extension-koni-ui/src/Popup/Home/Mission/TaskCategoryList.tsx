@@ -4,7 +4,7 @@
 import { TaskCategory, TaskCategoryInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { formatInteger } from '@subwallet/extension-koni-ui/utils';
+import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { Icon, Image, Typography } from '@subwallet/react-ui';
 import { CaretRight } from 'phosphor-react';
 import React, { useCallback, useMemo } from 'react';
@@ -53,7 +53,7 @@ const Component = ({ className, onClickCategoryItem, taskCategoryInfoMap, taskCa
               <div>{tc.name}</div>
 
               <div>
-                Min point can earn: {formatInteger(taskCategoryInfoMap[tc.id]?.minPoint || 0)}
+                Min point can earn: {toDisplayNumber(taskCategoryInfoMap[tc.id]?.minPoint || 0)}
               </div>
             </div>
             <div className={'task-category-item-caret-icon'}>

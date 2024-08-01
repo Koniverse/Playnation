@@ -6,7 +6,7 @@ import { AirdropRewardHistoryLog } from '@subwallet/extension-koni-ui/connector/
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { customFormatDate, formatInteger } from '@subwallet/extension-koni-ui/utils';
+import { customFormatDate, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, Squircle } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle, Gift } from 'phosphor-react';
@@ -81,7 +81,7 @@ const Component = ({ className, item, onClaim }: Props): React.ReactElement => {
         <div className='__min-part-line-2'>
           <GamePoint
             className={'__reward-value'}
-            point={`${formatInteger(item.rewardValue || 0)}`}
+            point={`${toDisplayNumber(item.rewardValue || 0)}`}
             tokenSrc={item.type === 'TOKEN' ? logoMaps[(item.tokenSlug || '').toLowerCase()] : undefined}
           />
 

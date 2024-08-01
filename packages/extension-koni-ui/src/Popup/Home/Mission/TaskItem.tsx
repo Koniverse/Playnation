@@ -8,7 +8,7 @@ import { ShareLeaderboard, Task } from '@subwallet/extension-koni-ui/connector/b
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { customFormatDate, formatInteger } from '@subwallet/extension-koni-ui/utils';
+import { customFormatDate, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
 import { Button, Icon, Image } from '@subwallet/react-ui';
 import CN from 'classnames';
@@ -223,7 +223,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         <div className='__min-part-line-2'>
           <GamePoint
             className={'__game-point'}
-            point={`${formatInteger(task.pointReward || 0)}`}
+            point={`${toDisplayNumber(task.pointReward || 0)}`}
           />
 
           {renderTaskDate()}
