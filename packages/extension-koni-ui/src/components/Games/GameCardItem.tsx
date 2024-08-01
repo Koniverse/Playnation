@@ -74,7 +74,7 @@ function Component ({ className, item, onOpenLeaderboard, onPlay }: Props) {
           </Button>
 
           {
-            !isComingSoon && item.leaderboards.length > 0 && (
+            !isComingSoon && item.leaderboard_groups && item.leaderboard_groups.length > 0 && (
               <Button
                 className={'-primary-3'}
                 icon={(

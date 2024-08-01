@@ -4,13 +4,12 @@
 import { LeaderboardContent } from '@subwallet/extension-koni-ui/components';
 import { LeaderboardTabGroupItemType } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardContent';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { LeaderboardItem, LeaderboardPerson, LeaderboardGroups } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
-import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
@@ -26,7 +25,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { setContainerClass } = useContext(HomeContext);
 
   const [account, setAccount] = useState(apiSDK.account);
-  const [configList, setConfigList] = useState(apiSDK.configList);
+  const [keyValueList, setKeyValueList] = useState(apiSDK.keyValueList);
   const [tabGroupItems, setTabGroupItems] = useState<LeaderboardTabGroupItemType[]>([]);
 
   const onClickShare = useCallback((contentShare: string, contentNotShowPoint: string, urlShare: string | undefined, hashtags: string | undefined) => {
@@ -60,50 +59,55 @@ const Component = ({ className }: Props): React.ReactElement => {
       setAccount(data);
     });
 
-    const configSub = apiSDK.subscribeConfigList().subscribe((data) => {
-      setConfigList(data);
+    const keyValueSub = apiSDK.subscribeKeyValueList().subscribe((data) => {
+      setKeyValueList(data);
     });
 
     return () => {
       accountSub.unsubscribe();
-      configSub.unsubscribe();
+      keyValueSub.unsubscribe();
     };
   }, []);
 
   useEffect(() => {
     const getTabGroupInfo = (): LeaderboardTabGroupItemType[] => {
-      const leaderBoard = configList.find((item) => item.slug === 'leaderboard');
+      const leaderboardGeneral = keyValueList.leaderboard_general as unknown as LeaderboardGroups[];
+      const leaderboards = keyValueList.leaderboard_map as unknown as LeaderboardItem[];
 
-      if (leaderBoard) {
+      if (leaderboardGeneral && leaderboards) {
+        const value = leaderboardGeneral.length > 0 ? leaderboardGeneral[0] : null;
+
+        if (!value) {
+          return [];
+        }
+
+        const data: LeaderboardTabGroupItemType[] = [];
+
         // @ts-ignore
-        return leaderBoard?.value.map((item) => {
-          let startDate = item.from_date;
-          let endDate = item.to_date;
+        value.leaderboards.forEach((item: Leaderboard) => {
+          const id = item.id;
+          const leaderboard = leaderboards.find((l) => l.id === id);
           let _onClickShare = null;
 
-          if (item.content_share) {
-            _onClickShare = onClickShare(item.content_share, item.content_not_show_point, item.url, item.hashtags);
-          }
+          if (leaderboard) {
+            if (leaderboard.sharing) {
+              const { content, hashtags, url } = leaderboard.sharing;
 
-          if (item.timeRange) {
-            const { end, start } = calculateStartAndEnd(item.timeRange);
-
-            startDate = start;
-            endDate = end;
-          }
-
-          return {
-            label: item.name,
-            value: item.slug,
-            leaderboardInfo: {
-              onClickShare: _onClickShare,
-              startDate,
-              endDate,
-              type: item.type,
-              gameId: item.gameId
+              _onClickShare = onClickShare(content, content, url, hashtags);
             }
-          };
+
+            data.push({
+              label: leaderboard.name,
+              value: leaderboard.slug,
+              leaderboardInfo: {
+                onClickShare: _onClickShare,
+                id: leaderboard.id
+              }
+            } as LeaderboardTabGroupItemType);
+          }
         });
+
+        return data;
       }
 
       return [];
@@ -119,7 +123,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     return () => {
       clearInterval(timer);
     };
-  }, [onClickShare, t, configList]);
+  }, [onClickShare, t, keyValueList]);
 
   useEffect(() => {
     setContainerClass('leaderboard-screen-wrapper');

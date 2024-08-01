@@ -5,7 +5,7 @@ import { GameAccountBlock, GameCardItem, ShopModal } from '@subwallet/extension-
 import { LeaderboardTabGroupItemType } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardContent';
 import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { EnergyConfig, Game, GameInventoryItem, GameItem, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { EnergyConfig, Game, GameInventoryItem, GameItem, LeaderboardItem, LeaderboardPerson, LeaderboardGroups } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
@@ -13,7 +13,6 @@ import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
-import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
 import { ModalContext } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
@@ -58,6 +57,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [gameList, setGameList] = useState<Game[]>(apiSDK.gameList);
   const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
   const [gameItemMap, setGameItemMap] = useState<Record<string, GameItem[]>>(apiSDK.gameItemMap);
+  const [keyValueList, setKeyValueList] = useState(apiSDK.keyValueList);
   const [gameInventoryItemList, setGameInventoryItemList] = useState<GameInventoryItem[]>(apiSDK.gameInventoryItemList);
   const [currentShopGameId, setCurrentShopGameId] = useState<number>();
   const { activeModal } = useContext(ModalContext);
@@ -107,39 +107,46 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   const onOpenLeaderboard = useCallback((game: Game) => {
     let defaultTab = '';
+    const leaderboardGroups = game.leaderboard_groups as unknown as LeaderboardGroups[];
+    const leaderboards = keyValueList.leaderboard_map as unknown as LeaderboardItem[];
 
-    const tabGroupItems = game.leaderboards.map((item) => {
-      let startDate = item.from_date;
-      let endDate = item.to_date;
-      let _onClickShare = null;
+    const tabGroupItems: LeaderboardTabGroupItemType[] = [];
 
-      if (!defaultTab) {
-        defaultTab = item.slug;
+    if (leaderboardGroups && leaderboards) {
+      const value = leaderboardGroups.length > 0 ? leaderboardGroups[0] : null;
+
+      if (!value) {
+        return [];
       }
 
-      if (item.content_share) {
-        _onClickShare = onClickShare(item.content_share, item.content_not_show_point, item.url, item.hashtags);
-      }
+      // @ts-ignore
+      value.leaderboards.forEach((item: Leaderboard) => {
+        const id = item.id;
+        const leaderboard = leaderboards.find((l) => l.id === id);
+        let _onClickShare = null;
 
-      if (item.timeRange) {
-        const { end, start } = calculateStartAndEnd(item.timeRange);
+        if (leaderboard) {
+          if (!defaultTab){
+            defaultTab = leaderboard.slug;
+          }
 
-        startDate = start;
-        endDate = end;
-      }
+          if (leaderboard.sharing) {
+            const { content, hashtags, url } = leaderboard.sharing;
 
-      return {
-        label: item.name,
-        value: item.slug,
-        leaderboardInfo: {
-          onClickShare: _onClickShare,
-          startDate,
-          endDate,
-          type: item.type,
-          gameId: item.gameId
+            _onClickShare = onClickShare(content, content, url, hashtags);
+          }
+
+          tabGroupItems.push({
+            label: leaderboard.name,
+            value: leaderboard.slug,
+            leaderboardInfo: {
+              onClickShare: _onClickShare,
+              id: leaderboard.id
+            }
+          } as LeaderboardTabGroupItemType);
         }
-      };
-    }) as unknown as LeaderboardTabGroupItemType[];
+      });
+    }
 
     openLeaderboardModal({
       gameId: game.id,
@@ -147,7 +154,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       tabGroupItems: tabGroupItems,
       defaultSelectedTab: defaultTab
     });
-  }, [openLeaderboardModal]);
+  }, [openLeaderboardModal, keyValueList]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -170,12 +177,17 @@ const Component = ({ className }: Props): React.ReactElement => {
       setGameInventoryItemList(data);
     });
 
+    const keyValueSub = apiSDK.subscribeKeyValueList().subscribe((data) => {
+      setKeyValueList(data);
+    });
+
     return () => {
       accountSub.unsubscribe();
       energyConfigSub.unsubscribe();
       gameListSub.unsubscribe();
       gameItemMapSub.unsubscribe();
       gameInventoryItemListSub.unsubscribe();
+      keyValueSub.unsubscribe();
     };
   }, []);
   const onClickShare = useCallback((contentShare: string, contentNotShowPoint: string, urlShare: string | undefined, hashtags: string | undefined) => {

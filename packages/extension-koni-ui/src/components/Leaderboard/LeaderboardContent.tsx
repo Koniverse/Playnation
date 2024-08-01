@@ -18,10 +18,8 @@ import TopAccountItem from './TopAccountItem';
 export type LeaderboardTabGroupItemType = TabGroupItemType & {
   leaderboardInfo: {
     onClickShare?: (mine?: LeaderboardPerson) => void;
-    startDate?: string;
-    endDate?: string;
-    type?: string;
-    gameId?: number;
+    id?: number;
+    context: any
   }
 }
 
@@ -81,11 +79,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
     let leaderboardSub: { unsubscribe: () => void } | null = null;
 
     if (currentTabInfo) {
-      leaderboardSub = apiSDK.subscribeLeaderboard(
-        currentTabInfo.leaderboardInfo.startDate,
-        currentTabInfo.leaderboardInfo.endDate,
-        gameId || currentTabInfo.leaderboardInfo.gameId || 0, 100,
-        currentTabInfo.leaderboardInfo.type).subscribe((data) => {
+      leaderboardSub = apiSDK.subscribeLeaderboard(currentTabInfo.leaderboardInfo.id, currentTabInfo.leaderboardInfo.context).subscribe((data) => {
         setLeaderboardItems(data);
       });
     }
