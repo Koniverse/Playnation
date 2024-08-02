@@ -26,7 +26,8 @@ const CACHE_KEYS = {
   taskList: 'data--task-list-cache',
   gameList: 'data--game-list-cache',
   energyConfig: 'data--energy-config-cache',
-  rankInfoMap: 'data--rank-info-map-cache'
+  rankInfoMap: 'data--rank-info-map-cache',
+  airdropCampaignList: 'data--airdrop-campaign-list-cache',
 };
 
 function parseCache<T> (key: string): T | undefined {
@@ -71,6 +72,7 @@ export class BookaSdk {
       const tasks = parseCache<Task[]>(CACHE_KEYS.taskList);
       const game = parseCache<Game[]>(CACHE_KEYS.gameList);
       const energyConfig = parseCache<EnergyConfig>(CACHE_KEYS.energyConfig);
+      const airdropCampaignList = parseCache<AirdropCampaign[]>(CACHE_KEYS.airdropCampaignList);
       const rankInfoMap = parseCache<Record<AccountRankType, RankInfo>>(CACHE_KEYS.rankInfoMap);
 
       account && this.accountSubject.next(account);
@@ -79,6 +81,7 @@ export class BookaSdk {
       game && this.gameListSubject.next(game);
       energyConfig && this.energyConfigSubject.next(energyConfig);
       rankInfoMap && this.rankInfoSubject.next(rankInfoMap);
+      airdropCampaignList && this.airdropCampaignSubject.next(airdropCampaignList);
     } else {
       console.debug('Clearing cache');
       storage.removeItems(Object.keys(CACHE_KEYS).concat(['cache-version'])).catch(console.error);
@@ -680,6 +683,7 @@ export class BookaSdk {
 
     if (airdropCampaignResponse) {
       this.airdropCampaignSubject.next(airdropCampaignResponse);
+      localStorage.setItem(CACHE_KEYS.airdropCampaignList, JSON.stringify(airdropCampaignResponse));
     }
   }
 
