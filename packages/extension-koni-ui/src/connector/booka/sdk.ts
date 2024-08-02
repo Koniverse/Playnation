@@ -3,28 +3,12 @@
 
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
-import {
-  AccountRankType,
-  AirdropCampaign,
-  AirdropEligibility,
-  BookaAccount,
-  ConfigRecord,
-  EnergyConfig,
-  Game,
-  GameInventoryItem,
-  GameItem,
-  GamePlay, KeyValueStore,
-  LeaderboardPerson,
-  RankInfo,
-  ReferralRecord,
-  Task,
-  TaskCategory
-} from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
-import {  formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
+import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
@@ -43,7 +27,7 @@ const CACHE_KEYS = {
   gameList: 'data--game-list-cache',
   energyConfig: 'data--energy-config-cache',
   rankInfoMap: 'data--rank-info-map-cache',
-  keyValueList: 'data--key-value-list-cache'
+  leaderboardConfigSubject: 'data--leaderboard-config-list-cache'
 };
 
 function parseCache<T> (key: string): T | undefined {
@@ -77,7 +61,7 @@ export class BookaSdk {
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
-  private keyValueSubject = new BehaviorSubject<Record<string, object>>([]);
+  private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
   isEnabled = new BehaviorSubject<boolean>(true);
 
   constructor () {
@@ -90,7 +74,7 @@ export class BookaSdk {
       const game = parseCache<Game[]>(CACHE_KEYS.gameList);
       const energyConfig = parseCache<EnergyConfig>(CACHE_KEYS.energyConfig);
       const rankInfoMap = parseCache<Record<AccountRankType, RankInfo>>(CACHE_KEYS.rankInfoMap);
-      const keyValueList = parseCache<Record<string, object>>(CACHE_KEYS.keyValueList);
+      const leaderboardConfigSubject = parseCache<Record<string, object>>(CACHE_KEYS.leaderboardConfigSubject);
 
       account && this.accountSubject.next(account);
       taskCategoryList && this.taskCategoryListSubject.next(taskCategoryList);
@@ -98,7 +82,7 @@ export class BookaSdk {
       game && this.gameListSubject.next(game);
       energyConfig && this.energyConfigSubject.next(energyConfig);
       rankInfoMap && this.rankInfoSubject.next(rankInfoMap);
-      keyValueList && this.keyValueSubject.next(keyValueList);
+      leaderboardConfigSubject && this.leaderboardConfigSubject.next(leaderboardConfigSubject);
     } else {
       console.debug('Clearing cache');
       storage.removeItems(Object.keys(CACHE_KEYS).concat(['cache-version'])).catch(console.error);
@@ -446,7 +430,7 @@ export class BookaSdk {
           this.fetchGameList(),
           this.fetchTaskCategoryList(),
           this.fetchTaskList(),
-          this.fetchKeyValueList()
+          this.fetchLeaderboardConfigList()
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
           // this.fetchGameItemInGameList()
@@ -465,21 +449,22 @@ export class BookaSdk {
       throw error;
     }
   }
-  async fetchKeyValueList () {
-    const keyValueList = await this.getRequest<Record<string, object>>(`${GAME_API_HOST}/api/key-value/fetch`);
 
-    if (keyValueList) {
-      this.keyValueSubject.next(keyValueList);
-      storage.setItem(CACHE_KEYS.keyValueList, JSON.stringify(keyValueList)).catch(console.error);
+  async fetchLeaderboardConfigList () {
+    const config = await this.getRequest<Record<string, object>>(`${GAME_API_HOST}/api/leaderboard/get-config`);
+
+    if (config) {
+      this.leaderboardConfigSubject.next(config);
+      storage.setItem(CACHE_KEYS.leaderboardConfigSubject, JSON.stringify(config)).catch(console.error);
     }
   }
 
-  public get keyValueList () {
-    return this.keyValueSubject.value;
+  public get leaderboardConfig () {
+    return this.leaderboardConfigSubject.value;
   }
 
-  subscribeKeyValueList () {
-    return this.keyValueSubject;
+  subscribeLeaderboardConfig () {
+    return this.leaderboardConfigSubject;
   }
 
   async requestSignature (address: string, message: string): Promise<string> {
@@ -621,7 +606,7 @@ export class BookaSdk {
   }
   // --- shop
 
-  async fetchLeaderboard (id: string, context: any | null = null) {
+  async fetchLeaderboard (id: string, context = {}) {
     await this.waitForSync;
     const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/leaderboard/fetch`, {
       id,
@@ -633,7 +618,7 @@ export class BookaSdk {
     }
   }
 
-  subscribeLeaderboard (id: number, context: any | null = null) {
+  subscribeLeaderboard (id: number, context = {}) {
     this.fetchLeaderboard(id, context).catch(console.error);
 
     return this.leaderBoardSubject;
@@ -767,9 +752,10 @@ export class BookaSdk {
       throw error;
     }
   }
+
   async getAirlyftToken () {
     try {
-      return await this.getRequest(`${GAME_API_HOST}/api/airlyft/get-token`) as unknown as Promise<{token: string, success: boolean} | undefined>;
+      return await this.getRequest(`${GAME_API_HOST}/api/airlyft/get-token`) as Promise<{token: string, success: boolean} | undefined>;
     } catch (error) {
       console.error('Error in fetchAirdropHistory:', error);
       throw error;

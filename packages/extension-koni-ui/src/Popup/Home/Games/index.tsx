@@ -57,7 +57,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [gameList, setGameList] = useState<Game[]>(apiSDK.gameList);
   const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
   const [gameItemMap, setGameItemMap] = useState<Record<string, GameItem[]>>(apiSDK.gameItemMap);
-  const [keyValueList, setKeyValueList] = useState(apiSDK.keyValueList);
+  const [leaderboardConfig, setLeaderboardConfig] = useState(apiSDK.leaderboardConfig);
   const [gameInventoryItemList, setGameInventoryItemList] = useState<GameInventoryItem[]>(apiSDK.gameInventoryItemList);
   const [currentShopGameId, setCurrentShopGameId] = useState<number>();
   const { activeModal } = useContext(ModalContext);
@@ -108,7 +108,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const onOpenLeaderboard = useCallback((game: Game) => {
     let defaultTab = '';
     const leaderboardGroups = game.leaderboard_groups as unknown as LeaderboardGroups[];
-    const leaderboards = keyValueList.leaderboard_map as unknown as LeaderboardItem[];
+    const leaderboards = leaderboardConfig.leaderboard_map as unknown as LeaderboardItem[];
 
     const tabGroupItems: LeaderboardTabGroupItemType[] = [];
 
@@ -141,7 +141,10 @@ const Component = ({ className }: Props): React.ReactElement => {
             value: leaderboard.slug,
             leaderboardInfo: {
               onClickShare: _onClickShare,
-              id: leaderboard.id
+              id: leaderboard.id,
+              context: {
+                games: [game.id]
+              }
             }
           } as LeaderboardTabGroupItemType);
         }
@@ -154,7 +157,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       tabGroupItems: tabGroupItems,
       defaultSelectedTab: defaultTab
     });
-  }, [openLeaderboardModal, keyValueList]);
+  }, [openLeaderboardModal, leaderboardConfig]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -177,8 +180,8 @@ const Component = ({ className }: Props): React.ReactElement => {
       setGameInventoryItemList(data);
     });
 
-    const keyValueSub = apiSDK.subscribeKeyValueList().subscribe((data) => {
-      setKeyValueList(data);
+    const subscriptionLeaderboard = apiSDK.subscribeLeaderboardConfig().subscribe((data) => {
+      setLeaderboardConfig(data);
     });
 
     return () => {
@@ -187,7 +190,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       gameListSub.unsubscribe();
       gameItemMapSub.unsubscribe();
       gameInventoryItemListSub.unsubscribe();
-      keyValueSub.unsubscribe();
+      subscriptionLeaderboard.unsubscribe();
     };
   }, []);
   const onClickShare = useCallback((contentShare: string, contentNotShowPoint: string, urlShare: string | undefined, hashtags: string | undefined) => {

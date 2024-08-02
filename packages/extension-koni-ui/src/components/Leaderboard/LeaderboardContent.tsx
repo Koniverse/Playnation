@@ -18,8 +18,8 @@ import TopAccountItem from './TopAccountItem';
 export type LeaderboardTabGroupItemType = TabGroupItemType & {
   leaderboardInfo: {
     onClickShare?: (mine?: LeaderboardPerson) => void;
-    id?: number;
-    context: any
+    id: number;
+    context: {}
   }
 }
 

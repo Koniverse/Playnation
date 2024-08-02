@@ -4,7 +4,7 @@
 import { LeaderboardContent } from '@subwallet/extension-koni-ui/components';
 import { LeaderboardTabGroupItemType } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardContent';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { LeaderboardItem, LeaderboardPerson, LeaderboardGroups } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { LeaderboardGroups,LeaderboardItem, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
@@ -25,7 +25,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { setContainerClass } = useContext(HomeContext);
 
   const [account, setAccount] = useState(apiSDK.account);
-  const [keyValueList, setKeyValueList] = useState(apiSDK.keyValueList);
+  const [leaderboardConfig, setLeaderboardConfig] = useState(apiSDK.leaderboardConfig);
   const [tabGroupItems, setTabGroupItems] = useState<LeaderboardTabGroupItemType[]>([]);
 
   const onClickShare = useCallback((contentShare: string, contentNotShowPoint: string, urlShare: string | undefined, hashtags: string | undefined) => {
@@ -59,20 +59,20 @@ const Component = ({ className }: Props): React.ReactElement => {
       setAccount(data);
     });
 
-    const keyValueSub = apiSDK.subscribeKeyValueList().subscribe((data) => {
-      setKeyValueList(data);
+    const subscriptionLeaderboard = apiSDK.subscribeLeaderboardConfig().subscribe((data) => {
+      setLeaderboardConfig(data);
     });
 
     return () => {
       accountSub.unsubscribe();
-      keyValueSub.unsubscribe();
+      subscriptionLeaderboard.unsubscribe();
     };
   }, []);
 
   useEffect(() => {
     const getTabGroupInfo = (): LeaderboardTabGroupItemType[] => {
-      const leaderboardGeneral = keyValueList.leaderboard_general as unknown as LeaderboardGroups[];
-      const leaderboards = keyValueList.leaderboard_map as unknown as LeaderboardItem[];
+      const leaderboardGeneral = leaderboardConfig.leaderboard_general as unknown as LeaderboardGroups[];
+      const leaderboards = leaderboardConfig.leaderboard_map as unknown as LeaderboardItem[];
 
       if (leaderboardGeneral && leaderboards) {
         const value = leaderboardGeneral.length > 0 ? leaderboardGeneral[0] : null;
@@ -123,7 +123,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     return () => {
       clearInterval(timer);
     };
-  }, [onClickShare, t, keyValueList]);
+  }, [onClickShare, t, leaderboardConfig]);
 
   useEffect(() => {
     setContainerClass('leaderboard-screen-wrapper');
