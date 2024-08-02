@@ -508,11 +508,29 @@ export class BookaSdk {
   }
 
   async submitGame (gamePlayId: number, point: number, signature: string) {
-    await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/submit`, {
-      gamePlayId: gamePlayId,
-      point: point,
-      signature
-    });
+    let success = false;
+
+    // Try 3 times to submit the game play
+    for (let i = 0; i < 3; i++) {
+      try {
+        await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/submit`, {
+          gamePlayId: gamePlayId,
+          point: point,
+          signature
+        });
+
+        success = true;
+        break;
+      } catch (error) {
+        // Wait for 1 second
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        console.error('Failed to submit game', error);
+      }
+
+      if (!success) {
+        throw Error('Cannot submit the game');
+      }
+    }
 
     this.currentGamePlaySubject.next(undefined);
 
