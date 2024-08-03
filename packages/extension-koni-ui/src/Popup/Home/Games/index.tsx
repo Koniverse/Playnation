@@ -5,7 +5,7 @@ import { GameAccountBlock, GameCardItem, ShopModal } from '@subwallet/extension-
 import { LeaderboardTabGroupItemType } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardContent';
 import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { EnergyConfig, Game, GameInventoryItem, GameItem, LeaderboardItem, LeaderboardPerson, LeaderboardGroups } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { EnergyConfig, Game, GameInventoryItem, GameItem, LeaderboardGroups, LeaderboardItem, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
@@ -105,6 +105,28 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [activeModal]);
 
+  const onClickShare = useCallback((contentShare: string, contentNotShowPoint: string, urlShare: string | undefined, hashtags: string | undefined) => {
+    return (personMine?: LeaderboardPerson) => {
+      let content = contentNotShowPoint;
+
+      if (personMine) {
+        content = populateTemplateString(contentShare, personMine);
+      }
+
+      let hashtagsContent = '';
+
+      if (hashtags) {
+        hashtagsContent = `hashtags=${hashtags}`;
+      }
+
+      const linkShare = `${urlShare || ''}?startApp=${account?.info.inviteCode || 'booka'}`;
+
+      const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtagsContent}`;
+
+      telegramConnector.openLink(url);
+    };
+  }, [account?.info.inviteCode]);
+
   const onOpenLeaderboard = useCallback((game: Game) => {
     let defaultTab = '';
     const leaderboardGroups = game.leaderboard_groups as unknown as LeaderboardGroups[];
@@ -116,17 +138,17 @@ const Component = ({ className }: Props): React.ReactElement => {
       const value = leaderboardGroups.length > 0 ? leaderboardGroups[0] : null;
 
       if (!value) {
-        return [];
+        return;
       }
 
       // @ts-ignore
-      value.leaderboards.forEach((item: Leaderboard) => {
+      value.leaderboards.forEach((item: LeaderboardItem) => {
         const id = item.id;
         const leaderboard = leaderboards.find((l) => l.id === id);
         let _onClickShare = null;
 
         if (leaderboard) {
-          if (!defaultTab){
+          if (!defaultTab) {
             defaultTab = leaderboard.slug;
           }
 
@@ -140,6 +162,7 @@ const Component = ({ className }: Props): React.ReactElement => {
             label: leaderboard.name,
             value: leaderboard.slug,
             leaderboardInfo: {
+              type: leaderboard.type,
               onClickShare: _onClickShare,
               id: leaderboard.id,
               context: {
@@ -157,7 +180,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       tabGroupItems: tabGroupItems,
       defaultSelectedTab: defaultTab
     });
-  }, [openLeaderboardModal, leaderboardConfig]);
+  }, [leaderboardConfig.leaderboard_map, onClickShare, openLeaderboardModal]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -191,27 +214,6 @@ const Component = ({ className }: Props): React.ReactElement => {
       gameItemMapSub.unsubscribe();
       gameInventoryItemListSub.unsubscribe();
       subscriptionLeaderboard.unsubscribe();
-    };
-  }, []);
-  const onClickShare = useCallback((contentShare: string, contentNotShowPoint: string, urlShare: string | undefined, hashtags: string | undefined) => {
-    return (personMine?: LeaderboardPerson) => {
-      let content = contentNotShowPoint;
-
-      if (personMine) {
-        content = populateTemplateString(contentShare, personMine);
-      }
-
-      let hashtagsContent = '';
-
-      if (hashtags) {
-        hashtagsContent = `hashtags=${hashtags}`;
-      }
-
-      const linkShare = `${urlShare}?startApp=${account?.info.inviteCode || 'booka'}`;
-
-      const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtagsContent}`;
-
-      telegramConnector.openLink(url);
     };
   }, []);
 
