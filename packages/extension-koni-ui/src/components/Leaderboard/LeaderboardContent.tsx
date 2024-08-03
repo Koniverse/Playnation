@@ -123,7 +123,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
       )
     }
     <div className='top-three-area'>
-      {(mine && mine.rank <= 3) && <div className='top-three-share-button'>
+      {(!!currentTabInfo?.leaderboardInfo.onClickShare && mine && mine.rank <= 3) && <div className='top-three-share-button'>
         <Button
           className={'top-button-share'}
           icon={(
