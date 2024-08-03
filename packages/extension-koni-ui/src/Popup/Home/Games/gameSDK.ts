@@ -57,7 +57,7 @@ export class GameApp {
     // Todo: Send client id into game
   }
 
-  getEnergyPerGame () {
+  onGetEnergyPerGame () {
     return this.currentGameInfo.energyPerGame;
   }
 

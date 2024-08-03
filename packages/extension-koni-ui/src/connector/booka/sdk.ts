@@ -9,7 +9,7 @@ import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, Ene
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
-import { calculateStartAndEnd, formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
+import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
@@ -27,7 +27,9 @@ const CACHE_KEYS = {
   taskList: 'data--task-list-cache',
   gameList: 'data--game-list-cache',
   energyConfig: 'data--energy-config-cache',
-  rankInfoMap: 'data--rank-info-map-cache'
+  rankInfoMap: 'data--rank-info-map-cache',
+  leaderboardConfigSubject: 'data--leaderboard-config-list-cache',
+  airdropCampaignList: 'data--airdrop-campaign-list-cache',
 };
 
 function parseCache<T> (key: string): T | undefined {
@@ -61,6 +63,7 @@ export class BookaSdk {
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
+  private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
   isEnabled = new BehaviorSubject<boolean>(true);
 
   constructor () {
@@ -72,7 +75,9 @@ export class BookaSdk {
       const tasks = parseCache<Task[]>(CACHE_KEYS.taskList);
       const game = parseCache<Game[]>(CACHE_KEYS.gameList);
       const energyConfig = parseCache<EnergyConfig>(CACHE_KEYS.energyConfig);
+      const airdropCampaignList = parseCache<AirdropCampaign[]>(CACHE_KEYS.airdropCampaignList);
       const rankInfoMap = parseCache<Record<AccountRankType, RankInfo>>(CACHE_KEYS.rankInfoMap);
+      const leaderboardConfigSubject = parseCache<Record<string, object>>(CACHE_KEYS.leaderboardConfigSubject);
 
       account && this.accountSubject.next(account);
       taskCategoryList && this.taskCategoryListSubject.next(taskCategoryList);
@@ -80,6 +85,8 @@ export class BookaSdk {
       game && this.gameListSubject.next(game);
       energyConfig && this.energyConfigSubject.next(energyConfig);
       rankInfoMap && this.rankInfoSubject.next(rankInfoMap);
+      airdropCampaignList && this.airdropCampaignSubject.next(airdropCampaignList);
+      leaderboardConfigSubject && this.leaderboardConfigSubject.next(leaderboardConfigSubject);
     } else {
       console.debug('Clearing cache');
       storage.removeItems(Object.keys(CACHE_KEYS).concat(['cache-version'])).catch(console.error);
@@ -420,7 +427,6 @@ export class BookaSdk {
         this.accountSubject.next(account);
         localStorage.setItem(CACHE_KEYS.account, JSON.stringify(account));
         this.syncHandler.resolve();
-        const { end, start } = calculateStartAndEnd('vara_playdrop');
 
         await Promise.all([
           this.fetchEnergyConfig(),
@@ -428,7 +434,7 @@ export class BookaSdk {
           this.fetchGameList(),
           this.fetchTaskCategoryList(),
           this.fetchTaskList(),
-          this.fetchLeaderboard(start, end, 0, 100)
+          this.fetchLeaderboardConfigList()
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
           // this.fetchGameItemInGameList()
@@ -446,6 +452,23 @@ export class BookaSdk {
 
       throw error;
     }
+  }
+
+  async fetchLeaderboardConfigList () {
+    const config = await this.getRequest<Record<string, object>>(`${GAME_API_HOST}/api/leaderboard/get-config`);
+
+    if (config) {
+      this.leaderboardConfigSubject.next(config);
+      storage.setItem(CACHE_KEYS.leaderboardConfigSubject, JSON.stringify(config)).catch(console.error);
+    }
+  }
+
+  public get leaderboardConfig () {
+    return this.leaderboardConfigSubject.value;
+  }
+
+  subscribeLeaderboardConfig () {
+    return this.leaderboardConfigSubject;
   }
 
   async requestSignature (address: string, message: string): Promise<string> {
@@ -466,8 +489,8 @@ export class BookaSdk {
     const result = await signRaw({
       metadata: {
         url: 'https://playnation.app',
-        title: detectTranslate('Playnation Login'),
-        message: detectTranslate('Sign this message to login')
+        title: detectTranslate('Approve sign-in request'),
+        message: detectTranslate('Hit Approve to sign in to Playnation with the following account')
       },
       payload: {
         address,
@@ -506,11 +529,29 @@ export class BookaSdk {
   }
 
   async submitGame (gamePlayId: number, point: number, signature: string) {
-    await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/submit`, {
-      gamePlayId: gamePlayId,
-      point: point,
-      signature
-    });
+    let success = false;
+
+    // Try 3 times to submit the game play
+    for (let i = 0; i < 3; i++) {
+      try {
+        await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/submit`, {
+          gamePlayId: gamePlayId,
+          point: point,
+          signature
+        });
+
+        success = true;
+        break;
+      } catch (error) {
+        // Wait for 1 second
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        console.error('Failed to submit game', error);
+      }
+
+      if (!success) {
+        throw Error('Cannot submit the game');
+      }
+    }
 
     this.currentGamePlaySubject.next(undefined);
 
@@ -600,14 +641,11 @@ export class BookaSdk {
   }
   // --- shop
 
-  async fetchLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all') {
+  async fetchLeaderboard (id: string, context = {}) {
     await this.waitForSync;
-    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, {
-      startDate,
-      endDate,
-      gameId,
-      limit,
-      type
+    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/leaderboard/fetch`, {
+      id,
+      context
     });
 
     if (leaderBoard) {
@@ -615,8 +653,8 @@ export class BookaSdk {
     }
   }
 
-  subscribeLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all') {
-    this.fetchLeaderboard(startDate, endDate, gameId, limit, type).catch(console.error);
+  subscribeLeaderboard (id: number, context = {}) {
+    this.fetchLeaderboard(id, context).catch(console.error);
 
     return this.leaderBoardSubject;
   }
@@ -694,6 +732,7 @@ export class BookaSdk {
 
     if (airdropCampaignResponse) {
       this.airdropCampaignSubject.next(airdropCampaignResponse);
+      localStorage.setItem(CACHE_KEYS.airdropCampaignList, JSON.stringify(airdropCampaignResponse));
     }
   }
 

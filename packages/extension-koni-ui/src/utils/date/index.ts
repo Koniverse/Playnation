@@ -31,6 +31,22 @@ const formatFully = (date: Date) => {
   return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 };
 
+function getLastDayOfMonth (year: number, month: number): Date {
+  const nextMonth = new Date(Date.UTC(year, month + 1, 1));
+
+  nextMonth.setUTCDate(nextMonth.getUTCDate() - 1);
+
+  return nextMonth;
+}
+
+function getLastDayOfYear (year: number): Date {
+  const nextYearStart = new Date(Date.UTC(year + 1, 0, 1)); // Ngày đầu năm sau theo UTC
+
+  nextYearStart.setUTCDate(nextYearStart.getUTCDate() - 1); // Trừ đi 1 ngày để được ngày cuối năm hiện tại
+
+  return nextYearStart;
+}
+
 export function calculateStartAndEnd (key: string) {
   const today = new Date();
   const year = today.getUTCFullYear();
@@ -44,6 +60,20 @@ export function calculateStartAndEnd (key: string) {
       const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate() + 6));
 
       return { start: formatDate(start, false), end: formatDate(end, true) };
+    }
+
+    case 'monthly': {
+      const startOfMonth = new Date(Date.UTC(year, month, 1));
+      const endOfMonth = getLastDayOfMonth(year, month);
+
+      return { start: startOfMonth, end: formatDate(endOfMonth, true) };
+    }
+
+    case 'yearly': {
+      const startOfYear = new Date(Date.UTC(year, 0, 1));
+      const endOfYear = getLastDayOfYear(year);
+
+      return { start: startOfYear, end: formatDate(endOfYear, true) };
     }
 
     case 'karura_playdrop': {
@@ -66,7 +96,7 @@ export function calculateStartAndEnd (key: string) {
 
     case 'vara_playdrop': {
       const startEnv = process.env.VARA_PLAYDROP_START_DATE || '2024-07-10 10:00:00' as string;
-      const endEnv = process.env.VARA_PLAYDROP_END_DATE || '2024-07-31 10:00:00' as string;
+      const endEnv = process.env.VARA_PLAYDROP_END_DATE || '2024-08-05 03:00:00' as string;
       const startDate = new Date(startEnv);
       const endDate = new Date(endEnv);
 
@@ -75,7 +105,7 @@ export function calculateStartAndEnd (key: string) {
 
     case 'invite_to_play': {
       const startEnv = process.env.VARA_PLAYDROP_START_DATE || '2024-07-10 10:00:00' as string;
-      const endEnv = process.env.VARA_PLAYDROP_END_DATE || '2024-07-31 10:00:00' as string;
+      const endEnv = process.env.VARA_PLAYDROP_END_DATE || '2024-08-05 03:00:00' as string;
       const startDate = new Date(startEnv);
       const endDate = new Date(endEnv);
 

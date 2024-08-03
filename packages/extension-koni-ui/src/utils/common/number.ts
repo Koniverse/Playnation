@@ -20,22 +20,53 @@ export const formatAmount = (amountData?: AmountData): string => {
   return `${displayValue} ${symbol}`;
 };
 
-export function formatInteger (num?: number): string {
+const getNumberSeparators = () => {
+  // default
+  const res = {
+    decimal: '.',
+    thousand: ''
+  };
+
+  // convert a number formatted according to locale
+  const str = parseFloat('1234.56').toLocaleString();
+
+  // if the resulting number does not contain previous number
+  // (i.e. in some Arabic formats), return defaults
+  if (!str.match('1')) {
+    return res;
+  }
+
+  // get decimal and thousand separators
+  res.decimal = str.replace(/.*4(.*)5.*/, '$1');
+  res.thousand = str.replace(/.*1(.*)2.*/, '$1');
+
+  // return results
+  return res;
+};
+
+const { decimal: decimalSeparator, thousand: thousandSeparator } = getNumberSeparators();
+const intToLocaleString = (str: string, separator: string) =>
+  str.replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+
+export function toDisplayNumber (num?: number): string {
   if (num === undefined) {
     return '';
   }
 
-  return num.toLocaleString('de-DE');
-}
+  const formatNumberString = formatNumber(num, 0, balanceFormatter);
 
-export function formatIntegerShort (num?: number): string {
-  if (num === undefined) {
-    return '';
+  const [int, decAndAbb] = formatNumberString.split('.');
+  const [dec, abbreviation] = decAndAbb ? decAndAbb.split(' ') : [''];
+
+  let result = intToLocaleString(int, thousandSeparator);
+
+  if (dec) {
+    result = `${result}${decimalSeparator}${dec}`;
   }
 
-  if (num >= 100000) {
-    return '100.000+';
-  } else {
-    return formatInteger(num);
+  if (abbreviation) {
+    result = `${result} ${abbreviation}`;
   }
+
+  return result;
 }

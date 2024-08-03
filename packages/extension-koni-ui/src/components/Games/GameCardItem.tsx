@@ -19,6 +19,7 @@ type Props = ThemeProps & {
 function Component ({ className, item, onOpenLeaderboard, onPlay }: Props) {
   const { t } = useTranslation();
 
+  // @ts-ignore
   const _openLeaderboard = useCallback(() => {
     onOpenLeaderboard(item);
   }, [item, onOpenLeaderboard]);
@@ -40,7 +41,7 @@ function Component ({ className, item, onOpenLeaderboard, onPlay }: Props) {
     })}
     >
       <div className='__left-part'>
-        <div className='__game-name'>{isComingSoon ? t('Coming soon') : item.name}</div>
+        <div className='__game-name'>{item.name}</div>
         <div className={'__energy-consume'}>
           <span className='__energy-consume-value-wrapper'>
             <Icon
@@ -69,25 +70,25 @@ function Component ({ className, item, onOpenLeaderboard, onPlay }: Props) {
             shape={'round'}
             size={'xs'}
           >
-            {t('Play now')}
+            {isComingSoon ? t('Coming soon') : t('Play now')}
           </Button>
 
           {
-            // !isComingSoon && (
-            //   <Button
-            //     className={'-primary-3'}
-            //     icon={(
-            //       <Icon
-            //         customSize={'20px'}
-            //         phosphorIcon={ChartBar}
-            //         weight={'fill'}
-            //       />
-            //     )}
-            //     onClick={_openLeaderboard}
-            //     shape={'circle'}
-            //     size={'xs'}
-            //   />
-            // )
+            !isComingSoon && item.leaderboard_groups && item.leaderboard_groups.length > 0 && (
+              <Button
+                className={'-primary-3'}
+                icon={(
+                  <Icon
+                    customSize={'20px'}
+                    phosphorIcon={ChartBar}
+                    weight={'fill'}
+                  />
+                )}
+                onClick={_openLeaderboard}
+                shape={'circle'}
+                size={'xs'}
+              />
+            )
           }
         </div>
 
@@ -169,12 +170,6 @@ export const GameCardItem = styled(Component)<Props>(({ theme: { token } }: Prop
     '.__buttons': {
       display: 'flex',
       gap: token.sizeXS
-    },
-
-    '&.-is-coming-soon': {
-      '.__game-banner': {
-        filter: 'blur(8px)'
-      }
     },
 
     '@media (max-width: 369px)': {

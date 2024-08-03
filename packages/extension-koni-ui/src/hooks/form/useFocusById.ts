@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 
-const focusInput = (id: string, timeOut: number) => {
+export const focusInput = (id: string, timeOut: number) => {
   setTimeout(() => {
     const element = document.getElementById(id);
 

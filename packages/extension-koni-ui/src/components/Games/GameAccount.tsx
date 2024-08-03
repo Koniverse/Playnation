@@ -3,7 +3,7 @@
 
 import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { formatIntegerShort } from '@subwallet/extension-koni-ui/utils';
+import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
 import React from 'react';
 import styled from 'styled-components';
@@ -29,7 +29,7 @@ function Component ({ actionNode, avatar, className, isPlaceholder, name, point,
       />
       <span className={'__name'}>{isPlaceholder ? '------' : name}</span>
       <span className={'__point'}>
-        {isPlaceholder ? '---' : formatIntegerShort(point)}
+        {isPlaceholder ? '---' : toDisplayNumber(point)}
       </span>
 
       {actionNode}
