@@ -40,26 +40,6 @@
   <!-- Font injection -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <style>
-		/* latin */
-		@font-face {
-		  font-family: 'Plus Jakarta Sans';
-		  font-style: normal;
-		  font-weight: 500;
-		  font-display: swap;
-		  src: url(https://fonts.gstatic.com/s/plusjakartasans/v8/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yygg_vb.woff2) format('woff2');
-		  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-		}
-		/* latin */
-		@font-face {
-		  font-family: 'Plus Jakarta Sans';
-		  font-style: normal;
-		  font-weight: 600;
-		  font-display: swap;
-		  src: url(https://fonts.gstatic.com/s/plusjakartasans/v8/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yygg_vb.woff2) format('woff2');
-		  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-		}
-	</style>
 
   <style>
     .startup-screen {
@@ -67,64 +47,74 @@
     }
 
     .startup-screen-title {
-      font-size: 36px;
-      line-height: 47px;
+      font-size: 40px;
+      line-height: 52px;
       color: #000;
       font-weight: 700;
-      max-width: 220px;
+      max-width: 240px;
       position: relative;
       z-index: 10;
-      margin-top: 44px;
+      margin-top: 40px;
       margin-left: 28px;
+      margin-bottom: 16px;
+    }
+
+    .startup-screen-subtitle {
+      font-size: 20px;
+      margin-left: 28px;
+      line-height: 1.32;
+      color: #000;
+      font-weight: 600;
+      position: relative;
+      z-index: 10;
     }
 
     .startup-screen-mockup-1 {
       position: absolute;
-      width: 252px;
+      width: 238px;
       height: auto;
-      top: 37px;
+      top: 42px;
       right: -77px;
       z-index: 5;
     }
 
     .startup-screen-mockup-2 {
       position: absolute;
-      width: 71px;
+      width: 123px;
       height: auto;
-      top: 217px;
-      right: 162px;
+      top: 200px;
+      right: 156px;
       z-index: 5;
     }
 
     .startup-screen-mockup-3 {
       position: absolute;
-      width: 148px;
+      width: 84px;
       height: auto;
-      top: 292px;
-      right: 4px;
+      top: 303px;
+      right: 10px;
       z-index: 5;
     }
 
     .startup-screen-mockup-4 {
-      opacity: 0.75;
-      width: 477px;
+      width: 379px;
       height: auto;
       position: absolute;
       z-index: 0;
-      bottom: 0;
-      right: -53px;
+      bottom: -5px;
+      right: -12px;
     }
 
-    @media screen and (max-height: 739px) {
+    @media screen and (max-height: 721px) {
       .startup-screen-mockup-4 {
         bottom: auto;
-        top: 378px
+        top: 335px;
       }
     }
   </style>
 
   <!-- Import base CSS -->
-  <link href="/fonts/lexend.css" rel="stylesheet">
+  <link href="/fonts/PlusJakartaSans/index.css" rel="stylesheet">
   <link href="/assets/reset.css?v=3" rel="stylesheet">
 
   <script src="https://telegram.org/js/telegram-web-app.js?v=7.7"></script>
@@ -182,7 +172,11 @@
   <div id="root"></div>
   <div id="loading-placeholder" class="startup-screen" style="position:fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000">
     <div class="startup-screen-title">
-      Welcome to Playnation Telegram’s app
+      Welcome to Playnation
+    </div>
+
+    <div class="startup-screen-subtitle">
+      Your airdrop is loading...
     </div>
 
     <img class="startup-screen-mockup-1" src="/images/startup-screen/token-1.png" alt="mockup-1">
