@@ -6,7 +6,7 @@ import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTransla
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Lightning } from 'phosphor-react';
+import { ChartBar, Lightning } from 'phosphor-react';
 import React, { useCallback } from 'react';
 import styled from 'styled-components';
 
@@ -74,21 +74,21 @@ function Component ({ className, item, onOpenLeaderboard, onPlay }: Props) {
           </Button>
 
           {
-            // !isComingSoon && (
-            //   <Button
-            //     className={'-primary-3'}
-            //     icon={(
-            //       <Icon
-            //         customSize={'20px'}
-            //         phosphorIcon={ChartBar}
-            //         weight={'fill'}
-            //       />
-            //     )}
-            //     onClick={_openLeaderboard}
-            //     shape={'circle'}
-            //     size={'xs'}
-            //   />
-            // )
+            !isComingSoon && item.leaderboard_groups && item.leaderboard_groups.length > 0 && (
+              <Button
+                className={'-primary-3'}
+                icon={(
+                  <Icon
+                    customSize={'20px'}
+                    phosphorIcon={ChartBar}
+                    weight={'fill'}
+                  />
+                )}
+                onClick={_openLeaderboard}
+                shape={'circle'}
+                size={'xs'}
+              />
+            )
           }
         </div>
 

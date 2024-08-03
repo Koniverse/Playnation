@@ -293,7 +293,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     '.ant-sw-screen-layout-body-inner': {
-      overflow: 'hidden',
+      overflow: 'auto',
       display: 'flex',
       flexDirection: 'column',
       paddingLeft: token.paddingXS,
@@ -485,6 +485,10 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
       paddingBottom: 24,
       paddingLeft: token.paddingXS,
       paddingRight: token.paddingXS
+    },
+
+    '@media (max-height: 669px)': {
+      display: 'block'
     }
   };
 });

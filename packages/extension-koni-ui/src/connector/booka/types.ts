@@ -80,6 +80,7 @@ export interface Game {
   startTime: string | null;
   endTime: string | null;
   active: boolean;
+  leaderboard_groups: LeaderboardGroups[];
 }
 
 export enum TaskHistoryStatus {
@@ -223,6 +224,43 @@ export interface ReferralRecord {
   total_count: number;
   referralSuccessTime: number;
   accountInfo: AccountPublicInfo;
+}
+
+export interface ConfigRecord {
+  id: number;
+  name: string;
+  slug: string;
+  value: LeaderboardItem[] | undefined;
+}
+
+export interface KeyValueStore {
+  id: number;
+  key: string;
+  value: LeaderboardGroups[];
+}
+export interface LeaderboardGroups {
+  leaderboards: LeaderboardItem[];
+  leaderboardGroupId: number;
+  leaderboardGroupName: string;
+}
+export interface LeaderboardItem {
+  id: number;
+  name: string;
+  slug: string;
+  type: string;
+  specialTime: string;
+  startTime?: any;
+  endTime?: any;
+  metadata?: any;
+  games: number[];
+  tasks: number[];
+  sharing: Sharing;
+}
+interface Sharing {
+  id: number;
+  url: string;
+  content: string;
+  hashtags: string;
 }
 
 export enum AirdropCampaignStatus {
