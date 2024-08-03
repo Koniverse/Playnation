@@ -29,7 +29,7 @@ const CACHE_KEYS = {
   energyConfig: 'data--energy-config-cache',
   rankInfoMap: 'data--rank-info-map-cache',
   leaderboardConfigSubject: 'data--leaderboard-config-list-cache',
-  airdropCampaignList: 'data--airdrop-campaign-list-cache',
+  airdropCampaignList: 'data--airdrop-campaign-list-cache'
 };
 
 function parseCache<T> (key: string): T | undefined {
@@ -641,7 +641,7 @@ export class BookaSdk {
   }
   // --- shop
 
-  async fetchLeaderboard (id: string, context = {}) {
+  async fetchLeaderboard (id: number, context: Record<string, unknown> = {}) {
     await this.waitForSync;
     const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/leaderboard/fetch`, {
       id,
@@ -653,7 +653,7 @@ export class BookaSdk {
     }
   }
 
-  subscribeLeaderboard (id: number, context = {}) {
+  subscribeLeaderboard (id: number, context: Record<string, unknown> = {}) {
     this.fetchLeaderboard(id, context).catch(console.error);
 
     return this.leaderBoardSubject;

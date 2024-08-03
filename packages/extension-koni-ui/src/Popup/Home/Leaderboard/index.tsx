@@ -4,7 +4,7 @@
 import { LeaderboardContent } from '@subwallet/extension-koni-ui/components';
 import { LeaderboardTabGroupItemType } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardContent';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { LeaderboardGroups,LeaderboardItem, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { LeaderboardGroups, LeaderboardItem, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
@@ -46,7 +46,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         hashtagsContent = `hashtags=${hashtags}`;
       }
 
-      const linkShare = `${urlShare}?startApp=${account?.info.inviteCode || 'booka'}`;
+      const linkShare = `${urlShare || ''}?startApp=${account?.info.inviteCode || 'booka'}`;
 
       const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtagsContent}`;
 
@@ -84,7 +84,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         const data: LeaderboardTabGroupItemType[] = [];
 
         // @ts-ignore
-        value.leaderboards.forEach((item: Leaderboard) => {
+        value.leaderboards.forEach((item: LeaderboardItem) => {
           const id = item.id;
           const leaderboard = leaderboards.find((l) => l.id === id);
           let _onClickShare = null;
@@ -100,6 +100,7 @@ const Component = ({ className }: Props): React.ReactElement => {
               label: leaderboard.name,
               value: leaderboard.slug,
               leaderboardInfo: {
+                type: leaderboard.type,
                 onClickShare: _onClickShare,
                 id: leaderboard.id
               }

@@ -81,8 +81,8 @@ const Component = ({ className, item, onClaim }: Props): React.ReactElement => {
         <div className='__min-part-line-2'>
           <GamePoint
             className={'__reward-value'}
+            iconSrc={item.type === 'TOKEN' ? logoMaps[(item.tokenSlug || '').toLowerCase()] : undefined}
             point={`${toDisplayNumber(item.rewardValue || 0)}`}
-            tokenSrc={item.type === 'TOKEN' ? logoMaps[(item.tokenSlug || '').toLowerCase()] : undefined}
           />
 
           {renderDate()}

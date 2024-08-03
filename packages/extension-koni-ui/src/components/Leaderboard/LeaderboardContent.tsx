@@ -6,6 +6,7 @@ import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { leaderboardPointIconMap } from '@subwallet/extension-koni-ui/constants';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
@@ -19,7 +20,8 @@ export type LeaderboardTabGroupItemType = TabGroupItemType & {
   leaderboardInfo: {
     onClickShare?: (mine?: LeaderboardPerson) => void;
     id: number;
-    context: {}
+    type: string;
+    context?: Record<string, unknown>
   }
 }
 
@@ -71,6 +73,14 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
   const _onClickShare = useCallback(() => {
     currentTabInfo?.leaderboardInfo?.onClickShare?.(leaderboardItems.find((item) => item.mine));
   }, [currentTabInfo?.leaderboardInfo, leaderboardItems]);
+
+  const pointIconSrc = useMemo(() => {
+    if (!currentTabInfo) {
+      return leaderboardPointIconMap.default;
+    }
+
+    return leaderboardPointIconMap[currentTabInfo.leaderboardInfo.type] || leaderboardPointIconMap.default;
+  }, [currentTabInfo]);
 
   useEffect(() => {
     setSelectedTab(defaultSelectedTab);
@@ -134,6 +144,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
           <TopAccountItem
             isPlaceholder={!filteredLeaderboardItems[1]}
             leaderboardInfo={filteredLeaderboardItems[1]}
+            pointIconSrc={pointIconSrc}
             rank={2}
           />
         }
@@ -144,6 +155,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
             isFirst
             isPlaceholder={!filteredLeaderboardItems[0]}
             leaderboardInfo={filteredLeaderboardItems[0]}
+            pointIconSrc={pointIconSrc}
             rank={1}
           />
         }
@@ -153,6 +165,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
           <TopAccountItem
             isPlaceholder={!filteredLeaderboardItems[2]}
             leaderboardInfo={filteredLeaderboardItems[2]}
+            pointIconSrc={pointIconSrc}
             rank={3}
           />
         }

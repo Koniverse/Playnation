@@ -14,9 +14,10 @@ type Props = ThemeProps & {
   leaderboardInfo?: LeaderboardPerson;
   isPlaceholder?: boolean;
   rank?: number;
+  pointIconSrc?: string;
 };
 
-const Component = ({ className, isFirst, isPlaceholder, leaderboardInfo, rank }: Props): React.ReactElement => {
+const Component = ({ className, isFirst, isPlaceholder, leaderboardInfo, pointIconSrc, rank }: Props): React.ReactElement => {
   const accountName = (() => {
     if (isPlaceholder) {
       return '------';
@@ -60,6 +61,7 @@ const Component = ({ className, isFirst, isPlaceholder, leaderboardInfo, rank }:
       </div>
       <GamePoint
         className={'__point'}
+        iconSrc={pointIconSrc}
         point={point}
       />
     </div>
