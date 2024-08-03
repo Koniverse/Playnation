@@ -23,24 +23,41 @@ const AirdropComponent: React.FC<Props> = ({ className }) => {
   const [airdropCampaign, setAirdropCampaign] = useState<AirdropCampaign[]>(apiSDK.airdropCampaignList);
 
   const orderAirdropCampaign = useMemo(() => {
-    return [...airdropCampaign].sort((a, b) => {
-      if (a.start === null && b.start === null) {
+    const futureList: AirdropCampaign[] = [];
+    const nowList: AirdropCampaign[] = [];
+    const pastList: AirdropCampaign[] = [];
+
+    airdropCampaign.forEach((campaign) => {
+      const now = Date.now();
+      const start = new Date(campaign.start).getTime();
+      const end = new Date(campaign.end).getTime();
+
+      if (now < start) {
+        futureList.push(campaign);
+      } else if (now > end) {
+        pastList.push(campaign);
+      } else {
+        nowList.push(campaign);
+      }
+    });
+
+    function sortByStart (a: AirdropCampaign, b: AirdropCampaign) {
+      if (!a.start || !b.start) {
         return 0;
       }
 
-      if (a.start === null) {
-        return -1;
+      return new Date(a.start).getTime() - new Date(b.start).getTime();
+    }
+
+    function sortByStartDesc (a: AirdropCampaign, b: AirdropCampaign) {
+      if (!a.start || !b.start) {
+        return 0;
       }
 
-      if (b.start === null) {
-        return 1;
-      }
+      return new Date(b.start).getTime() - new Date(a.start).getTime();
+    }
 
-      const aTime = new Date(a.end).getTime();
-      const bTime = new Date(b.end).getTime();
-
-      return bTime - aTime;
-    });
+    return [...nowList.sort(sortByStartDesc), ...futureList.sort(sortByStart), ...pastList];
   }, [airdropCampaign]);
 
   const onExplore = useCallback((campaignId: number) => {
