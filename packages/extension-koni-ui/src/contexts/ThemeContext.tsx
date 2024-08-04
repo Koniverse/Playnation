@@ -333,6 +333,18 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       color: token.colorTextDark1
     },
 
+    '.ant-input-container.ant-input-container .ant-input-suffix': {
+      color: token.colorTextDark1
+    },
+
+    '.ant-input-container.ant-input-container .__input-action:hover': {
+      color: token.colorTextDark1
+    },
+
+    '.ant-input-container.ant-input-container .anticon': {
+      fontSize: 20
+    },
+
     '.ant-input-container.ant-input-container .ant-input:-webkit-autofill': {
       '--webkit-autofill-border-color': 'transparent',
       borderWidth: 0,

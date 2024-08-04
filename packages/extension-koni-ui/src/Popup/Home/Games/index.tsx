@@ -2,15 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { GameAccountBlock, GameCardItem, ShopModal } from '@subwallet/extension-koni-ui/components';
+import { LeaderboardTabGroupItemType } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardContent';
 import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { EnergyConfig, Game, GameInventoryItem, GameItem } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { EnergyConfig, Game, GameInventoryItem, GameItem, LeaderboardGroups, LeaderboardItem, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
+import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
@@ -19,6 +21,7 @@ type Props = ThemeProps;
 
 const apiSDK = BookaSdk.instance;
 const shopModalId = ShopModalId;
+const telegramConnector = TelegramConnector.instance;
 
 const orderGameList = (data: Game[]): Game[] => {
   const now = Date.now();
@@ -54,6 +57,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [gameList, setGameList] = useState<Game[]>(apiSDK.gameList);
   const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
   const [gameItemMap, setGameItemMap] = useState<Record<string, GameItem[]>>(apiSDK.gameItemMap);
+  const [leaderboardConfig, setLeaderboardConfig] = useState(apiSDK.leaderboardConfig);
   const [gameInventoryItemList, setGameInventoryItemList] = useState<GameInventoryItem[]>(apiSDK.gameInventoryItemList);
   const [currentShopGameId, setCurrentShopGameId] = useState<number>();
   const { activeModal } = useContext(ModalContext);
@@ -101,24 +105,82 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [activeModal]);
 
+  const onClickShare = useCallback((contentShare: string, contentNotShowPoint: string, urlShare: string | undefined, hashtags: string | undefined) => {
+    return (personMine?: LeaderboardPerson) => {
+      let content = contentNotShowPoint;
+
+      if (personMine) {
+        content = populateTemplateString(contentShare, personMine);
+      }
+
+      let hashtagsContent = '';
+
+      if (hashtags) {
+        hashtagsContent = `hashtags=${hashtags}`;
+      }
+
+      const linkShare = `${urlShare || ''}?startApp=${account?.info.inviteCode || 'booka'}`;
+
+      const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtagsContent}`;
+
+      telegramConnector.openLink(url);
+    };
+  }, [account?.info.inviteCode]);
+
   const onOpenLeaderboard = useCallback((game: Game) => {
-    const { end: endDate, start: startDate } = calculateStartAndEnd('weekly');
+    let defaultTab = '';
+    const leaderboardGroups = game.leaderboard_groups as unknown as LeaderboardGroups[];
+    const leaderboards = leaderboardConfig.leaderboard_map as unknown as LeaderboardItem[];
+
+    const tabGroupItems: LeaderboardTabGroupItemType[] = [];
+
+    if (leaderboardGroups && leaderboards) {
+      const value = leaderboardGroups.length > 0 ? leaderboardGroups[0] : null;
+
+      if (!value) {
+        return;
+      }
+
+      // @ts-ignore
+      value.leaderboards.forEach((item: LeaderboardItem) => {
+        const id = item.id;
+        const leaderboard = leaderboards.find((l) => l.id === id);
+        let _onClickShare = null;
+
+        if (leaderboard) {
+          if (!defaultTab) {
+            defaultTab = leaderboard.slug;
+          }
+
+          if (leaderboard.sharing) {
+            const { content, hashtags, url } = leaderboard.sharing;
+
+            _onClickShare = onClickShare(content, content, url, hashtags);
+          }
+
+          tabGroupItems.push({
+            label: leaderboard.name,
+            value: leaderboard.slug,
+            leaderboardInfo: {
+              type: leaderboard.type,
+              onClickShare: _onClickShare,
+              id: leaderboard.id,
+              context: {
+                games: [game.id]
+              }
+            }
+          } as LeaderboardTabGroupItemType);
+        }
+      });
+    }
 
     openLeaderboardModal({
       gameId: game.id,
       modalTitle: game.name,
-      tabGroupItems: [{
-        label: 'default',
-        value: 'default',
-        leaderboardInfo: {
-          endDate,
-          startDate,
-          type: 'game'
-        }
-      }],
-      defaultSelectedTab: 'default'
+      tabGroupItems: tabGroupItems,
+      defaultSelectedTab: defaultTab
     });
-  }, [openLeaderboardModal]);
+  }, [leaderboardConfig.leaderboard_map, onClickShare, openLeaderboardModal]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -141,12 +203,17 @@ const Component = ({ className }: Props): React.ReactElement => {
       setGameInventoryItemList(data);
     });
 
+    const subscriptionLeaderboard = apiSDK.subscribeLeaderboardConfig().subscribe((data) => {
+      setLeaderboardConfig(data);
+    });
+
     return () => {
       accountSub.unsubscribe();
       energyConfigSub.unsubscribe();
       gameListSub.unsubscribe();
       gameItemMapSub.unsubscribe();
       gameInventoryItemListSub.unsubscribe();
+      subscriptionLeaderboard.unsubscribe();
     };
   }, []);
 

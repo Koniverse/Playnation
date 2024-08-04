@@ -6,6 +6,7 @@ import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { leaderboardPointIconMap } from '@subwallet/extension-koni-ui/constants';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
@@ -18,10 +19,9 @@ import TopAccountItem from './TopAccountItem';
 export type LeaderboardTabGroupItemType = TabGroupItemType & {
   leaderboardInfo: {
     onClickShare?: (mine?: LeaderboardPerson) => void;
-    startDate?: string;
-    endDate?: string;
-    type?: string;
-    gameId?: number;
+    id: number;
+    type: string;
+    context?: Record<string, unknown>
   }
 }
 
@@ -74,6 +74,14 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
     currentTabInfo?.leaderboardInfo?.onClickShare?.(leaderboardItems.find((item) => item.mine));
   }, [currentTabInfo?.leaderboardInfo, leaderboardItems]);
 
+  const pointIconSrc = useMemo(() => {
+    if (!currentTabInfo) {
+      return leaderboardPointIconMap.default;
+    }
+
+    return leaderboardPointIconMap[currentTabInfo.leaderboardInfo.type] || leaderboardPointIconMap.default;
+  }, [currentTabInfo]);
+
   useEffect(() => {
     setSelectedTab(defaultSelectedTab);
   }, [defaultSelectedTab]);
@@ -82,11 +90,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
     let leaderboardSub: { unsubscribe: () => void } | null = null;
 
     if (currentTabInfo) {
-      leaderboardSub = apiSDK.subscribeLeaderboard(
-        currentTabInfo.leaderboardInfo.startDate,
-        currentTabInfo.leaderboardInfo.endDate,
-        gameId || currentTabInfo.leaderboardInfo.gameId || 0, 100,
-        currentTabInfo.leaderboardInfo.type).subscribe((data) => {
+      leaderboardSub = apiSDK.subscribeLeaderboard(currentTabInfo.leaderboardInfo.id, currentTabInfo.leaderboardInfo.context).subscribe((data) => {
         setLeaderboardItems(data);
 
         // Find mine
@@ -119,7 +123,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
       )
     }
     <div className='top-three-area'>
-      {(mine && mine.rank <= 3) && <div className='top-three-share-button'>
+      {(!!currentTabInfo?.leaderboardInfo.onClickShare && mine && mine.rank <= 3) && <div className='top-three-share-button'>
         <Button
           className={'top-button-share'}
           icon={(
@@ -140,6 +144,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
           <TopAccountItem
             isPlaceholder={!filteredLeaderboardItems[1]}
             leaderboardInfo={filteredLeaderboardItems[1]}
+            pointIconSrc={pointIconSrc}
             rank={2}
           />
         }
@@ -150,6 +155,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
             isFirst
             isPlaceholder={!filteredLeaderboardItems[0]}
             leaderboardInfo={filteredLeaderboardItems[0]}
+            pointIconSrc={pointIconSrc}
             rank={1}
           />
         }
@@ -159,6 +165,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
           <TopAccountItem
             isPlaceholder={!filteredLeaderboardItems[2]}
             leaderboardInfo={filteredLeaderboardItems[2]}
+            pointIconSrc={pointIconSrc}
             rank={3}
           />
         }

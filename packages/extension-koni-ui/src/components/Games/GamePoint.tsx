@@ -9,10 +9,10 @@ import styled from 'styled-components';
 type GamePointProps = ThemeProps & {
   point: string;
   size?: number;
-  tokenSrc?: string;
+  iconSrc?: string;
 };
 
-function Component ({ className, point, size = 16, tokenSrc }: GamePointProps) {
+function Component ({ className, iconSrc, point, size = 16 }: GamePointProps) {
   return (
     <div className={className}>
       <span className={'__point-value'}>{point}</span>
@@ -21,7 +21,7 @@ function Component ({ className, point, size = 16, tokenSrc }: GamePointProps) {
         alt={'token'}
         className='__point-token'
         height={size}
-        src={tokenSrc || DefaultLogosMap.token_icon}
+        src={iconSrc || DefaultLogosMap.token_icon}
         width={size}
       />
     </div>

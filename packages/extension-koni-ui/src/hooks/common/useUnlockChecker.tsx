@@ -15,6 +15,7 @@ export default function useUnlockChecker (): () => Promise<void> {
   const { activeModal, checkActive, data } = useContext(ModalContext);
   const unlockPromiseHandler = useRef(createPromiseHandler<void>());
   const isUnlocking = useRef(checkActive(UNLOCK_MODAL_ID));
+  const useCustomPassword = useSelector((state: RootState) => state.accountState.useCustomPassword);
 
   useEffect(() => {
     if (isLocked) {
@@ -41,10 +42,19 @@ export default function useUnlockChecker (): () => Promise<void> {
 
   return useCallback(() => {
     if (isLocked) {
-      keyringUnlock({ password: DEFAULT_PASSWORD })
-        .catch(() => {
-          activeModal(UNLOCK_MODAL_ID);
-        });
+      if (useCustomPassword) {
+        activeModal(UNLOCK_MODAL_ID);
+      } else {
+        keyringUnlock({ password: DEFAULT_PASSWORD })
+          .then(({ status }) => {
+            if (!status) {
+              activeModal(UNLOCK_MODAL_ID);
+            }
+          })
+          .catch(() => {
+            activeModal(UNLOCK_MODAL_ID);
+          });
+      }
 
       isUnlocking.current = true;
 
@@ -52,5 +62,5 @@ export default function useUnlockChecker (): () => Promise<void> {
     } else {
       return Promise.resolve();
     }
-  }, [activeModal, isLocked]);
+  }, [activeModal, isLocked, useCustomPassword]);
 }

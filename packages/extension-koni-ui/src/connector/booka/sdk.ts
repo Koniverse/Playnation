@@ -1,14 +1,15 @@
 // Copyright 2019-2022 @subwallet/extension authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { InGameItem } from '@playnation/game-sdk';
+import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
 import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
-import { InGameItem } from '@subwallet/extension-koni-ui/Popup/Home/Games/types';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
-import { calculateStartAndEnd, formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
+import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
@@ -27,7 +28,8 @@ const CACHE_KEYS = {
   gameList: 'data--game-list-cache',
   energyConfig: 'data--energy-config-cache',
   rankInfoMap: 'data--rank-info-map-cache',
-  airdropCampaignList: 'data--airdrop-campaign-list-cache',
+  leaderboardConfigSubject: 'data--leaderboard-config-list-cache',
+  airdropCampaignList: 'data--airdrop-campaign-list-cache'
 };
 
 function parseCache<T> (key: string): T | undefined {
@@ -56,11 +58,12 @@ export class BookaSdk {
   private gameItemMapSubject = new BehaviorSubject<Record<string, GameItem[]>>({});
   private gameInventoryItemListSubject = new BehaviorSubject<GameInventoryItem[]>([]);
   private gameInventoryItemInGame = new BehaviorSubject<GameInventoryItem['inventoryInGame']>({});
-  private gameItemInGame = new BehaviorSubject<Partial<Record<string, InGameItem>>>({});
+  private gameItemInGame = new BehaviorSubject<Record<string, InGameItem>>({});
   private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
+  private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
   isEnabled = new BehaviorSubject<boolean>(true);
 
   constructor () {
@@ -74,6 +77,7 @@ export class BookaSdk {
       const energyConfig = parseCache<EnergyConfig>(CACHE_KEYS.energyConfig);
       const airdropCampaignList = parseCache<AirdropCampaign[]>(CACHE_KEYS.airdropCampaignList);
       const rankInfoMap = parseCache<Record<AccountRankType, RankInfo>>(CACHE_KEYS.rankInfoMap);
+      const leaderboardConfigSubject = parseCache<Record<string, object>>(CACHE_KEYS.leaderboardConfigSubject);
 
       account && this.accountSubject.next(account);
       taskCategoryList && this.taskCategoryListSubject.next(taskCategoryList);
@@ -82,6 +86,7 @@ export class BookaSdk {
       energyConfig && this.energyConfigSubject.next(energyConfig);
       rankInfoMap && this.rankInfoSubject.next(rankInfoMap);
       airdropCampaignList && this.airdropCampaignSubject.next(airdropCampaignList);
+      leaderboardConfigSubject && this.leaderboardConfigSubject.next(leaderboardConfigSubject);
     } else {
       console.debug('Clearing cache');
       storage.removeItems(Object.keys(CACHE_KEYS).concat(['cache-version'])).catch(console.error);
@@ -422,7 +427,6 @@ export class BookaSdk {
         this.accountSubject.next(account);
         localStorage.setItem(CACHE_KEYS.account, JSON.stringify(account));
         this.syncHandler.resolve();
-        const { end, start } = calculateStartAndEnd('vara_playdrop');
 
         await Promise.all([
           this.fetchEnergyConfig(),
@@ -430,7 +434,7 @@ export class BookaSdk {
           this.fetchGameList(),
           this.fetchTaskCategoryList(),
           this.fetchTaskList(),
-          this.fetchLeaderboard(start, end, 0, 100)
+          this.fetchLeaderboardConfigList()
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
           // this.fetchGameItemInGameList()
@@ -448,6 +452,23 @@ export class BookaSdk {
 
       throw error;
     }
+  }
+
+  async fetchLeaderboardConfigList () {
+    const config = await this.getRequest<Record<string, object>>(`${GAME_API_HOST}/api/leaderboard/get-config`);
+
+    if (config) {
+      this.leaderboardConfigSubject.next(config);
+      storage.setItem(CACHE_KEYS.leaderboardConfigSubject, JSON.stringify(config)).catch(console.error);
+    }
+  }
+
+  public get leaderboardConfig () {
+    return this.leaderboardConfigSubject.value;
+  }
+
+  subscribeLeaderboardConfig () {
+    return this.leaderboardConfigSubject;
   }
 
   async requestSignature (address: string, message: string): Promise<string> {
@@ -468,8 +489,8 @@ export class BookaSdk {
     const result = await signRaw({
       metadata: {
         url: 'https://playnation.app',
-        title: detectTranslate('Playnation Login'),
-        message: detectTranslate('Sign this message to login')
+        title: detectTranslate('Approve sign-in request'),
+        message: detectTranslate('Hit Approve to sign in to Playnation with the following account')
       },
       payload: {
         address,
@@ -535,6 +556,19 @@ export class BookaSdk {
     this.currentGamePlaySubject.next(undefined);
 
     await Promise.all([this.reloadAccount(), this.fetchTaskList()]);
+  }
+
+  async getLastState (gameId: number) {
+    return await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/get-last-state`, {
+      gameId
+    });
+  }
+
+  async submitState (gamePlayId: number, stateData: GameState<any>) {
+    return await this.postRequest<{success: boolean}>(`${GAME_API_HOST}/api/game/submit-state`, {
+      gamePlayId,
+      stateData
+    });
   }
 
   // --- shop
@@ -607,14 +641,11 @@ export class BookaSdk {
   }
   // --- shop
 
-  async fetchLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all') {
+  async fetchLeaderboard (id: number, context: Record<string, unknown> = {}) {
     await this.waitForSync;
-    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/game/leader-board`, {
-      startDate,
-      endDate,
-      gameId,
-      limit,
-      type
+    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/leaderboard/fetch`, {
+      id,
+      context
     });
 
     if (leaderBoard) {
@@ -622,8 +653,8 @@ export class BookaSdk {
     }
   }
 
-  subscribeLeaderboard (startDate?: string, endDate?: string, gameId?: number, limit?: number, type = 'all') {
-    this.fetchLeaderboard(startDate, endDate, gameId, limit, type).catch(console.error);
+  subscribeLeaderboard (id: number, context: Record<string, unknown> = {}) {
+    this.fetchLeaderboard(id, context).catch(console.error);
 
     return this.leaderBoardSubject;
   }

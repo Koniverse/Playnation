@@ -9,10 +9,11 @@ import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { noop } from '@subwallet/extension-koni-ui/utils';
 import { BackgroundIcon, Icon, SelectModal, SettingItem, SwIconProps } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CaretRight, CheckCircle, GlobeHemisphereEast, Image, Swatches } from 'phosphor-react';
+import { CaretRight, CheckCircle, GlobeHemisphereEast, ShieldStar, Swatches } from 'phosphor-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 
 type Props = ThemeProps;
@@ -97,6 +98,7 @@ type LoadingMap = {
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const theme = useSelector((state: RootState) => state.settings.theme);
   const _language = useSelector((state: RootState) => state.settings.language);
@@ -194,28 +196,12 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     saveTheme(value as ThemeNames).finally(noop);
   }, []);
 
+  const onNavigateToSecurity = useCallback(() => {
+    navigate('/settings/security', { state: true });
+  }, [navigate]);
+
   return (
     <div className={CN('setting-group-container general-setting', className)}>
-      <SelectModal
-        background={'default'}
-        className={CN(`__modal ${className}`, '-secondary-theme')}
-        customInput={renderModalTrigger({
-          key: 'wallet-theme-trigger',
-          leftIcon: Image,
-          leftIconBgColor: token.colorPrimary,
-          title: t('Wallet theme')
-        })}
-        id='wallet-theme-select-modal'
-        inputWidth={'100%'}
-        itemKey='key'
-        items={themeItems}
-        onSelect={onSelectTheme}
-        renderItem={renderSelectionItem}
-        selected={theme}
-        shape='round'
-        title={t('Wallet theme')}
-      />
-
       <SelectModal
         background={'default'}
         className={CN(`__modal ${className}`, '-secondary-theme')}
@@ -236,6 +222,47 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         shape='round'
         size='small'
         title={t('Language')}
+      />
+
+      <SelectModal
+        background={'default'}
+        className={CN(`__modal ${className}`, '-secondary-theme')}
+        customInput={renderModalTrigger({
+          key: 'wallet-theme-trigger',
+          leftIcon: Swatches,
+          leftIconBgColor: token.colorPrimary,
+          title: t('Wallet theme')
+        })}
+        id='wallet-theme-select-modal'
+        inputWidth={'100%'}
+        itemKey='key'
+        items={themeItems}
+        onSelect={onSelectTheme}
+        renderItem={renderSelectionItem}
+        selected={theme}
+        shape='round'
+        title={t('Wallet theme')}
+      />
+
+      <SettingItem
+        className={'__setting-item setting-group-item'}
+        leftItemIcon={(
+          <BackgroundIcon
+            phosphorIcon={ShieldStar}
+            size='sm'
+            weight='fill'
+          />
+        )}
+        name={t('Password setting')}
+        onPressItem={onNavigateToSecurity}
+        rightItem={
+          <Icon
+            className='__right-icon'
+            customSize={'20px'}
+            phosphorIcon={CaretRight}
+            type='phosphor'
+          />
+        }
       />
     </div>
   );

@@ -4,6 +4,7 @@
 import { NotificationType } from '@subwallet/extension-base/background/KoniTypes';
 import { AccountJson } from '@subwallet/extension-base/background/types';
 import { ButtonSchema } from '@subwallet/react-ui/es/button/button';
+import { PageIconProps } from '@subwallet/react-ui/es/page-icon/PageIcon';
 import { Icon as _PhosphorIcon, IconProps } from 'phosphor-react';
 import React from 'react';
 
@@ -25,7 +26,9 @@ export type AlertDialogProps = {
   title: string,
   type?: NotificationType,
   closable?: boolean,
+  iconProps?: PageIconProps['iconProps'],
   content: React.ReactNode,
+  contentTitle?: React.ReactNode,
   cancelButton?: AlertDialogButtonProps,
   okButton: AlertDialogButtonProps,
 };

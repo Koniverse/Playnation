@@ -4,24 +4,18 @@
 import { LeaderboardContent } from '@subwallet/extension-koni-ui/components';
 import { LeaderboardTabGroupItemType } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardContent';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { LeaderboardGroups, LeaderboardItem, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { calculateStartAndEnd } from '@subwallet/extension-koni-ui/utils/date';
+import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
 
 const apiSDK = BookaSdk.instance;
-
-enum TabType {
-  WEEKLY = 'weekly',
-  INVITE_TO_PLAY = 'invite_to_play',
-  VARA_PLAYDROP = 'vara_playdrop',
-}
 
 const telegramConnector = TelegramConnector.instance;
 
@@ -31,40 +25,30 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { setContainerClass } = useContext(HomeContext);
 
   const [account, setAccount] = useState(apiSDK.account);
+  const [leaderboardConfig, setLeaderboardConfig] = useState(apiSDK.leaderboardConfig);
   const [tabGroupItems, setTabGroupItems] = useState<LeaderboardTabGroupItemType[]>([]);
 
-  const onClickShare = useCallback((selectedTab: string) => {
+  const onClickShare = useCallback((contentShare: string, contentNotShowPoint: string, urlShare: string | undefined, hashtags: string | undefined) => {
     return (personMine?: LeaderboardPerson) => {
       if (!account) {
         return;
       }
 
-      let content = '';
+      let content = contentNotShowPoint;
 
       if (personMine) {
-        content += `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank} on the DED Egg Hunt Airdrop`;
+        content = populateTemplateString(contentShare, personMine);
       }
 
-      content += 'Leaderboard! Want to join the fun and get a chance to win $DED rewards? Join me now! 🚀';
+      let hashtagsContent = '';
 
-      let urlShareImage = 'https://x.playnation.app/playnation-ded';
-      let hashtags = 'hashtags=DEDEggHunt,Playnation,DOTisDED,Airdrop';
-
-      if (selectedTab === TabType.VARA_PLAYDROP) {
-        content = '';
-        urlShareImage = 'https://x.playnation.app/playnation-vara';
-        hashtags = 'hashtags=PlaynationKickToAirdrop,Playnation,VARAtoken,Airdrop';
-
-        if (personMine) {
-          content = `Woohoo! I scored ${personMine.point} Points and ranked ${personMine.rank}  on the Playnation Kick-to-Airdrop Leaderboard! %0A `;
-        }
-
-        content += 'Want to join the fun and get a chance to win $VARA rewards? Join me now! 🚀 ';
+      if (hashtags) {
+        hashtagsContent = `hashtags=${hashtags}`;
       }
 
-      const linkShare = `${urlShareImage}?startApp=${account?.info.inviteCode || 'booka'}`;
+      const linkShare = `${urlShare || ''}?startApp=${account?.info.inviteCode || 'booka'}`;
 
-      const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtags}`;
+      const url = `http://x.com/share?text=${content}&url=${linkShare}%0A&${hashtagsContent}`;
 
       telegramConnector.openLink(url);
     };
@@ -75,58 +59,59 @@ const Component = ({ className }: Props): React.ReactElement => {
       setAccount(data);
     });
 
+    const subscriptionLeaderboard = apiSDK.subscribeLeaderboardConfig().subscribe((data) => {
+      setLeaderboardConfig(data);
+    });
+
     return () => {
       accountSub.unsubscribe();
+      subscriptionLeaderboard.unsubscribe();
     };
   }, []);
 
   useEffect(() => {
     const getTabGroupInfo = (): LeaderboardTabGroupItemType[] => {
-      const baseItems: LeaderboardTabGroupItemType[] = [
-        {
-          label: t('Vara football'),
-          value: TabType.VARA_PLAYDROP,
-          leaderboardInfo: {
-            onClickShare: onClickShare(TabType.VARA_PLAYDROP)
-          }
-        },
-        {
-          label: t('Invite to play'),
-          value: TabType.INVITE_TO_PLAY,
-          leaderboardInfo: {
+      const leaderboardGeneral = leaderboardConfig.leaderboard_general as unknown as LeaderboardGroups[];
+      const leaderboards = leaderboardConfig.leaderboard_map as unknown as LeaderboardItem[];
 
-          }
-        },
-        {
-          label: t('Weekly'),
-          value: TabType.WEEKLY,
-          leaderboardInfo: {
+      if (leaderboardGeneral && leaderboards) {
+        const value = leaderboardGeneral.length > 0 ? leaderboardGeneral[0] : null;
 
-          }
-        }
-      ];
-
-      return baseItems.map((item) => {
-        const { end: endDate, start: startDate } = calculateStartAndEnd(item.value);
-        let type = 'all';
-        let gameId = 0;
-
-        if (item.value === TabType.INVITE_TO_PLAY) {
-          type = 'inviteToPlay';
-          gameId = 7;
+        if (!value) {
+          return [];
         }
 
-        return {
-          ...item,
-          leaderboardInfo: {
-            ...item.leaderboardInfo,
-            startDate,
-            endDate,
-            type,
-            gameId
+        const data: LeaderboardTabGroupItemType[] = [];
+
+        // @ts-ignore
+        value.leaderboards.forEach((item: LeaderboardItem) => {
+          const id = item.id;
+          const leaderboard = leaderboards.find((l) => l.id === id);
+          let _onClickShare = null;
+
+          if (leaderboard) {
+            if (leaderboard.sharing) {
+              const { content, hashtags, url } = leaderboard.sharing;
+
+              _onClickShare = onClickShare(content, content, url, hashtags);
+            }
+
+            data.push({
+              label: leaderboard.name,
+              value: leaderboard.slug,
+              leaderboardInfo: {
+                type: leaderboard.type,
+                onClickShare: _onClickShare,
+                id: leaderboard.id
+              }
+            } as LeaderboardTabGroupItemType);
           }
-        };
-      });
+        });
+
+        return data;
+      }
+
+      return [];
     };
 
     setTabGroupItems(getTabGroupInfo());
@@ -139,7 +124,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     return () => {
       clearInterval(timer);
     };
-  }, [onClickShare, t]);
+  }, [onClickShare, t, leaderboardConfig]);
 
   useEffect(() => {
     setContainerClass('leaderboard-screen-wrapper');
@@ -152,7 +137,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   return (
     <LeaderboardContent
       className={className}
-      defaultSelectedTab={TabType.VARA_PLAYDROP}
+      defaultSelectedTab={tabGroupItems.length > 0 ? tabGroupItems[0].value : ''}
       tabGroupItems={tabGroupItems}
     />
   );

@@ -9,9 +9,13 @@ interface LazyItem {
 
 const lazyMap: Record<string, LazyItem> = {};
 
-export function removeLazy (key: string) {
+export function removeLazy (key: string, fireTheLast = false) {
   if (lazyMap[key]) {
-    clearTimeout(lazyMap[key].timeout);
+    const callback = lazyMap[key].callback;
+    const timeout = lazyMap[key].timeout;
+
+    clearTimeout(timeout);
+    fireTheLast && callback();
     delete lazyMap[key];
   }
 }

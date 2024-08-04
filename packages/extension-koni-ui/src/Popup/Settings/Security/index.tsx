@@ -3,19 +3,19 @@
 
 import { WalletUnlockType } from '@subwallet/extension-base/background/KoniTypes';
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
-import { EDIT_AUTO_LOCK_TIME_MODAL, EDIT_UNLOCK_TYPE_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { EDIT_AUTO_LOCK_TIME_MODAL, EDIT_UNLOCK_TYPE_MODAL, settingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
-import useIsPopup from '@subwallet/extension-koni-ui/hooks/dom/useIsPopup';
+import { useBiometric } from '@subwallet/extension-koni-ui/hooks/biometric';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
-import { saveAutoLockTime, saveCameraSetting, saveUnlockType, windowOpen } from '@subwallet/extension-koni-ui/messaging';
+import { saveAutoLockTime, saveUnlockType } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { PhosphorIcon, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { noop } from '@subwallet/extension-koni-ui/utils';
 import { isNoAccount } from '@subwallet/extension-koni-ui/utils/account/account';
 import { BackgroundIcon, Icon, ModalContext, SettingItem, Switch, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Camera, CaretRight, CheckCircle, Key, LockKeyOpen, LockLaminated } from 'phosphor-react';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { CaretRight, CheckCircle, FingerprintSimple, Key, LockKeyOpen, LockLaminated } from 'phosphor-react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -58,12 +58,13 @@ const Component: React.FC<Props> = (props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const canGoBack = !!location.state;
-  const isPopup = useIsPopup();
 
   const { activeModal, inactiveModal } = useContext(ModalContext);
 
-  const { accounts } = useSelector((state: RootState) => state.accountState);
-  const { camera, timeAutoLock, unlockType } = useSelector((state: RootState) => state.settings);
+  const { accounts, useCustomPassword } = useSelector((state: RootState) => state.accountState);
+  const { removeToken, setupBiometric, supportBiometric, usingBiometric } = useBiometric();
+  const [loadingBiometric, setLoadingBiometric] = useState(false);
+  const { timeAutoLock, unlockType } = useSelector((state: RootState) => state.settings);
 
   const noAccount = useMemo(() => isNoAccount(accounts), [accounts]);
 
@@ -86,31 +87,36 @@ const Component: React.FC<Props> = (props: Props) => {
     }
   }), [t]);
 
-  const items = useMemo((): SecurityItem[] => [
-    {
-      icon: Key,
-      key: SecurityType.WALLET_PASSWORD,
-      title: t('Change wallet password'),
-      url: '/keyring/change-password',
-      disabled: noAccount
-    },
-    {
-      icon: LockLaminated,
-      key: SecurityType.AUTO_LOCK,
-      title: t('Auto lock'),
-      url: '',
-      disabled: false
-    },
-    {
-      icon: LockKeyOpen,
-      key: SecurityType.UNLOCK_TYPE,
-      title: t('Authenticate with password'),
-      url: '',
-      disabled: false
-    }
-  ], [noAccount, t]);
+  const items = useMemo((): SecurityItem[] => {
+    const menuList = [
+      {
+        icon: Key,
+        key: SecurityType.WALLET_PASSWORD,
+        title: useCustomPassword ? t('Change wallet password') : t('Set wallet password'),
+        url: useCustomPassword ? '/keyring/change-password' : '/keyring/create-password',
+        disabled: noAccount
+      }
+    ];
 
-  const [loadingCamera, setLoadingCamera] = useState(false);
+    if (useCustomPassword) {
+      menuList.push({
+        icon: LockLaminated,
+        key: SecurityType.AUTO_LOCK,
+        title: t('Auto lock'),
+        url: '',
+        disabled: false
+      });
+      menuList.push({
+        icon: LockKeyOpen,
+        key: SecurityType.UNLOCK_TYPE,
+        title: t('Authenticate with password'),
+        url: '',
+        disabled: false
+      });
+    }
+
+    return menuList;
+  }, [noAccount, t, useCustomPassword]);
 
   const onBack = useCallback(() => {
     if (canGoBack) {
@@ -124,33 +130,18 @@ const Component: React.FC<Props> = (props: Props) => {
     }
   }, [canGoBack, goBack, navigate, noAccount]);
 
-  const updateCamera = useCallback((currentValue: boolean) => {
-    return () => {
-      setLoadingCamera(true);
+  const updateBiometricState = useCallback(() => {
+    setLoadingBiometric(true);
 
-      let openNewTab = false;
-
-      if (!currentValue) {
-        if (isPopup) {
-          openNewTab = true;
-        }
-      }
-
-      saveCameraSetting(!currentValue)
-        .then(() => {
-          if (openNewTab) {
-            windowOpen({ allowedPath: '/settings/security' })
-              .catch((e: Error) => {
-                console.log(e);
-              });
-          }
-        })
-        .catch(console.error)
-        .finally(() => {
-          setLoadingCamera(false);
-        });
-    };
-  }, [isPopup]);
+    if (usingBiometric) {
+      removeToken().finally(() => {
+        setLoadingBiometric(false);
+      });
+    } else {
+      setupBiometric();
+      setLoadingBiometric(false);
+    }
+  }, [removeToken, setupBiometric, usingBiometric]);
 
   const onOpenAutoLockTimeModal = useCallback(() => {
     activeModal(editAutoLockTimeModalId);
@@ -201,8 +192,7 @@ const Component: React.FC<Props> = (props: Props) => {
     return (
       <SettingItem
         className={CN(
-          'security-item', 'setting-item',
-          `security-type-${item.key}`,
+          'setting-group-item',
           {
             disabled: item.disabled
           }
@@ -221,7 +211,7 @@ const Component: React.FC<Props> = (props: Props) => {
         onPressItem={item.disabled ? undefined : onClickItem(item)}
         rightItem={(
           <Icon
-            className='security-item-right-icon'
+            className='__right-icon'
             phosphorIcon={CaretRight}
             size='sm'
             type='phosphor'
@@ -231,54 +221,42 @@ const Component: React.FC<Props> = (props: Props) => {
     );
   }, [onClickItem]);
 
-  useEffect(() => {
-    if (camera) {
-      window.navigator.mediaDevices.getUserMedia({ video: true })
-        .then((stream) => {
-          // Close video
-          stream.getTracks().forEach((track) => {
-            track.stop();
-          });
-        })
-        .catch(console.error);
-    }
-  }, [camera]);
-
   return (
-    <PageWrapper className={CN(className)}>
+    <PageWrapper className={CN(className, '-screen')}>
       <Layout.WithSubHeaderOnly
+        backgroundImages={settingsScreensLayoutBackgroundImages}
+        backgroundStyle={'secondary'}
         onBack={onBack}
-        title={t('Security settings')}
+        title={t('Password setting')}
       >
         <div className='body-container'>
-          <div className='items-container'>
+          <div className='setting-group-container'>
             {items.map(onRenderItem)}
-          </div>
-          <div className='setting-config-container'>
-            <SettingItem
-              className={CN('security-item', `security-type-${SecurityType.CAMERA_ACCESS}`)}
+
+            {useCustomPassword && supportBiometric && (<SettingItem
+              className={CN('setting-group-item')}
               leftItemIcon={(
                 <BackgroundIcon
                   backgroundColor={'var(--icon-bg-color)'}
-                  phosphorIcon={Camera}
+                  phosphorIcon={FingerprintSimple}
                   size='sm'
                   type='phosphor'
                   weight='fill'
                 />
               )}
-              name={t('Camera access for QR')}
+              name={t('Use Biometric')}
               rightItem={(
                 <Switch
-                  checked={camera}
-                  loading={loadingCamera}
-                  onClick={updateCamera(camera)}
+                  checked={usingBiometric}
+                  loading={loadingBiometric}
+                  onClick={updateBiometricState}
                 />
               )}
-            />
+            />)}
           </div>
         </div>
         <SwModal
-          className={className}
+          className={CN(className, '-auto-lock-modal', '-modal')}
           id={editAutoLockTimeModalId}
           onCancel={onCloseAutoLockTimeModal}
           title={t('Auto lock')}
@@ -315,7 +293,7 @@ const Component: React.FC<Props> = (props: Props) => {
           </div>
         </SwModal>
         <SwModal
-          className={className}
+          className={CN(className, '-authenticate-type-modal', '-modal')}
           id={editUnlockTypeModalId}
           onCancel={onCloseUnlockTypeModal}
           title={t('Authenticate with password')}
@@ -368,114 +346,68 @@ const Component: React.FC<Props> = (props: Props) => {
   );
 };
 
-const SecurityList = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const SecurityList = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
-    '.body-container': {
-      padding: `${token.padding}px ${token.padding}px`
-    },
-
-    '.items-container': {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: token.sizeXS
-    },
-
-    [`.security-type-${SecurityType.WALLET_PASSWORD}`]: {
-      '--icon-bg-color': token['geekblue-6'],
-
-      '&:hover': {
-        '--icon-bg-color': token['geekblue-7']
+    '&.-screen': {
+      '.body-container': {
+        paddingTop: token.paddingXXS,
+        paddingRight: token.padding,
+        paddingLeft: token.padding,
+        paddingBottom: token.paddingLG
       }
     },
 
-    [`.security-type-${SecurityType.WEBSITE_ACCESS}`]: {
-      '--icon-bg-color': token['blue-7'],
-
-      '&:hover': {
-        '--icon-bg-color': token['blue-8']
-      }
-    },
-
-    [`.security-type-${SecurityType.CAMERA_ACCESS}`]: {
-      '--icon-bg-color': token['green-6'],
-
-      '&:hover': {
-        '--icon-bg-color': token['green-7']
-      }
-    },
-
-    [`.security-type-${SecurityType.CHAIN_PATROL_SERVICE}`]: {
-      '--icon-bg-color': token['magenta-6'],
-
-      '&:hover': {
-        '--icon-bg-color': token['magenta-7']
-      }
-    },
-
-    [`.security-type-${SecurityType.AUTO_LOCK}`]: {
-      '--icon-bg-color': token['green-6'],
-
-      '&:hover': {
-        '--icon-bg-color': token['green-7']
-      }
-    },
-
-    [`.security-type-${SecurityType.UNLOCK_TYPE}`]: {
-      '--icon-bg-color': token['purple-8'],
-
-      '&:hover': {
-        '--icon-bg-color': token['purple-9']
-      }
-    },
-
-    '.security-item': {
-      '.ant-web3-block-right-item': {
-        marginRight: 0,
-        color: token['gray-4']
+    '&.-modal': {
+      '.ant-sw-modal-body': {
+        paddingLeft: token.paddingXS,
+        paddingRight: token.paddingXS
       },
 
-      '&:hover': {
+      '.modal-body-container': {
+        borderRadius: 20,
+        backgroundColor: extendToken.colorBgSecondary1,
+        padding: token.paddingXS
+      },
+
+      '.ant-setting-item': {
+        overflow: 'hidden',
+        backgroundColor: extendToken.colorBgSecondary1,
+        borderRadius: 40,
+
         '.ant-web3-block-right-item': {
-          color: token['gray-6']
-        }
-      },
+          color: token.colorSuccess
+        },
 
-      '&.disabled': {
-        opacity: 0.4,
+        '.ant-web3-block.ant-web3-block:hover': {
+          backgroundColor: token.colorBgSecondary
+        },
+
+        '.__left-icon': {
+          minWidth: 24,
+          height: 24,
+          borderRadius: 24,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        },
+
+        '.ant-web3-block-left-item': {
+          paddingRight: token.paddingSM
+        },
+
+        '.ant-setting-item-name': {
+          color: token.colorTextDark2
+        },
 
         '.ant-setting-item-content': {
-          cursor: 'not-allowed'
+          paddingRight: token.paddingXS
+        },
+
+        '.__right-icon': {
+          minWidth: 40,
+          justifyContent: 'center'
         }
       }
-    },
-
-    '.setting-config-container': {
-      marginTop: token.marginXS,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: token.sizeXS,
-
-      '.label': {
-        fontWeight: token.fontWeightStrong,
-        fontSize: token.fontSizeSM,
-        lineHeight: token.lineHeightSM,
-        color: token.colorTextLabel,
-        textTransform: 'uppercase'
-      }
-    },
-
-    '.modal-body-container': {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: token.sizeXS
-    },
-
-    '.__selection-item': {
-      '--icon-color': token.colorSuccess
-    },
-
-    '.__right-icon': {
-      marginRight: token.marginXS
     }
   };
 });

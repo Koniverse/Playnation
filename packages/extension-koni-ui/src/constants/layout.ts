@@ -14,3 +14,7 @@ export const homeScreensLayoutBackgroundImages: LayoutBackgroundImages = {
 export const settingsScreensLayoutBackgroundImages: LayoutBackgroundImages = {
   game: true
 };
+
+export const simpleSettingsScreensLayoutBackgroundImages: LayoutBackgroundImages = {
+  game: true
+};
