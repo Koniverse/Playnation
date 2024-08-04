@@ -122,93 +122,93 @@ export function SecurityContextProvider ({ children }: SecurityContextProviderPr
       setToken(token).catch(console.error);
     } else if (useCustomPassword && supportBiometric && !usingBiometric && !remindBiometricLastTime) {
       // Ask user to enable biometric login
-      openAlert({
-        title: t('Biometric login'),
-        type: NotificationType.INFO,
-        contentTitle: 'Enable biometric login',
-        content: t('Would you like to enable biometrics for your next login?'),
-        iconProps: {
-          phosphorIcon: ShieldStar,
-          weight: 'fill'
-        },
-        cancelButton: {
-          text: t('Maybe later'),
-          schema: 'secondary',
-          icon: XCircle,
-          iconWeight: 'fill',
-          onClick: () => {
-            const remindBiometricLastTime = Date.now().toString();
-
-            closeAlert();
-            setRemindBiometricLastTime(remindBiometricLastTime);
-            localStorage.setItem(REMIND_BIOMETRIC_TIME, remindBiometricLastTime);
-          }
-        },
-        okButton: {
-          text: t('Enable now'),
-          icon: CheckCircle,
-          iconWeight: 'fill',
-          onClick: () => {
-            setToken(token).catch(console.error);
-            closeAlert();
-          }
-        }
-      });
+      // openAlert({
+      //   title: t('Biometric login'),
+      //   type: NotificationType.INFO,
+      //   contentTitle: 'Enable biometric login',
+      //   content: t('Would you like to enable biometrics for your next login?'),
+      //   iconProps: {
+      //     phosphorIcon: ShieldStar,
+      //     weight: 'fill'
+      //   },
+      //   cancelButton: {
+      //     text: t('Maybe later'),
+      //     schema: 'secondary',
+      //     icon: XCircle,
+      //     iconWeight: 'fill',
+      //     onClick: () => {
+      //       const remindBiometricLastTime = Date.now().toString();
+      //
+      //       closeAlert();
+      //       setRemindBiometricLastTime(remindBiometricLastTime);
+      //       localStorage.setItem(REMIND_BIOMETRIC_TIME, remindBiometricLastTime);
+      //     }
+      //   },
+      //   okButton: {
+      //     text: t('Enable now'),
+      //     icon: CheckCircle,
+      //     iconWeight: 'fill',
+      //     onClick: () => {
+      //       setToken(token).catch(console.error);
+      //       closeAlert();
+      //     }
+      //   }
+      // });
     }
-  }, [closeAlert, isTokenUpdateToDate, openAlert, remindBiometricLastTime, requireSyncPassword, setToken, supportBiometric, t, useCustomPassword, usingBiometric]);
+  }, [isTokenUpdateToDate, remindBiometricLastTime, requireSyncPassword, setToken, supportBiometric, useCustomPassword, usingBiometric]);
 
   // Create password modal reminder
-  useEffect(() => {
-    let shouldCheck = hasMasterPassword && !useCustomPassword;
-
-    // Check if already remind
-    cloudStorage.getItem(REMIND_PASSWORD_TIME).then((rs) => {
-      if (rs) {
-        shouldCheck = false;
-      }
-    }).catch(console.error);
-
-    bookaSdk.waitForSync
-      .then(() => {
-        setTimeout(() => {
-          if (shouldCheck) {
-            openAlert({
-              title: t('Protect your account'),
-              type: NotificationType.INFO,
-              contentTitle: 'Create a password to protect your account',
-              content: t('A strong password keeps your Playnation account safe. After creating your password, you can enable biometric login.'),
-              iconProps: {
-                phosphorIcon: ShieldStar,
-                weight: 'fill'
-              },
-              cancelButton: {
-                text: t('Maybe later'),
-                schema: 'secondary',
-                icon: XCircle,
-                iconWeight: 'fill',
-                onClick: () => {
-                  closeAlert();
-                  cloudStorage.setItem(REMIND_PASSWORD_TIME, Date.now().toString()).catch(console.error);
-                }
-              },
-              okButton: {
-                text: t('Create now'),
-                icon: CheckCircle,
-                iconWeight: 'fill',
-                onClick: () => {
-                  navigate(createPasswordUrl);
-                  closeAlert();
-                }
-              }
-            });
-          }
-        }, 3000);
-      }).catch(console.error);
-
-    return () => {
-      shouldCheck = false;
-    };
-  }, [useCustomPassword, activeModal, openAlert, t, closeAlert, navigate, hasMasterPassword]);
+  // useEffect(() => {
+  //   let shouldCheck = hasMasterPassword && !useCustomPassword;
+  //
+  //   // Check if already remind
+  //   cloudStorage.getItem(REMIND_PASSWORD_TIME).then((rs) => {
+  //     if (rs) {
+  //       shouldCheck = false;
+  //     }
+  //   }).catch(console.error);
+  //
+  //   bookaSdk.waitForSync
+  //     .then(() => {
+  //       setTimeout(() => {
+  //         if (shouldCheck) {
+  //           openAlert({
+  //             title: t('Protect your account'),
+  //             type: NotificationType.INFO,
+  //             contentTitle: 'Create a password to protect your account',
+  //             content: t('A strong password keeps your Playnation account safe. After creating your password, you can enable biometric login.'),
+  //             iconProps: {
+  //               phosphorIcon: ShieldStar,
+  //               weight: 'fill'
+  //             },
+  //             cancelButton: {
+  //               text: t('Maybe later'),
+  //               schema: 'secondary',
+  //               icon: XCircle,
+  //               iconWeight: 'fill',
+  //               onClick: () => {
+  //                 closeAlert();
+  //                 cloudStorage.setItem(REMIND_PASSWORD_TIME, Date.now().toString()).catch(console.error);
+  //               }
+  //             },
+  //             okButton: {
+  //               text: t('Create now'),
+  //               icon: CheckCircle,
+  //               iconWeight: 'fill',
+  //               onClick: () => {
+  //                 navigate(createPasswordUrl);
+  //                 closeAlert();
+  //               }
+  //             }
+  //           });
+  //         }
+  //       }, 3000);
+  //     }).catch(console.error);
+  //
+  //   return () => {
+  //     shouldCheck = false;
+  //   };
+  // }, [useCustomPassword, activeModal, openAlert, t, closeAlert, navigate, hasMasterPassword]);
 
   return (<SecurityContext.Provider value={{
     supportBiometric,
