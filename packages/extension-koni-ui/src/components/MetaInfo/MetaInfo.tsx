@@ -189,6 +189,10 @@ const _MetaInfo = styled(Component)<Props>(({ theme: { extendToken, token } }: P
       color: token['green-6']
     },
 
+    '.__value.-schema-blue': {
+      color: token.blue
+    },
+
     '.__value.-schema-even-odd': {
       color: token.colorTextLight2,
 

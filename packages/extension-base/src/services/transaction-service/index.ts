@@ -21,7 +21,7 @@ import { getExplorerLink, parseTransactionData } from '@subwallet/extension-base
 import { isWalletConnectRequest } from '@subwallet/extension-base/services/wallet-connect-service/helpers';
 import { Web3Transaction } from '@subwallet/extension-base/signers/types';
 import { LeavePoolAdditionalData, SpecialYieldPoolInfo } from '@subwallet/extension-base/types';
-import { anyNumberToBN, reformatAddress } from '@subwallet/extension-base/utils';
+import { _isRuntimeUpdated, anyNumberToBN, reformatAddress } from '@subwallet/extension-base/utils';
 import { mergeTransactionAndSignature } from '@subwallet/extension-base/utils/eth/mergeTransactionAndSignature';
 import { isContractAddress, parseContractInput } from '@subwallet/extension-base/utils/eth/parseTransaction';
 import { BN_ZERO } from '@subwallet/extension-base/utils/number';
@@ -34,7 +34,7 @@ import { BehaviorSubject, interval as rxjsInterval, Subscription } from 'rxjs';
 import { TransactionConfig, TransactionReceipt } from 'web3-core';
 
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types';
-import { Signer, SignerResult } from '@polkadot/api/types';
+import { Signer, SignerOptions, SignerResult } from '@polkadot/api/types';
 import { EventRecord } from '@polkadot/types/interfaces';
 import { SignerPayloadJSON } from '@polkadot/types/types/extrinsic';
 import { isHex } from '@polkadot/util';
@@ -244,7 +244,7 @@ export default class TransactionService {
 
   private async sendTransaction (transaction: SWTransaction): Promise<TransactionEmitter> {
     // Send Transaction
-    const emitter = transaction.chainType === 'substrate' ? this.signAndSendSubstrateTransaction(transaction) : (await this.signAndSendEvmTransaction(transaction));
+    const emitter = await (transaction.chainType === 'substrate' ? this.signAndSendSubstrateTransaction(transaction) : this.signAndSendEvmTransaction(transaction));
 
     const { eventsHandler } = transaction;
 
@@ -1065,7 +1065,7 @@ export default class TransactionService {
     return emitter;
   }
 
-  private signAndSendSubstrateTransaction ({ address, chain, id, transaction, url }: SWTransaction): TransactionEmitter {
+  private async signAndSendSubstrateTransaction ({ address, chain, id, transaction, url }: SWTransaction): Promise<TransactionEmitter> {
     const emitter = new EventEmitter<TransactionEventMap>();
     const eventData: TransactionEventResponse = {
       id,
@@ -1074,18 +1074,35 @@ export default class TransactionService {
       extrinsicHash: id
     };
 
-    (transaction as SubmittableExtrinsic).signAsync(address, {
+    const extrinsic = transaction as SubmittableExtrinsic;
+    const registry = extrinsic.registry;
+    const signedExtensions = registry.signedExtensions;
+
+    const signerOption: Partial<SignerOptions> = {
       signer: {
         signPayload: async (payload: SignerPayloadJSON) => {
-          const signing = await this.state.requestService.signInternalTransaction(id, address, url || EXTENSION_REQUEST_URL, payload);
+          const { signature, signedTransaction } = await this.state.requestService.signInternalTransaction(id, address, url || EXTENSION_REQUEST_URL, payload);
 
           return {
             id: (new Date()).getTime(),
-            signature: signing.signature
+            signature,
+            signedTransaction
           } as SignerResult;
         }
-      } as Signer
-    }).then(async (rs) => {
+      } as Signer,
+      withSignedTransaction: true
+    };
+
+    if (_isRuntimeUpdated(signedExtensions)) {
+      const metadataHash = await this.state.chainService.calculateMetadataHash(chain);
+
+      if (metadataHash) {
+        signerOption.mode = 1;
+        signerOption.metadataHash = metadataHash;
+      }
+    }
+
+    extrinsic.signAsync(address, signerOption).then(async (rs) => {
       // Emit signed event
       emitter.emit('signed', eventData);
 

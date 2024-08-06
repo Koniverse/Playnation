@@ -4,9 +4,11 @@
 import BeforeCreditcoinCampaign from '@subwallet/extension-base/services/migration-service/scripts/BeforeCreditcoinCampaign';
 import BeforeKaruraCampaign from '@subwallet/extension-base/services/migration-service/scripts/BeforeKaruraCampaign';
 import BeforeVaraCampaign from '@subwallet/extension-base/services/migration-service/scripts/BeforeVaraCampaign';
+import ClearMetadataDatabase from './databases/ClearMetadataDatabase';
 import MigrateAssetSetting from '@subwallet/extension-base/services/migration-service/scripts/databases/MigrateAssetSetting';
 import MigrateRemoveGenesisHash from '@subwallet/extension-base/services/migration-service/scripts/MigrateRemoveGenesisHash';
 import MigrateTransactionHistoryBySymbol from '@subwallet/extension-base/services/migration-service/scripts/MigrateTransactionHistoryBySymbol';
+import ReloadMetadata from './databases/ReloadMetadata';
 
 import BaseMigrationJob from '../Base';
 import BeforeCreditcoinCampaign2
@@ -45,5 +47,7 @@ export default <Record<string, typeof BaseMigrationJob>>{
   '1.1.69-04': MigrateRemoveGenesisHash,
   '1.2.10-p3': BeforeVaraCampaign,
   '1.2.10-p4': BeforeCreditcoinCampaign,
-  '1.2.10-p5': BeforeCreditcoinCampaign2
+  '1.2.10-p5': BeforeCreditcoinCampaign2,
+  '1.2.13-01': ReloadMetadata,
+  '1.2.14-01': ClearMetadataDatabase
 };

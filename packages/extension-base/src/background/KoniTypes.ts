@@ -11,7 +11,7 @@ import { AuthUrls } from '@subwallet/extension-base/services/request-service/typ
 import { CrowdloanContributionsResponse } from '@subwallet/extension-base/services/subscan-service/types';
 import { SWTransactionResponse, SWTransactionResult } from '@subwallet/extension-base/services/transaction-service/types';
 import { WalletConnectNotSupportRequest, WalletConnectSessionRequest } from '@subwallet/extension-base/services/wallet-connect-service/types';
-import { BalanceJson, BuyServiceInfo, BuyTokenInfo, EarningRewardHistoryItem, EarningRewardJson, EarningStatus, HandleYieldStepParams, LeavePoolAdditionalData, NominationPoolInfo, OptimalYieldPath, OptimalYieldPathParams, RequestEarlyValidateYield, RequestGetYieldPoolTargets, RequestStakeCancelWithdrawal, RequestStakeClaimReward, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestYieldLeave, RequestYieldStepSubmit, RequestYieldWithdrawal, ResponseEarlyValidateYield, ResponseGetYieldPoolTargets, StorageDataInterface, SubmitYieldStepData, TokenSpendingApprovalParams, UnlockDotTransactionNft, UnstakingStatus, ValidateYieldProcessParams, YieldPoolInfo, YieldPositionInfo, YieldValidationStatus } from '@subwallet/extension-base/types';
+import { BalanceJson, BuyServiceInfo, BuyTokenInfo, EarningRewardHistoryItem, EarningRewardJson, EarningStatus, HandleYieldStepParams, LeavePoolAdditionalData, NominationPoolInfo, OptimalYieldPath, OptimalYieldPathParams, RequestEarlyValidateYield, RequestGetYieldPoolTargets, RequestMetadataHash, RequestShortenMetadata, RequestStakeCancelWithdrawal, RequestStakeClaimReward, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestYieldLeave, RequestYieldStepSubmit, RequestYieldWithdrawal, ResponseEarlyValidateYield, ResponseGetYieldPoolTargets, ResponseMetadataHash, ResponseShortenMetadata, StorageDataInterface, SubmitYieldStepData, TokenSpendingApprovalParams, UnlockDotTransactionNft, UnstakingStatus, ValidateYieldProcessParams, YieldPoolInfo, YieldPositionInfo, YieldValidationStatus } from '@subwallet/extension-base/types';
 import { CommonOptimalPath } from '@subwallet/extension-base/types/service-base';
 import { SwapErrorType, SwapPair, SwapQuoteResponse, SwapRequest, SwapRequestResult, SwapSubmitParams, SwapTxData, ValidateSwapProcessParams } from '@subwallet/extension-base/types/swap';
 import { InjectedAccount, InjectedAccountWithMeta, MetadataDefBase } from '@subwallet/extension-inject/types';
@@ -25,6 +25,7 @@ import { RequestArguments, TransactionConfig } from 'web3-core';
 import { JsonRpcPayload, JsonRpcResponse } from 'web3-core-helpers';
 
 import { SignerPayloadJSON, SignerPayloadRaw } from '@polkadot/types/types';
+import { ExtDef } from '@polkadot/types/extrinsic/signedExtensions/types';
 import { SignerResult } from '@polkadot/types/types/extrinsic';
 import { HexString } from '@polkadot/util/types';
 import { KeypairType } from '@polkadot/util-crypto/types';
@@ -267,8 +268,12 @@ export interface NftCollectionJson {
 
 export interface MetadataItem {
   genesisHash: string;
+  specName: string;
   specVersion: string;
   hexValue: HexString;
+  types: Record<string, Record<string, string> | string>;
+  userExtensions?: ExtDef;
+  hexV15?: HexString;
 }
 
 export interface CrowdloanItem {
@@ -977,6 +982,7 @@ export interface CreateHardwareAccountItem {
   hardwareType: string;
   name: string;
   isEthereum: boolean;
+  isGeneric: boolean;
 }
 
 export interface RequestAccountCreateHardwareMultiple {
@@ -1265,6 +1271,7 @@ export interface EvmSendTransactionParams {
   maxFeePerGas?: string | number;
   gasPrice?: string | number;
   data?: string;
+  gas?: string | number;
 }
 
 export interface SwitchNetworkRequest {
@@ -1320,6 +1327,8 @@ export interface AddNetworkRequestExternal { // currently only support adding pu
     decimals: number;
   };
 }
+
+export type AddNetworkToRequestConnect = AddNetworkRequestExternal;
 
 export interface AddTokenRequestExternal {
   slug?: string;
@@ -1400,15 +1409,28 @@ export interface ResponseParseEvmContractInput {
 /// Ledger
 
 export interface LedgerNetwork {
-  genesisHash: string; // GenesisHash for substrate app
-  networkName: string; // Display in selector
-  accountName: string; // Name for account(Ledger X Account)
-  appName: string; // Name in Ledger
-  network: string; // network is predefined in ledger lib
-  slug: string; // slug in chain list
-  icon: 'substrate' | 'ethereum'; // Deprecated
-  isDevMode: boolean; // Dev mode on Ledger
-  isEthereum: boolean; // Use for evm account
+  /** GenesisHash for substrate app */
+  genesisHash: string;
+  /** Display in selector */
+  networkName: string;
+  /** Name for account(Ledger X Account) */
+  accountName: string;
+  /** Name in Ledger */
+  appName: string;
+  /** Network is predefined in ledger lib */
+  network: string;
+  /** slug in chain list */
+  slug: string;
+  /** Deprecated */
+  icon: 'substrate' | 'ethereum';
+  /** Dev mode on Ledger */
+  isDevMode: boolean;
+  /** Is use generic Ledger app */
+  isGeneric: boolean;
+  /** Use for evm account */
+  isEthereum: boolean;
+  /** Slip44 in the derivation path */
+  slip44: number;
 }
 
 /// Qr Sign
@@ -1952,6 +1974,8 @@ export interface RequestFindRawMetadata {
 export interface ResponseFindRawMetadata {
   rawMetadata: string;
   specVersion: number;
+  types: Record<string, Record<string, string> | string>;
+  userExtensions?: ExtDef;
 }
 
 export interface ResolveDomainRequest {
@@ -2390,6 +2414,8 @@ export interface KoniRequestSignatures {
 
   /// Metadata
   'pri(metadata.find)': [RequestFindRawMetadata, ResponseFindRawMetadata];
+  'pri(metadata.hash)': [RequestMetadataHash, ResponseMetadataHash];
+  'pri(metadata.transaction.shorten)': [RequestShortenMetadata, ResponseShortenMetadata];
 
   /* Campaign */
 
