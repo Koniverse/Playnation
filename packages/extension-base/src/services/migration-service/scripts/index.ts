@@ -40,5 +40,5 @@ export default <Record<string, typeof BaseMigrationJob>>{
   // '1.2.10-p5': BeforeCreditcoinCampaign2,
   // '1.2.13-01': ReloadMetadata,
   // '1.2.14-01': ClearMetadataDatabase,
-  '1.2.23-p3': BeforeMythosCampaign
+  '1.2.23-p0': BeforeMythosCampaign
 };

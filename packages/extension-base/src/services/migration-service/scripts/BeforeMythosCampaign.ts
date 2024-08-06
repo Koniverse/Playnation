@@ -7,6 +7,6 @@ export default class BeforeMythosCampaign extends BaseMigrationJob {
   public override async run (): Promise<void> {
     const state = this.state;
 
-    await state.chainService.updateAssetSetting('mythos-NATIVE-MYTH', { visible: false });
+    await state.chainService.updateAssetSetting('mythos-NATIVE-MYTH', { visible: true });
   }
 }
