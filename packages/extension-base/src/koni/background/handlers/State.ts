@@ -22,7 +22,6 @@ import { calculateGasFeeParams } from '@subwallet/extension-base/services/fee-se
 import { HistoryService } from '@subwallet/extension-base/services/history-service';
 import { KeyringService } from '@subwallet/extension-base/services/keyring-service';
 import MigrationService from '@subwallet/extension-base/services/migration-service';
-import MintCampaignService from '@subwallet/extension-base/services/mint-campaign-service';
 import NotificationService from '@subwallet/extension-base/services/notification-service/NotificationService';
 import { PriceService } from '@subwallet/extension-base/services/price-service';
 import RequestService from '@subwallet/extension-base/services/request-service';
@@ -31,7 +30,6 @@ import { AuthUrls, MetaRequest, SignRequest } from '@subwallet/extension-base/se
 import SettingService from '@subwallet/extension-base/services/setting-service/SettingService';
 import DatabaseService from '@subwallet/extension-base/services/storage-service/DatabaseService';
 import { SubscanService } from '@subwallet/extension-base/services/subscan-service';
-import { SwapService } from '@subwallet/extension-base/services/swap-service';
 import TransactionService from '@subwallet/extension-base/services/transaction-service';
 import { TransactionEventResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import WalletConnectService from '@subwallet/extension-base/services/wallet-connect-service';
@@ -133,11 +131,11 @@ export default class KoniState {
   readonly migrationService: MigrationService;
   readonly subscanService: SubscanService;
   readonly walletConnectService: WalletConnectService;
-  readonly mintCampaignService: MintCampaignService;
+  // readonly mintCampaignService: MintCampaignService;
   readonly campaignService: CampaignService;
   readonly buyService: BuyService;
   readonly feeService: FeeService;
-  readonly swapService: SwapService;
+  // readonly swapService: SwapService;
 
   // Handle the general status of the extension
   private generalStatus: ServiceStatus = ServiceStatus.INITIALIZING;
@@ -159,7 +157,7 @@ export default class KoniState {
     this.priceService = new PriceService(this.dbService, this.eventService, this.chainService);
     this.balanceService = new BalanceService(this);
     this.historyService = new HistoryService(this.dbService, this.chainService, this.eventService, this.keyringService, this.subscanService);
-    this.mintCampaignService = new MintCampaignService(this);
+    // this.mintCampaignService = new MintCampaignService(this);
     this.walletConnectService = new WalletConnectService(this, this.requestService);
     this.migrationService = new MigrationService(this, this.eventService);
 
@@ -167,7 +165,7 @@ export default class KoniState {
     this.buyService = new BuyService(this);
     this.transactionService = new TransactionService(this);
     this.feeService = new FeeService(this);
-    this.swapService = new SwapService(this);
+    // this.swapService = new SwapService(this);
 
     this.subscription = new KoniSubscription(this, this.dbService);
     this.cron = new KoniCron(this, this.subscription, this.dbService);

@@ -181,6 +181,13 @@ export default function useReceiveQR (tokenGroupSlug?: string) {
         }
       }
 
+      if (Object.keys(chainInfoMap).length === 1) {
+        setReceiveSelectedResult((prevState) => ({ ...prevState, selectedNetwork: Object.keys(chainInfoMap)[0] }));
+        activeModal(RECEIVE_QR_MODAL);
+
+        return;
+      }
+
       const _tokenSelectorItems = getTokenSelectorItems(currentAccount.address);
 
       setTokenSelectorItems(_tokenSelectorItems);

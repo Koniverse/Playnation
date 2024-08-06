@@ -17,11 +17,14 @@ import { ArrowSquareOut, CaretLeft, CopySimple } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import styled from 'styled-components';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 
 interface Props extends ThemeProps {
   address?: string;
   selectedNetwork?: string;
 }
+
+const telegramConnector = TelegramConnector.instance;
 
 const modalId = RECEIVE_QR_MODAL;
 
@@ -57,8 +60,7 @@ const Component: React.FC<Props> = ({ address, className, selectedNetwork }: Pro
   const handleClickViewOnExplorer = useCallback(() => {
     try {
       if (scanExplorerAddressUrl) {
-        // eslint-disable-next-line no-void
-        void chrome.tabs.create({ url: scanExplorerAddressUrl, active: true }).then(() => console.log('redirecting'));
+        telegramConnector.openLink(scanExplorerAddressUrl);
       }
     } catch (e) {
       console.log('error redirecting to a new tab');

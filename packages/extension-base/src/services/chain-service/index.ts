@@ -25,17 +25,7 @@ import { ExtraInfo } from '@polkadot-api/merkleize-metadata';
 
 const forceChainInfoMap = (() => {
   const enableList = [
-    'polkadot',
-    'goldberg_testnet',
-    'kusama',
-    'alephTest',
-    'karura',
-    'acala',
-    'statemint',
-    'statemine',
-    'vara_network',
-    'creditcoin',
-    'creditcoinTest'
+    'mythos'
   ];
 
   return Object.fromEntries(enableList.map((slug) => {

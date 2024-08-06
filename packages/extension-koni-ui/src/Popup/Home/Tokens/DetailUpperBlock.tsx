@@ -10,7 +10,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, Number } from '@subwallet/react-ui';
 import { SwNumberProps } from '@subwallet/react-ui/es/number';
-import { CopySimple, Eye, EyeSlash, Lightning, PaperPlaneTilt, ShoppingCartSimple } from 'phosphor-react';
+import { CopySimple, Eye, EyeSlash, Lightning, PaperPlaneTilt } from 'phosphor-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -155,24 +155,6 @@ function Component (
           size={'xs'}
         >
           {t('Send')}
-        </Button>
-
-        <Button
-          block={true}
-          disabled={!isSupportBuyTokens}
-          icon={
-            <Icon
-              customSize={'20px'}
-              phosphorIcon={ShoppingCartSimple}
-              weight={'fill'}
-            />
-          }
-          onClick={onOpenBuyTokens}
-          schema={'secondary'}
-          shape='round'
-          size={'xs'}
-        >
-          {t('Buy')}
         </Button>
       </div>
     </div>

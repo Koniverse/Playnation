@@ -363,6 +363,7 @@ export class BalanceService implements StoppableServiceInterface {
 
     const activeChainSlugs = Object.keys(this.state.getActiveChainInfoMap());
     const assetState = this.state.chainService.subscribeAssetSettings().value;
+
     const assets: string[] = Object.values(assetMap)
       .filter((asset) => {
         return activeChainSlugs.includes(asset.originChain) && assetState[asset.slug]?.visible;
@@ -373,12 +374,9 @@ export class BalanceService implements StoppableServiceInterface {
       !cancel && this.setBalanceItem(result);
     }, ExtrinsicType.TRANSFER_BALANCE);
 
-    const unsub2 = this.state.subscribeMantaPayBalance();
-
     this._unsubscribeBalance = () => {
       cancel = true;
       unsub && unsub();
-      unsub2 && unsub2();
     };
   }
 

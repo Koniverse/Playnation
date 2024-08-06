@@ -4,7 +4,7 @@
 import { RequestChangeMasterPassword } from '@subwallet/extension-base/background/KoniTypes';
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { DEFAULT_HOMEPAGE, DEFAULT_PASSWORD, simpleSettingsScreensLayoutBackgroundImages, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
+import { DEFAULT_HOMEPAGE, DEFAULT_PASSWORD, EVM_ACCOUNT_TYPE, simpleSettingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { useDefaultNavigate, useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { useBiometric } from '@subwallet/extension-koni-ui/hooks/biometric';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
@@ -75,13 +75,13 @@ const Component: React.FC<Props> = ({ className }: Props) => {
     // Auto create account if no account
     accounts.length === 0 && (async () => {
       // Create default account
-      const seedPhrase = await createSeedV2(undefined, undefined, [SUBSTRATE_ACCOUNT_TYPE]);
+      const seedPhrase = await createSeedV2(undefined, undefined, [EVM_ACCOUNT_TYPE]);
       const accountName = telegramConnector.userInfo?.username || 'Account 1';
 
       await createAccountSuriV2({
         name: accountName,
         suri: seedPhrase.seed,
-        types: [SUBSTRATE_ACCOUNT_TYPE],
+        types: [EVM_ACCOUNT_TYPE],
         isAllowed: true
       });
 

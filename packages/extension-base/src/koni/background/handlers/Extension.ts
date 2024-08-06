@@ -42,9 +42,8 @@ import { isProposalExpired, isSupportWalletConnectChain, isSupportWalletConnectN
 import { ResultApproveWalletConnectSession, WalletConnectNotSupportRequest, WalletConnectSessionRequest } from '@subwallet/extension-base/services/wallet-connect-service/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { AccountsStore } from '@subwallet/extension-base/stores';
-import { BalanceJson, BuyServiceInfo, BuyTokenInfo, EarningRewardJson, NominationPoolInfo, OptimalYieldPathParams, RequestEarlyValidateYield, RequestGetYieldPoolTargets, RequestMetadataHash, RequestShortenMetadata, RequestStakeCancelWithdrawal, RequestStakeClaimReward, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestYieldLeave, RequestYieldStepSubmit, RequestYieldWithdrawal, ResponseGetYieldPoolTargets, ResponseMetadataHash, ResponseShortenMetadata, StorageDataInterface, TokenSpendingApprovalParams, ValidateYieldProcessParams, YieldPoolType } from '@subwallet/extension-base/types';
+import { BalanceJson, BuyServiceInfo, BuyTokenInfo, NominationPoolInfo, RequestMetadataHash, RequestShortenMetadata, ResponseMetadataHash, ResponseShortenMetadata, StorageDataInterface, TokenSpendingApprovalParams } from '@subwallet/extension-base/types';
 import { CommonOptimalPath } from '@subwallet/extension-base/types/service-base';
-import { SwapPair, SwapQuoteResponse, SwapRequest, SwapRequestResult, SwapSubmitParams, ValidateSwapProcessParams } from '@subwallet/extension-base/types/swap';
 import { BN_ZERO, convertSubjectInfoToAddresses, createTransactionFromRLP, isSameAddress, MODULE_SUPPORT, reformatAddress, signatureToHex, Transaction as QrTransaction, uniqueStringArray } from '@subwallet/extension-base/utils';
 import { parseContractInput, parseEvmRlp } from '@subwallet/extension-base/utils/eth/parseTransaction';
 import { metadataExpand } from '@subwallet/extension-chains';
@@ -1591,51 +1590,51 @@ export default class KoniExtension {
     return this.getNft();
   }
 
-  private getStakingReward (): Promise<StakingRewardJson> {
-    return new Promise<StakingRewardJson>((resolve, reject) => {
-      this.#koniState.getStakingReward((rs: StakingRewardJson) => {
-        resolve(rs);
-      });
-    });
-  }
+  // private getStakingReward (): Promise<StakingRewardJson> {
+  //   return new Promise<StakingRewardJson>((resolve, reject) => {
+  //     this.#koniState.getStakingReward((rs: StakingRewardJson) => {
+  //       resolve(rs);
+  //     });
+  //   });
+  // }
 
-  private subscribeStakingReward (id: string, port: chrome.runtime.Port): Promise<StakingRewardJson | null> {
-    const cb = createSubscription<'pri(stakingReward.getSubscription)'>(id, port);
-    const stakingRewardSubscription = this.#koniState.subscribeStakingReward().subscribe({
-      next: (rs) => {
-        cb(rs);
-      }
-    });
-
-    this.createUnsubscriptionHandle(id, stakingRewardSubscription.unsubscribe);
-
-    port.onDisconnect.addListener((): void => {
-      this.cancelSubscription(id);
-    });
-
-    return this.getStakingReward();
-  }
-
-  private async getStaking (): Promise<StakingJson> {
-    return this.#koniState.getStaking();
-  }
-
-  private async subscribeStaking (id: string, port: chrome.runtime.Port): Promise<StakingJson> {
-    const cb = createSubscription<'pri(staking.getSubscription)'>(id, port);
-    const stakingSubscription = this.#koniState.subscribeStaking().subscribe({
-      next: (rs) => {
-        cb(rs);
-      }
-    });
-
-    this.createUnsubscriptionHandle(id, stakingSubscription.unsubscribe);
-
-    port.onDisconnect.addListener((): void => {
-      this.cancelSubscription(id);
-    });
-
-    return await this.getStaking();
-  }
+  // private subscribeStakingReward (id: string, port: chrome.runtime.Port): Promise<StakingRewardJson | null> {
+  //   const cb = createSubscription<'pri(stakingReward.getSubscription)'>(id, port);
+  //   const stakingRewardSubscription = this.#koniState.subscribeStakingReward().subscribe({
+  //     next: (rs) => {
+  //       cb(rs);
+  //     }
+  //   });
+  //
+  //   this.createUnsubscriptionHandle(id, stakingRewardSubscription.unsubscribe);
+  //
+  //   port.onDisconnect.addListener((): void => {
+  //     this.cancelSubscription(id);
+  //   });
+  //
+  //   return this.getStakingReward();
+  // }
+  //
+  // private async getStaking (): Promise<StakingJson> {
+  //   return this.#koniState.getStaking();
+  // }
+  //
+  // private async subscribeStaking (id: string, port: chrome.runtime.Port): Promise<StakingJson> {
+  //   const cb = createSubscription<'pri(staking.getSubscription)'>(id, port);
+  //   const stakingSubscription = this.#koniState.subscribeStaking().subscribe({
+  //     next: (rs) => {
+  //       cb(rs);
+  //     }
+  //   });
+  //
+  //   this.createUnsubscriptionHandle(id, stakingSubscription.unsubscribe);
+  //
+  //   port.onDisconnect.addListener((): void => {
+  //     this.cancelSubscription(id);
+  //   });
+  //
+  //   return await this.getStaking();
+  // }
 
   private async subscribeHistory (id: string, port: chrome.runtime.Port): Promise<TransactionHistoryItem[]> {
     const cb = createSubscription<'pri(transaction.history.getSubscription)'>(id, port);
@@ -3924,23 +3923,23 @@ export default class KoniExtension {
 
   /* Campaign */
 
-  private unlockDotCheckCanMint ({ address, network, slug }: RequestUnlockDotCheckCanMint) {
-    return this.#koniState.mintCampaignService.unlockDotCampaign.canMint(address, slug, network);
-  }
-
-  private unlockDotSubscribeMintedData (id: string, port: chrome.runtime.Port, { transactionId }: RequestUnlockDotSubscribeMintedData) {
-    const cb = createSubscription<'pri(campaign.unlockDot.subscribe)'>(id, port);
-
-    const subscription = this.#koniState.mintCampaignService.unlockDotCampaign.subscribeMintedNft(transactionId, cb);
-
-    this.createUnsubscriptionHandle(id, subscription.unsubscribe);
-
-    port.onDisconnect.addListener((): void => {
-      this.cancelSubscription(id);
-    });
-
-    return this.#koniState.mintCampaignService.unlockDotCampaign.getMintedNft(transactionId);
-  }
+  // private unlockDotCheckCanMint ({ address, network, slug }: RequestUnlockDotCheckCanMint) {
+  //   return this.#koniState.mintCampaignService.unlockDotCampaign.canMint(address, slug, network);
+  // }
+  //
+  // private unlockDotSubscribeMintedData (id: string, port: chrome.runtime.Port, { transactionId }: RequestUnlockDotSubscribeMintedData) {
+  //   const cb = createSubscription<'pri(campaign.unlockDot.subscribe)'>(id, port);
+  //
+  //   const subscription = this.#koniState.mintCampaignService.unlockDotCampaign.subscribeMintedNft(transactionId, cb);
+  //
+  //   this.createUnsubscriptionHandle(id, subscription.unsubscribe);
+  //
+  //   port.onDisconnect.addListener((): void => {
+  //     this.cancelSubscription(id);
+  //   });
+  //
+  //   return this.#koniState.mintCampaignService.unlockDotCampaign.getMintedNft(transactionId);
+  // }
 
   private async subscribeProcessingBanner (id: string, port: chrome.runtime.Port) {
     const cb = createSubscription<'pri(campaign.banner.subscribe)'>(id, port);
@@ -4012,46 +4011,46 @@ export default class KoniExtension {
   /* Campaign */
 
   /* History */
-  private async subscribeHistory (id: string, port: chrome.runtime.Port): Promise<TransactionHistoryItem[]> {
-    const cb = createSubscription<'pri(transaction.history.getSubscription)'>(id, port);
-
-    const historySubject = await this.#koniState.historyService.getHistorySubject();
-
-    const subscription = historySubject.subscribe((histories) => {
-      const addresses = keyring.getAccounts().map((a) => a.address);
-
-      // Re-filter
-      cb(histories.filter((item) => addresses.some((address) => isSameAddress(item.address, address))));
-    });
-
-    this.createUnsubscriptionHandle(id, subscription.unsubscribe);
-
-    port.onDisconnect.addListener((): void => {
-      this.cancelSubscription(id);
-    });
-
-    const addresses = keyring.getAccounts().map((a) => a.address);
-
-    // Re-filter
-    return historySubject.getValue().filter((item) => addresses.some((address) => isSameAddress(item.address, address)));
-  }
-
-  private subscribeHistoryByChainAndAddress ({ address, chain }: RequestSubscribeHistory, id: string, port: chrome.runtime.Port): ResponseSubscribeHistory {
-    const cb = createSubscription<'pri(transaction.history.subscribe)'>(id, port);
-
-    const subscribeHistoriesResponse = this.#koniState.historyService.subscribeHistories(chain, address, cb);
-
-    this.createUnsubscriptionHandle(id, subscribeHistoriesResponse.unsubscribe);
-
-    port.onDisconnect.addListener((): void => {
-      this.cancelSubscription(id);
-    });
-
-    return {
-      id,
-      items: subscribeHistoriesResponse.value
-    };
-  }
+  // private async subscribeHistory (id: string, port: chrome.runtime.Port): Promise<TransactionHistoryItem[]> {
+  //   const cb = createSubscription<'pri(transaction.history.getSubscription)'>(id, port);
+  //
+  //   const historySubject = await this.#koniState.historyService.getHistorySubject();
+  //
+  //   const subscription = historySubject.subscribe((histories) => {
+  //     const addresses = keyring.getAccounts().map((a) => a.address);
+  //
+  //     // Re-filter
+  //     cb(histories.filter((item) => addresses.some((address) => isSameAddress(item.address, address))));
+  //   });
+  //
+  //   this.createUnsubscriptionHandle(id, subscription.unsubscribe);
+  //
+  //   port.onDisconnect.addListener((): void => {
+  //     this.cancelSubscription(id);
+  //   });
+  //
+  //   const addresses = keyring.getAccounts().map((a) => a.address);
+  //
+  //   // Re-filter
+  //   return historySubject.getValue().filter((item) => addresses.some((address) => isSameAddress(item.address, address)));
+  // }
+  //
+  // private subscribeHistoryByChainAndAddress ({ address, chain }: RequestSubscribeHistory, id: string, port: chrome.runtime.Port): ResponseSubscribeHistory {
+  //   const cb = createSubscription<'pri(transaction.history.subscribe)'>(id, port);
+  //
+  //   const subscribeHistoriesResponse = this.#koniState.historyService.subscribeHistories(chain, address, cb);
+  //
+  //   this.createUnsubscriptionHandle(id, subscribeHistoriesResponse.unsubscribe);
+  //
+  //   port.onDisconnect.addListener((): void => {
+  //     this.cancelSubscription(id);
+  //   });
+  //
+  //   return {
+  //     id,
+  //     items: subscribeHistoriesResponse.value
+  //   };
+  // }
   /* History */
 
   /* Buy service */
@@ -4145,78 +4144,78 @@ export default class KoniExtension {
   }
 
   /* Swap service */
-  private async subscribeSwapPairs (id: string, port: chrome.runtime.Port): Promise<SwapPair[]> {
-    const cb = createSubscription<'pri(swapService.subscribePairs)'>(id, port);
-    let ready = false;
+  // private async subscribeSwapPairs (id: string, port: chrome.runtime.Port): Promise<SwapPair[]> {
+  //   const cb = createSubscription<'pri(swapService.subscribePairs)'>(id, port);
+  //   let ready = false;
+  //
+  //   await this.#koniState.swapService.waitForStarted();
+  //
+  //   const callback = (rs: SwapPair[]) => {
+  //     if (ready) {
+  //       cb(rs);
+  //     }
+  //   };
+  //
+  //   const subscription = this.#koniState.swapService.subscribeSwapPairs(callback);
+  //
+  //   this.createUnsubscriptionHandle(id, subscription.unsubscribe);
+  //
+  //   port.onDisconnect.addListener((): void => {
+  //     this.cancelSubscription(id);
+  //   });
+  //
+  //   ready = true;
+  //
+  //   return this.#koniState.swapService.getSwapPairs();
+  // }
 
-    await this.#koniState.swapService.waitForStarted();
-
-    const callback = (rs: SwapPair[]) => {
-      if (ready) {
-        cb(rs);
-      }
-    };
-
-    const subscription = this.#koniState.swapService.subscribeSwapPairs(callback);
-
-    this.createUnsubscriptionHandle(id, subscription.unsubscribe);
-
-    port.onDisconnect.addListener((): void => {
-      this.cancelSubscription(id);
-    });
-
-    ready = true;
-
-    return this.#koniState.swapService.getSwapPairs();
-  }
-
-  private async handleSwapRequest (request: SwapRequest): Promise<SwapRequestResult> {
-    return this.#koniState.swapService.handleSwapRequest(request);
-  }
-
-  private async getLatestSwapQuote (swapRequest: SwapRequest): Promise<SwapQuoteResponse> {
-    return this.#koniState.swapService.getLatestQuotes(swapRequest);
-  }
-
-  private async validateSwapProcess (params: ValidateSwapProcessParams): Promise<TransactionError[]> {
-    return this.#koniState.swapService.validateSwapProcess(params);
-  }
-
-  private async handleSwapStep (inputData: SwapSubmitParams): Promise<SWTransactionResponse> {
-    const { address, process, quote, recipient } = inputData;
-
-    if (!quote || !address || !process) {
-      return this.#koniState.transactionService
-        .generateBeforeHandleResponseErrors([new TransactionError(BasicTxErrorType.INTERNAL_ERROR)]);
-    }
-
-    const isLastStep = inputData.currentStep + 1 === process.steps.length;
-
-    const swapValidations: TransactionError[] = await this.#koniState.swapService.validateSwapProcess({ address, process, selectedQuote: quote, recipient });
-
-    if (swapValidations.length > 0) {
-      return this.#koniState.transactionService
-        .generateBeforeHandleResponseErrors(swapValidations);
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { chainType, extrinsic, extrinsicType, transferNativeAmount, txChain, txData } = await this.#koniState.swapService.handleSwapProcess(inputData);
-    // const chosenFeeToken = process.steps.findIndex((step) => step.type === SwapStepType.SET_FEE_TOKEN) > -1;
-    // const allowSkipValidation = [ExtrinsicType.SET_FEE_TOKEN, ExtrinsicType.SWAP].includes(extrinsicType);
-
-    return await this.#koniState.transactionService.handleTransaction({
-      address,
-      chain: txChain,
-      transaction: extrinsic,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      data: txData,
-      extrinsicType, // change this depends on step
-      chainType,
-      resolveOnDone: !isLastStep,
-      transferNativeAmount
-      // skipFeeValidation: chosenFeeToken && allowSkipValidation
-    });
-  }
+  // private async handleSwapRequest (request: SwapRequest): Promise<SwapRequestResult> {
+  //   return this.#koniState.swapService.handleSwapRequest(request);
+  // }
+  //
+  // private async getLatestSwapQuote (swapRequest: SwapRequest): Promise<SwapQuoteResponse> {
+  //   return this.#koniState.swapService.getLatestQuotes(swapRequest);
+  // }
+  //
+  // private async validateSwapProcess (params: ValidateSwapProcessParams): Promise<TransactionError[]> {
+  //   return this.#koniState.swapService.validateSwapProcess(params);
+  // }
+  //
+  // private async handleSwapStep (inputData: SwapSubmitParams): Promise<SWTransactionResponse> {
+  //   const { address, process, quote, recipient } = inputData;
+  //
+  //   if (!quote || !address || !process) {
+  //     return this.#koniState.transactionService
+  //       .generateBeforeHandleResponseErrors([new TransactionError(BasicTxErrorType.INTERNAL_ERROR)]);
+  //   }
+  //
+  //   const isLastStep = inputData.currentStep + 1 === process.steps.length;
+  //
+  //   const swapValidations: TransactionError[] = await this.#koniState.swapService.validateSwapProcess({ address, process, selectedQuote: quote, recipient });
+  //
+  //   if (swapValidations.length > 0) {
+  //     return this.#koniState.transactionService
+  //       .generateBeforeHandleResponseErrors(swapValidations);
+  //   }
+  //
+  //   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  //   const { chainType, extrinsic, extrinsicType, transferNativeAmount, txChain, txData } = await this.#koniState.swapService.handleSwapProcess(inputData);
+  //   // const chosenFeeToken = process.steps.findIndex((step) => step.type === SwapStepType.SET_FEE_TOKEN) > -1;
+  //   // const allowSkipValidation = [ExtrinsicType.SET_FEE_TOKEN, ExtrinsicType.SWAP].includes(extrinsicType);
+  //
+  //   return await this.#koniState.transactionService.handleTransaction({
+  //     address,
+  //     chain: txChain,
+  //     transaction: extrinsic,
+  //     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  //     data: txData,
+  //     extrinsicType, // change this depends on step
+  //     chainType,
+  //     resolveOnDone: !isLastStep,
+  //     transferNativeAmount
+  //     // skipFeeValidation: chosenFeeToken && allowSkipValidation
+  //   });
+  // }
   /* Swap service */
 
   // --------------------------------------------------------------
@@ -4686,10 +4685,10 @@ export default class KoniExtension {
 
         /* Campaign */
 
-      case 'pri(campaign.unlockDot.canMint)':
-        return this.unlockDotCheckCanMint(request as RequestUnlockDotCheckCanMint);
-      case 'pri(campaign.unlockDot.subscribe)':
-        return this.unlockDotSubscribeMintedData(id, port, request as RequestUnlockDotSubscribeMintedData);
+      // case 'pri(campaign.unlockDot.canMint)':
+      //   return this.unlockDotCheckCanMint(request as RequestUnlockDotCheckCanMint);
+      // case 'pri(campaign.unlockDot.subscribe)':
+      //   return this.unlockDotSubscribeMintedData(id, port, request as RequestUnlockDotSubscribeMintedData);
       case 'pri(campaign.popup.subscribeVisibility)':
         return this.subscribeCampaignPopupVisibility(id, port);
       case 'pri(campaign.popup.toggle)':
