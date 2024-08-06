@@ -98,14 +98,53 @@ export function SecurityContextProvider ({ children }: SecurityContextProviderPr
     setIsTokenUpdateToDate(false);
   }, []);
 
+  const openRecheckPopup = useCallback((token: string) => {
+    openAlert({
+      title: t('Apply Biometric'),
+      type: NotificationType.INFO,
+      contentTitle: t('Apply Biometric Permission'),
+      content: t('Please ensure that you have enabled biometric for this bot.'),
+      iconProps: {
+        phosphorIcon: ShieldStar,
+        weight: 'fill'
+      },
+      okButton: {
+        text: t('Apply now'),
+        icon: CheckCircle,
+        iconWeight: 'fill',
+        onClick: () => {
+          biometricHandler.setBiometricToken(token).then((rs) => {
+            if (rs) {
+              updateLocalTokenFlag().catch(console.error);
+              setIsTokenUpdateToDate(true);
+              setUsingBiometric(true);
+              setRequireSyncPassword(false);
+              localStorage.removeItem(REMIND_BIOMETRIC_TIME);
+              closeAlert();
+            }
+          }).catch(console.error);
+        }
+      }
+    });
+  }, [closeAlert, openAlert, t]);
+
   const setToken = useCallback(async (token: string) => {
+    const granted = await biometricHandler.checkAccessGranted();
+
+    if (!granted) {
+      biometricHandler.openSettings().catch(console.error);
+      openRecheckPopup(token);
+
+      return;
+    }
+
     await biometricHandler.setBiometricToken(token);
     await updateLocalTokenFlag();
     setIsTokenUpdateToDate(true);
     setUsingBiometric(true);
     setRequireSyncPassword(false);
     localStorage.removeItem(REMIND_BIOMETRIC_TIME);
-  }, []);
+  }, [openRecheckPopup]);
 
   const removeToken = useCallback(async () => {
     await biometricHandler.setBiometricToken('');
@@ -125,7 +164,7 @@ export function SecurityContextProvider ({ children }: SecurityContextProviderPr
       openAlert({
         title: t('Biometric login'),
         type: NotificationType.INFO,
-        contentTitle: 'Enable biometric login',
+        contentTitle: t('Enable biometric login'),
         content: t('Would you like to enable biometrics for your next login?'),
         iconProps: {
           phosphorIcon: ShieldStar,
@@ -149,13 +188,21 @@ export function SecurityContextProvider ({ children }: SecurityContextProviderPr
           icon: CheckCircle,
           iconWeight: 'fill',
           onClick: () => {
-            setToken(token).catch(console.error);
-            closeAlert();
+            biometricHandler.checkAccessGranted().then((granted) => {
+              if (granted) {
+                setToken(token).catch(console.error);
+                closeAlert();
+              } else {
+                biometricHandler.openSettings().catch(console.error);
+                closeAlert();
+                openRecheckPopup(token);
+              }
+            }).catch(console.error);
           }
         }
       });
     }
-  }, [closeAlert, isTokenUpdateToDate, openAlert, remindBiometricLastTime, requireSyncPassword, setToken, supportBiometric, t, useCustomPassword, usingBiometric]);
+  }, [closeAlert, isTokenUpdateToDate, openAlert, openRecheckPopup, remindBiometricLastTime, requireSyncPassword, setToken, supportBiometric, t, useCustomPassword, usingBiometric]);
 
   // Create password modal reminder
   useEffect(() => {

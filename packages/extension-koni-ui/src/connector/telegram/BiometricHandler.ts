@@ -8,12 +8,25 @@ export class BiometricHandler {
   private _deviceId: string | null = null;
   private _isSupportBiometric: boolean | null = null;
 
-  async getBiometricManager () {
-    if (!this.biometricManager) {
+  async reloadBiometricManagerInfo () {
+    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+    window.Telegram?.WebView?.postEvent('web_app_biometry_get_info', false);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 300);
+    });
+  }
+
+  async getBiometricManager (reload = false) {
+    if (!this.biometricManager || reload) {
       const biometricManager = TelegramWebApp.BiometricManager;
 
       if (!biometricManager) {
         return null;
+      }
+
+      if (reload) {
+        await this.reloadBiometricManagerInfo();
       }
 
       if (!biometricManager.isInited) {
@@ -63,7 +76,7 @@ export class BiometricHandler {
       return false;
     }
 
-    return biometricManager.isBiometricTokenSaved;
+    return biometricManager.isAccessGranted && biometricManager.isAccessRequested && biometricManager.isBiometricTokenSaved;
   }
 
   async onSetBiometricToken () {
@@ -74,26 +87,60 @@ export class BiometricHandler {
     // Remove biometric token
   }
 
-  async setBiometricToken (token: string) {
+  async checkAccessGranted () {
+    const biometricManager = await this.getBiometricManager(true);
+
+    if (!biometricManager) {
+      return false;
+    }
+
+    return biometricManager.isAccessGranted;
+  }
+
+  async checkAccessRequest () {
     const biometricManager = await this.getBiometricManager();
 
     if (!biometricManager) {
       return false;
     }
 
-    let isAccessGranted = biometricManager.isAccessGranted;
-
     if (!biometricManager.isAccessRequested) {
-      isAccessGranted = await new Promise<boolean>((resolve) => {
+      return await new Promise<boolean>((resolve) => {
         biometricManager.requestAccess({
           reason: 'Would you like to use biometric to unlock your account?'
         }, (rs) => {
           resolve(rs);
         });
       });
+    } else {
+      return true;
+    }
+  }
+
+  async openSettings () {
+    const biometricManager = await this.getBiometricManager();
+
+    if (!biometricManager) {
+      return;
     }
 
-    if (isAccessGranted) {
+    biometricManager.openSettings();
+  }
+
+  async setBiometricToken (token: string) {
+    const biometricManager = await this.getBiometricManager(true);
+
+    if (!biometricManager) {
+      return false;
+    }
+
+    if (!biometricManager.isAccessGranted) {
+      biometricManager.openSettings();
+
+      return false;
+    }
+
+    if (biometricManager.isAccessRequested) {
       const result = await new Promise<boolean>((resolve) => {
         biometricManager.updateBiometricToken(token, (applied) => {
           resolve(applied);
