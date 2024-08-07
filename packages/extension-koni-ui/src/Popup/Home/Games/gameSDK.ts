@@ -7,9 +7,9 @@ import { SWStorage } from '@subwallet/extension-base/storage';
 import { addLazy, createPromiseHandler, removeLazy } from '@subwallet/extension-base/utils';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { camelCase } from 'lodash';
 import z from 'zod';
-import {TelegramConnector} from "@subwallet/extension-koni-ui/connector/telegram";
 
 export interface GameAppOptions {
   viewport: HTMLIFrameElement;
@@ -323,14 +323,15 @@ export class GameApp {
     try {
       await this.onPlay();
 
-      this.apiSDK.reloadAccount().catch(console.error);
-
       this.gameStateHandler.resolve(state || {} as GameState<any>);
     } catch (e) {
+      this.onExit();
       telegramConnector.showAlert('Not enough energy to play', () => {
-        this.onExit();
+        console.log('alert closed');
       });
       throw e;
+    } finally {
+      this.apiSDK.reloadAccount().catch(console.error);
     }
   }
 
