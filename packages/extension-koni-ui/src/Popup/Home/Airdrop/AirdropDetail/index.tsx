@@ -98,7 +98,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 
   const fetchHistory = useCallback(async () => {
     try {
-      const data = await apiSDK.fetchAirdropHistory(currentAirdrop.airdrop_campaign_id) as AirdropRewardHistoryLog;
+      const data = await apiSDK.fetchAirdropHistory(currentAirdrop.airdrop_campaign_id);
 
       if (data) {
         setAirdropHistory(data);
@@ -179,7 +179,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const onRaffle = useCallback(async () => {
     try {
       setIsLoadingRaffle(true);
-      const raffleResult = await apiSDK.raffleAirdrop(currentAirdrop.airdrop_campaign_id) as AirdropRaffle;
+      const raffleResult = await apiSDK.raffleAirdrop(currentAirdrop.airdrop_campaign_id);
 
       setRaffle(raffleResult);
       activeModal(rewardModalId);

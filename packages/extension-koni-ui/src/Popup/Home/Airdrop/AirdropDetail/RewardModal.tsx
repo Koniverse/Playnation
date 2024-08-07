@@ -44,6 +44,10 @@ function Component (props: Props): React.ReactElement<Props> {
   const [isShareClaimed, setIsShareClaimed] = useState<boolean>(false);
   const [loadingShare, setLoadingShare] = useState(false);
 
+  const _onClaim = useCallback(() => {
+    onClaim();
+  }, [onClaim]);
+
   const onClickShare = useCallback(async () => {
     if (!currentAirdrop) {
       return;
@@ -126,7 +130,7 @@ function Component (props: Props): React.ReactElement<Props> {
                     />
                   }
                   loading={isLoading}
-                  onClick={onClaim}
+                  onClick={_onClaim}
                   shape={'round'}
                   size={'sm'}
                 >
