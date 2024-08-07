@@ -318,9 +318,17 @@ export class GameApp {
       state = storageState;
     }
 
-    await this.onPlay();
+    try {
+      await this.onPlay();
 
-    this.gameStateHandler.resolve(state || {} as GameState<any>);
+      this.onGetPlayer().catch(console.error);
+
+      this.gameStateHandler.resolve(state || {} as GameState<any>);
+    } catch (e) {
+      alert('Not enough energy to play');
+      this.onExit();
+      throw e;
+    }
   }
 
   private async _onMessage (event: MessageEvent) {
