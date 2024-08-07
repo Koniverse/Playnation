@@ -16,7 +16,7 @@ import styled from 'styled-components';
 
 type Props = {
   item: AirdropRewardHistoryLog,
-  onClaim: (airdrop_record_id: number) => void;
+  onClaim: (airdrop_record_id: number) => Promise<void>;
 } & ThemeProps;
 
 const Component = ({ className, item, onClaim }: Props): React.ReactElement => {
@@ -24,16 +24,16 @@ const Component = ({ className, item, onClaim }: Props): React.ReactElement => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const logoMaps = useSelector((state: RootState) => state.settings.logoMaps).assetLogoMap;
 
-  const _onClaim = useCallback(async (airdropRcordId: number) => {
+  const _onClaim = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      await onClaim(airdropRcordId);
+      await onClaim(item.id);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
     }
-  }, [onClaim]);
+  }, [item.id, onClaim]);
 
   const renderDate = () => {
     let content: string;
@@ -94,7 +94,7 @@ const Component = ({ className, item, onClaim }: Props): React.ReactElement => {
           <Button
             className={'-primary-2'}
             loading={isLoading}
-            onClick={() => _onClaim(item.id)}
+            onClick={_onClaim}
             shape={'round'}
             size={'xs'}
           >

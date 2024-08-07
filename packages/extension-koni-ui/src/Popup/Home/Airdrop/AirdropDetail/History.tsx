@@ -11,7 +11,7 @@ import styled from 'styled-components';
 
 type Props = ThemeProps & {
   airdropHistory: AirdropRewardHistoryLog | null;
-  onClaim: (airdrop_record_id: number) => void;
+  onClaim: (airdrop_record_id: number) => Promise<void>;
 };
 
 function Component ({ airdropHistory, className, onClaim }: Props) {
