@@ -9,6 +9,7 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { camelCase } from 'lodash';
 import z from 'zod';
+import {TelegramConnector} from "@subwallet/extension-koni-ui/connector/telegram";
 
 export interface GameAppOptions {
   viewport: HTMLIFrameElement;
@@ -18,6 +19,7 @@ export interface GameAppOptions {
 }
 
 const cloudStorage = SWStorage.instance;
+const telegramConnector = TelegramConnector.instance;
 
 export class GameApp {
   private listener = this._onMessage.bind(this);
@@ -325,8 +327,9 @@ export class GameApp {
 
       this.gameStateHandler.resolve(state || {} as GameState<any>);
     } catch (e) {
-      alert('Not enough energy to play');
-      this.onExit();
+      telegramConnector.showAlert('Not enough energy to play', () => {
+        this.onExit();
+      });
       throw e;
     }
   }
