@@ -321,7 +321,7 @@ export class GameApp {
     try {
       await this.onPlay();
 
-      this.onGetPlayer().catch(console.error);
+      this.apiSDK.reloadAccount().catch(console.error);
 
       this.gameStateHandler.resolve(state || {} as GameState<any>);
     } catch (e) {

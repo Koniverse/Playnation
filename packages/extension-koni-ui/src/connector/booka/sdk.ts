@@ -199,7 +199,7 @@ export class BookaSdk {
     return await response.json() as T;
   }
 
-  private async reloadAccount () {
+  async reloadAccount () {
     const account = this.account;
     const newAccountData = await this.getRequest<Omit<BookaAccount, 'token'>>(`${GAME_API_HOST}/api/account/get-attribute`);
 
