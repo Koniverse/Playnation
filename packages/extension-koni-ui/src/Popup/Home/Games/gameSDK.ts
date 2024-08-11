@@ -270,6 +270,11 @@ export class GameApp {
 
   async getLatestGameState () {
     const skd = this.apiSDK;
+
+    while (!this.currentGameInfo?.id) {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    }
+
     const gameId = this.currentGameInfo.id;
 
     if (this.currentGameInfo.gameType !== 'farming') {
@@ -331,7 +336,7 @@ export class GameApp {
       });
       throw e;
     } finally {
-      this.apiSDK.reloadAccount().catch(console.error);
+      await this.apiSDK.reloadAccount().catch(console.error);
     }
   }
 
