@@ -138,10 +138,11 @@ export function SecurityContextProvider ({ children }: SecurityContextProviderPr
       return;
     }
 
-    await biometricHandler.setBiometricToken(token);
+    const rs = await biometricHandler.setBiometricToken(token);
+
     await updateLocalTokenFlag();
     setIsTokenUpdateToDate(true);
-    setUsingBiometric(true);
+    setUsingBiometric(rs);
     setRequireSyncPassword(false);
     localStorage.removeItem(REMIND_BIOMETRIC_TIME);
   }, [openRecheckPopup]);

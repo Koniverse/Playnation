@@ -143,7 +143,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
                   size={'sm'}
                   type={'ghost'}
                 >
-                  {t('Login with biometric')}
+                  {t('Log in with biometrics')}
                 </Button>
               </Form.Item>)}
             </div>
@@ -156,7 +156,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
                 loading={loading}
                 shape={'round'}
               >
-                {t('Login')}
+                {t('Log in')}
               </Button>
             </Form.Item>
           </Form>

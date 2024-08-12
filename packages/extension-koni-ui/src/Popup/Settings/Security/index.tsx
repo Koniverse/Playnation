@@ -244,7 +244,7 @@ const Component: React.FC<Props> = (props: Props) => {
                   weight='fill'
                 />
               )}
-              name={t('Use Biometric')}
+              name={t('Face ID / Touch ID')}
               rightItem={(
                 <Switch
                   checked={usingBiometric}

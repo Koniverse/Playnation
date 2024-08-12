@@ -88,7 +88,13 @@ export class BiometricHandler {
   }
 
   async checkAccessGranted () {
-    const biometricManager = await this.getBiometricManager(true);
+    const requested = await this.checkAccessRequest();
+
+    if (!requested) {
+      return false;
+    }
+
+    const biometricManager = await this.getBiometricManager();
 
     if (!biometricManager) {
       return false;
@@ -104,7 +110,9 @@ export class BiometricHandler {
       return false;
     }
 
-    if (!biometricManager.isAccessRequested) {
+    if (biometricManager.isAccessRequested) {
+      return true;
+    } else {
       return await new Promise<boolean>((resolve) => {
         biometricManager.requestAccess({
           reason: 'Would you like to use biometric to unlock your account?'
@@ -112,8 +120,6 @@ export class BiometricHandler {
           resolve(rs);
         });
       });
-    } else {
-      return true;
     }
   }
 
@@ -134,7 +140,9 @@ export class BiometricHandler {
       return false;
     }
 
-    if (!biometricManager.isAccessGranted) {
+    const isGranted = await this.checkAccessGranted();
+
+    if (!isGranted) {
       biometricManager.openSettings();
 
       return false;
