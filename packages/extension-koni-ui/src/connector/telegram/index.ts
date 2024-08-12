@@ -25,8 +25,19 @@ export class TelegramConnector {
     this.supportCloudStorage = versionNum >= 609;
     this.supportModal = versionNum >= 602;
     this.supportBasicMethod = versionNum >= 601;
+    this.syncRootViewPort();
 
     console.log('TelegramConnector', this._version, this.supportCloudStorage, this.supportModal, this.supportBasicMethod);
+  }
+
+  syncRootViewPort () {
+    const rootElem = document.getElementById('root');
+
+    rootElem && TelegramWebApp.onEvent('viewportChanged', (rs) => {
+      if (rs.isStateStable) {
+        rootElem.style.height = `${TelegramWebApp.viewportStableHeight}px`;
+      }
+    });
   }
 
   get userInfo () {
