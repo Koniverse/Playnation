@@ -3,6 +3,8 @@
 
 // Interact with Telegram with fallback
 import { TelegramWebApp } from '@subwallet/extension-base/utils/telegram';
+import { isIos } from '@subwallet/extension-koni-ui/utils';
+import { versionCompare } from '@subwallet/extension-koni-ui/utils/common/version';
 
 export interface TelegramThemeConfig {
   headerColor: string;
@@ -19,25 +21,51 @@ export class TelegramConnector {
 
   constructor () {
     this._version = TelegramWebApp.version;
-    const versions = this._version.split('.').map((v) => parseInt(v, 10));
-    const versionNum = versions[0] * 100 + versions[1];
 
-    this.supportCloudStorage = versionNum >= 609;
-    this.supportModal = versionNum >= 602;
-    this.supportBasicMethod = versionNum >= 601;
+    this.supportCloudStorage = this.versionAtLeast('6.9');
+    this.supportModal = this.versionAtLeast('6.2');
+    this.supportBasicMethod = this.versionAtLeast('6.1');
     this.syncRootViewPort();
 
     console.log('TelegramConnector', this._version, this.supportCloudStorage, this.supportModal, this.supportBasicMethod);
   }
 
+  versionAtLeast (ver: string) {
+    return versionCompare(this._version, ver) >= 0;
+  }
+
   syncRootViewPort () {
+    const bodyElem = document.body;
     const rootElem = document.getElementById('root');
+    const isIphone = isIos();
 
     rootElem && TelegramWebApp.onEvent('viewportChanged', (rs) => {
-      if (rs.isStateStable) {
-        rootElem.style.height = `${TelegramWebApp.viewportStableHeight}px`;
+      const currentHeight = TelegramWebApp.viewportHeight || 0;
+
+      if (currentHeight < 600) {
+        bodyElem.style.height = `${currentHeight + 1}px`;
+      } else {
+        bodyElem.style.height = '100vh';
+      }
+
+      if (isIphone) {
+        setTimeout(() => {
+          window.scrollTo(0, 1);
+        }, 600);
       }
     });
+
+    // debugElem && rootElem && visualViewport && visualViewport.addEventListener('resize', (rs) => {
+    //   debugElem.innerText = JSON.stringify({
+    //     visualViewport: {
+    //       width: visualViewport.width,
+    //       height: visualViewport.height
+    //     }
+    //   });
+    //   if (visualViewport) {
+    //     rootElem.style.height = `${visualViewport?.height}px`;
+    //   }
+    // });
   }
 
   get userInfo () {

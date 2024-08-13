@@ -35,7 +35,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 
   const [loading, setLoading] = useState(false);
   const [isDisable, setIsDisable] = useState(true);
-  const { getToken, onUnlockSuccess, reportWrongBiometric, usingBiometric, isTokenUpdateToDate } = useBiometric();
+  const { getToken, isTokenUpdateToDate, onUnlockSuccess, reportWrongBiometric, usingBiometric } = useBiometric();
   const { unlock } = useUILock();
 
   const onUpdate: FormCallbacks<LoginFormState>['onFieldsChange'] = useCallback((changedFields: FormFieldData[], allFields: FormFieldData[]) => {
