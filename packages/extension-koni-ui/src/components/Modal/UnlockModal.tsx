@@ -118,7 +118,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       className={className}
       id={UNLOCK_MODAL_ID}
       onCancel={closeModal}
-      title={t('Enter Password')}
+      title={t('Enter password')}
       zIndex={9999}
     >
       <div className='body-container'>

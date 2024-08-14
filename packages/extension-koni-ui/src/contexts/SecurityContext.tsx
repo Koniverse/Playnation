@@ -100,13 +100,21 @@ export function SecurityContextProvider ({ children }: SecurityContextProviderPr
 
   const openRecheckPopup = useCallback((token: string) => {
     openAlert({
-      title: t('Apply Biometric'),
+      title: t('Apply biometric login'),
       type: NotificationType.INFO,
-      contentTitle: t('Apply Biometric Permission'),
-      content: t('Please ensure that you have enabled biometric for this bot.'),
+      contentTitle: t('2 layers of biometric login permission'),
+      content: t('Since Playnation lives on Telegram, you need to toggle on biometric login on Telegram (Biometry) first before applying to Playnation.'),
       iconProps: {
         phosphorIcon: ShieldStar,
         weight: 'fill'
+      },
+      cancelButton: {
+        text: t('Cancel'),
+        icon: XCircle,
+        iconWeight: 'fill',
+        onClick: () => {
+          closeAlert();
+        }
       },
       okButton: {
         text: t('Apply now'),
