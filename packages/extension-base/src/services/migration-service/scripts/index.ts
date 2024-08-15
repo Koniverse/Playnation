@@ -9,6 +9,8 @@ import MigrateRemoveGenesisHash from '@subwallet/extension-base/services/migrati
 import MigrateTransactionHistoryBySymbol from '@subwallet/extension-base/services/migration-service/scripts/MigrateTransactionHistoryBySymbol';
 
 import BaseMigrationJob from '../Base';
+import BeforeCreditcoinCampaign2
+  from "@subwallet/extension-base/services/migration-service/scripts/BeforeCreditcoinCampaign2";
 
 export const EVERYTIME = '__everytime__';
 
@@ -42,5 +44,6 @@ export default <Record<string, typeof BaseMigrationJob>>{
   '1.1.69-02': MigrateTransactionHistoryBySymbol,
   '1.1.69-04': MigrateRemoveGenesisHash,
   '1.2.10-p3': BeforeVaraCampaign,
-  '1.2.10-p4': BeforeCreditcoinCampaign
+  '1.2.10-p4': BeforeCreditcoinCampaign,
+  '1.2.10-p5': BeforeCreditcoinCampaign2
 };

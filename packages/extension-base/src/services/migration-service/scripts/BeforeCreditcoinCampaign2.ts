@@ -3,11 +3,11 @@
 
 import BaseMigrationJob from '@subwallet/extension-base/services/migration-service/Base';
 
-export default class BeforeCreditcoinCampaign extends BaseMigrationJob {
+export default class BeforeCreditcoinCampaign2 extends BaseMigrationJob {
   public override async run (): Promise<void> {
     const state = this.state;
 
-    // await state.chainService.updateAssetSetting('creditcoin-NATIVE-CTC', { visible: true });
-    await state.chainService.updateAssetSetting('creditcoinTest-NATIVE-CTC', { visible: true });
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    state.chainService.disableChain('creditcoin');
   }
 }

@@ -12,8 +12,26 @@ export const openInNewTab = (url: string) => {
   };
 };
 
+export const BOWER_PARSER = Bowser.getParser(window.navigator.userAgent);
+
 export const getBrowserName = (): string => {
-  return (localStorage.getItem('browserInfo') || Bowser.getParser(window.navigator.userAgent).getBrowserName());
+  return (localStorage.getItem('browserInfo') || BOWER_PARSER.getBrowserName());
+};
+
+export const isMobile = (): boolean => {
+  return BOWER_PARSER.getPlatformType(true) === 'mobile';
+};
+
+export const isAndroid = (): boolean => {
+  return BOWER_PARSER.getOSName(true) === 'android';
+};
+
+export const isIos = (): boolean => {
+  return BOWER_PARSER.getOSName(true) === 'ios';
+};
+
+export const isDesktop = (): boolean => {
+  return ['window', 'macos', 'linux'].includes(BOWER_PARSER.getOSName(true));
 };
 
 export const isFirefox = (): boolean => {
@@ -21,7 +39,7 @@ export const isFirefox = (): boolean => {
 };
 
 export const getVersionBrowser = (): string[] => {
-  const browser = Bowser.getParser(window.navigator.userAgent);
+  const browser = BOWER_PARSER;
   const browserName = browser.getBrowserName();
   const version = browser.getBrowserVersion();
 

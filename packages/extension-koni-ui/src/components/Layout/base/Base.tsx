@@ -39,16 +39,6 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
   const tabBarItems = useMemo((): Array<Omit<SwTabBarItem, 'onClick'> & { url: string }> => ([
     {
       icon: {
-        type: 'phosphor',
-        phosphorIcon: Wallet,
-        weight: 'fill'
-      },
-      label: t('Wallet'),
-      key: 'tokens',
-      url: '/home/tokens'
-    },
-    {
-      icon: {
         type: 'customIcon',
         customIcon: <GameSVG />
       },
@@ -95,6 +85,16 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
       label: t('Airdrop'),
       key: 'airdrop',
       url: '/home/airdrop'
+    },
+    {
+      icon: {
+        type: 'phosphor',
+        phosphorIcon: Wallet,
+        weight: 'fill'
+      },
+      label: t('Wallet'),
+      key: 'tokens',
+      url: '/home/tokens'
     }
     // {
     //   icon: {

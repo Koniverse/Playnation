@@ -98,7 +98,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 
   const fetchHistory = useCallback(async () => {
     try {
-      const data = await apiSDK.fetchAirdropHistory(currentAirdrop.airdrop_campaign_id) as AirdropRewardHistoryLog;
+      const data = await apiSDK.fetchAirdropHistory(currentAirdrop.airdrop_campaign_id);
 
       if (data) {
         setAirdropHistory(data);
@@ -179,7 +179,7 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
   const onRaffle = useCallback(async () => {
     try {
       setIsLoadingRaffle(true);
-      const raffleResult = await apiSDK.raffleAirdrop(currentAirdrop.airdrop_campaign_id) as AirdropRaffle;
+      const raffleResult = await apiSDK.raffleAirdrop(currentAirdrop.airdrop_campaign_id);
 
       setRaffle(raffleResult);
       activeModal(rewardModalId);
@@ -204,10 +204,10 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
     try {
       let airdropRecordLogId;
 
-      if (raffle) {
-        airdropRecordLogId = raffle.airdropRecordLogId;
-      } else if (airdropRecordId !== undefined) {
+      if (airdropRecordId !== undefined) {
         airdropRecordLogId = airdropRecordId;
+      } else if (raffle) {
+        airdropRecordLogId = raffle.airdropRecordLogId;
       } else {
         throw new Error('No airdrop record ID available');
       }

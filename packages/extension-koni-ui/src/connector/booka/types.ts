@@ -83,6 +83,8 @@ export interface Game {
   pointConversionRate: number;
   gameType: 'casual' | 'farming';
   leaderboard_groups: LeaderboardGroups[];
+  restrictedAccess: string[] | null;
+  restrictedAccessText: string | null;
 }
 
 export enum TaskHistoryStatus {
