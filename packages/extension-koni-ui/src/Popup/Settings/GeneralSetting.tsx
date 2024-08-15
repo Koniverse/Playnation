@@ -244,7 +244,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         title={t('Wallet theme')}
       />
 
-      {false && <SettingItem
+      <SettingItem
         className={'__setting-item setting-group-item'}
         leftItemIcon={(
           <BackgroundIcon
@@ -263,7 +263,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
             type='phosphor'
           />
         }
-      />}
+      />
     </div>
   );
 }
