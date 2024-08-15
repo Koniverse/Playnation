@@ -5,7 +5,7 @@ import { InGameItem } from '@playnation/game-sdk';
 import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
-import { AccountRankType, AirdropCampaign, AirdropEligibility, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -199,7 +199,7 @@ export class BookaSdk {
     return await response.json() as T;
   }
 
-  private async reloadAccount () {
+  async reloadAccount () {
     const account = this.account;
     const newAccountData = await this.getRequest<Omit<BookaAccount, 'token'>>(`${GAME_API_HOST}/api/account/get-attribute`);
 
@@ -767,7 +767,7 @@ export class BookaSdk {
   // airdrop raffle
   async raffleAirdrop (campaignId: number) {
     try {
-      const raffle = await this.postRequest(`${GAME_API_HOST}/api/airdrop/raffle`, { campaign_id: campaignId });
+      const raffle = await this.postRequest<AirdropRaffle>(`${GAME_API_HOST}/api/airdrop/raffle`, { campaign_id: campaignId });
 
       await this.fetchAirdropCampaign();
       await this.reloadAccount();
@@ -782,7 +782,7 @@ export class BookaSdk {
   // airdrop history
   async fetchAirdropHistory (campaignId: number) {
     try {
-      return await this.postRequest(`${GAME_API_HOST}/api/airdrop/history`, { campaign_id: campaignId });
+      return await this.postRequest<AirdropRewardHistoryLog>(`${GAME_API_HOST}/api/airdrop/history`, { campaign_id: campaignId });
     } catch (error) {
       console.error('Error in fetchAirdropHistory:', error);
       throw error;

@@ -7,6 +7,7 @@ import { SWStorage } from '@subwallet/extension-base/storage';
 import { addLazy, createPromiseHandler, removeLazy } from '@subwallet/extension-base/utils';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { camelCase } from 'lodash';
 import z from 'zod';
 
@@ -18,6 +19,7 @@ export interface GameAppOptions {
 }
 
 const cloudStorage = SWStorage.instance;
+const telegramConnector = TelegramConnector.instance;
 
 export class GameApp {
   private listener = this._onMessage.bind(this);
@@ -268,6 +270,11 @@ export class GameApp {
 
   async getLatestGameState () {
     const skd = this.apiSDK;
+
+    while (!this.currentGameInfo?.id) {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    }
+
     const gameId = this.currentGameInfo.id;
 
     if (this.currentGameInfo.gameType !== 'farming') {
@@ -318,9 +325,19 @@ export class GameApp {
       state = storageState;
     }
 
-    await this.onPlay();
+    try {
+      await this.onPlay();
 
-    this.gameStateHandler.resolve(state || {} as GameState<any>);
+      this.gameStateHandler.resolve(state || {} as GameState<any>);
+    } catch (e) {
+      this.onExit();
+      telegramConnector.showAlert('Not enough energy to play', () => {
+        console.log('alert closed');
+      });
+      throw e;
+    } finally {
+      await this.apiSDK.reloadAccount().catch(console.error);
+    }
   }
 
   private async _onMessage (event: MessageEvent) {

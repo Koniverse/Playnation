@@ -215,7 +215,6 @@ const Component = ({ className }: Props): React.ReactElement => {
 
     const taskListSub = apiSDK.subscribeTaskList().subscribe((data) => {
       clearInterval(taskListUpdaterInterval);
-      console.log('data', data)
 
       setTaskCategoryInfoMap(getTaskCategoryInfoMap(data));
 

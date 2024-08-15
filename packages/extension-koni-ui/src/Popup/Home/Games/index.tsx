@@ -12,7 +12,7 @@ import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/Wallet
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
+import { isDesktop, isMobile, populateTemplateString } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
@@ -76,8 +76,34 @@ const Component = ({ className }: Props): React.ReactElement => {
     }, 600);
   }, []);
 
+  const checkAccess = useCallback((game: Game) => {
+    const restrictedAccess = game.restrictedAccess || [];
+
+    if (restrictedAccess.length > 0) {
+      if (isDesktop() && restrictedAccess.indexOf('desktop') > -1) {
+        return false;
+      }
+
+      if (isMobile() && restrictedAccess.indexOf('mobile') > -1) {
+        return false;
+      }
+    }
+
+    return true;
+  }, []);
+
   const playGame = useCallback((game: Game) => {
     return () => {
+      if (!checkAccess(game)) {
+        const alertContent = game.restrictedAccessText || 'This game is not available on your device';
+
+        telegramConnector.showAlert(alertContent, () => {
+          // Do nothing
+        });
+
+        return;
+      }
+
       setCurrentGame(game);
 
       const checkInterval = setInterval(() => {
@@ -95,7 +121,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         }
       }, 30);
     };
-  }, [exitGame]);
+  }, [checkAccess, exitGame]);
 
   // @ts-ignore
   const onOpenShop = useCallback((gameId?: number) => {
