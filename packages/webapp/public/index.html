@@ -41,6 +41,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
+  <!-- Import base CSS -->
+  <link href="/fonts/PlusJakartaSans/index.css" rel="stylesheet">
+  <link href="/assets/reset.css?v=3.02" rel="stylesheet">
+
   <style>
     .startup-screen {
       overflow: hidden;
@@ -111,12 +115,34 @@
         top: 335px;
       }
     }
+
+    /* Fix ios screen height */
+    :root {
+      --playnation-view-height: 100%;
+      --playnation-keyboard-height: 0;
+    }
+
+    body {
+      background-color: #F0F7F8;
+      width: 100vw;
+      height: var(--playnation-view-height);
+      overflow: hidden;
+    }
+
+    body.platform-ios {
+      transition: height 0.3s;
+    }
+
+    #popup-container > .ant-sw-modal-root > .ant-sw-modal-wrap {
+      height: var(--playnation-view-height);
+    }
+
+    .platform-ios #popup-container > .ant-sw-modal-root > .ant-sw-modal-wrap {
+      transition: height 0.3s;
+    }
+
+
   </style>
-
-  <!-- Import base CSS -->
-  <link href="/fonts/PlusJakartaSans/index.css" rel="stylesheet">
-  <link href="/assets/reset.css?v=3.02" rel="stylesheet">
-
   <script src="https://telegram.org/js/telegram-web-app.js?v=7.7"></script>
 
   <!-- Google tag (gtag.js) -->
@@ -162,13 +188,9 @@
     }
 
     checkForUpdates()
-
   </script>
-
-  <!-- Import main JS logic -->
 </head>
-
-<body style="background-color: #F0F7F8; width: 100vw; height: 100vh; overflow: hidden">
+<body>
   <div id="root"></div>
   <div id="loading-placeholder" class="startup-screen" style="position:fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000">
     <div class="startup-screen-title">

@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Interact with Telegram with fallback
+import { addLazy } from '@subwallet/extension-base/utils';
 import { TelegramWebApp } from '@subwallet/extension-base/utils/telegram';
-import { isIos } from '@subwallet/extension-koni-ui/utils';
+import { BOWER_PARSER, isIos } from '@subwallet/extension-koni-ui/utils';
 import { versionCompare } from '@subwallet/extension-koni-ui/utils/common/version';
 
 export interface TelegramThemeConfig {
@@ -39,33 +40,59 @@ export class TelegramConnector {
     const rootElem = document.getElementById('root');
     const isIphone = isIos();
 
-    rootElem && TelegramWebApp.onEvent('viewportChanged', (rs) => {
-      const currentHeight = TelegramWebApp.viewportHeight || 0;
+    bodyElem.classList.add(`platform-${BOWER_PARSER.getOSName(true)}`);
+    document.documentElement.style.setProperty('--playnation-view-height', '100%');
+    document.documentElement.style.setProperty('--playnation-keyboard-height', '0');
 
-      if (currentHeight < 600) {
-        bodyElem.style.height = `${currentHeight + 1}px`;
-      } else {
-        bodyElem.style.height = '100vh';
-      }
+    let handleScroll = 0;
+    let lastHandleScroll = handleScroll;
+
+    if (isIphone) {
+      window.onscroll = (ev) => {
+        if (window.scrollY !== 0) {
+          handleScroll++;
+
+          addLazy('window-scroll-back', () => {
+            window.scroll(0, 0);
+            // handleScroll = null;
+          }, 30);
+        }
+      };
+    }
+
+    rootElem && TelegramWebApp.onEvent('viewportChanged', (rs) => {
+      const windowHeight = window.innerHeight;
+      const currentHeight = TelegramWebApp.viewportHeight || 600;
+      const keyboardHeight = windowHeight - currentHeight;
+      const isSmallScreen = currentHeight < 600 && currentHeight > 100;
+      const updateValue = isSmallScreen ? `${currentHeight}px` : '100%';
+      const keyboardValue = isSmallScreen ? `${keyboardHeight}px` : '0';
 
       if (isIphone) {
-        setTimeout(() => {
-          window.scrollTo(0, 1);
-        }, 600);
+        (async () => {
+          if (isSmallScreen) {
+            await new Promise((resolve) => {
+              setTimeout(resolve, 100);
+            });
+
+            // Wait for scroll back
+            if (lastHandleScroll !== handleScroll) {
+              await new Promise((resolve) => {
+                setTimeout(resolve, 330);
+              });
+            }
+          }
+
+          lastHandleScroll = handleScroll;
+
+          document.documentElement.style.setProperty('--playnation-view-height', updateValue);
+          document.documentElement.style.setProperty('--playnation-keyboard-height', keyboardValue);
+        })().catch(console.error);
+      } else {
+        document.documentElement.style.setProperty('--playnation-view-height', updateValue);
+        document.documentElement.style.setProperty('--playnation-keyboard-height', keyboardValue);
       }
     });
-
-    // debugElem && rootElem && visualViewport && visualViewport.addEventListener('resize', (rs) => {
-    //   debugElem.innerText = JSON.stringify({
-    //     visualViewport: {
-    //       width: visualViewport.width,
-    //       height: visualViewport.height
-    //     }
-    //   });
-    //   if (visualViewport) {
-    //     rootElem.style.height = `${visualViewport?.height}px`;
-    //   }
-    // });
   }
 
   get userInfo () {
