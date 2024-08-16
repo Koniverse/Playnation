@@ -67,6 +67,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
   })();
 
   const currentTabInfo = useMemo(() => {
+    console.log('currentTabInfocurrentTabInfo')
     return tabGroupItems.find((i) => i.value === selectedTab);
   }, [selectedTab, tabGroupItems]);
 
@@ -88,9 +89,13 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
 
   useEffect(() => {
     let leaderboardSub: { unsubscribe: () => void } | null = null;
+    console.log('subscribeLeaderboard')
 
-    if (currentTabInfo) {
+    if (currentTabInfo ) {
       leaderboardSub = apiSDK.subscribeLeaderboard(currentTabInfo.leaderboardInfo.id, currentTabInfo.leaderboardInfo.context).subscribe((data) => {
+        console.log(
+          'vvsetLeaderboardItemssetLeaderboardItems', currentTabInfo, data.length
+        )
         setLeaderboardItems(data);
 
         // Find mine
@@ -107,7 +112,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
         leaderboardSub.unsubscribe();
       }
     };
-  }, [currentTabInfo, gameId]);
+  }, [currentTabInfo]);
 
   return <div className={className}>
     {
