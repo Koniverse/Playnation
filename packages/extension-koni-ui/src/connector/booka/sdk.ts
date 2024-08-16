@@ -648,16 +648,7 @@ export class BookaSdk {
       context
     });
 
-    if (leaderBoard) {
-      this.leaderBoardSubject.next(leaderBoard);
-    }
     return leaderBoard;
-  }
-
-  subscribeLeaderboard (id: number, context: Record<string, unknown> = {}) {
-    this.fetchLeaderboard(id, context).catch(console.error);
-
-    return this.leaderBoardSubject;
   }
 
   async fetchRankInfoMap () {

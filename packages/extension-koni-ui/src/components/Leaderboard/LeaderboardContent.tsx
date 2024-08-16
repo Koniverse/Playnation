@@ -89,24 +89,27 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
   }, [defaultSelectedTab]);
 
   useEffect(() => {
+    let cancel = false;
 
-    const subscribeLeaderboard = async () => {
-      if (currentTabInfo) {
-        const data = await apiSDK.fetchLeaderboard(currentTabInfo.leaderboardInfo.id, currentTabInfo.leaderboardInfo.context) as LeaderboardPerson[];
+    currentTabInfo && apiSDK.fetchLeaderboard(currentTabInfo.leaderboardInfo.id, currentTabInfo.leaderboardInfo.context)
+      .then((data) => {
+        if (cancel) {
+          return;
+        }
+
         setLeaderboardItems(data);
 
-        // Find mine
         const mine = data.find((item) => item.mine);
 
         if (mine) {
           setMine(mine);
         }
-      }
+      })
+      .catch(() => console.log('error'));
+
+    return () => {
+      cancel = true;
     };
-
-    subscribeLeaderboard();
-
-    return () => {};
   }, [currentTabInfo]);
 
   return <div className={className}>
