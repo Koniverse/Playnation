@@ -43,6 +43,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
   const [selectedTab, setSelectedTab] = useState<string>(defaultSelectedTab);
   const [leaderboardItems, setLeaderboardItems] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
   const [mine, setMine] = useState<LeaderboardPerson | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const filteredLeaderboardItems = leaderboardItems.filter((item) => item.point > 0);
 
@@ -67,7 +68,6 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
   })();
 
   const currentTabInfo = useMemo(() => {
-    setLeaderboardItems([]);
 
     return tabGroupItems.find((i) => i.value === selectedTab);
   }, [selectedTab, tabGroupItems]);
@@ -90,6 +90,8 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
 
   useEffect(() => {
     let cancel = false;
+    setLeaderboardItems([]);
+    setIsLoading(true);
 
     currentTabInfo && apiSDK.fetchLeaderboard(currentTabInfo.leaderboardInfo.id, currentTabInfo.leaderboardInfo.context)
       .then((data) => {
@@ -104,6 +106,8 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
         if (mine) {
           setMine(mine);
         }
+
+        setIsLoading(false);
       })
       .catch(() => console.log('error'));
 
@@ -149,6 +153,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
             leaderboardInfo={filteredLeaderboardItems[1]}
             pointIconSrc={pointIconSrc}
             rank={2}
+            isLoading={isLoading}
           />
         }
       </div>
@@ -160,6 +165,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
             leaderboardInfo={filteredLeaderboardItems[0]}
             pointIconSrc={pointIconSrc}
             rank={1}
+            isLoading={isLoading}
           />
         }
       </div>
@@ -170,6 +176,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
             leaderboardInfo={filteredLeaderboardItems[2]}
             pointIconSrc={pointIconSrc}
             rank={3}
+            isLoading={isLoading}
           />
         }
       </div>
@@ -220,7 +227,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
             key={item.rank}
           >
             <GameAccount
-              className={CN('leaderboard-item')}
+              className={CN(isLoading ? 'leaderboard-item __loading' : 'leaderboard-item')}
               isPlaceholder
               prefix={`${item.rank}`.padStart(2, '0')}
             />
