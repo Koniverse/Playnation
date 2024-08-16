@@ -54,11 +54,12 @@ export class TelegramConnector {
 
           addLazy('window-scroll-back', () => {
             window.scroll(0, 0);
-            // handleScroll = null;
           }, 30);
         }
       };
     }
+
+    let handleId = 0;
 
     rootElem && TelegramWebApp.onEvent('viewportChanged', (rs) => {
       const windowHeight = window.innerHeight;
@@ -67,6 +68,9 @@ export class TelegramConnector {
       const isSmallScreen = currentHeight < 600 && currentHeight > 100;
       const updateValue = isSmallScreen ? `${currentHeight}px` : '100%';
       const keyboardValue = isSmallScreen ? `${keyboardHeight}px` : '0';
+
+      handleId++;
+      const handlingId = handleId;
 
       if (isIphone) {
         (async () => {
@@ -84,6 +88,10 @@ export class TelegramConnector {
           }
 
           lastHandleScroll = handleScroll;
+
+          if (handlingId < handleId) {
+            return;
+          }
 
           document.documentElement.style.setProperty('--playnation-view-height', updateValue);
           document.documentElement.style.setProperty('--playnation-keyboard-height', keyboardValue);
