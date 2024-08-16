@@ -651,6 +651,7 @@ export class BookaSdk {
     if (leaderBoard) {
       this.leaderBoardSubject.next(leaderBoard);
     }
+    return leaderBoard;
   }
 
   subscribeLeaderboard (id: number, context: Record<string, unknown> = {}) {

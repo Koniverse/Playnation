@@ -68,7 +68,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
 
   const currentTabInfo = useMemo(() => {
     setLeaderboardItems([]);
-    console.log('currentTabInfocurrentTabInfo')
+
     return tabGroupItems.find((i) => i.value === selectedTab);
   }, [selectedTab, tabGroupItems]);
 
@@ -89,14 +89,10 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
   }, [defaultSelectedTab]);
 
   useEffect(() => {
-    let leaderboardSub: { unsubscribe: () => void } | null = null;
-    console.log('subscribeLeaderboard')
 
-    if (currentTabInfo ) {
-      leaderboardSub = apiSDK.subscribeLeaderboard(currentTabInfo.leaderboardInfo.id, currentTabInfo.leaderboardInfo.context).subscribe((data) => {
-        console.log(
-          'vvsetLeaderboardItemssetLeaderboardItems', currentTabInfo, data.length
-        )
+    const subscribeLeaderboard = async () => {
+      if (currentTabInfo) {
+        const data = await apiSDK.fetchLeaderboard(currentTabInfo.leaderboardInfo.id, currentTabInfo.leaderboardInfo.context) as LeaderboardPerson[];
         setLeaderboardItems(data);
 
         // Find mine
@@ -105,14 +101,12 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
         if (mine) {
           setMine(mine);
         }
-      });
-    }
-
-    return () => {
-      if (leaderboardSub) {
-        leaderboardSub.unsubscribe();
       }
     };
+
+    subscribeLeaderboard();
+
+    return () => {};
   }, [currentTabInfo]);
 
   return <div className={className}>
