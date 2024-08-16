@@ -67,6 +67,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
   })();
 
   const currentTabInfo = useMemo(() => {
+    setLeaderboardItems([]);
     console.log('currentTabInfocurrentTabInfo')
     return tabGroupItems.find((i) => i.value === selectedTab);
   }, [selectedTab, tabGroupItems]);
