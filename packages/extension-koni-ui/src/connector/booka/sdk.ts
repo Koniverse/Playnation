@@ -272,7 +272,7 @@ export class BookaSdk {
   }
 
   async completeTask (taskId: number | undefined) {
-    const taskHistoryCheck = await this.postRequest<{ completed: boolean }>(`${GAME_API_HOST}/api/task/check-complete-task`, { taskId });
+    const taskHistoryCheck = await this.postRequest<{ completed: boolean, isSubmitting: boolean }>(`${GAME_API_HOST}/api/task/check-complete-task`, { taskId });
 
     if (taskHistoryCheck && taskHistoryCheck.completed) {
       await this.fetchTaskCategoryList();
@@ -280,11 +280,9 @@ export class BookaSdk {
       await this.fetchTaskList();
 
       await this.reloadAccount();
-
-      return true;
     }
 
-    return false;
+    return taskHistoryCheck;
   }
 
   async finishTask (taskId: number, extrinsicHash: string, network: string) {
@@ -489,7 +487,7 @@ export class BookaSdk {
     const result = await signRaw({
       metadata: {
         url: 'https://playnation.app',
-        title: detectTranslate('Approve log in request'),
+        title: detectTranslate('Approve login request'),
         message: detectTranslate('Hit Approve to log in to Playnation with the following account')
       },
       payload: {

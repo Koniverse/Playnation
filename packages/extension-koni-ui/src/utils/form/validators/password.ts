@@ -25,7 +25,7 @@ export const renderBasePasswordRules = (fieldName: string, t: TFunction): FormRu
       required: true
     },
     {
-      message: t('{{fieldName}} should be at least 1 uppercase letter, 1 number, and 1 special character', { replace: { fieldName: fieldName } }),
+      message: t('{{fieldName}} should have at least 1 uppercase letter, 1 number, and 1 special character', { replace: { fieldName: fieldName } }),
       pattern: passwordRegex,
       warningOnly: true
     }
