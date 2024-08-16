@@ -1,7 +1,6 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { DataContextProvider } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { InjectContextProvider } from '@subwallet/extension-koni-ui/contexts/InjectContext';
 import { ScannerContextProvider } from '@subwallet/extension-koni-ui/contexts/ScannerContext';
@@ -15,10 +14,6 @@ import LoadingScreen from '../components/LoadingScreen';
 import { router } from './router';
 
 export default function Popup (): React.ReactElement {
-  React.useEffect(() => {
-    TelegramConnector.instance.autoActions();
-  }, []);
-
   return (
     <DataContextProvider>
       <ThemeProvider>

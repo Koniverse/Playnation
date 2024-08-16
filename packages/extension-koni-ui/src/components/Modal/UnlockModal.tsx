@@ -102,10 +102,12 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   }, [getToken, unlockWithPassword]);
 
   useEffect(() => {
-    if (usingBiometric && isTokenUpdateToDate && isLocked && checkActive(UNLOCK_MODAL_ID)) {
-      unlockWithBiometric();
-    } else {
-      focusInput(passwordInputId, 300);
+    if (checkActive(UNLOCK_MODAL_ID)) {
+      if (usingBiometric && isTokenUpdateToDate && isLocked) {
+        unlockWithBiometric();
+      } else {
+        focusInput(passwordInputId, 300);
+      }
     }
   }, [usingBiometric, isLocked, checkActive, getToken, unlockWithPassword, unlockWithBiometric, isTokenUpdateToDate]);
 

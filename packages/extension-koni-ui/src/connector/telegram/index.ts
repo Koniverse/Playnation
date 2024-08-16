@@ -26,7 +26,11 @@ export class TelegramConnector {
     this.supportCloudStorage = this.versionAtLeast('6.9');
     this.supportModal = this.versionAtLeast('6.2');
     this.supportBasicMethod = this.versionAtLeast('6.1');
-    this.syncRootViewPort();
+    this.autoActions();
+
+    setTimeout(() => {
+      this.syncRootViewPort();
+    }, 300);
 
     console.log('TelegramConnector', this._version, this.supportCloudStorage, this.supportModal, this.supportBasicMethod);
   }
@@ -41,8 +45,6 @@ export class TelegramConnector {
     const isIphone = isIos();
 
     bodyElem.classList.add(`platform-${BOWER_PARSER.getOSName(true)}`);
-    document.documentElement.style.setProperty('--playnation-view-height', '100%');
-    document.documentElement.style.setProperty('--playnation-keyboard-height', '0');
 
     let handleScroll = 0;
     let lastHandleScroll = handleScroll;
@@ -66,25 +68,23 @@ export class TelegramConnector {
       const currentHeight = TelegramWebApp.viewportHeight || 600;
       const keyboardHeight = windowHeight - currentHeight;
       const isSmallScreen = currentHeight < 600 && currentHeight > 100;
-      const updateValue = isSmallScreen ? `${currentHeight}px` : '100%';
+      const updateValue = isSmallScreen ? `${currentHeight}px` : '100vh';
       const keyboardValue = isSmallScreen ? `${keyboardHeight}px` : '0';
 
       handleId++;
       const handlingId = handleId;
 
-      if (isIphone) {
+      if (isIphone && isSmallScreen) {
         (async () => {
-          if (isSmallScreen) {
-            await new Promise((resolve) => {
-              setTimeout(resolve, 100);
-            });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 100);
+          });
 
-            // Wait for scroll back
-            if (lastHandleScroll !== handleScroll) {
-              await new Promise((resolve) => {
-                setTimeout(resolve, 330);
-              });
-            }
+          // Wait for scroll back
+          if (lastHandleScroll !== handleScroll) {
+            await new Promise((resolve) => {
+              setTimeout(resolve, 330);
+            });
           }
 
           lastHandleScroll = handleScroll;

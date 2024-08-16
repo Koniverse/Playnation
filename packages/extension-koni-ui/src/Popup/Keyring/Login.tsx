@@ -181,11 +181,11 @@ const Login = styled(Component)<Props>(({ theme: { extendToken, token } }: Props
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'center -74px',
       backgroundSize: '506px auto',
-      height: '100%',
       position: 'absolute',
-      width: '100%',
       left: 0,
-      top: 0
+      top: 0,
+      right: 0,
+      bottom: 0
     },
 
     '.title': {
