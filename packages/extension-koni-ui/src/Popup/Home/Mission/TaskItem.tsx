@@ -98,7 +98,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
             setTaskLoading(false);
 
             notify({
-              message: t('Mission in progress please wait!'),
+              message: t('Mission in progress on another device. Use one device to complete it.'),
               type: 'warning'
             });
 
