@@ -67,7 +67,7 @@ export class TelegramConnector {
       const windowHeight = window.innerHeight;
       const currentHeight = TelegramWebApp.viewportHeight || 600;
       const keyboardHeight = windowHeight - currentHeight;
-      const isSmallScreen = currentHeight < 600 && currentHeight > 100;
+      const isSmallScreen = currentHeight < 600 && TelegramWebApp.isExpanded;
       const updateValue = isSmallScreen ? `${currentHeight}px` : '100vh';
       const keyboardValue = isSmallScreen ? `${keyboardHeight}px` : '0';
 
