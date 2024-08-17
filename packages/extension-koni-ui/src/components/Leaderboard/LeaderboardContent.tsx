@@ -68,7 +68,6 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
   })();
 
   const currentTabInfo = useMemo(() => {
-
     return tabGroupItems.find((i) => i.value === selectedTab);
   }, [selectedTab, tabGroupItems]);
 
@@ -90,6 +89,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
 
   useEffect(() => {
     let cancel = false;
+
     setLeaderboardItems([]);
     setIsLoading(true);
 
@@ -149,11 +149,11 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
       <div className='top-account-item-wrapper'>
         {
           <TopAccountItem
+            isLoading={isLoading}
             isPlaceholder={!filteredLeaderboardItems[1]}
             leaderboardInfo={filteredLeaderboardItems[1]}
             pointIconSrc={pointIconSrc}
             rank={2}
-            isLoading={isLoading}
           />
         }
       </div>
@@ -161,22 +161,22 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
         {
           <TopAccountItem
             isFirst
+            isLoading={isLoading}
             isPlaceholder={!filteredLeaderboardItems[0]}
             leaderboardInfo={filteredLeaderboardItems[0]}
             pointIconSrc={pointIconSrc}
             rank={1}
-            isLoading={isLoading}
           />
         }
       </div>
       <div className='top-account-item-wrapper'>
         {
           <TopAccountItem
+            isLoading={isLoading}
             isPlaceholder={!filteredLeaderboardItems[2]}
             leaderboardInfo={filteredLeaderboardItems[2]}
             pointIconSrc={pointIconSrc}
             rank={3}
-            isLoading={isLoading}
           />
         }
       </div>
@@ -227,7 +227,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
             key={item.rank}
           >
             <GameAccount
-              className={CN(isLoading ? 'leaderboard-item __loading' : 'leaderboard-item')}
+              className={CN('leaderboard-item', { __loading: isLoading })}
               isPlaceholder
               prefix={`${item.rank}`.padStart(2, '0')}
             />

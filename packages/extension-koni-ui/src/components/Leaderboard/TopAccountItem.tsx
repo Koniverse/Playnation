@@ -57,11 +57,11 @@ const Component = ({ className, isFirst, isLoading, isPlaceholder, leaderboardIn
         </div>
       </div>
 
-      <div className={isLoading ? '__account-name __loading' : '__account-name'}>
+      <div className={CN('__account-name', { __loading: isLoading })}>
         {accountName}
       </div>
       <GamePoint
-        className={isLoading ? '__point __loading' : '__point'}
+        className={CN('__point', { __loading: isLoading })}
         iconSrc={pointIconSrc}
         point={point}
       />
