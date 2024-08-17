@@ -39,8 +39,8 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
   useEffect(() => {
     if (checking && reloadTask > 0) {
       apiSDK.completeTask(task.id)
-        .then((data: boolean) => {
-          if (data) {
+        .then((data: { completed: boolean, isSubmitting: boolean }) => {
+          if (data.completed) {
             setCompleted(true);
             setChecking(false);
             actionReloadPoint();
@@ -82,6 +82,29 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         const now = new Date();
         const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
         const data = JSON.stringify({ address, type: onChainType, date });
+
+        const checkCompleted = await apiSDK.completeTask(taskId);
+
+        if (checkCompleted) {
+          if (checkCompleted.completed) {
+            setCompleted(checkCompleted.completed);
+            setTaskLoading(false);
+
+            return;
+          }
+
+          if (checkCompleted.isSubmitting) {
+            setCompleted(false);
+            setTaskLoading(false);
+
+            notify({
+              message: t('Mission in progress on another device. Use one device to complete it.'),
+              type: 'warning'
+            });
+
+            return;
+          }
+        }
 
         res = await actionTaskOnChain(onChainType, networkKey, address, data);
 
