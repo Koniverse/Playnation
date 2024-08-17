@@ -138,6 +138,7 @@ const ConnectionDetail = new LazyLoader('ConnectionDetail', () => import('@subwa
 
 const NotFound = new LazyLoader('NotFound', () => import('@subwallet/extension-koni-ui/Popup/NotFound'));
 const AccountBanned = new LazyLoader('AccountBaned', () => import('@subwallet/extension-koni-ui/Popup/Account/AccountBanned'));
+const Maintenance = new LazyLoader('AccountBaned', () => import('@subwallet/extension-koni-ui/Popup/Maintenance'));
 
 // A Placeholder page
 export function Example () {
@@ -301,6 +302,7 @@ export const router = createBrowserRouter([
       },
       NotFound.generateRouterObject('*'),
       AccountBanned.generateRouterObject('account-banned'),
+      Maintenance.generateRouterObject('maintenance'),
       PhishingDetected.generateRouterObject(`${PHISHING_PAGE_REDIRECT}/:website`)
     ]
   }

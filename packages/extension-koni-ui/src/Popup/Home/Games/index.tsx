@@ -4,6 +4,7 @@
 import { GameAccountBlock, GameCardItem, ShopModal } from '@subwallet/extension-koni-ui/components';
 import { LeaderboardTabGroupItemType } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardContent';
 import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
+import { MetadataHandler, UpdateRecordPayload } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig, Game, GameInventoryItem, GameItem, LeaderboardGroups, LeaderboardItem, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
@@ -22,6 +23,7 @@ type Props = ThemeProps;
 const apiSDK = BookaSdk.instance;
 const shopModalId = ShopModalId;
 const telegramConnector = TelegramConnector.instance;
+const metadataHandler = MetadataHandler.instance;
 
 const orderGameList = (data: Game[]): Game[] => {
   const now = Date.now();
@@ -122,6 +124,53 @@ const Component = ({ className }: Props): React.ReactElement => {
       }, 30);
     };
   }, [checkAccess, exitGame]);
+
+  const reloadGame = useCallback((slug: string) => {
+    setCurrentGame(undefined);
+
+    apiSDK.fetchGameList().then(() => {
+      const game = apiSDK.gameList.find((g) => g.slug === slug);
+
+      if (game) {
+        playGame(game)();
+      }
+    }).catch(console.error);
+  }, [playGame]);
+
+  useEffect(() => {
+    const currentGameSlug = currentGame?.slug;
+
+    if (!currentGameSlug) {
+      return;
+    }
+
+    const listener = (data: UpdateRecordPayload) => {
+      const updateInfo = data.game?.find((g) => g.current?.slug === currentGameSlug);
+
+      if (updateInfo) {
+        const currentVersion = updateInfo.current?.version || 0;
+        const shouldUpdate = updateInfo.newVersion?.version && currentVersion < updateInfo.newVersion.version;
+        const forceUpdate = updateInfo.newVersion?.minVersion && currentVersion < updateInfo.newVersion.minVersion;
+        const updateMessage = updateInfo.updateMessage || 'New game version is available, update now!';
+
+        if (forceUpdate) {
+          telegramConnector.showAlert(updateMessage, () => {
+            reloadGame(currentGameSlug);
+          });
+        } else if (shouldUpdate) {
+          telegramConnector.showConfirmation(updateMessage, (confirm) => {
+            confirm && reloadGame(currentGameSlug);
+          });
+        }
+      }
+    };
+
+    metadataHandler.on('onUpdateRecordVersion', listener);
+
+    return () => {
+      metadataHandler.off('onUpdateRecordVersion', listener);
+    };
+  }, [currentGame, currentGame?.slug, reloadGame]);
 
   // @ts-ignore
   const onOpenShop = useCallback((gameId?: number) => {
