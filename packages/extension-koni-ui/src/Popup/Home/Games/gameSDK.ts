@@ -68,6 +68,7 @@ export class GameApp {
     const playerId = `${account?.info?.telegramId || 'player'}-${account?.info.id || 0}`;
     const gameData = (account?.gameData || []).find((item) => item.gameId === this.currentGameInfo.id);
     const point = gameData?.point || 0;
+    const highScore = gameData?.highestPoint || 0;
 
     const state = await this.gameStateHandler.promise;
 
@@ -79,6 +80,8 @@ export class GameApp {
       energy: account?.attributes?.energy || 0,
       pointConversionRate: this.currentGameInfo.pointConversionRate || 0,
       gameEnergy: this.currentGameInfo.energyPerGame,
+      totalScore: point,
+      highScore: highScore, // It should be the highest score of the player
       level: 1,
       inventory: Object.entries(this.inventoryQuantityMap)
         .map(([id, quantity]) => ({
@@ -103,17 +106,11 @@ export class GameApp {
     const tickets = Math.floor((account.attributes.energy + 0.3) / currentGame.energyPerGame);
 
     const tour: Tournament = {
-      id: 'tour1',
+      id: 1,
       name: 'Tour 01',
       startTime: new Date().toISOString(),
       endTime: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
-      entryFee: 1,
-      entryTickets: 10,
-      prizePool: {
-        total: 10
-      },
-      tickets: tickets,
-      totalPlayers: 100
+      tickets: tickets
     };
 
     return tour;
@@ -143,6 +140,7 @@ export class GameApp {
     const remainingEnergy = account.attributes.energy - currentGame.energyPerGame;
 
     const res: PlayResponse = {
+      gamePlayId: String(gamePlay.id),
       token: gamePlay.token,
       remainingTickets: Math.floor(remainingEnergy / currentGame.energyPerGame),
       energy: remainingEnergy

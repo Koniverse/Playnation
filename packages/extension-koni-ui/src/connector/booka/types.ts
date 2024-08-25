@@ -174,6 +174,7 @@ export interface GameData {
   gameId: number;
   accountId: number;
   point: number;
+  highestPoint: number;
   level: number;
   rank: number;
 }

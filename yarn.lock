@@ -4256,14 +4256,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playnation/game-sdk@npm:^1.0.9-beta.7":
-  version: 1.0.9-beta.7
-  resolution: "@playnation/game-sdk@npm:1.0.9-beta.7"
+"@playnation/game-sdk@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@playnation/game-sdk@npm:1.1.1"
   dependencies:
     "@aws-crypto/sha256-browser": ^5.2.0
-    lodash: ^4.17.21
-    zod: ^3.22.4
-  checksum: d70c726fe7f9041f8b0a4d70dff9f92e9acfe3b48881cd80518de9257a9ad19bef6431edee8744673871f6bd9f285fc1a6b27368b85281408958f15b18266d1b
+  checksum: 6004f9ef1c5a63bf9e1d077b39b644ee287cbaeaba61326409e9fea27b3656ecd99921371a3717e36462d60106c306725a1bef0ec73c722431ccd2d7c4c4924b
   languageName: node
   linkType: hard
 
@@ -6250,7 +6248,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": ^6.2.1
     "@fortawesome/react-fontawesome": ^0.2.0
     "@ledgerhq/hw-app-eth": ^6.35.0
-    "@playnation/game-sdk": ^1.0.9-beta.7
+    "@playnation/game-sdk": ^1.1.1
     "@polkadot/api-contract": ^11.0.3
     "@polkadot/hw-ledger": ^12.6.2
     "@polkadot/networks": ^12.6.2
