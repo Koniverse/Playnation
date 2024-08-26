@@ -1,16 +1,13 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { SWStorage } from '@subwallet/extension-base/storage';
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AirdropCampaign, AirdropRaffle } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, Logo, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { ArrowCircleDown, CheckCircle, ShareNetwork } from 'phosphor-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { ArrowCircleDown, CheckCircle } from 'phosphor-react';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -31,9 +28,6 @@ type RewardInfo = {
 
 export const AIRDROP_REWARD_MODAL_ID = 'AIRDROP_REWARD_MODAL_ID';
 const modalId = AIRDROP_REWARD_MODAL_ID;
-const storage = SWStorage.instance;
-const apiSDK = BookaSdk.instance;
-const telegramConnector = TelegramConnector.instance;
 
 function Component (props: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
@@ -41,42 +35,10 @@ function Component (props: Props): React.ReactElement<Props> {
   const _onClaimLater = useCallback(() => {
     onClaimLater?.();
   }, [onClaimLater]);
-  const [isShareClaimed, setIsShareClaimed] = useState<boolean>(false);
-  const [loadingShare, setLoadingShare] = useState(false);
 
   const _onClaim = useCallback(() => {
     onClaim();
   }, [onClaim]);
-
-  const onClickShare = useCallback(async () => {
-    if (!currentAirdrop) {
-      return;
-    }
-
-    const key = `isShareClaimed_${currentAirdrop.airdrop_campaign_id}`;
-
-    await storage.setItem(key, 'true');
-    setLoadingShare(true);
-    const url = await apiSDK.getShareTwitterClaimURL(currentAirdrop);
-
-    setIsShareClaimed(true);
-    setLoadingShare(false);
-
-    if (url) {
-      telegramConnector.openLink(url);
-    }
-  }, [currentAirdrop]);
-
-  useEffect(() => {
-    const checkShareClaimed = async () => {
-      const key = `isShareClaimed_${currentAirdrop.airdrop_campaign_id}`;
-      const isClaimed = await storage.getItem(key) === 'true';
-
-      setIsShareClaimed(isClaimed);
-    };
-
-    checkShareClaimed();
-  }, [currentAirdrop]);
 
   const modalFooter = (() => {
     return (
@@ -99,63 +61,40 @@ function Component (props: Props): React.ReactElement<Props> {
            {t('Close')}
          </Button>
         }
-        {raffle?.rewardType !== 'NPS' && <>
-
-          {isShareClaimed
-            ? (
-              <>
-                <Button
-                  block={true}
-                  icon={
-                    <Icon
-                      phosphorIcon={ArrowCircleDown}
-                      weight={'fill'}
-                    />
-                  }
-                  onClick={_onClaimLater}
-                  schema={'secondary'}
-                  shape={'round'}
-                  size={'sm'}
-                >
-
-                  {t('Claim later')}
-                </Button>
-                <Button
-                  block={true}
-                  icon={
-                    <Icon
-                      phosphorIcon={CheckCircle}
-                      size={'small'}
-                      weight={'fill'}
-                    />
-                  }
-                  loading={isLoading}
-                  onClick={_onClaim}
-                  shape={'round'}
-                  size={'sm'}
-                >
-                  {t('Claim')}
-                </Button>
-              </>
-            )
-            : (
-              <Button
-                block={true}
-                icon={
-                  <Icon
-                    customSize={'20px'}
-                    phosphorIcon={ShareNetwork}
-                  />
-                }
-                loading={loadingShare}
-                onClick={onClickShare}
-                shape={'round'}
-                size={'sm'}
-              >
-                {t('Share to Twitter and celebrate!')}
-              </Button>
-            )}
-        </>
+        {raffle?.rewardType !== 'NPS' &&
+          <>
+            <Button
+              block={true}
+              icon={
+                <Icon
+                  phosphorIcon={ArrowCircleDown}
+                  weight={'fill'}
+                />
+              }
+              onClick={_onClaimLater}
+              schema={'secondary'}
+              shape={'round'}
+              size={'sm'}
+            >
+              {t('Claim later')}
+            </Button>
+            <Button
+              block={true}
+              icon={
+                <Icon
+                  phosphorIcon={CheckCircle}
+                  size={'small'}
+                  weight={'fill'}
+                />
+              }
+              loading={isLoading}
+              onClick={_onClaim}
+              shape={'round'}
+              size={'sm'}
+            >
+              {t('Claim')}
+            </Button>
+          </>
         }
 
       </>
@@ -197,18 +136,20 @@ function Component (props: Props): React.ReactElement<Props> {
         </div>
 
         <div className='__reward-info'>
-          {raffle?.rewardType === 'NPS' ? (
-            <img
-              alt={'token'}
-              className='__reward-icon'
-              src={rewardInfo.iconSrc}
-            />
-          ) : (
-            <Logo
-              size={28}
-              token={currentAirdrop.token_slug ? currentAirdrop.token_slug.toLowerCase() : ''}
-            />
-          )}
+          {raffle?.rewardType === 'NPS'
+            ? (
+              <img
+                alt={'token'}
+                className='__reward-icon'
+                src={rewardInfo.iconSrc}
+              />
+            )
+            : (
+              <Logo
+                size={28}
+                token={currentAirdrop.token_slug ? currentAirdrop.token_slug.toLowerCase() : ''}
+              />
+            )}
 
           <span className={'__reward-value'}>{rewardInfo.value}</span>
           <span className={'__reward-symbol'}>{rewardInfo.symbol}</span>
