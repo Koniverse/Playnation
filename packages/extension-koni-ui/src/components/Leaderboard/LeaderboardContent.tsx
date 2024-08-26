@@ -43,6 +43,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
   const [selectedTab, setSelectedTab] = useState<string>(defaultSelectedTab);
   const [leaderboardItems, setLeaderboardItems] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
   const [mine, setMine] = useState<LeaderboardPerson | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const filteredLeaderboardItems = leaderboardItems.filter((item) => item.point > 0);
 
@@ -87,27 +88,33 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
   }, [defaultSelectedTab]);
 
   useEffect(() => {
-    let leaderboardSub: { unsubscribe: () => void } | null = null;
+    let cancel = false;
 
-    if (currentTabInfo) {
-      leaderboardSub = apiSDK.subscribeLeaderboard(currentTabInfo.leaderboardInfo.id, currentTabInfo.leaderboardInfo.context).subscribe((data) => {
+    setLeaderboardItems([]);
+    setIsLoading(true);
+
+    currentTabInfo && apiSDK.fetchLeaderboard(currentTabInfo.leaderboardInfo.id, currentTabInfo.leaderboardInfo.context)
+      .then((data) => {
+        if (cancel) {
+          return;
+        }
+
         setLeaderboardItems(data);
 
-        // Find mine
         const mine = data.find((item) => item.mine);
 
         if (mine) {
           setMine(mine);
         }
-      });
-    }
+
+        setIsLoading(false);
+      })
+      .catch(() => console.log('error'));
 
     return () => {
-      if (leaderboardSub) {
-        leaderboardSub.unsubscribe();
-      }
+      cancel = true;
     };
-  }, [currentTabInfo, gameId]);
+  }, [currentTabInfo]);
 
   return <div className={className}>
     {
@@ -142,6 +149,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
       <div className='top-account-item-wrapper'>
         {
           <TopAccountItem
+            isLoading={isLoading}
             isPlaceholder={!filteredLeaderboardItems[1]}
             leaderboardInfo={filteredLeaderboardItems[1]}
             pointIconSrc={pointIconSrc}
@@ -153,6 +161,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
         {
           <TopAccountItem
             isFirst
+            isLoading={isLoading}
             isPlaceholder={!filteredLeaderboardItems[0]}
             leaderboardInfo={filteredLeaderboardItems[0]}
             pointIconSrc={pointIconSrc}
@@ -163,6 +172,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
       <div className='top-account-item-wrapper'>
         {
           <TopAccountItem
+            isLoading={isLoading}
             isPlaceholder={!filteredLeaderboardItems[2]}
             leaderboardInfo={filteredLeaderboardItems[2]}
             pointIconSrc={pointIconSrc}
@@ -217,7 +227,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
             key={item.rank}
           >
             <GameAccount
-              className={CN('leaderboard-item')}
+              className={CN('leaderboard-item', { __loading: isLoading })}
               isPlaceholder
               prefix={`${item.rank}`.padStart(2, '0')}
             />

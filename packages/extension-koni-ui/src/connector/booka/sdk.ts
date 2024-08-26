@@ -5,6 +5,7 @@ import { InGameItem } from '@playnation/game-sdk';
 import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
+import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
@@ -46,6 +47,8 @@ function parseCache<T> (key: string): T | undefined {
   return undefined;
 }
 
+const metadataHandler = MetadataHandler.instance;
+
 export class BookaSdk {
   private syncHandler = createPromiseHandler<void>();
   private accountSubject = new BehaviorSubject<BookaAccount | undefined>(undefined);
@@ -64,9 +67,13 @@ export class BookaSdk {
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
   private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
-  isEnabled = new BehaviorSubject<boolean>(true);
+
+  // Special cases
+  // Check if the account is banned
+  isAccountEnable = new BehaviorSubject<boolean>(true);
 
   constructor () {
+    this.initMetadataHandling();
     const version = localStorage.getItem('cache-version');
 
     if (cacheVersion === version) {
@@ -197,6 +204,61 @@ export class BookaSdk {
     }
 
     return await response.json() as T;
+  }
+
+  initMetadataHandling () {
+    this.fetchMetadata().then((metadata) => {
+      metadata && metadataHandler.updateMetadata(metadata);
+    }).catch(console.error);
+
+    setInterval(() => {
+      this.fetchMetadata().then((metadata) => {
+        metadata && metadataHandler.updateMetadata(metadata);
+      }).catch(console.error);
+    }, 30000);
+
+    // Listen to metadata changes
+    metadataHandler.on('updateVersion', ({ achievement, airdrop, application, game, leaderboard, task }) => {
+      if (application) {
+        const isForceUpdate = application.current && application.newVersion.minVersion && application.current.version < application.newVersion.minVersion;
+        const updateMessage = application.updateMessage || 'New app version is available, update now!';
+
+        if (isForceUpdate) {
+          telegramConnector.showAlert(updateMessage, () => {
+            window.location.reload();
+          });
+        } else {
+          telegramConnector.showConfirmation(updateMessage, (confirm) => {
+            confirm && window.location.reload();
+          });
+        }
+      }
+
+      if (game) {
+        this.fetchGameList().catch(console.error);
+      }
+
+      if (task) {
+        this.fetchTaskCategoryList().catch(console.error);
+        this.fetchTaskList().catch(console.error);
+      }
+
+      if (leaderboard) {
+        this.fetchLeaderboardConfigList().catch(console.error);
+      }
+
+      if (airdrop) {
+        this.fetchAirdropCampaign().catch(console.error);
+      }
+
+      if (achievement) {
+        // this.fetchAchievementList().catch(console.error);
+      }
+    });
+  }
+
+  async fetchMetadata () {
+    return await this.getRequest<AppMetadata>(`${GAME_API_HOST}/api/metadata/fetch`);
   }
 
   async reloadAccount () {
@@ -443,7 +505,7 @@ export class BookaSdk {
     } catch (error: any) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (error?.message === 'ACCOUNT_BANNED') {
-        this.isEnabled.next(false);
+        this.isAccountEnable.next(false);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         this.syncHandler.reject(error?.message);
       }
@@ -646,15 +708,7 @@ export class BookaSdk {
       context
     });
 
-    if (leaderBoard) {
-      this.leaderBoardSubject.next(leaderBoard);
-    }
-  }
-
-  subscribeLeaderboard (id: number, context: Record<string, unknown> = {}) {
-    this.fetchLeaderboard(id, context).catch(console.error);
-
-    return this.leaderBoardSubject;
+    return leaderBoard;
   }
 
   async fetchRankInfoMap () {

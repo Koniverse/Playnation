@@ -5,16 +5,15 @@ import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
 import { CampaignBannerModal, Layout } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
+import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { homeScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
-import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType, useGetMantaPayConfig, useHandleMantaPaySync, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
-import { RootState } from '@subwallet/extension-koni-ui/stores';
+import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { Outlet } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -23,18 +22,14 @@ type Props = ThemeProps;
 
 export const GlobalSearchTokenModalId = 'globalSearchToken';
 const apiSDK = BookaSdk.instance;
+const metadataHandler = MetadataHandler.instance;
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const { activeModal, inactiveModal } = useContext(ModalContext);
   const chainsByAccountType = useGetChainSlugsByAccountType();
   const tokenGroupStructure = useTokenGroup(chainsByAccountType);
   const accountBalance = useAccountBalance(tokenGroupStructure.tokenGroupMap);
-  const currentAccount = useSelector((state: RootState) => state.accountState.currentAccount);
   const [containerClass, setContainerClass] = useState<string | undefined>();
-
-  const mantaPayConfig = useGetMantaPayConfig(currentAccount?.address);
-  const isZkModeSyncing = useSelector((state: RootState) => state.mantaPay.isSyncing);
-  const handleMantaPaySync = useHandleMantaPaySync();
 
   const banners = useGetBannerByScreen('home');
 
@@ -54,16 +49,27 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   }, [inactiveModal]);
 
   useEffect(() => {
-    if (mantaPayConfig && mantaPayConfig.enabled && !mantaPayConfig.isInitialSync && !isZkModeSyncing) {
-      handleMantaPaySync(mantaPayConfig.address);
-    }
+    const handleMaintenance = (info: MaintenanceInfo) => {
+      if (info.isMaintenance) {
+        navigate('/maintenance');
+      }
+    };
 
-    apiSDK.isEnabled.subscribe((isEnabled) => {
+    const unsub1 = metadataHandler.maintenanceSubject.subscribe(handleMaintenance);
+
+    const handleBanedAccount = (isEnabled: boolean) => {
       if (!isEnabled) {
         navigate('/account-banned');
       }
-    });
-  }, [handleMantaPaySync, isZkModeSyncing, mantaPayConfig, navigate]);
+    };
+
+    const unsub2 = apiSDK.isAccountEnable.subscribe(handleBanedAccount);
+
+    return () => {
+      unsub1.unsubscribe();
+      unsub2.unsubscribe();
+    };
+  }, [navigate]);
 
   const onTabSelected = useCallback(
     (key: string) => {

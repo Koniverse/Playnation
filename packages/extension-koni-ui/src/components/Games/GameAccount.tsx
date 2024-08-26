@@ -15,7 +15,7 @@ type GamePointProps = ThemeProps & {
   point?: number;
   avatar?: string;
   isPlaceholder?: boolean;
-  actionNode?: React.ReactNode
+  actionNode?: React.ReactNode,
 };
 
 function Component ({ actionNode, avatar, className, isPlaceholder, name, point, prefix }: GamePointProps) {
@@ -49,6 +49,13 @@ export const GameAccount = styled(Component)<GamePointProps>(({ theme: { token }
     height: 52,
     color: token.colorTextDark2,
 
+    '&.__loading': {
+
+      '.__name': {
+        animation: 'fadeInOut 2s ease-in-out infinite'
+      }
+    },
+
     '.__prefix': {
       marginRight: token.marginXXS,
       minWidth: 24,
@@ -68,7 +75,7 @@ export const GameAccount = styled(Component)<GamePointProps>(({ theme: { token }
       'white-space': 'nowrap',
       fontSize: token.fontSizeLG,
       lineHeight: token.lineHeightLG,
-      fontWeight: token.headingFontWeight
+      fontWeight: token.headingFontWeight,
     },
 
     '.__point': {

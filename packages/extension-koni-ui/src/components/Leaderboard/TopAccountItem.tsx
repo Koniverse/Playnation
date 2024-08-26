@@ -15,9 +15,10 @@ type Props = ThemeProps & {
   isPlaceholder?: boolean;
   rank?: number;
   pointIconSrc?: string;
+  isLoading?: boolean
 };
 
-const Component = ({ className, isFirst, isPlaceholder, leaderboardInfo, pointIconSrc, rank }: Props): React.ReactElement => {
+const Component = ({ className, isFirst, isLoading, isPlaceholder, leaderboardInfo, pointIconSrc, rank }: Props): React.ReactElement => {
   const accountName = (() => {
     if (isPlaceholder) {
       return '------';
@@ -56,11 +57,11 @@ const Component = ({ className, isFirst, isPlaceholder, leaderboardInfo, pointIc
         </div>
       </div>
 
-      <div className={'__account-name'}>
+      <div className={CN('__account-name', { __loading: isLoading })}>
         {accountName}
       </div>
       <GamePoint
-        className={'__point'}
+        className={CN('__point', { __loading: isLoading })}
         iconSrc={pointIconSrc}
         point={point}
       />
@@ -106,14 +107,20 @@ const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, to
       overflow: 'hidden',
       'white-space': 'nowrap',
       textOverflow: 'ellipsis',
-      textAlign: 'center'
+      textAlign: 'center',
+      '&.__loading': {
+        animation: 'fadeInOut 2s ease-in-out infinite'
+      }
     },
 
     '.__point': {
       fontSize: token.fontSizeSM,
       lineHeight: token.lineHeightSM,
       color: token.colorTextDark4,
-      justifyContent: 'center'
+      justifyContent: 'center',
+      '&.__loading': {
+        animation: 'fadeInOut 2s ease-in-out infinite'
+      }
     },
 
     '&:not(.-is-first)': {
