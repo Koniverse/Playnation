@@ -33,6 +33,10 @@ export class TelegramConnector {
     return TelegramWebApp.initDataUnsafe?.user;
   }
 
+  get initData () {
+    return TelegramWebApp.initData;
+  }
+
   syncTheme (headerColor: string, backgroundColor: string) {
     if (this.supportBasicMethod) {
       TelegramWebApp.setHeaderColor(headerColor as `#${string}`);

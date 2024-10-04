@@ -116,7 +116,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       const targetAddress = (currentAddress && !isAccountAll(currentAddress)) ? currentAddress : accounts[0].address;
 
       if (targetAddress !== syncAddress.current) {
-        BookaSdk.instance.sync(targetAddress).catch(console.error);
+        BookaSdk.instance.login(targetAddress).catch(console.error);
         syncAddress.current = targetAddress;
       }
     }).catch(console.error);

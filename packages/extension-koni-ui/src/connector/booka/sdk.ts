@@ -457,6 +457,7 @@ export class BookaSdk {
     return this.referralListSubject;
   }
 
+  // Deprecated use login instead
   async sync (address: string) {
     const userInfo = telegramConnector.userInfo;
     const message = `Login as ${userInfo?.username || 'booka'}`;
@@ -482,6 +483,55 @@ export class BookaSdk {
 
     try {
       const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/sync`, syncData);
+
+      if (account) {
+        this.accountSubject.next(account);
+        localStorage.setItem(CACHE_KEYS.account, JSON.stringify(account));
+        this.syncHandler.resolve();
+
+        await Promise.all([
+          this.fetchEnergyConfig(),
+          this.fetchRankInfoMap(),
+          this.fetchGameList(),
+          this.fetchTaskCategoryList(),
+          this.fetchTaskList(),
+          this.fetchLeaderboardConfigList()
+          // this.fetchGameItemMap(),
+          // this.fetchGameInventoryItemList(),
+          // this.fetchGameItemInGameList()
+        ]);
+
+        await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchAirdropCampaign()]);
+      }
+    } catch (error: any) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (error?.message === 'ACCOUNT_BANNED') {
+        this.isAccountEnable.next(false);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        this.syncHandler.reject(error?.message);
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * Telegram login actions
+   * */
+  async login (address: string) {
+    const initData = telegramConnector.initData;
+    const referralCode = telegramConnector.getStartParam() || '';
+
+    this.accountSubject.next(undefined);
+
+    const syncData = {
+      address,
+      referralCode,
+      initData
+    };
+
+    try {
+      const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login`, syncData);
 
       if (account) {
         this.accountSubject.next(account);
