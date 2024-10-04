@@ -41,90 +41,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <style>
-    .startup-screen {
-      overflow: hidden;
-    }
-
-    .startup-screen-title {
-      font-size: 40px;
-      line-height: 52px;
-      color: #000;
-      font-weight: 700;
-      max-width: 240px;
-      position: relative;
-      z-index: 10;
-      margin-top: 40px;
-      margin-left: 28px;
-      margin-bottom: 16px;
-    }
-
-    .startup-screen-subtitle {
-      font-size: 20px;
-      margin-left: 28px;
-      line-height: 1.32;
-      color: #000;
-      font-weight: 600;
-      position: relative;
-      z-index: 10;
-    }
-
-    .startup-screen-mockup-1 {
-      position: absolute;
-      width: 238px;
-      height: auto;
-      top: 42px;
-      right: -77px;
-      z-index: 5;
-    }
-
-    .startup-screen-mockup-2 {
-      position: absolute;
-      width: 123px;
-      height: auto;
-      top: 200px;
-      right: 156px;
-      z-index: 5;
-    }
-
-    .startup-screen-mockup-3 {
-      position: absolute;
-      width: 84px;
-      height: auto;
-      top: 303px;
-      right: 10px;
-      z-index: 5;
-    }
-
-    .startup-screen-mockup-4 {
-      width: 379px;
-      height: auto;
-      position: absolute;
-      z-index: 0;
-      bottom: -5px;
-      right: -12px;
-    }
-
-    @media screen and (max-height: 721px) {
-      .startup-screen-mockup-4 {
-        bottom: auto;
-        top: 335px;
-      }
-    }
-
-    @keyframes fadeInOut {
-        0% {
-            opacity: 0.1;
-        }
-        50% {
-            opacity: 1;
-        }
-        100% {
-            opacity: 0.1;
-        }
-    }
-  </style>
-
   <!-- Import base CSS -->
   <link href="/fonts/PlusJakartaSans/index.css" rel="stylesheet">
   <link href="/assets/reset.css?v=3.01" rel="stylesheet">
@@ -139,10 +55,6 @@
     gtag('js', new Date());
 
     gtag('config', 'G-8H37Y2SSJM');
-
-    if (typeof TelegramWebviewProxy === "undefined") {
-      window.location.href = "/not-support.html";
-    }
   </script>
 
   <!-- Import main JS logic -->
@@ -151,52 +63,10 @@
 <body style="background-color: #F0F7F8;">
   <div id="root"></div>
   <div id="loading-placeholder" class="startup-screen" style="position:fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000">
-    <div class="startup-screen-title">
-      Welcome to Playnation
+    <div style="text-align: center; padding-top: 60px">
+      Please open app in the Telegram
     </div>
-
-    <div class="startup-screen-subtitle">
-      Your airdrop is loading...
-    </div>
-
-    <img class="startup-screen-mockup-1" src="/images/startup-screen/token-1.png" alt="mockup-1">
-    <img class="startup-screen-mockup-2" src="/images/startup-screen/token-2.png" alt="mockup-2">
-    <img class="startup-screen-mockup-3" src="/images/startup-screen/token-3.png" alt="mockup-3">
-    <img class="startup-screen-mockup-4" src="/images/startup-screen/bottom-background-image.png" alt="mockup-4">
   </div>
 
-  <script>
-    let currentTheme;
-
-    try {
-      currentTheme = localStorage.getItem('currentTheme') || 'default';
-    } catch (e) {
-      currentTheme = 'default'
-    }
-
-    let backGroundStyle;
-
-    if (currentTheme === 'sky') {
-      backGroundStyle = '#C7F0FF';
-    } else if (currentTheme === 'morning_sunny') {
-      backGroundStyle = '#FFF8C4';
-    } else if (currentTheme === 'spring') {
-      backGroundStyle = '#7EEC79';
-    } else if (currentTheme === 'lavender') {
-      backGroundStyle = '#BB9EFF';
-    } else if (currentTheme === 'sunny') {
-      backGroundStyle = '#FBCE01';
-    } else if (currentTheme === 'begie') {
-      backGroundStyle = '#EBD7C9';
-    } else if (currentTheme === 'clove') {
-      backGroundStyle = 'linear-gradient(117deg, #A2F6C1 9.05%, #CBF147 91.43%)';
-    } else if (currentTheme === 'aurora') {
-      backGroundStyle = 'linear-gradient(117deg, #A2F6C1 9.05%, #9FE3FF 91.43%)';
-    } else {
-      backGroundStyle = '#CBF147';
-    }
-
-    document.getElementById("loading-placeholder").style.background = backGroundStyle;
-  </script>
 </body>
 </html>
