@@ -3,7 +3,6 @@
 
 import { LanguageType } from '@subwallet/extension-base/background/KoniTypes';
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { GameSVG } from '@subwallet/extension-koni-ui/components';
 import { useDefaultNavigate, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { LayoutBackgroundImages, LayoutBackgroundStyle, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Icon, SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
@@ -37,15 +36,15 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
   const { language } = useSelector((state) => state.settings);
 
   const tabBarItems = useMemo((): Array<Omit<SwTabBarItem, 'onClick'> & { url: string }> => ([
-    {
-      icon: {
-        type: 'customIcon',
-        customIcon: <GameSVG />
-      },
-      label: t('Games'),
-      key: 'games',
-      url: '/home/games'
-    },
+    // {
+    //   icon: {
+    //     type: 'customIcon',
+    //     customIcon: <GameSVG />
+    //   },
+    //   label: t('Games'),
+    //   key: 'games',
+    //   url: '/home/games'
+    // },
     {
       icon: {
         type: 'phosphor',

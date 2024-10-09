@@ -6,7 +6,7 @@ import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
+import { DEFAULT_HOMEPAGE, TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { SecurityContextProvider } from '@subwallet/extension-koni-ui/contexts/SecurityContext';
@@ -34,7 +34,6 @@ export const RouteState = {
 };
 
 const welcomeUrl = '/welcome';
-const gameUrl = '/home/games';
 // const tokenUrl = '/home/token';
 const loginUrl = '/keyring/login';
 const phishingUrl = '/phishing-page-detected';
@@ -219,7 +218,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       //   redirectTarget = gameUrl;
       // }
 
-      redirectTarget = gameUrl;
+      redirectTarget = DEFAULT_HOMEPAGE;
     } else if (pathName === loginUrl && !needUnlock) {
       redirectTarget = DEFAULT_ROUTER_PATH;
     } else if (pathName === welcomeUrl && !noAccount) {

@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export const DEFAULT_ROUTER_PATH = '/';
-export const DEFAULT_HOMEPAGE = '/home/games';
+export const DEFAULT_HOMEPAGE = '/home/mission';

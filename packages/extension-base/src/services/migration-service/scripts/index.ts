@@ -1,16 +1,9 @@
 // Copyright 2019-2022 @subwallet/extension-koni authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import BeforeCreditcoinCampaign from '@subwallet/extension-base/services/migration-service/scripts/BeforeCreditcoinCampaign';
-import BeforeKaruraCampaign from '@subwallet/extension-base/services/migration-service/scripts/BeforeKaruraCampaign';
-import BeforeVaraCampaign from '@subwallet/extension-base/services/migration-service/scripts/BeforeVaraCampaign';
-import MigrateAssetSetting from '@subwallet/extension-base/services/migration-service/scripts/databases/MigrateAssetSetting';
-import MigrateRemoveGenesisHash from '@subwallet/extension-base/services/migration-service/scripts/MigrateRemoveGenesisHash';
-import MigrateTransactionHistoryBySymbol from '@subwallet/extension-base/services/migration-service/scripts/MigrateTransactionHistoryBySymbol';
+import EnableStoryProtocolTestnet from '@subwallet/extension-base/services/migration-service/scripts/EnableStoryProtocolTestnet';
 
 import BaseMigrationJob from '../Base';
-import BeforeCreditcoinCampaign2
-  from "@subwallet/extension-base/services/migration-service/scripts/BeforeCreditcoinCampaign2";
 
 export const EVERYTIME = '__everytime__';
 
@@ -39,11 +32,12 @@ export default <Record<string, typeof BaseMigrationJob>>{
   // '1.1.44-01': MigrateAssetSetting,
   // '1.1.45-01': MigrateTransactionHistoryBySymbol,
   // '1.1.46-01': AutoEnableSomeTokens
-  '1.1.51-03': BeforeKaruraCampaign,
-  '1.1.69-03': MigrateAssetSetting,
-  '1.1.69-02': MigrateTransactionHistoryBySymbol,
-  '1.1.69-04': MigrateRemoveGenesisHash,
-  '1.2.10-p3': BeforeVaraCampaign,
-  '1.2.10-p4': BeforeCreditcoinCampaign,
-  '1.2.10-p5': BeforeCreditcoinCampaign2
+  // '1.1.51-03': BeforeKaruraCampaign,
+  // '1.1.69-03': MigrateAssetSetting,
+  // '1.1.69-02': MigrateTransactionHistoryBySymbol,
+  // '1.1.69-04': MigrateRemoveGenesisHash,
+  // '1.2.10-p3': BeforeVaraCampaign,
+  // '1.2.10-p4': BeforeCreditcoinCampaign,
+  // '1.2.10-p5': BeforeCreditcoinCampaign2,
+  '1.2.10-p6': EnableStoryProtocolTestnet
 };

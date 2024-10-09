@@ -33,3 +33,7 @@ export async function keyringExportMnemonic (request: RequestKeyringExportMnemon
 export async function resetWallet (request: RequestResetWallet): Promise<ResponseResetWallet> {
   return sendMessage('pri(keyring.reset)', request);
 }
+
+// Expose for testing
+// @ts-ignore
+window.resetWallet = resetWallet;

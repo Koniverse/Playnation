@@ -24,17 +24,7 @@ import { Logger } from '@polkadot/util/types';
 
 const forceChainInfoMap = (() => {
   const enableList = [
-    'polkadot',
-    'goldberg_testnet',
-    'kusama',
-    'alephTest',
-    'karura',
-    'acala',
-    'statemint',
-    'statemine',
-    'vara_network',
-    'creditcoin',
-    'creditcoinTest'
+    'storyPublic_testnet'
   ];
 
   return Object.fromEntries(enableList.map((slug) => {
@@ -1176,7 +1166,8 @@ export class ChainService {
               isTestnet: storedChainInfo.isTestnet,
               chainStatus: storedChainInfo.chainStatus,
               icon: storedChainInfo.icon,
-              extraInfo: storedChainInfo.extraInfo
+              extraInfo: storedChainInfo.extraInfo,
+              tonInfo: null
             };
             this.dataMap.chainStateMap[storedSlug] = {
               currentProvider: storedChainInfo.currentProvider, // TODO: review
@@ -1421,7 +1412,8 @@ export class ChainService {
       isTestnet: false,
       chainStatus: _ChainStatus.ACTIVE,
       icon: '', // Todo: Allow update with custom chain,
-      extraInfo: null
+      extraInfo: null,
+      tonInfo: null
     };
 
     // insert new chainInfo
