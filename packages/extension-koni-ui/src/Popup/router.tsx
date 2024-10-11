@@ -76,6 +76,7 @@ const NftImport = new LazyLoader('NftImport', () => import('@subwallet/extension
 
 const History = new LazyLoader('History', () => import('@subwallet/extension-koni-ui/Popup/Home/History'));
 const Crowdloans = new LazyLoader('Crowdloans', () => import('@subwallet/extension-koni-ui/Popup/Home/Crowdloans'));
+const HomeAccount = new LazyLoader('Home', () => import('@subwallet/extension-koni-ui/Popup/Home/Account'));
 const Home = new LazyLoader('Home', () => import('@subwallet/extension-koni-ui/Popup/Home'));
 
 const Settings = new LazyLoader('Settings', () => import('@subwallet/extension-koni-ui/Popup/Settings'));
@@ -178,6 +179,8 @@ export const router = createBrowserRouter([
           Games.generateRouterObject('games'),
           Mission.generateRouterObject('mission'),
           Leaderboard.generateRouterObject('leaderboard'),
+          Invite.generateRouterObject('invite'),
+          HomeAccount.generateRouterObject('account'),
           Tokens.generateRouterObject('tokens'),
           TokenDetailList.generateRouterObject('tokens/detail/:slug'),
           AirDrop.generateRouterObject('airdrop'),
@@ -221,9 +224,6 @@ export const router = createBrowserRouter([
             element: <Example />
           }
         ]
-      },
-      {
-        ...Invite.generateRouterObject('invite')
       },
       {
         ...AirDropDetail.generateRouterObject('airdrop/detail/:id')

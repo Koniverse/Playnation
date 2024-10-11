@@ -8,7 +8,7 @@ import { LayoutBackgroundImages, LayoutBackgroundStyle, ThemeProps } from '@subw
 import { Icon, SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
-import { ArrowLeft, ChartBar, Parachute, Target, Wallet } from 'phosphor-react';
+import { ArrowLeft, ChartBar, House, Target, UserCirclePlus } from 'phosphor-react';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -48,6 +48,26 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
     {
       icon: {
         type: 'phosphor',
+        phosphorIcon: House,
+        weight: 'fill'
+      },
+      label: t('Home'),
+      key: 'home',
+      url: '/home/account'
+    },
+    {
+      icon: {
+        type: 'phosphor',
+        phosphorIcon: UserCirclePlus,
+        weight: 'fill'
+      },
+      label: t('Invite'),
+      key: 'invite',
+      url: '/home/invite'
+    },
+    {
+      icon: {
+        type: 'phosphor',
         phosphorIcon: Target,
         weight: 'fill'
       },
@@ -64,37 +84,27 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
       label: t('Leaderboard'),
       key: 'leaderboard',
       url: '/home/leaderboard'
-    },
+    }
     // {
     //   icon: {
     //     type: 'phosphor',
-    //     phosphorIcon: UserCirclePlus,
+    //     phosphorIcon: Parachute,
     //     weight: 'fill'
     //   },
-    //   label: t('Invite'),
-    //   key: 'invite',
-    //   url: '/home/invite'
+    //   label: t('Airdrop'),
+    //   key: 'airdrop',
+    //   url: '/home/airdrop'
     // },
-    {
-      icon: {
-        type: 'phosphor',
-        phosphorIcon: Parachute,
-        weight: 'fill'
-      },
-      label: t('Airdrop'),
-      key: 'airdrop',
-      url: '/home/airdrop'
-    },
-    {
-      icon: {
-        type: 'phosphor',
-        phosphorIcon: Wallet,
-        weight: 'fill'
-      },
-      label: t('Wallet'),
-      key: 'tokens',
-      url: '/home/tokens'
-    }
+    // {
+    //   icon: {
+    //     type: 'phosphor',
+    //     phosphorIcon: Wallet,
+    //     weight: 'fill'
+    //   },
+    //   label: t('Wallet'),
+    //   key: 'tokens',
+    //   url: '/home/tokens'
+    // }
     // {
     //   icon: {
     //     type: 'phosphor',

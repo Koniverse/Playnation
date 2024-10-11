@@ -4,9 +4,10 @@
 import { Layout } from '@subwallet/extension-koni-ui/components';
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Image } from '@subwallet/react-ui';
+import { Button, Icon, Progress, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React, { useEffect } from 'react';
+import { ArrowCircleRight, Check, Gift, StarFour } from 'phosphor-react';
+import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -15,11 +16,8 @@ type Props = ThemeProps;
 function Component ({ className }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setTimeout(() => {
-      navigate('/accounts/new-seed-phrase');
-    }, 1000);
+  const onContinue = useCallback(() => {
+    navigate('/accounts/new-seed-phrase');
   }, [navigate]);
 
   return (
@@ -28,99 +26,228 @@ function Component ({ className }: Props): React.ReactElement<Props> {
     >
       <div className='bg-image' />
       <div className='body-container'>
-        <div className='logo-container'>
-          <Image
-            shape={'square'}
-            src={'/images/games/logo.svg'}
-            width={129}
-          />
+        <div className='icon-container'>
+          <div className='icon-group'>
+            <Icon
+              className={'__main-icon'}
+              customSize={'60px'}
+              phosphorIcon={Gift}
+              weight={'fill'}
+            />
+            <Icon
+              className={'__sub-icon p1'}
+              customSize={'36px'}
+              phosphorIcon={StarFour}
+            />
+            <Icon
+              className={'__sub-icon p2'}
+              customSize={'12px'}
+              phosphorIcon={StarFour}
+              weight={'fill'}
+            />
+          </div>
         </div>
-        <div className='sub-title'>
-          {t('Creating your wallets...')}
+        <header className='header'>
+          <Typography.Title
+            className={'title'}
+            level={4}
+          >
+            {t('Kickstarting your IP journey')}
+          </Typography.Title>
+          <Typography.Text className={'sub-title'}>
+            {t('Token created successfully. Check explorer for inscription!')}
+          </Typography.Text>
+        </header>
+
+        <div className='kick-starting-list'>
+          <div className='__list'>
+            <div className={'starting-item'}>
+              <div className='__top'>
+                <span className='__label'>
+                  {t('Account age bonus')}
+                </span>
+                <Icon
+                  customSize={'12px'}
+                  phosphorIcon={Check}
+                  weight={'bold'}
+                />
+              </div>
+              <Progress
+                className={'process-bar'}
+                percent={100}
+                showInfo={false}
+                status={'active'}
+                type={'line'}
+              />
+            </div>
+            <div className={'starting-item'}>
+              <div className='__top'>
+                <span className='__label'>
+                  {t('Premium account bonus')}
+                </span>
+                <Icon
+                  customSize={'12px'}
+                  phosphorIcon={Check}
+                  weight={'bold'}
+                />
+              </div>
+              <Progress
+                className={'process-bar'}
+                percent={100}
+                showInfo={false}
+                status={'active'}
+                type={'line'}
+              />
+            </div>
+            <div className={'starting-item'}>
+              <div className='__top'>
+                <span className='__label'>
+                  {t('Message count bonus')}
+                </span>
+                <Icon
+                  customSize={'12px'}
+                  phosphorIcon={Check}
+                  weight={'bold'}
+                />
+              </div>
+              <Progress
+                className={'process-bar'}
+                percent={100}
+                showInfo={false}
+                status={'active'}
+                type={'line'}
+              />
+            </div>
+            <div className={'starting-item'}>
+              <div className='__top'>
+                <span className='__label'>
+                  {t('OG status bonus')}
+                </span>
+                <Icon
+                  customSize={'12px'}
+                  phosphorIcon={Check}
+                  weight={'bold'}
+                />
+              </div>
+              <Progress
+                className={'process-bar'}
+                percent={100}
+                showInfo={false}
+                status={'active'}
+                type={'line'}
+              />
+            </div>
+          </div>
+          <div className='__actions'>
+            <Button
+              block={true}
+              icon={(
+                <Icon
+                  customSize={'20px'}
+                  phosphorIcon={ArrowCircleRight}
+                  weight={'fill'}
+                />
+              )}
+              onClick={onContinue}
+              schema={'primary'}
+              shape={'round'}
+              size={'sm'}
+            >
+              {t('Continue')}
+            </Button>
+          </div>
         </div>
       </div>
     </Layout.Base>
   );
 }
 
-const Welcome = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const Welcome = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
+    background: extendToken.colorBgGradient || '#fff',
     position: 'relative',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-
-    '.bg-image': {
-      backgroundRepeat: 'no-repeat',
-      backgroundPosition: 'top',
-      backgroundSize: 'cover',
-      height: '100%',
-      position: 'absolute',
-      width: '100%',
-      left: 0,
-      top: 0
-    },
 
     '.body-container': {
       padding: token.sizeLG,
       textAlign: 'center',
       opacity: 0.999, // Hot fix show wrong opacity in browser
 
-      '.logo-container': {
-        color: token.colorTextBase,
-        width: '100%',
-        marginBottom: token.marginLG
+      header: {
+        marginBottom: token.marginXL
+      },
+
+      '.icon-container': {
+        marginBottom: token.marginXL
+      },
+
+      '.icon-group': {
+        display: 'inline-block',
+        position: 'relative',
+        width: 104,
+        height: 104,
+        borderRadius: '50%',
+        backgroundColor: token.colorWhite,
+        textAlign: 'center'
+      },
+
+      '.__main-icon': {
+        marginTop: 22
+      },
+
+      '.__sub-icon': {
+        position: 'absolute',
+
+        '&.p1': {
+          top: 4,
+          left: 0
+        },
+
+        '&.p2': {
+          top: 67,
+          left: 76
+        }
       },
 
       '.title': {
-        fontWeight: token.fontWeightStrong,
-        fontSize: token.fontSizeHeading1,
-        lineHeight: token.lineHeightHeading1,
         color: token.colorTextBase
       },
 
       '.sub-title': {
-        paddingLeft: token.padding - 1,
-        paddingRight: token.padding - 1,
-        fontSize: token.fontSizeHeading5,
-        lineHeight: token.lineHeightHeading5,
-        color: token.colorTextLight3
+        color: token.colorTextDark3
       }
     },
 
-    '.buttons-container': {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: token.sizeXS
-    },
+    '.kick-starting-list': {
+      padding: token.paddingLG,
+      background: token.colorWhite,
+      borderRadius: 20,
+      fontSize: token.fontSizeSM,
+      fontWeight: token.fontWeightStrong,
 
-    '.welcome-import-button': {
-      height: 'auto',
-
-      '.welcome-import-icon': {
-        height: token.sizeLG,
-        width: token.sizeLG,
-        marginLeft: token.sizeMD - token.size
+      '.__list': {
+        marginTop: token.margin,
+        marginBottom: token.margin
       },
 
-      '.welcome-import-button-content': {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: token.sizeXXS,
-        fontWeight: token.fontWeightStrong,
-        padding: `${token.paddingSM - 1}px ${token.paddingLG}px`,
-        textAlign: 'start',
+      '.__actions': {
+        marginBottom: token.margin
+      },
 
-        '.welcome-import-button-title': {
-          fontSize: token.fontSizeHeading5,
-          lineHeight: token.lineHeightHeading5,
-          color: token.colorTextBase
+      '.starting-item': {
+        marginBottom: token.marginXS,
+
+        '.__top': {
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          width: '100%'
         },
 
-        '.welcome-import-button-description': {
-          fontSize: token.fontSizeHeading6,
-          lineHeight: token.lineHeightHeading6,
-          color: token.colorTextLabel
+        '.process-bar': {
+          width: '100%'
         }
       }
     }

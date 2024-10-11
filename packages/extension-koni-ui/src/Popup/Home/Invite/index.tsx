@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { EmptyList, GameAccountAvatar, GamePoint, Layout } from '@subwallet/extension-koni-ui/components';
+import { EmptyList, GameAccountAvatar, GamePoint } from '@subwallet/extension-koni-ui/components';
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
+import InviteCTA from '@subwallet/extension-koni-ui/components/Invite/InviteCTA';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, ReferralRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { detailScreensLayoutBackgroundImages, rankPointMap } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Copy, Plus, SmileySad, UserCirclePlus } from 'phosphor-react';
+import { Copy, SmileySad, UserCirclePlus } from 'phosphor-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 
@@ -23,7 +23,7 @@ const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
-  useSetCurrentPage('/invite');
+  useSetCurrentPage('/home/invite');
   const { t } = useTranslation();
   const [referralList, setReferralList] = useState<ReferralRecord[]>(apiSDK.referralList);
   const stickyRef = useRef<HTMLDivElement>(null);
@@ -57,14 +57,6 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, []);
 
-  const invitePoint = useMemo(() => {
-    if (!account) {
-      return 0;
-    }
-
-    return rankPointMap.iron || 0;
-  }, [account]);
-
   const inviteURL = useMemo(() => {
     const encodeURL = apiSDK.getInviteURL();
 
@@ -84,17 +76,17 @@ const Component = ({ className }: Props): React.ReactElement => {
     });
   }, [notify, t]);
 
-  const subHeaderIcons = useMemo(() => {
-    return [{
-      icon: (
-        <Icon
-          customSize={'24px'}
-          phosphorIcon={Plus}
-        />
-      ),
-      onClick: inviteFriend
-    }];
-  }, [inviteFriend]);
+  // const subHeaderIcons = useMemo(() => {
+  //   return [{
+  //     icon: (
+  //       <Icon
+  //         customSize={'24px'}
+  //         phosphorIcon={Plus}
+  //       />
+  //     ),
+  //     onClick: inviteFriend
+  //   }];
+  // }, [inviteFriend]);
 
   useEffect(() => {
     const currentElement = stickyRef.current;
@@ -124,13 +116,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   return (
-    <Layout.WithSubHeaderOnly
-      backgroundImages={detailScreensLayoutBackgroundImages}
-      backgroundStyle={'primary'}
-      className={CN(className)}
-      subHeaderIcons={subHeaderIcons}
-      title={t('Invite frens')}
-    >
+    <div className={className}>
       <img
         alt='game_background_image'
         className={'__background-image-1'}
@@ -204,57 +190,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         className='scroll-container'
         ref={scrollContainerRef}
       >
-        <div className='invitation-area'>
-          <div className='invitation-text'>
-            {t('Invite frens and play together!')}
-          </div>
-
-          <div className='invitation-reward'>
-            {t('Up to')} {toDisplayNumber(invitePoint)}
-
-            <img
-              alt='token'
-              className={'invitation-reward-token'}
-              src={DefaultLogosMap.token_icon}
-            />
-          </div>
-
-          <div className='invitation-buttons'>
-            <Button
-              block={true}
-              icon={(
-                <Icon
-                  customSize={'20px'}
-                  phosphorIcon={UserCirclePlus}
-                  weight={'fill'}
-                />
-              )}
-              onClick={inviteFriend}
-              schema={'primary'}
-              shape={'round'}
-              size={'xs'}
-            >
-              {t('Invite now')}
-            </Button>
-
-            <Button
-              block={true}
-              icon={(
-                <Icon
-                  customSize={'20px'}
-                  phosphorIcon={Copy}
-                  weight={'fill'}
-                />
-              )}
-              onClick={copyLink}
-              schema={'secondary'}
-              shape={'round'}
-              size={'xs'}
-            >
-              {t('Copy link')}
-            </Button>
-          </div>
-        </div>
+        <InviteCTA />
 
         <div
           className={'friend-list-title'}
@@ -286,20 +222,18 @@ const Component = ({ className }: Props): React.ReactElement => {
           }
         </div>
       </div>
-    </Layout.WithSubHeaderOnly>
+    </div>
   );
 };
 
 const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    '.ant-sw-screen-layout-body-inner': {
-      overflow: 'auto',
-      display: 'flex',
-      flexDirection: 'column',
-      paddingLeft: token.paddingXS,
-      paddingRight: token.paddingXS,
-      position: 'relative'
-    },
+    overflow: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    paddingLeft: token.paddingXS,
+    paddingRight: token.paddingXS,
+    position: 'relative',
 
     '.ant-sw-screen-layout-body-inner > div': {
       position: 'relative',
@@ -310,7 +244,7 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
       position: 'absolute',
       width: 138,
       height: 'auto',
-      zIndex: 0
+      zIndex: -1
     },
 
     '.__background-image-1': {
@@ -348,9 +282,9 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
 
     '.account-avatar': {
       borderWidth: 2,
-      width: 80,
-      height: 80,
-      minWidth: 80,
+      width: 54,
+      height: 54,
+      minWidth: 54,
 
       '.__inner': {
         borderWidth: 4
@@ -401,43 +335,6 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
       borderTopRightRadius: 20,
       display: 'flex',
       flexDirection: 'column'
-    },
-
-    '.invitation-area': {
-      backgroundColor: token.colorWhite,
-      borderRadius: 20,
-      padding: token.padding,
-      marginBottom: token.margin
-    },
-
-    '.invitation-text': {
-      color: token.colorTextDark1,
-      fontSize: token.fontSizeLG,
-      lineHeight: token.lineHeightLG,
-      fontWeight: token.headingFontWeight,
-      textAlign: 'center',
-      marginBottom: token.marginXS
-    },
-
-    '.invitation-reward': {
-      color: token.colorTextDark3,
-      fontSize: token.fontSize,
-      lineHeight: token.lineHeight,
-      verticalAlign: 'baseline',
-      textAlign: 'center',
-      marginBottom: 22
-    },
-
-    '.invitation-reward-token': {
-      display: 'inline-block',
-      width: 20,
-      height: 20,
-      marginLeft: token.marginXXS
-    },
-
-    '.invitation-buttons': {
-      display: 'flex',
-      gap: token.sizeSM
     },
 
     '.friend-list-title': {

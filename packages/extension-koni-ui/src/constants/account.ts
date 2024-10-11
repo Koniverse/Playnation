@@ -14,7 +14,7 @@ export const DEFAULT_ACCOUNT_TYPES: KeypairType[] = [SUBSTRATE_ACCOUNT_TYPE, EVM
 export const DEFAULT_PASSWORD = 'PlayNation#^(';
 
 export const rankPointMap: Record<string, number> = {
-  iron: 600,
+  iron: 400,
   bronze: 1500,
   silver: 4500,
   gold: 13500,

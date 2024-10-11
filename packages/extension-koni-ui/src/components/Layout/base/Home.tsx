@@ -7,7 +7,7 @@ import { VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/const
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ButtonProps, Icon, ModalContext, Tooltip } from '@subwallet/react-ui';
-import { FadersHorizontal, MagnifyingGlass, UserCirclePlus } from 'phosphor-react';
+import {Export, FadersHorizontal, MagnifyingGlass} from 'phosphor-react';
 import React, { useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -42,7 +42,7 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, onC
   }, [activeModal]);
 
   const onOpenInvite = useCallback(() => {
-    navigate('/invite');
+    navigate('/home/invite');
     setIsVisitedInvitationScreen(true);
   }, [navigate, setIsVisitedInvitationScreen]);
 
@@ -79,7 +79,7 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, onC
           <>
             <Icon
               customSize={'20px'}
-              phosphorIcon={UserCirclePlus}
+              phosphorIcon={Export}
               weight={'fill'}
             />
 

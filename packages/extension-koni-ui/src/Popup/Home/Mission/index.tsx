@@ -1,7 +1,6 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GameAccountBlock } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { EnergyConfig, Task, TaskCategory, TaskCategoryInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
@@ -165,6 +164,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         // @ts-ignore
         widgetModalInfoMap[widgetId] = modalData;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        // @ts-ignore
         modalData.open();
         setIsOpenWidget(true);
       }
@@ -240,13 +240,6 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   return (
     <div className={className}>
-      <div className='game-account-block-wrapper'>
-        <GameAccountBlock
-          accountInfo={account}
-          maxEnergy={energyConfig?.maxEnergy}
-        />
-      </div>
-
       <div className={'task-list-container'}>
         <TaskList
           actionReloadPoint={actionReloadPoint}

@@ -143,11 +143,15 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     generateTokens: () => {
       return {
         ...defaultToken,
-        colorPrimary: '#CBF147',
-        colorPrimaryHover: '#E5FF73',
-        colorPrimaryActive: '#A5CC31'
+        colorPrimary: '#C7F0FF',
+        colorPrimaryHover: '#9FE3FF',
+        colorPrimaryActive: '#7CBAD9'
       };
-    }
+    },
+    generateExtraTokens: (token: AliasToken) => ({
+      ...genDefaultExtraTokens(token),
+      colorBgGradient: 'linear-gradient(117deg, #FFD8E6 9.05%, #BCEBFF 91.43%)'
+    })
   },
   [ThemeNames.SKY]: {
     ...defaultThemeConfig,
