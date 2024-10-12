@@ -1,9 +1,9 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
+import { Layout, PageWrapper, ResetWalletModal } from '@subwallet/extension-koni-ui/components';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { settingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
+import { RESET_WALLET_MODAL, settingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { EXTENSION_VERSION, SUPPORT_URL } from '@subwallet/extension-koni-ui/constants/common';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
@@ -11,10 +11,10 @@ import { saveCameraSetting } from '@subwallet/extension-koni-ui/messaging';
 import GeneralSetting from '@subwallet/extension-koni-ui/Popup/Settings/GeneralSetting';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { BackgroundIcon, Icon, SettingItem, SwIconProps, Switch } from '@subwallet/react-ui';
+import { BackgroundIcon, Button, Icon, ModalContext, SettingItem, SwIconProps, Switch } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { ArrowSquareOut, BookBookmark, Camera, CaretRight, Coins, Graph, Headset } from 'phosphor-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowCounterClockwise, ArrowSquareOut, BookBookmark, Camera, CaretRight, Coins, Graph, Headset } from 'phosphor-react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Outlet, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -75,6 +75,11 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const { camera } = useSelector((state: RootState) => state.settings);
   const [loadingCamera, setLoadingCamera] = useState(false);
+  const { activeModal } = useContext(ModalContext);
+
+  const onReset = useCallback(() => {
+    activeModal(RESET_WALLET_MODAL);
+  }, [activeModal]);
 
   // todo: i18n all titles, labels below
   const SettingGroupItemType = useMemo((): SettingGroupItemType[] => ([
@@ -250,6 +255,24 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
                 );
               })
             }
+
+            <Button
+              block
+              className={'reset-button'}
+              icon={
+                <Icon
+                  phosphorIcon={ArrowCounterClockwise}
+                  type='phosphor'
+                  weight={'fill'}
+                />
+              }
+              onClick={onReset}
+              schema={'danger'}
+            >
+              {t('Reset')}
+            </Button>
+            <ResetWalletModal />
+
             <div className={'__version'}>
               Playnation v{EXTENSION_VERSION}
             </div>
@@ -297,6 +320,10 @@ export const Settings = styled(Component)<Props>(({ theme: { token } }: Props) =
       '.__subwallet-logo': {
         borderRadius: '50%'
       }
+    },
+
+    '.reset-button': {
+      marginTop: token.margin
     }
   });
 });
