@@ -52,7 +52,7 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
         weight: 'fill'
       },
       label: t('Home'),
-      key: 'home',
+      key: 'account',
       url: '/home/account'
     },
     {

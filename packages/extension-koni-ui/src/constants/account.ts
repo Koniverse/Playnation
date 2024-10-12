@@ -59,3 +59,5 @@ export const largeRankIconMap: Record<string, string> = {
   platinum: '/images/ranks/platinum_large.png',
   diamond: '/images/ranks/diamond_large.png'
 };
+
+export const showAccountAddress = false;

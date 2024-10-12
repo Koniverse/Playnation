@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { smallRankIconMap } from '@subwallet/extension-koni-ui/constants';
+import { showAccountAddress, smallRankIconMap } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
@@ -25,14 +25,13 @@ function Component ({ className }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const notify = useNotification();
   const navigate = useNavigate();
-
   const [gameAccount, setGameAccount] = useState(apiSDK.account);
-
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
 
   const onClickAccount = useCallback(() => {
-    navigate(`/accounts/detail/${currentAccount?.address || ''}`);
-  }, [currentAccount?.address, navigate]);
+    // navigate(`/accounts/detail/${currentAccount?.address || ''}`);
+    navigate('/home/account');
+  }, [navigate]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -53,7 +52,7 @@ function Component ({ className }: Props): React.ReactElement<Props> {
 
   return (
     <div className={CN(className, 'global-account-info')}>
-      <Button
+      {showAccountAddress && <Button
         icon={(
           <Image
             src={smallRankIconMap[gameAccount?.attributes.rank || 'iron']}
@@ -62,7 +61,7 @@ function Component ({ className }: Props): React.ReactElement<Props> {
         )}
         size={'xs'}
         type={'ghost'}
-      />
+      />}
 
       {
         !!currentAccount && (
@@ -75,19 +74,21 @@ function Component ({ className }: Props): React.ReactElement<Props> {
         )
       }
 
-      <Button
-        className={'__copy-button'}
-        icon={(
-          <Icon
-            phosphorIcon={Copy}
-            size={'xs'}
-            weight={'fill'}
-          />
-        )}
-        onClick={onCopyCurrent}
-        size={'xs'}
-        type={'ghost'}
-      />
+      {
+        showAccountAddress && <Button
+          className={'__copy-button'}
+          icon={(
+            <Icon
+              phosphorIcon={Copy}
+              size={'xs'}
+              weight={'fill'}
+            />
+          )}
+          onClick={onCopyCurrent}
+          size={'xs'}
+          type={'ghost'}
+        />
+      }
     </div>
   );
 }

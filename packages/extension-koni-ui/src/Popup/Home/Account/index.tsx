@@ -16,6 +16,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import {showAccountAddress} from "@subwallet/extension-koni-ui/constants";
 
 type Props = ThemeProps;
 const apiSDK = BookaSdk.instance;
@@ -60,7 +61,7 @@ const Component: React.FC<Props> = (props: Props) => {
         />
 
         <div className='account-name'>{accountJson?.name}</div>
-        <div className='account-address-wrapper'>
+        {showAccountAddress && <div className='account-address-wrapper'>
           <div className='account-address'>
             ({accountJson?.address ? toShort(accountJson?.address, 12, 5) : ''})
           </div>
@@ -80,7 +81,7 @@ const Component: React.FC<Props> = (props: Props) => {
               type={'ghost'}
             />
           </div>
-        </div>
+        </div>}
       </div>
 
       <div className='block-info-card'>

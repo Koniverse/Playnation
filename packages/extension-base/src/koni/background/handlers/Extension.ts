@@ -1293,13 +1293,14 @@ export default class KoniExtension {
 
     const currentAccount = this.#koniState.keyringService.currentAccount;
     const allGenesisHash = currentAccount?.allGenesisHash || undefined;
+    const createMultipleType = types?.length && types.length > 1;
 
     types?.forEach((type) => {
       const suri = getSuri(_suri, type);
       const address = keyring.createFromUri(suri, {}, type).address;
 
       addressDict[type] = address;
-      const newAccountName = type === 'ethereum' ? `${name} - EVM` : name;
+      const newAccountName = (type === 'ethereum' && createMultipleType) ? `${name} - EVM` : name;
 
       keyring.addUri(suri, { genesisHash, name: newAccountName }, type);
       this._addAddressToAuthList(address, isAllowed);

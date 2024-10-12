@@ -3,6 +3,7 @@
 
 import { AccountJson } from '@subwallet/extension-base/background/types';
 import AvatarGroup from '@subwallet/extension-koni-ui/components/Account/Info/AvatarGroup';
+import { showAccountAddress } from '@subwallet/extension-koni-ui/constants';
 import useChainInfo from '@subwallet/extension-koni-ui/hooks/chain/useChainInfo';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -31,7 +32,7 @@ const Component: React.FC<Props> = ({ account, className }: Props) => {
       >
         { isAll ? t('All accounts') : account.name}
       </Typography.Text>
-      {!isAll && <div className='account-address'>(...{address.slice(-3)})</div>}
+      {!isAll && showAccountAddress && <div className='account-address'>(...{address.slice(-3)})</div>}
     </div>
   );
 };
