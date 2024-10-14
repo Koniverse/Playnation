@@ -10,7 +10,7 @@ import { copyToClipboard, toDisplayNumber } from '@subwallet/extension-koni-ui/u
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { Copy, UserCirclePlus } from 'phosphor-react';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 interface Props extends ThemeProps {
@@ -24,11 +24,16 @@ const Component = ({ className, hideCopyLink }: Props) => {
   const { t } = useTranslation();
   const invitePoint = useMemo(() => (rankPointMap.iron || 0), []);
   const notify = useNotification();
+  const [isLoading, setIsLoading] = useState(true);
+  const [inviteURL, setInviteURL] = useState('');
 
-  const inviteURL = useMemo(() => {
-    const encodeURL = apiSDK.getInviteURL();
+  useEffect(() => {
+    apiSDK.waitForSync.then(() => {
+      const encodeURL = apiSDK.getInviteURL();
 
-    return `https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent('Invite your friend and earn a bonus gift for each friend you bring in!')}`;
+      setInviteURL(`https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent('Invite your friend and earn a bonus gift for each friend you bring in!')}`);
+      setIsLoading(false);
+    }).catch(console.error);
   }, []);
 
   const inviteFriend = useCallback(() => {
@@ -64,6 +69,7 @@ const Component = ({ className, hideCopyLink }: Props) => {
               weight={'fill'}
             />
           )}
+          loading={isLoading}
           onClick={inviteFriend}
           schema={'primary'}
           shape={'round'}
@@ -81,6 +87,7 @@ const Component = ({ className, hideCopyLink }: Props) => {
               weight={'fill'}
             />
           )}
+          loading={isLoading}
           onClick={copyLink}
           schema={'secondary'}
           shape={'round'}
