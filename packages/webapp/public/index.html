@@ -140,7 +140,7 @@
 
     gtag('config', 'G-C01KRVB114');
 
-    if (typeof TelegramWebviewProxy === "undefined") {
+    if (typeof TelegramWebviewProxy === "undefined" && !Telegram?.WebApp?.initData) {
       window.location.href = "/not-support.html";
     }
   </script>
