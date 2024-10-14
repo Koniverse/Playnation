@@ -363,13 +363,13 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
       backgroundColor: extendToken.colorBgSecondary1,
       paddingLeft: token.padding,
       paddingRight: token.padding,
-      paddingBottom: token.paddingXS
+      paddingBottom: token.paddingXS,
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20
     },
 
     '.friend-list-container.-empty': {
       flex: '0 1 auto',
-      borderBottomLeftRadius: 20,
-      borderBottomRightRadius: 20,
       marginBottom: token.margin
     },
 
