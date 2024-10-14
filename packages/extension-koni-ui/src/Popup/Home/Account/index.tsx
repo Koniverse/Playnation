@@ -200,11 +200,11 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
       },
 
       '.__left': {
-        clipPath: 'path("M 0 0 L 32 0 L 32 32 L 0 32 C 21 29 21 3 0 0 Z")'
+        clipPath: 'path("M 0 0 L 32 0 L 32 32 L 0 32 L 0 31 C 16 28 16 4 0 1 L 0 0 Z")'
       },
 
       '.__right': {
-        clipPath: 'path("M 0 0 L 32 0 C 11 3 11 29 32 32 L 0 32 L 0 0 Z")'
+        clipPath: 'path("M 0 0 L 32 0 L 32 1 C 16 4 16 28 32 31 L 32 32 L 0 32 L 0 0 Z")'
       },
 
       hr: {

@@ -58,22 +58,22 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
     {
       icon: {
         type: 'phosphor',
-        phosphorIcon: UserCirclePlus,
-        weight: 'fill'
-      },
-      label: t('Invite'),
-      key: 'invite',
-      url: '/home/invite'
-    },
-    {
-      icon: {
-        type: 'phosphor',
         phosphorIcon: Target,
         weight: 'fill'
       },
       label: t('Missions'),
       key: 'mission',
       url: '/home/mission'
+    },
+    {
+      icon: {
+        type: 'phosphor',
+        phosphorIcon: UserCirclePlus,
+        weight: 'fill'
+      },
+      label: t('Invite'),
+      key: 'invite',
+      url: '/home/invite'
     },
     {
       icon: {

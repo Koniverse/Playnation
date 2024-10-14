@@ -274,7 +274,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
             <ResetWalletModal />
 
             <div className={'__version'}>
-              Playnation v{EXTENSION_VERSION}
+              Koni Story v{EXTENSION_VERSION}
             </div>
           </div>
         </Layout.WithSubHeaderOnly>
