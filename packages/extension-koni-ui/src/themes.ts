@@ -34,6 +34,10 @@ export interface ExtraToken {
   tokensScreenSuccessBackgroundColor: string,
   tokensScreenDangerBackgroundColor: string,
   tokensScreenInfoBackgroundColor: string,
+  fontDruk: string,
+  fontBarlowCondensed: string,
+  fontPermanentMarker: string,
+  mythColorTextDark: string,
 }
 
 export type Theme = {
@@ -70,7 +74,11 @@ function genDefaultExtraTokens (token: AliasToken): ExtraToken {
     colorBgHover3: 'rgba(31, 31, 35, 0.06)',
     tokensScreenSuccessBackgroundColor: 'linear-gradient(180deg, rgba(76, 234, 172, 0.1) 16.47%, rgba(217, 217, 217, 0) 94.17%)',
     tokensScreenDangerBackgroundColor: 'linear-gradient(180deg, rgba(234, 76, 76, 0.1) 16.47%, rgba(217, 217, 217, 0) 94.17%)',
-    tokensScreenInfoBackgroundColor: 'linear-gradient(180deg, rgba(0, 75, 255, 0.1) 16.47%, rgba(217, 217, 217, 0) 94.17%)'
+    tokensScreenInfoBackgroundColor: 'linear-gradient(180deg, rgba(0, 75, 255, 0.1) 16.47%, rgba(217, 217, 217, 0) 94.17%)',
+    fontDruk: 'Druk',
+    fontBarlowCondensed: 'BarlowCondensed',
+    fontPermanentMarker: 'PermanentMarker',
+    mythColorTextDark: '#0f0f0f'
   };
 }
 
@@ -89,7 +97,9 @@ export const getDefaultLogoMap = (): Web3LogoMap => ({
 });
 
 const defaultToken: Partial<AliasToken> = {
-  colorSecondary: '#44D5DE',
+  fontFamily: 'BarlowCondensed',
+  colorPrimary: '#CBFF00',
+  colorSecondary: '#28C89F',
   colorTextBase: '#1F1F23',
   colorBgBase: '#ffffff',
   colorBgSecondary: '#F0F0F0',
@@ -143,7 +153,7 @@ export const SW_THEME_CONFIGS: Record<ThemeNames, SwThemeConfig> = {
     generateTokens: () => {
       return {
         ...defaultToken,
-        colorPrimary: '#CBF147',
+        colorPrimary: '#CBFF00',
         colorPrimaryHover: '#E5FF73',
         colorPrimaryActive: '#A5CC31'
       };

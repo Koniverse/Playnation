@@ -32,7 +32,7 @@ type Props = ThemeProps;
 const GlobalSearchTokenModalId = 'globalSearchToken';
 
 const Component = (): React.ReactElement => {
-  useSetCurrentPage('/home/games');
+  useSetCurrentPage('/home/events');
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
   const { setContainerClass } = useContext(HomeContext);

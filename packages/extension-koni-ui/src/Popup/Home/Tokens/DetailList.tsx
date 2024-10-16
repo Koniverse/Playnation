@@ -78,7 +78,7 @@ function Component (): React.ReactElement {
     selectedNetwork,
     tokenSelectorItems } = useReceiveQR(tokenGroupSlug);
 
-  useNavigateOnChangeAccount('/home/games');
+  useNavigateOnChangeAccount('/home/events');
 
   const symbol = useMemo<string>(() => {
     if (tokenGroupSlug) {
@@ -288,7 +288,7 @@ function Component (): React.ReactElement {
   }, []);
 
   const goHome = useCallback(() => {
-    navigate('/home/games');
+    navigate('/home/events');
   }, [navigate]);
 
   const onOpenGlobalSearchToken = useCallback(() => {

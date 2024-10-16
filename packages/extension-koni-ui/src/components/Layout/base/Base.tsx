@@ -42,9 +42,9 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
         type: 'customIcon',
         customIcon: <GameSVG />
       },
-      label: t('Games'),
-      key: 'games',
-      url: '/home/games'
+      label: t('Events'),
+      key: 'events',
+      url: '/home/events'
     },
     {
       icon: {

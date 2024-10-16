@@ -34,7 +34,8 @@ export const RouteState = {
 };
 
 const welcomeUrl = '/welcome';
-const gameUrl = '/home/games';
+// const gameUrl = '/home/games';
+const eventsUrl = '/home/events';
 // const tokenUrl = '/home/token';
 const loginUrl = '/keyring/login';
 const phishingUrl = '/phishing-page-detected';
@@ -219,7 +220,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       //   redirectTarget = gameUrl;
       // }
 
-      redirectTarget = gameUrl;
+      redirectTarget = eventsUrl;
     } else if (pathName === loginUrl && !needUnlock) {
       redirectTarget = DEFAULT_ROUTER_PATH;
     } else if (pathName === welcomeUrl && !noAccount) {

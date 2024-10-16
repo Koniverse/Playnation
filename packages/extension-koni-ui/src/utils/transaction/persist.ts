@@ -43,5 +43,5 @@ export const removeTransactionPersist = (type?: ExtrinsicType) => {
     removeStorage(key);
   }
 
-  window.localStorage.setItem(CURRENT_PAGE, '/home/games');
+  window.localStorage.setItem(CURRENT_PAGE, '/home/events');
 };

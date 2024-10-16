@@ -53,7 +53,7 @@ export const FilterTabs = styled(Component)<Props>(({ theme: { token } }: Props)
 
     '.__tab-item': {
       cursor: 'pointer',
-      color: token.colorTextLight4,
+      color: '#fff',
       transition: `color ${token.motionDurationMid}`
     },
 
@@ -63,6 +63,7 @@ export const FilterTabs = styled(Component)<Props>(({ theme: { token } }: Props)
       paddingTop: token.sizeXS + 2,
       paddingBottom: token.sizeXS,
       fontWeight: token.headingFontWeight,
+      textTransform: 'uppercase',
       'white-space': 'nowrap'
     },
 
@@ -76,7 +77,7 @@ export const FilterTabs = styled(Component)<Props>(({ theme: { token } }: Props)
     },
 
     '.__tab-item.-active': {
-      color: token.colorTextLight2,
+      color: token.colorPrimary,
 
       '&:after': {
         opacity: 1
