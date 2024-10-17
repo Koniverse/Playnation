@@ -107,7 +107,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   );
 };
 
-const Games = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
+const Event = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     overflow: 'hidden',
     display: 'flex',
@@ -128,4 +128,4 @@ const Games = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
   };
 });
 
-export default Games;
+export default Event;

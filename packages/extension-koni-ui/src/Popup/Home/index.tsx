@@ -130,6 +130,7 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
     [`
       &.wallet-screen-wrapper,
       &.events-screen-wrapper,
+      &.cards-screen-wrapper,
       &.invitation-screen-wrapper,
       &.mission-screen-wrapper,
       &.airdrop-screen-wrapper,

@@ -1,5 +1,4 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-export * from './Event';
-export * from './Card';
+export { default as CardItem } from './CardItem';

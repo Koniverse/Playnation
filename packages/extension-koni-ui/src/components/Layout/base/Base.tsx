@@ -52,6 +52,16 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
         phosphorIcon: Target,
         weight: 'fill'
       },
+      label: t('Cards'),
+      key: 'cards',
+      url: '/home/cards'
+    },
+    {
+      icon: {
+        type: 'phosphor',
+        phosphorIcon: Target,
+        weight: 'fill'
+      },
       label: t('Missions'),
       key: 'mission',
       url: '/home/mission'
