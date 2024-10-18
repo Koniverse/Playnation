@@ -127,24 +127,6 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
       }
     },
 
-    [`
-      &.wallet-screen-wrapper,
-      &.events-screen-wrapper,
-      &.cards-screen-wrapper,
-      &.invitation-screen-wrapper,
-      &.mission-screen-wrapper,
-      &.airdrop-screen-wrapper,
-      &.history-screen-wrapper
-    `]: {
-      '> .ant-sw-screen-layout-body > .ant-sw-screen-layout-body-inner': {
-        paddingBottom: 56,
-
-        '> div': {
-          height: '100%'
-        }
-      }
-    },
-
     '&.game-screen-wrapper.-show-game': {
       '.ant-sw-screen-layout-body-inner': {
         position: 'static'

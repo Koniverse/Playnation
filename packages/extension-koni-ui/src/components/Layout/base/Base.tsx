@@ -264,42 +264,6 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
     backgroundColor: token.colorBgSecondary
   },
 
-  '&.-has-game-bgi': {
-    '.game-background-image': {
-      position: 'fixed',
-      top: '56%',
-      width: 138,
-      height: 'auto',
-      left: -17,
-      zIndex: 0
-    }
-  },
-
-  '&.-has-euro-bgi.-show-tab-bar': {
-    '.euro-background-image': {
-      position: 'fixed',
-      pointerEvents: 'none',
-      left: 'calc(50% - 370px)',
-      width: 740,
-      height: 'auto',
-      bottom: -155,
-      zIndex: 6
-    }
-  },
-
-  '&.-has-euro-bgi:not(.-show-tab-bar)': {
-    '.euro-background-image': {
-      position: 'fixed',
-      pointerEvents: 'none',
-      left: 'calc(50% - 288px)',
-      width: 576,
-      opacity: 0.65,
-      height: 'auto',
-      bottom: 0,
-      zIndex: 0
-    }
-  },
-
   '> .ant-sw-screen-layout-header .ant-sw-header-bg-default': {
     backgroundColor: 'transparent'
   },
@@ -310,27 +274,32 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
 
   '.ant-sw-tab-bar-container': {
     position: 'fixed',
-    width: 'auto',
-    bottom: 24,
-    left: token.sizeXS,
-    right: token.sizeXS,
-    padding: `9px ${token.padding}px`,
-    borderRadius: 40,
-    alignItems: 'flex-start',
-    backgroundColor: extendToken.colorBgSecondary2,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'transparent',
+    backgroundImage: 'url("/images/mythical/bottom-tab-bar-background.png")',
+    backgroundSize: '100% auto',
+    backgroundPosition: 'left top',
     zIndex: 500,
+    minHeight: 90,
+    borderRadius: 0,
+    paddingTop: 14,
+    paddingLeft: 12,
+    paddingRight: 12,
+    paddingBottom: 28,
 
     '.ant-sw-tab-bar-item': {
       gap: token.sizeXXS,
 
       '.ant-sw-tab-bar-item-icon, .ant-sw-tab-bar-item-label': {
-        color: token.colorTextLight3
+        color: extendToken.mythColorGray2
       }
     },
 
     '.ant-sw-tab-bar-item:hover': {
       '.ant-sw-tab-bar-item-icon, .ant-sw-tab-bar-item-label': {
-        color: token.colorTextLight1
+        color: extendToken.mythColorGray1
       }
     },
 
@@ -342,8 +311,11 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
 
     '.ant-sw-tab-bar-item-label': {
       textAlign: 'center',
-      fontSize: 10,
-      lineHeight: 1.6
+      fontSize: 14,
+      fontFamily: extendToken.fontBarlowCondensed,
+      fontWeight: 400,
+      lineHeight: '16px',
+      letterSpacing: 0.28
     }
   },
 
