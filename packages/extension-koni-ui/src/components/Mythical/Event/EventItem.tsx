@@ -216,7 +216,7 @@ export const EventItem = styled(Component)<EventItemProps>(({ buttonSvgMaskId, d
       lineHeight: '20px',
       fontWeight: 400,
       fontSize: 16,
-      color: extendToken.mythColorTextDark
+      color: extendToken.mythColorDark
     },
 
     // round block
@@ -427,7 +427,7 @@ export const EventItem = styled(Component)<EventItemProps>(({ buttonSvgMaskId, d
       cursor: 'pointer',
 
       '.__item-button-label': {
-        color: extendToken.mythColorTextDark
+        color: extendToken.mythColorDark
       },
 
       '.__item-button-background:before': {
@@ -437,7 +437,7 @@ export const EventItem = styled(Component)<EventItemProps>(({ buttonSvgMaskId, d
 
     '.__item-button.-coming-soon': {
       '.__item-button-label': {
-        color: extendToken.mythColorTextDark
+        color: extendToken.mythColorDark
       },
 
       '.__item-button-background:before': {

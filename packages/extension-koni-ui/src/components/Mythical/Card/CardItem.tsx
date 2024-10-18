@@ -7,12 +7,14 @@ import styled from 'styled-components';
 
 type Props = ThemeProps & {
   imageSrc: string;
+  onClick?: VoidFunction;
 };
 
-const Component = ({ className, imageSrc }: Props): React.ReactElement => {
+const Component = ({ className, imageSrc, onClick }: Props): React.ReactElement => {
   return (
     <div
       className={className}
+      onClick={onClick}
       style={{
         backgroundImage: `url("/images/mythical/cards/${imageSrc}.png")`
       }}
@@ -25,6 +27,7 @@ const CardItem = styled(Component)<ThemeProps>(({ theme: { extendToken, token } 
     backgroundSize: '135% auto',
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'center center',
+    cursor: 'pointer',
 
     '&:before': {
       content: '""',

@@ -1,18 +1,23 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { CardItem } from '@subwallet/extension-koni-ui/components/Mythical';
+import { CardDetailModal, CardItem } from '@subwallet/extension-koni-ui/components/Mythical';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useContext, useEffect, useMemo } from 'react';
+import { ModalContext } from '@subwallet/react-ui';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { ToolArea } from './ToolArea';
 
 type Props = ThemeProps;
 
+const cardDetailModalId = 'cardDetailModalId';
+
 const Component = ({ className }: Props): React.ReactElement => {
   const { setContainerClass } = useContext(HomeContext);
+  const { activeModal, inactiveModal } = useContext(ModalContext);
+  const [selectedCard, setSelectedCard] = useState<string | undefined>(undefined);
 
   const cardItems = useMemo(() => {
     return [
@@ -37,6 +42,18 @@ const Component = ({ className }: Props): React.ReactElement => {
     ];
   }, []);
 
+  const onClickCard = useCallback((cardSrc: string) => {
+    return () => {
+      setSelectedCard(cardSrc);
+      activeModal(cardDetailModalId);
+    };
+  }, [activeModal]);
+
+  const onCloseDetailModal = useCallback(() => {
+    inactiveModal(cardDetailModalId);
+    setSelectedCard(undefined);
+  }, [inactiveModal]);
+
   useEffect(() => {
     setContainerClass('cards-screen-wrapper');
 
@@ -46,22 +63,35 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [setContainerClass]);
 
   return (
-    <div className={className}>
-      <ToolArea />
+    <>
+      <div className={className}>
+        <ToolArea />
 
-      <div className='card-list-container'>
-        {
-          cardItems.map((item) => (
-            <CardItem
-              className={'card-item'}
-              imageSrc={item}
-              key={item}
-            />
-          ))
-        }
-        <div className={'card-item'}></div>
+        <div className='card-list-container'>
+          {
+            cardItems.map((item) => (
+              <CardItem
+                className={'card-item'}
+                imageSrc={item}
+                key={item}
+                onClick={onClickCard(item)}
+              />
+            ))
+          }
+          <div className={'card-item'}></div>
+        </div>
       </div>
-    </div>
+
+      {
+        !!selectedCard && (
+          <CardDetailModal
+            cardSrc={selectedCard}
+            id={cardDetailModalId}
+            onCancel={onCloseDetailModal}
+          />
+        )
+      }
+    </>
   );
 };
 
@@ -78,7 +108,7 @@ const Cards = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
       display: 'flex',
       flexWrap: 'wrap',
       paddingRight: 16,
-      paddingLeft: 16,
+      paddingLeft: 16
     },
 
     '.card-item': {

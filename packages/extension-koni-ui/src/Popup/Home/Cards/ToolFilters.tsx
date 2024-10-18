@@ -53,15 +53,17 @@ export const ToolFilters = styled(Component)<ThemeProps>(({ theme: { extendToken
     textAlign: 'center',
 
     '.__button-label': {
+      marginTop: -2,
       textTransform: 'uppercase',
       fontSize: 16,
       fontWeight: 500,
       lineHeight: '18px',
       letterSpacing: -0.16,
       color: '#fff',
+      fontFamily: extendToken.fontDruk,
 
       span: {
-        color: extendToken.mythColorTextGray
+        color: extendToken.mythColorGray1
       }
     }
   };

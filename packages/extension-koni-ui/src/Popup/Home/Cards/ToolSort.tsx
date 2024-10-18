@@ -90,6 +90,7 @@ export const ToolSort = styled(Component)<ThemeProps>(({ theme: { extendToken, t
     },
 
     '.__sort-button-label': {
+      marginTop: -2,
       textTransform: 'uppercase',
       fontSize: 16,
       fontWeight: 500,
@@ -100,9 +101,10 @@ export const ToolSort = styled(Component)<ThemeProps>(({ theme: { extendToken, t
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       'white-space': 'nowrap',
+      fontFamily: extendToken.fontDruk,
 
       span: {
-        color: extendToken.mythColorTextGray
+        color: extendToken.mythColorGray1
       }
     }
   };

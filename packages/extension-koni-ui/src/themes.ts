@@ -37,8 +37,9 @@ export interface ExtraToken {
   fontDruk: string,
   fontBarlowCondensed: string,
   fontPermanentMarker: string,
-  mythColorTextDark: string,
-  mythColorTextGray: string,
+  mythColorDark: string,
+  mythColorGray1: string,
+  mythColorGray2: string,
 }
 
 export type Theme = {
@@ -79,8 +80,9 @@ function genDefaultExtraTokens (token: AliasToken): ExtraToken {
     fontDruk: 'Druk',
     fontBarlowCondensed: 'BarlowCondensed',
     fontPermanentMarker: 'PermanentMarker',
-    mythColorTextDark: '#0f0f0f',
-    mythColorTextGray: '#BEBEBE'
+    mythColorDark: '#0f0f0f',
+    mythColorGray1: '#BEBEBE',
+    mythColorGray2: '#7E7E7E'
   };
 }
 
