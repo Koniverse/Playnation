@@ -6,7 +6,7 @@ import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -30,7 +30,9 @@ const CACHE_KEYS = {
   energyConfig: 'data--energy-config-cache',
   rankInfoMap: 'data--rank-info-map-cache',
   leaderboardConfigSubject: 'data--leaderboard-config-list-cache',
-  airdropCampaignList: 'data--airdrop-campaign-list-cache'
+  airdropCampaignList: 'data--airdrop-campaign-list-cache',
+  achievementList: 'data--achievement-list-cache',
+  gameEventList: 'data--game-event-cache'
 };
 
 function parseCache<T> (key: string): T | undefined {
@@ -53,8 +55,10 @@ export class BookaSdk {
   private syncHandler = createPromiseHandler<void>();
   private accountSubject = new BehaviorSubject<BookaAccount | undefined>(undefined);
   private taskListSubject = new BehaviorSubject<Task[]>([]);
+  private achievementListSubject = new BehaviorSubject<Achievement[]>([]);
   private taskCategoryListSubject = new BehaviorSubject<TaskCategory[]>([]);
   private gameListSubject = new BehaviorSubject<Game[]>([]);
+  private gameEventSubject = new BehaviorSubject<GameEvent[]>([]);
   private currentGamePlaySubject = new BehaviorSubject<GamePlay | undefined>(undefined);
   private leaderBoardSubject = new BehaviorSubject<LeaderboardPerson[]>([]);
   private referralListSubject = new BehaviorSubject<ReferralRecord[]>([]);
@@ -85,6 +89,8 @@ export class BookaSdk {
       const airdropCampaignList = parseCache<AirdropCampaign[]>(CACHE_KEYS.airdropCampaignList);
       const rankInfoMap = parseCache<Record<AccountRankType, RankInfo>>(CACHE_KEYS.rankInfoMap);
       const leaderboardConfigSubject = parseCache<Record<string, object>>(CACHE_KEYS.leaderboardConfigSubject);
+      const achievementList = parseCache<Achievement[]>(CACHE_KEYS.achievementList);
+      const gameEventList = parseCache<GameEvent[]>(CACHE_KEYS.gameEventList);
 
       account && this.accountSubject.next(account);
       taskCategoryList && this.taskCategoryListSubject.next(taskCategoryList);
@@ -94,6 +100,8 @@ export class BookaSdk {
       rankInfoMap && this.rankInfoSubject.next(rankInfoMap);
       airdropCampaignList && this.airdropCampaignSubject.next(airdropCampaignList);
       leaderboardConfigSubject && this.leaderboardConfigSubject.next(leaderboardConfigSubject);
+      achievementList && this.achievementListSubject.next(achievementList);
+      gameEventList && this.gameEventSubject.next(gameEventList);
     } else {
       console.debug('Clearing cache');
       storage.removeItems(Object.keys(CACHE_KEYS).concat(['cache-version'])).catch(console.error);
@@ -125,7 +133,15 @@ export class BookaSdk {
     return this.taskCategoryListSubject.value;
   }
 
+  public get achievementList () {
+    return this.taskCategoryListSubject.value;
+  }
+
   public get gameList () {
+    return this.gameListSubject.value;
+  }
+
+  public get gameEventList () {
     return this.gameListSubject.value;
   }
 
@@ -317,6 +333,44 @@ export class BookaSdk {
 
   subscribeTaskCategoryList () {
     return this.taskCategoryListSubject;
+  }
+
+  async fetchGameEventList () {
+    await this.waitForSync;
+    const gameEventList = await this.getRequest<GameEvent[]>(`${GAME_API_HOST}/api/game-event/fetch`);
+
+    if (gameEventList) {
+      this.gameEventSubject.next(gameEventList);
+      localStorage.setItem(CACHE_KEYS.gameEventList, JSON.stringify(gameEventList));
+    }
+  }
+
+  subscribeGameEventList () {
+    return this.taskCategoryListSubject;
+  }
+
+  subscribeAchievementList () {
+    return this.achievementListSubject;
+  }
+
+  async fetchAchievementList () {
+    await this.waitForSync;
+    const achievementList = await this.getRequest<Achievement[]>(`${GAME_API_HOST}/api/achievement/fetch-v2`);
+
+    if (achievementList) {
+      this.achievementListSubject.next(achievementList);
+      localStorage.setItem(CACHE_KEYS.achievementList, JSON.stringify(achievementList));
+    }
+  }
+
+  async claimAchievement (milestoneId: number) {
+    const data = await this.postRequest(`${GAME_API_HOST}/api/achievement/claim`, { milestoneId });
+
+    await this.fetchAchievementList();
+
+    await this.reloadAccount();
+
+    return data as {success: boolean};
   }
 
   async fetchTaskList () {

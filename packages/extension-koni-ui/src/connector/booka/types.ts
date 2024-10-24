@@ -137,9 +137,78 @@ export interface Task {
   achievement?: AchievementData | null;
 }
 
+export enum TaskCategoryType {
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  FEATURED = 'featured',
+}
+export enum RepeatableType {
+  NON_REPEATABLE = 'non_repeatable',
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+}
+
+export enum LogViewType {
+  SINGLE = 'single',
+  MULTIPLE = 'multiple',
+}
+
+export interface ProgressData {
+  required: number;
+  completed: number;
+  metricId: string;
+}
+
+export enum ComparisonOperator {
+  GT = 'gt',
+  GTE = 'gte',
+  LT = 'lt',
+  LTE = 'lte',
+  EQ = 'eq',
+  RANK_GT = 'rank_gt',
+  RANK_GTE = 'rank_gte',
+  RANK_LT = 'rank_lt',
+  RANK_LTE = 'rank_lte',
+  RANK_EQ = 'rank_eq'
+}
+
+export enum AchievementLogStatus {
+  PENDING = 'pending',
+  CLAIMABLE = 'claimable',
+  CLAIMED = 'claimed',
+}
+
+export interface Condition {
+  metric: string;
+  comparison: ComparisonOperator;
+  value: number;
+}
+
+export interface Achievement {
+  categoryName: string;
+  categoryType: TaskCategoryType;
+  categoryId: number;
+  repeatable: RepeatableType;
+  type: string;
+  logViewType: LogViewType;
+  conditions: Condition[];
+  progress: ProgressData[];
+  name: string;
+  id: number;
+  milestoneId: number;
+  milestoneName: string,
+  slug: string;
+  icon: string,
+  nps: number,
+  status: AchievementLogStatus,
+  createdAt: Date,
+  completedAt: Date,
+}
+
 export interface TaskCategory {
   id: number; // id on db
   contentId: number;
+  type: TaskCategoryType;
   slug: string;
   name?: string | null;
   description?: string | null;
@@ -361,4 +430,37 @@ export interface AirdropRaffle {
 
 export interface AirdropClaim {
   airdropRecordLogId: number,
+}
+
+export interface GameEvent {
+  id: number;
+  documentId: string;
+  active: boolean;
+  name: string;
+  gameId: number;
+  icon: string;
+  description?: any;
+  startTime: string;
+  endTime: string;
+  tossUpInfo: TossUpInfo;
+  tossUpBonus: TossUpBonus[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface TossUpBonus {
+  team?: string;
+  bonus: number;
+  bonusText: string;
+  program?: string;
+  position?: string;
+}
+
+interface TossUpInfo {
+  round: number;
+  stats: string[];
+  difficulty: number;
+  playDuration: number;
+  opponentTeams: string[];
+  gameplayPerEvent: number;
 }
