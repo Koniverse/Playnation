@@ -44,6 +44,7 @@ const MythButton = styled(Component)<ThemeProps>(({ theme: { extendToken, token 
     border: 'none',
     outline: 'none',
     padding: 0,
+    cursor: 'pointer',
 
     '.__button-inner': {
       display: 'flex',
@@ -74,6 +75,10 @@ const MythButton = styled(Component)<ThemeProps>(({ theme: { extendToken, token 
         display: 'block',
         inset: 0
       }
+    },
+
+    '&:disabled': {
+      cursor: 'default'
     }
   };
 });

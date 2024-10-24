@@ -3,3 +3,5 @@
 
 export { default as MythButton } from './MythButton';
 export { default as CallToAction } from './CallToAction';
+export { default as MainScreenHeader } from './MainScreenHeader';
+export { default as SubScreenHeader } from './SubScreenHeader';

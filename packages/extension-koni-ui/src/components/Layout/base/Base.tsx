@@ -102,9 +102,9 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
         phosphorIcon: Wallet,
         weight: 'fill'
       },
-      label: t('Wallet'),
-      key: 'tokens',
-      url: '/home/tokens'
+      label: t('Account'),
+      key: 'my-profile',
+      url: '/home/my-profile'
     }
     // {
     //   icon: {
