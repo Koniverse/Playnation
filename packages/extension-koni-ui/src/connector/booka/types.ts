@@ -148,11 +148,22 @@ export enum RepeatableType {
   WEEKLY = 'weekly',
 }
 
+/**
+ * LogViewType
+ * - single: Show only 1 log, only show the log that can be completed most recently. For example: achievement has 2 tasks to complete 3 games and 5 games, then only show 3 games, and when 3 games are completed, show 5 games
+ * - multiple: show all logs
+ */
 export enum LogViewType {
   SINGLE = 'single',
   MULTIPLE = 'multiple',
 }
 
+/**
+ * task completion progress, consisting of an array of lists with the following data:
+ * - required: Number of tasks to be completed
+ * - completed: number of tasks completed
+ * - metricId: id of the corresponding metric
+ */
 export interface ProgressData {
   required: number;
   completed: number;
@@ -172,6 +183,12 @@ export enum ComparisonOperator {
   RANK_EQ = 'rank_eq'
 }
 
+/**
+ * AchievementLogStatus
+ * - pending: Initialization status, this log is not completed yet
+ * - claimable: log has completed the task, can claim to receive nps
+ * - claimed: Log has completed, account has received nps
+ */
 export enum AchievementLogStatus {
   PENDING = 'pending',
   CLAIMABLE = 'claimable',
@@ -189,7 +206,6 @@ export interface Achievement {
   categoryType: TaskCategoryType;
   categoryId: number;
   repeatable: RepeatableType;
-  type: string;
   logViewType: LogViewType;
   conditions: Condition[];
   progress: ProgressData[];

@@ -335,6 +335,10 @@ export class BookaSdk {
     return this.taskCategoryListSubject;
   }
 
+  /**
+   * Fetch game event list
+   * return GameEvent[] the list of game event
+   */
   async fetchGameEventList () {
     await this.waitForSync;
     const gameEventList = await this.getRequest<GameEvent[]>(`${GAME_API_HOST}/api/game-event/fetch`);
@@ -353,6 +357,10 @@ export class BookaSdk {
     return this.achievementListSubject;
   }
 
+  /**
+    * Fetch achievement list
+   * return Achievement[] the list of achievementList
+   */
   async fetchAchievementList () {
     await this.waitForSync;
     const achievementList = await this.getRequest<Achievement[]>(`${GAME_API_HOST}/api/achievement/fetch-v2`);
@@ -363,6 +371,11 @@ export class BookaSdk {
     }
   }
 
+  /**
+   * Claim achievement
+   * Return {success: boolean} or throw error
+   * @param milestoneId
+   */
   async claimAchievement (milestoneId: number) {
     const data = await this.postRequest(`${GAME_API_HOST}/api/achievement/claim`, { milestoneId });
 
