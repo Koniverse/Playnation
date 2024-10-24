@@ -48,7 +48,7 @@ const { decimal: decimalSeparator, thousand: thousandSeparator } = getNumberSepa
 const intToLocaleString = (str: string, separator: string) =>
   str.replace(/\B(?=(\d{3})+(?!\d))/g, separator);
 
-export function toDisplayNumber (num?: number): string {
+export function toDisplayNumber (num?: number | string): string {
   if (num === undefined) {
     return '';
   }

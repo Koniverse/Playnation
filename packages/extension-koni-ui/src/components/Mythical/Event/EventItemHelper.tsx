@@ -3,15 +3,14 @@
 
 import React from 'react';
 
-type GamePointProps = {
+type Props = {
   buttonSvgMaskId: string;
 };
 
-export function EventItemHelper ({ buttonSvgMaskId }: GamePointProps) {
+export function EventItemHelper ({ buttonSvgMaskId }: Props) {
   return (
     <svg
       fill='none'
-      id={'event-button-mask'}
       style={{
         width: 0,
         height: 0,
