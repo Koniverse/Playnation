@@ -63,7 +63,8 @@ const BuyTokens = new LazyLoader('BuyTokens', () => import('@subwallet/extension
 // const Games = new LazyLoader('Games', () => import('@subwallet/extension-koni-ui/Popup/Home/Games'));
 const Events = new LazyLoader('Events', () => import('@subwallet/extension-koni-ui/Popup/Home/Events'));
 const Cards = new LazyLoader('Events', () => import('@subwallet/extension-koni-ui/Popup/Home/Cards'));
-const Mission = new LazyLoader('Mission', () => import('@subwallet/extension-koni-ui/Popup/Home/Mission'));
+// const Mission = new LazyLoader('Mission', () => import('@subwallet/extension-koni-ui/Popup/Home/Mission'));
+const Mission = new LazyLoader('Mission', () => import('@subwallet/extension-koni-ui/Popup/Home/MissionTemp'));
 const Leaderboard = new LazyLoader('Leaderboard', () => import('@subwallet/extension-koni-ui/Popup/Home/Leaderboard/LeaderboardTemp'));
 const Invite = new LazyLoader('Games', () => import('@subwallet/extension-koni-ui/Popup/Home/Invite'));
 const Tokens = new LazyLoader('Tokens', () => import('@subwallet/extension-koni-ui/Popup/Home/Tokens'));

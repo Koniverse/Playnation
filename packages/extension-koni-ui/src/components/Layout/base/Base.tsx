@@ -9,7 +9,7 @@ import { LayoutBackgroundImages, LayoutBackgroundStyle, ThemeProps } from '@subw
 import { Icon, SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
-import { ArrowLeft, ChartBar, Parachute, Target, Wallet } from 'phosphor-react';
+import { ArrowLeft, ChartBar, Target, Wallet } from 'phosphor-react';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -86,16 +86,16 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
     //   key: 'invite',
     //   url: '/home/invite'
     // },
-    {
-      icon: {
-        type: 'phosphor',
-        phosphorIcon: Parachute,
-        weight: 'fill'
-      },
-      label: t('Airdrop'),
-      key: 'airdrop',
-      url: '/home/airdrop'
-    },
+    // {
+    //   icon: {
+    //     type: 'phosphor',
+    //     phosphorIcon: Parachute,
+    //     weight: 'fill'
+    //   },
+    //   label: t('Airdrop'),
+    //   key: 'airdrop',
+    //   url: '/home/airdrop'
+    // },
     {
       icon: {
         type: 'phosphor',
