@@ -1,0 +1,63 @@
+name: Build Mythical MiniApp
+on:
+  pull_request:
+    branches:
+      - mythical-dev
+      - mythical-prod
+
+  push:
+    branches:
+      - mythical-dev
+      - mythical-prod
+
+jobs:
+  master:
+    if: "!startsWith(github.event.head_commit.message, '[CI Skip]')"
+    name: Deploy Telegram MiniApp
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GH_AUTOMATION_TOKEN }}
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'yarn'
+    - name: Build WebApp
+      if: github.ref_name == 'mythical-dev'
+      env:
+        TRANSAK_API_KEY: ${{ secrets.TRANSAK_API_KEY }}
+        COINBASE_PAY_ID: ${{ secrets.COINBASE_PAY_ID }}
+        NFT_MINTING_HOST: ${{ secrets.NFT_MINTING_HOST }}
+        BRANCH_NAME: ${{ github.ref_name == 'mythical-prod' && 'main' || 'dev' }}
+        GAME_API_HOST: ${{ github.ref_name == 'mythical-prod' && 'https://mythical-api.playnation.app' || 'https://mythical-api-dev.playnation.app' }}
+        TELEGRAM_WEBAPP_LINK: ${{ github.ref_name == 'mythical-prod' && 'MythicalGamesBot/app' || 'mythical_dev1_bot/app' }}
+      run: |
+        yarn install --immutable | grep -v 'YN0013'
+        yarn webapp:build
+    - name: Publish to Cloudflare Pages
+      id: cloudflare_deployment
+      uses: cloudflare/pages-action@v1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        projectName: mythical-games
+        gitHubToken: ${{ secrets.GH_AUTOMATION_TOKEN }}
+        branch: $BRANCH_NAME
+        directory: './packages/webapp/build'
+        wranglerVersion: '3'
+    - name: Notify to Discord
+      uses: sarisia/actions-status-discord@v1
+      if: always()
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        status: ${{ job.status }}
+        username: Mythical Deployment Worker
+        title: ${{ github.workflow }}
+        description: |
+          The deployment is completed.
+            - URL: ${{ steps.cloudflare_deployment.outputs.url }}
+            - Alias: ${{ steps.cloudflare_deployment.outputs.alias }}
