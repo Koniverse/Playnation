@@ -9,9 +9,10 @@ import styled from 'styled-components';
 
 type Props = ThemeProps & {
   isLinked?: boolean;
+  doLinkAccount?: VoidFunction;
 };
 
-const Component = ({ className, isLinked }: Props): React.ReactElement => {
+const Component = ({ className, doLinkAccount, isLinked }: Props): React.ReactElement => {
   const { t } = useTranslation();
 
   return (
@@ -40,7 +41,10 @@ const Component = ({ className, isLinked }: Props): React.ReactElement => {
 
       {
         !isLinked && (
-          <MythButton className={'__linked-account-button __button'}>
+          <MythButton
+            className={'__linked-account-button __button'}
+            onClick={doLinkAccount}
+          >
             {t('Link mythical account')}
           </MythButton>
         )
