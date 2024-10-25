@@ -4,7 +4,6 @@ on:
     branches:
       - mythical-dev
       - mythical-prod
-
   push:
     branches:
       - mythical-dev
@@ -27,12 +26,11 @@ jobs:
         node-version: '18'
         cache: 'yarn'
     - name: Build WebApp
-      if: github.ref_name == 'mythical-dev'
       env:
         TRANSAK_API_KEY: ${{ secrets.TRANSAK_API_KEY }}
         COINBASE_PAY_ID: ${{ secrets.COINBASE_PAY_ID }}
         NFT_MINTING_HOST: ${{ secrets.NFT_MINTING_HOST }}
-        BRANCH_NAME: ${{ github.ref_name == 'mythical-prod' && 'main' || 'dev' }}
+        BRANCH_NAME: master
         GAME_API_HOST: ${{ github.ref_name == 'mythical-prod' && 'https://mythical-api.playnation.app' || 'https://mythical-api-dev.playnation.app' }}
         TELEGRAM_WEBAPP_LINK: ${{ github.ref_name == 'mythical-prod' && 'MythicalGamesBot/app' || 'mythical_dev1_bot/app' }}
       run: |
@@ -46,7 +44,7 @@ jobs:
         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         projectName: mythical-games
         gitHubToken: ${{ secrets.GH_AUTOMATION_TOKEN }}
-        branch: $BRANCH_NAME
+        branch: ${{ github.ref_name == 'mythical-prod' && 'main' || 'dev' }}
         directory: './packages/webapp/build'
         wranglerVersion: '3'
     - name: Notify to Discord
