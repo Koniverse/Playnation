@@ -137,9 +137,94 @@ export interface Task {
   achievement?: AchievementData | null;
 }
 
+export enum TaskCategoryType {
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  FEATURED = 'featured',
+}
+export enum RepeatableType {
+  NON_REPEATABLE = 'non_repeatable',
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+}
+
+/**
+ * LogViewType
+ * - single: Show only 1 log, only show the log that can be completed most recently. For example: achievement has 2 tasks to complete 3 games and 5 games, then only show 3 games, and when 3 games are completed, show 5 games
+ * - multiple: show all logs
+ */
+export enum LogViewType {
+  SINGLE = 'single',
+  MULTIPLE = 'multiple',
+}
+
+/**
+ * task completion progress, consisting of an array of lists with the following data:
+ * - required: Number of tasks to be completed
+ * - completed: number of tasks completed
+ * - metricId: id of the corresponding metric
+ */
+export interface ProgressData {
+  required: number;
+  completed: number;
+  metricId: string;
+}
+
+export enum ComparisonOperator {
+  GT = 'gt',
+  GTE = 'gte',
+  LT = 'lt',
+  LTE = 'lte',
+  EQ = 'eq',
+  RANK_GT = 'rank_gt',
+  RANK_GTE = 'rank_gte',
+  RANK_LT = 'rank_lt',
+  RANK_LTE = 'rank_lte',
+  RANK_EQ = 'rank_eq'
+}
+
+/**
+ * AchievementLogStatus
+ * - pending: Initialization status, this log is not completed yet
+ * - claimable: log has completed the task, can claim to receive nps
+ * - claimed: Log has completed, account has received nps
+ */
+export enum AchievementLogStatus {
+  PENDING = 'pending',
+  CLAIMABLE = 'claimable',
+  CLAIMED = 'claimed',
+}
+
+export interface Condition {
+  metric: string;
+  comparison: ComparisonOperator;
+  value: number;
+}
+
+export interface Achievement {
+  categoryName: string;
+  categoryType: TaskCategoryType;
+  categoryId: number;
+  repeatable: RepeatableType;
+  logViewType: LogViewType;
+  conditions: Condition[];
+  progress: ProgressData[];
+  name: string;
+  id: number;
+  milestoneId: number;
+  milestoneName: string,
+  slug: string;
+  icon: string,
+  nps: number,
+  status: AchievementLogStatus,
+  createdAt: Date,
+  completedAt: Date,
+}
+
 export interface TaskCategory {
   id: number; // id on db
   contentId: number;
+  type: TaskCategoryType;
   slug: string;
   name?: string | null;
   description?: string | null;
@@ -361,4 +446,37 @@ export interface AirdropRaffle {
 
 export interface AirdropClaim {
   airdropRecordLogId: number,
+}
+
+export interface GameEvent {
+  id: number;
+  documentId: string;
+  active: boolean;
+  name: string;
+  gameId: number;
+  icon: string;
+  description?: any;
+  startTime: string;
+  endTime: string;
+  tossUpInfo: TossUpInfo;
+  tossUpBonus: TossUpBonus[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface TossUpBonus {
+  team?: string;
+  bonus: number;
+  bonusText: string;
+  program?: string;
+  position?: string;
+}
+
+interface TossUpInfo {
+  round: number;
+  stats: string[];
+  difficulty: number;
+  playDuration: number;
+  opponentTeams: string[];
+  gameplayPerEvent: number;
 }
