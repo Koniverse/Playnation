@@ -4,7 +4,7 @@
 import { MainScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
 
 import { AccountEditorArea } from './AccountEditorArea';
@@ -17,11 +17,21 @@ type Props = ThemeProps;
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/my-profile');
 
+  const [isAccountLinked, setIsAccountLinked] = useState<boolean>(false);
+
+  const doLinkAccount = useCallback(() => {
+    setIsAccountLinked(true);
+  }, []);
+
   return (
     <div className={className}>
       <MainScreenHeader />
       <AccountEditorArea className={'account-editor-area'} />
-      <LinkAccountArea className={'link-account-area'} />
+      <LinkAccountArea
+        className={'link-account-area'}
+        doLinkAccount={doLinkAccount}
+        isLinked={isAccountLinked}
+      />
       <WalletInfoArea className={'wallet-info-area'} />
       <RewardHistoryArea className={'reward-history-area'} />
     </div>
