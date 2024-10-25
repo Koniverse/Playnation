@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
@@ -23,7 +24,6 @@ type EventItemProps = ThemeProps & {
   className?: string;
   difficulty: EventDifficulty;
   status: EventStatus;
-  buttonSvgMaskId: string; // note: must use with EventItemHelper component
 };
 
 function Component ({ className, difficulty, status }: EventItemProps) {
@@ -112,49 +112,50 @@ function Component ({ className, difficulty, status }: EventItemProps) {
         </div>
 
         <div className='__item-footer-area'>
-          <div className='__item-status-text'>
-            {statusText}
+          <div className='__item-footer-area-left-part'>
+            <div className='__item-status-text'>
+              {statusText}
+            </div>
+
+            <div className={'__item-time'}>
+              <svg
+                className={'__item-clock-icon'}
+                fill='none'
+                viewBox='0 0 15 14'
+                xmlns='http://www.w3.org/2000/svg'
+              >
+                <path
+                  d='M13.0815 7.00033C13.0815 10.2203 10.4681 12.8337 7.24813 12.8337C4.02813 12.8337 1.41479 10.2203 1.41479 7.00033C1.41479 3.78033 4.02813 1.16699 7.24813 1.16699C10.4681 1.16699 13.0815 3.78033 13.0815 7.00033Z'
+                  stroke='white'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='1.2'
+                />
+                <path
+                  d='M9.41223 8.85503L7.60389 7.77586C7.28889 7.58919 7.03223 7.14003 7.03223 6.77253V4.38086'
+                  stroke='white'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='1.2'
+                />
+              </svg>
+
+              <div className='__item-time-text'>
+                12day 10hrs
+              </div>
+            </div>
           </div>
 
-          <div className={'__item-time'}>
-            <svg
-              className={'__item-clock-icon'}
-              fill='none'
-              viewBox='0 0 15 14'
-              xmlns='http://www.w3.org/2000/svg'
+          <div className='__item-footer-area-right-part'>
+            <MythButton
+              className={CN('__item-button', {
+                '-ready': status === EventStatus.READY,
+                '-coming-soon': status === EventStatus.COMING_SOON,
+                '-completed': status === EventStatus.COMPLETED
+              })}
             >
-              <path
-                d='M13.0815 7.00033C13.0815 10.2203 10.4681 12.8337 7.24813 12.8337C4.02813 12.8337 1.41479 10.2203 1.41479 7.00033C1.41479 3.78033 4.02813 1.16699 7.24813 1.16699C10.4681 1.16699 13.0815 3.78033 13.0815 7.00033Z'
-                stroke='white'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth='1.2'
-              />
-              <path
-                d='M9.41223 8.85503L7.60389 7.77586C7.28889 7.58919 7.03223 7.14003 7.03223 6.77253V4.38086'
-                stroke='white'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth='1.2'
-              />
-            </svg>
-
-            <div className='__item-time-text'>
-              12day 10hrs
-            </div>
-          </div>
-
-          <div className={CN('__item-button', {
-            '-ready': status === EventStatus.READY,
-            '-coming-soon': status === EventStatus.COMING_SOON,
-            '-completed': status === EventStatus.COMPLETED
-          })}
-          >
-            <div className='__item-button-label'>
               {buttonLabel}
-            </div>
-
-            <div className={'__item-button-background'} />
+            </MythButton>
           </div>
         </div>
       </div>
@@ -162,7 +163,8 @@ function Component ({ className, difficulty, status }: EventItemProps) {
   );
 }
 
-export const EventItem = styled(Component)<EventItemProps>(({ buttonSvgMaskId, difficulty, theme: { extendToken, token } }: EventItemProps) => {
+export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
+  theme: { extendToken, token } }: EventItemProps) => {
   const itemBackground = (() => {
     if (difficulty === EventDifficulty.EASY) {
       return '/images/mythical/event-item-easy-background.png';
@@ -188,7 +190,6 @@ export const EventItem = styled(Component)<EventItemProps>(({ buttonSvgMaskId, d
   })();
 
   return ({
-    maxWidth: 352,
     minHeight: 297,
     backgroundImage: `url("${itemBackground}")`,
     backgroundSize: '100% 285px',
@@ -339,7 +340,22 @@ export const EventItem = styled(Component)<EventItemProps>(({ buttonSvgMaskId, d
       left: 16,
       right: 16,
       bottom: 21,
-      height: 57
+      height: 57,
+      display: 'flex',
+      paddingLeft: 19,
+      paddingRight: 14,
+      justifyContent: 'space-between',
+      gap: 8
+    },
+
+    '.__item-footer-area-left-part': {
+      paddingTop: 9
+    },
+
+    '.__item-footer-area-right-part': {
+      paddingTop: 8,
+      flex: 1,
+      maxWidth: 158
     },
 
     // status text
@@ -352,17 +368,13 @@ export const EventItem = styled(Component)<EventItemProps>(({ buttonSvgMaskId, d
       letterSpacing: -0.4,
       color: token.colorSecondary,
       textTransform: 'uppercase',
-      position: 'absolute',
-      top: 7,
-      left: 19
+      position: 'relative',
+      top: -3
     },
 
     // time
 
     '.__item-time': {
-      position: 'absolute',
-      left: 19,
-      bottom: 9,
       display: 'flex',
       gap: 4,
       alignItems: 'center'
@@ -385,77 +397,57 @@ export const EventItem = styled(Component)<EventItemProps>(({ buttonSvgMaskId, d
     // button
 
     '.__item-button': {
-      width: 158,
+      width: '100%',
       height: 40,
-      position: 'absolute',
-      right: 15,
-      bottom: 9,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    },
 
-    '.__item-button-label': {
-      textTransform: 'uppercase',
-      position: 'relative',
-      textAlign: 'center',
-      fontFamily: extendToken.fontDruk,
-      fontSize: 20,
-      lineHeight: '22px',
-      fontWeight: 500,
-      fontStyle: 'italic',
-      marginTop: -5,
-      zIndex: 1
-    },
+      '.__button-content': {
+        marginTop: -5
+      },
 
-    '.__item-button-background': {
-      filter: 'drop-shadow(2px 3px 0px #000)',
-      inset: 0,
-      position: 'absolute',
+      '.__button-background': {
+        filter: 'drop-shadow(2px 3px 0px #000)'
+      },
 
-      '&:before': {
-        content: '""',
-        display: 'block',
-        background: token.colorPrimary,
-        maskImage: `url(#${buttonSvgMaskId})`,
-        position: 'absolute',
-        inset: 0
+      '.__button-background:before': {
+        maskImage: 'url(/images/mythical/event-item-action-button.png)',
+        maskSize: '100% 100%',
+        maskPosition: 'top left'
       }
     },
 
     '.__item-button.-ready': {
       cursor: 'pointer',
 
-      '.__item-button-label': {
+      '.__button-content': {
         color: extendToken.mythColorDark
       },
 
-      '.__item-button-background:before': {
+      '.__button-background:before': {
         background: token.colorPrimary
       }
     },
 
     '.__item-button.-coming-soon': {
-      '.__item-button-label': {
+      '.__button-content': {
         color: extendToken.mythColorDark
       },
 
-      '.__item-button-background:before': {
-        backgroundColor: '#7E7E7E'
+      '.__button-background:before': {
+        backgroundColor: extendToken.mythColorGray2
       }
     },
 
     '.__item-button.-completed': {
-      '.__item-button-label': {
-        color: '#fff',
+      '.__button-content': {
+        color: token.colorWhite,
 
         span: {
           color: token.colorPrimary
         }
       },
 
-      '.__item-button-background:before': {
-        backgroundColor: '#42423F'
+      '.__button-background:before': {
+        backgroundColor: extendToken.mythColorGray3
       }
     }
   });

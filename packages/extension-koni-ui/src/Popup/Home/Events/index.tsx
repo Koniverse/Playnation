@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { FilterTabItemType, FilterTabs } from '@subwallet/extension-koni-ui/components/FilterTabs';
-import { EventDifficulty, EventItem, EventItemHelper, EventStatus } from '@subwallet/extension-koni-ui/components/Mythical';
+import { EventDifficulty, EventItem, EventStatus } from '@subwallet/extension-koni-ui/components/Mythical';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -18,8 +18,6 @@ type EventItemType = {
   difficulty: EventDifficulty;
   status: EventStatus;
 };
-
-const eventItemButtonMaskId = 'event-item-button-mask';
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/events');
@@ -86,15 +84,10 @@ const Component = ({ className }: Props): React.ReactElement => {
         selectedItem={selectedFilterTab}
       />
 
-      <EventItemHelper
-        buttonSvgMaskId={eventItemButtonMaskId}
-      />
-
       <div className='event-list-container'>
         {
           eventItems.map((item) => (
             <EventItem
-              buttonSvgMaskId={eventItemButtonMaskId}
               className={'event-item'}
               difficulty={item.difficulty}
               key={item.id}
