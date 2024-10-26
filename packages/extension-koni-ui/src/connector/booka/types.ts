@@ -248,8 +248,11 @@ export interface GamePlay {
   energy: number;
   endTime?: Date;
   point?: number;
+  gamePoint?: number;
   success?: boolean;
+  initState: any;
   state: any;
+  stateData: unknown;
   stateSignature?: string;
   stateTimestamp?: string;
 }
@@ -450,8 +453,6 @@ export interface AirdropClaim {
 
 export interface GameEvent {
   id: number;
-  documentId: string;
-  active: boolean;
   name: string;
   gameId: number;
   icon: string;
@@ -460,8 +461,7 @@ export interface GameEvent {
   endTime: string;
   tossUpInfo: TossUpInfo;
   tossUpBonus: TossUpBonus[];
-  createdAt: string;
-  updatedAt: string;
+  gamePlays: Pick<GamePlay, 'id' | 'startTime' | 'success' | 'point' | 'gamePoint' | 'endTime' | 'stateData'>;
 }
 
 interface TossUpBonus {
@@ -479,4 +479,27 @@ interface TossUpInfo {
   playDuration: number;
   opponentTeams: string[];
   gameplayPerEvent: number;
+}
+
+export interface NFLRivalCard {
+  cardId: string;
+  defId: string;
+  firstName: string;
+  lastName: string;
+  team: string;
+  position: string;
+  rarity: string;
+  program: string;
+  stars: number;
+  image: string;
+  isDefault: boolean;
+  level: number;
+  power: number;
+  strength: number;
+  quickness: number;
+  acceleration: number;
+  presence: number;
+  endurance: number;
+  jump: number;
+  carry: number;
 }

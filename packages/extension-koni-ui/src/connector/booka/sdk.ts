@@ -6,7 +6,7 @@ import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, NFLRivalCard, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -33,7 +33,8 @@ const CACHE_KEYS = {
   leaderboardConfigSubject: 'data--leaderboard-config-list-cache',
   airdropCampaignList: 'data--airdrop-campaign-list-cache',
   achievementList: 'data--achievement-list-cache',
-  gameEventList: 'data--game-event-cache'
+  gameEventList: 'data--game-event-cache',
+  nflRivalCardList: 'data--nfl-rival-cards-cache'
 };
 
 function parseCache<T> (key: string): T | undefined {
@@ -51,12 +52,6 @@ function parseCache<T> (key: string): T | undefined {
 }
 
 const metadataHandler = MetadataHandler.instance;
-
-export interface NewGameOptions {
-  gameId: number;
-  energyUsed: number;
-  initData?: object;
-}
 
 export class BookaSdk {
   private syncHandler = createPromiseHandler<void>();
@@ -78,6 +73,7 @@ export class BookaSdk {
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
   private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
+  private nflRivalCardListSubject = new BehaviorSubject<NFLRivalCard[]>([]);
 
   // Special cases
   // Check if the account is banned
@@ -98,6 +94,7 @@ export class BookaSdk {
       const rankInfoMap = parseCache<Record<AccountRankType, RankInfo>>(CACHE_KEYS.rankInfoMap);
       const leaderboardConfigSubject = parseCache<Record<string, object>>(CACHE_KEYS.leaderboardConfigSubject);
       const gameEventList = parseCache<GameEvent[]>(CACHE_KEYS.gameEventList);
+      const nflRivalCardList = parseCache<NFLRivalCard[]>(CACHE_KEYS.nflRivalCardList);
 
       account && this.accountSubject.next(account);
       taskCategoryList && this.taskCategoryListSubject.next(taskCategoryList);
@@ -109,6 +106,7 @@ export class BookaSdk {
       airdropCampaignList && this.airdropCampaignSubject.next(airdropCampaignList);
       leaderboardConfigSubject && this.leaderboardConfigSubject.next(leaderboardConfigSubject);
       gameEventList && this.gameEventSubject.next(gameEventList);
+      nflRivalCardList && this.nflRivalCardListSubject.next(nflRivalCardList);
     } else {
       console.debug('Clearing cache');
       storage.removeItems(Object.keys(CACHE_KEYS).concat(['cache-version'])).catch(console.error);
@@ -322,6 +320,8 @@ export class BookaSdk {
       this.gameListSubject.next(gameList);
       localStorage.setItem(CACHE_KEYS.gameList, JSON.stringify(gameList));
     }
+
+    return gameList;
   }
 
   subscribeGameList () {
@@ -336,6 +336,8 @@ export class BookaSdk {
       this.taskCategoryListSubject.next(taskCategoryList);
       localStorage.setItem(CACHE_KEYS.taskCategoryList, JSON.stringify(taskCategoryList));
     }
+
+    return taskCategoryList;
   }
 
   subscribeTaskCategoryList () {
@@ -354,6 +356,8 @@ export class BookaSdk {
       this.gameEventSubject.next(gameEventList);
       localStorage.setItem(CACHE_KEYS.gameEventList, JSON.stringify(gameEventList));
     }
+
+    return gameEventList;
   }
 
   subscribeGameEventList () {
@@ -362,6 +366,26 @@ export class BookaSdk {
 
   subscribeAchievementList () {
     return this.achievementListSubject;
+  }
+
+  /**
+   * Fetch game event list
+   * return GameEvent[] the list of game event
+   */
+  async fetchNFLRivalCardList () {
+    await this.waitForSync;
+    const response = await this.getRequest<{cards: NFLRivalCard[]}>(`${GAME_API_HOST}/api/nfl-rival-card/fetch`);
+
+    if (response?.cards) {
+      this.nflRivalCardListSubject.next(response.cards);
+      localStorage.setItem(CACHE_KEYS.gameEventList, JSON.stringify(response.cards));
+    }
+
+    return response?.cards || [];
+  }
+
+  subscribeNFLRivalCardList () {
+    return this.taskCategoryListSubject;
   }
 
   /**
@@ -516,7 +540,7 @@ export class BookaSdk {
     return `http://x.com/share?${contentShare}url=${linkShare}`;
   }
 
-  async fetchReferalList () {
+  async fetchReferralList () {
     await this.waitForSync;
     const refList = await this.getRequest<ReferralRecord[]>(`${GAME_API_HOST}/api/account/get-rerferal-logs`);
 
@@ -526,67 +550,9 @@ export class BookaSdk {
   }
 
   subscribeReferralList () {
-    this.fetchReferalList().catch(console.error);
+    this.fetchReferralList().catch(console.error);
 
     return this.referralListSubject;
-  }
-
-  // Deprecated use login instead
-  async sync (address: string) {
-    const userInfo = telegramConnector.userInfo;
-    const message = `Login as ${userInfo?.username || 'booka'}`;
-    const signature = await this.requestSignature(address, message);
-    const referralCode = telegramConnector.getStartParam() || '';
-
-    this.accountSubject.next(undefined);
-
-    const syncData = {
-      address,
-      signature,
-      referralCode,
-      telegramId: userInfo?.id || 111,
-      telegramUsername: userInfo?.username || 'booka',
-      isBot: !!userInfo?.is_bot,
-      addedToAttachMenu: !!userInfo?.added_to_attachment_menu,
-      firstName: userInfo?.first_name || 'Booka',
-      lastName: userInfo?.last_name || '',
-      photoUrl: userInfo?.photo_url,
-      isPremium: userInfo?.is_premium,
-      languageCode: userInfo?.language_code || 'en'
-    };
-
-    try {
-      const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/sync`, syncData);
-
-      if (account) {
-        this.accountSubject.next(account);
-        localStorage.setItem(CACHE_KEYS.account, JSON.stringify(account));
-        this.syncHandler.resolve();
-
-        await Promise.all([
-          this.fetchEnergyConfig(),
-          this.fetchRankInfoMap(),
-          this.fetchGameList(),
-          this.fetchTaskCategoryList(),
-          this.fetchTaskList(),
-          this.fetchLeaderboardConfigList()
-          // this.fetchGameItemMap(),
-          // this.fetchGameInventoryItemList(),
-          // this.fetchGameItemInGameList()
-        ]);
-
-        await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchAirdropCampaign()]);
-      }
-    } catch (error: any) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (error?.message === 'ACCOUNT_BANNED') {
-        this.isAccountEnable.next(false);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        this.syncHandler.reject(error?.message);
-      }
-
-      throw error;
-    }
   }
 
   /**
@@ -616,6 +582,8 @@ export class BookaSdk {
           this.fetchEnergyConfig(),
           this.fetchRankInfoMap(),
           this.fetchGameList(),
+          this.fetchGameEventList(),
+          this.fetchNFLRivalCardList(),
           this.fetchTaskCategoryList(),
           this.fetchTaskList(),
           this.fetchLeaderboardConfigList()
@@ -689,7 +657,7 @@ export class BookaSdk {
     return result.signature;
   }
 
-  async playGame ({ energyUsed, gameId, initData }: NewGameOptions): Promise<GamePlay> {
+  async playGame ({ energyUsed, gameId, initData }: { gameId: number, energyUsed: number, initData?: object }): Promise<GamePlay> {
     await this.waitForSync;
     const gamePlay = await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/new-game`, {
       gameId,
@@ -713,7 +681,7 @@ export class BookaSdk {
     return gamePlay;
   }
 
-  async submitGame (gamePlayId: number, point: number, signature: string) {
+  async submitGame ({ gamePlayId, point, signature }: {gamePlayId: number, point: number, signature: string}) {
     let success = false;
 
     // Try 3 times to submit the game play
@@ -749,8 +717,8 @@ export class BookaSdk {
     });
   }
 
-  async submitState (gamePlayId: number, stateData: GameState<any>) {
-    return await this.postRequest<{success: boolean}>(`${GAME_API_HOST}/api/game/submit-state`, {
+  async submitState ({ gamePlayId, stateData }: {gamePlayId: number, stateData: GameState<any>}) {
+    return await this.postRequest<{success: boolean, gamePlay?: GamePlay}>(`${GAME_API_HOST}/api/game/submit-state`, {
       gamePlayId,
       stateData
     });

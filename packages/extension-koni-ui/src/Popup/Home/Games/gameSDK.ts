@@ -9,7 +9,7 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { camelCase } from 'lodash';
-import z from 'zod';
+import z, { undefined } from 'zod';
 
 export interface GameAppOptions {
   viewport: HTMLIFrameElement;
@@ -186,11 +186,33 @@ export class GameApp {
     if (currentGamePlay?.id && this.theLastSignature !== state.signature) {
       this.theLastSignature = state.signature;
       addLazy(`update-state-${currentGamePlay.id}`, () => {
-        this.apiSDK.submitState(currentGamePlay.id, state).catch(console.error);
+        this.apiSDK.submitState({
+          gamePlayId: currentGamePlay.id,
+          stateData: state
+        }).catch(console.error);
         // Save state to user storage as fallback
         cloudStorage.setItem(`game-state-${currentGame.id}`, JSON.stringify(state)).catch(console.error);
       }, 1200, 9000, true);
     }
+  }
+
+  async onSubmitAction ({ action, payload }: {action: string, payload: GameState<any>}) {
+    const currentGamePlay = this.apiSDK.currentGamePlay;
+
+    if (currentGamePlay?.id && this.theLastSignature !== payload.signature) {
+      this.theLastSignature = payload.signature;
+      const response = await this.apiSDK.submitState({
+        gamePlayId: currentGamePlay.id,
+        stateData: payload
+      }).catch(console.error);
+
+      return {
+        success: !!response,
+        payload: response?.gamePlay?.state as unknown
+      };
+    }
+
+    return { success: false };
   }
 
   async onUseIngameItem (req: {itemId: string, gameplayId?: string }) {
@@ -240,7 +262,11 @@ export class GameApp {
     // Todo: sign result
     const signature = '0x0000';
 
-    await this.apiSDK.submitGame(currentGame.id, result.score, signature);
+    await this.apiSDK.submitGame({
+      gamePlayId: currentGame.id,
+      point: result.score,
+      signature
+    });
 
     return signature;
   }
@@ -324,6 +350,7 @@ export class GameApp {
     let state = apiState;
 
     // Prefer storage state if it's newer or api state is not available
+    // @ts-ignore
     if (!apiState || (storageState?.timestamp && apiState?.timestamp && storageState.timestamp > apiState.timestamp)) {
       state = storageState;
     }
@@ -331,6 +358,7 @@ export class GameApp {
     try {
       await this.onPlay();
 
+      // @ts-ignore
       this.gameStateHandler.resolve(state || {} as GameState<any>);
     } catch (e) {
       this.onExit();
