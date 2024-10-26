@@ -59,7 +59,6 @@ const MythButton = styled(Component)<ThemeProps>(({ theme: { extendToken, token 
       fontStyle: 'italic',
       fontWeight: 500,
       lineHeight: '22px',
-      letterSpacing: '-0.6px',
       textTransform: 'uppercase'
     },
 

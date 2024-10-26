@@ -1,19 +1,32 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GameAccountItem, TopAccountItem } from '@subwallet/extension-koni-ui/components/Mythical';
+import { GameAccountItem, MainScreenHeader, TimeRemaining, TopAccountItem } from '@subwallet/extension-koni-ui/components/Mythical';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
+
+import CallToAction from '../../../components/Mythical/Common/CallToAction';
 
 type Props = ThemeProps;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/leaderboard');
+  const { t } = useTranslation();
 
   return (
     <div className={className}>
+      <MainScreenHeader
+        className={'__main-screen-header'}
+        title={t('Weekly leaderboard')}
+      />
+
+      <div className='__time-remaining-wrapper'>
+        <TimeRemaining datetime={'12day 10hrs'} />
+      </div>
+
       <div className='top-three-area'>
         <div className='top-account-item-wrapper'>
           {
@@ -44,6 +57,12 @@ const Component = ({ className }: Props): React.ReactElement => {
           }
         </div>
       </div>
+
+      <CallToAction
+        buttonLabel={'Play now'}
+        subtitle={'Download NFL Rivals App'}
+        title={'Want to take your profile to the next level?'}
+      />
 
       <div>
         <GameAccountItem
@@ -76,6 +95,15 @@ const Component = ({ className }: Props): React.ReactElement => {
 
 const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
+    '.__main-screen-header': {
+      maxWidth: 250
+    },
+
+    '.__time-remaining-wrapper': {
+      paddingLeft: 16,
+      paddingRight: 16
+    },
+
     '.top-account-item-wrapper': {
       maxWidth: 94,
       flex: 1,
