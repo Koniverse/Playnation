@@ -134,7 +134,10 @@ export class GameApp {
       throw newError('Not enought energy', ErrorCode.NOT_ENOUGH_ENERGY);
     }
 
-    const gamePlay = await this.apiSDK.playGame(this.currentGameInfo.id, this.currentGameInfo.energyPerGame);
+    const gamePlay = await this.apiSDK.playGame({
+      gameId: currentGame.id,
+      energyUsed: currentGame.energyPerGame
+    });
 
     if (!account || !currentGame) {
       throw newError('invalid account or game', ErrorCode.SYSTEM_ERROR);

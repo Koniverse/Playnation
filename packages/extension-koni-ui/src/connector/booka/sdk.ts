@@ -14,6 +14,7 @@ import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
+export const DEFAULT_INIT_DATA = process.env.DEFAULT_INIT_DATA;
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
 const storage = SWStorage.instance;
@@ -51,6 +52,12 @@ function parseCache<T> (key: string): T | undefined {
 
 const metadataHandler = MetadataHandler.instance;
 
+export interface NewGameOptions {
+  gameId: number;
+  energyUsed: number;
+  initData?: object;
+}
+
 export class BookaSdk {
   private syncHandler = createPromiseHandler<void>();
   private accountSubject = new BehaviorSubject<BookaAccount | undefined>(undefined);
@@ -84,23 +91,23 @@ export class BookaSdk {
       const account = parseCache<BookaAccount>(CACHE_KEYS.account);
       const taskCategoryList = parseCache<TaskCategory[]>(CACHE_KEYS.taskCategoryList);
       const tasks = parseCache<Task[]>(CACHE_KEYS.taskList);
+      const achievementList = parseCache<Achievement[]>(CACHE_KEYS.achievementList);
       const game = parseCache<Game[]>(CACHE_KEYS.gameList);
       const energyConfig = parseCache<EnergyConfig>(CACHE_KEYS.energyConfig);
       const airdropCampaignList = parseCache<AirdropCampaign[]>(CACHE_KEYS.airdropCampaignList);
       const rankInfoMap = parseCache<Record<AccountRankType, RankInfo>>(CACHE_KEYS.rankInfoMap);
       const leaderboardConfigSubject = parseCache<Record<string, object>>(CACHE_KEYS.leaderboardConfigSubject);
-      const achievementList = parseCache<Achievement[]>(CACHE_KEYS.achievementList);
       const gameEventList = parseCache<GameEvent[]>(CACHE_KEYS.gameEventList);
 
       account && this.accountSubject.next(account);
       taskCategoryList && this.taskCategoryListSubject.next(taskCategoryList);
       tasks && this.taskListSubject.next(tasks);
+      achievementList && this.achievementListSubject.next(achievementList);
       game && this.gameListSubject.next(game);
       energyConfig && this.energyConfigSubject.next(energyConfig);
       rankInfoMap && this.rankInfoSubject.next(rankInfoMap);
       airdropCampaignList && this.airdropCampaignSubject.next(airdropCampaignList);
       leaderboardConfigSubject && this.leaderboardConfigSubject.next(leaderboardConfigSubject);
-      achievementList && this.achievementListSubject.next(achievementList);
       gameEventList && this.gameEventSubject.next(gameEventList);
     } else {
       console.debug('Clearing cache');
@@ -586,7 +593,7 @@ export class BookaSdk {
    * Telegram login actions
    * */
   async login (address: string) {
-    const initData = telegramConnector.initData;
+    const initData = telegramConnector.initData || DEFAULT_INIT_DATA;
     const referralCode = telegramConnector.getStartParam() || '';
 
     this.accountSubject.next(undefined);
@@ -682,10 +689,11 @@ export class BookaSdk {
     return result.signature;
   }
 
-  async playGame (gameId: number, energyUsed: number): Promise<GamePlay> {
+  async playGame ({ energyUsed, gameId, initData }: NewGameOptions): Promise<GamePlay> {
     await this.waitForSync;
     const gamePlay = await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/new-game`, {
-      gameId
+      gameId,
+      initData
     });
 
     // Update account energy
