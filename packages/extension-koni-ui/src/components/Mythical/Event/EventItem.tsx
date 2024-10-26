@@ -191,11 +191,20 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
 
   return ({
     minHeight: 297,
-    backgroundImage: `url("${itemBackground}")`,
-    backgroundSize: '100% 285px',
-    backgroundPosition: 'left bottom',
-    backgroundRepeat: 'no-repeat',
+
     position: 'relative',
+
+    '&:before': {
+      content: '""',
+      position: 'absolute',
+      display: 'block',
+      inset: 0,
+      backgroundImage: `url("${itemBackground}")`,
+      backgroundSize: '100% 285px',
+      filter: 'drop-shadow(4px 6px 0px #000)',
+      backgroundPosition: 'left bottom',
+      backgroundRepeat: 'no-repeat'
+    },
 
     '.__item-name-block': {
       backgroundImage: 'url("/images/mythical/event-item-name.png")',
@@ -281,7 +290,7 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
 
     '.__item-logo': {
       position: 'absolute',
-      right: -7,
+      right: -12,
       top: -11,
       width: 165,
       height: 'auto'
@@ -318,7 +327,7 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
       fontSize: 16
     },
 
-    '.__item-bonus-info +.__item-stat-info': {
+    '.__item-bonus-info + .__item-stat-info': {
       marginTop: 6
     },
 
@@ -343,7 +352,7 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
       height: 57,
       display: 'flex',
       paddingLeft: 19,
-      paddingRight: 14,
+      paddingRight: 10,
       justifyContent: 'space-between',
       gap: 8
     },
