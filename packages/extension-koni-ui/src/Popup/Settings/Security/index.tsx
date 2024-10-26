@@ -3,7 +3,7 @@
 
 import { WalletUnlockType } from '@subwallet/extension-base/background/KoniTypes';
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
-import { EDIT_AUTO_LOCK_TIME_MODAL, EDIT_UNLOCK_TYPE_MODAL, settingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
+import { EDIT_AUTO_LOCK_TIME_MODAL, EDIT_UNLOCK_TYPE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
 import { useBiometric } from '@subwallet/extension-koni-ui/hooks/biometric';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
@@ -224,8 +224,6 @@ const Component: React.FC<Props> = (props: Props) => {
   return (
     <PageWrapper className={CN(className, '-screen')}>
       <Layout.WithSubHeaderOnly
-        backgroundImages={settingsScreensLayoutBackgroundImages}
-        backgroundStyle={'secondary'}
         onBack={onBack}
         title={t('Password setting')}
       >

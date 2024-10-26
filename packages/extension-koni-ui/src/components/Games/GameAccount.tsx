@@ -75,7 +75,7 @@ export const GameAccount = styled(Component)<GamePointProps>(({ theme: { token }
       'white-space': 'nowrap',
       fontSize: token.fontSizeLG,
       lineHeight: token.lineHeightLG,
-      fontWeight: token.headingFontWeight,
+      fontWeight: token.headingFontWeight
     },
 
     '.__point': {

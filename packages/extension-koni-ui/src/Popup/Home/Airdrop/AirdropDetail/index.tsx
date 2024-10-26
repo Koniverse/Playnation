@@ -324,7 +324,6 @@ const Component: React.FC<Props> = ({ className, currentAirdrop }: Props) => {
 
   return (
     <Layout.WithSubHeaderOnly
-      backgroundStyle={'secondary'}
       className={className}
       onBack={onBack}
       subHeaderIcons={subHeaderIcons}

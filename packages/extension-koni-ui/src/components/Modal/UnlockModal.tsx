@@ -44,7 +44,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const [form] = Form.useForm<LoginFormState>();
   const [loading, setLoading] = useState(false);
   const [isDisable, setIsDisable] = useState(true);
-  const { getToken, onUnlockSuccess, reportWrongBiometric, requireSyncPassword , isTokenUpdateToDate, usingBiometric } = useBiometric();
+  const { getToken, isTokenUpdateToDate, onUnlockSuccess, reportWrongBiometric, requireSyncPassword, usingBiometric } = useBiometric();
 
   const closeModal = useCallback(
     () => {

@@ -3,7 +3,7 @@
 
 import { AddressJson } from '@subwallet/extension-base/background/types';
 import { AccountItemBase, AccountItemWithName, AddContactModal, BackIcon, EditContactModal, FilterModal, GeneralEmptyList, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
-import { ADD_ADDRESS_BOOK_MODAL, EDIT_ADDRESS_BOOK_MODAL, settingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
+import { ADD_ADDRESS_BOOK_MODAL, EDIT_ADDRESS_BOOK_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { useFilterModal, useFormatAddress, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { funcSortByName, reformatAddress } from '@subwallet/extension-koni-ui/utils';
@@ -196,8 +196,6 @@ const Component: React.FC<Props> = (props: Props) => {
   return (
     <PageWrapper className={CN(className)}>
       <Layout.WithSubHeaderOnly
-        backgroundImages={settingsScreensLayoutBackgroundImages}
-        backgroundStyle={'secondary'}
         onBack={goBack}
         subHeaderIcons={subHeaderIcons}
         title={t('Manage address book')}

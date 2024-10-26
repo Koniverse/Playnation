@@ -4,7 +4,6 @@
 import { _ChainAsset } from '@subwallet/chain-list/types';
 import { _getContractAddressOfToken, _isCustomAsset, _isSmartContractToken } from '@subwallet/extension-base/services/chain-service/utils';
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
-import { settingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
@@ -217,8 +216,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       resolve={dataContext.awaitStores(['assetRegistry'])}
     >
       <Layout.Base
-        backgroundImages={settingsScreensLayoutBackgroundImages}
-        backgroundStyle={'secondary'}
         leftFooterButton={leftFooterButtonProps()}
         onBack={goBack}
         rightFooterButton={rightFooterButtonProps()}

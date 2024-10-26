@@ -4,7 +4,7 @@
 import { RequestChangeMasterPassword } from '@subwallet/extension-base/background/KoniTypes';
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { DEFAULT_HOMEPAGE, DEFAULT_PASSWORD, simpleSettingsScreensLayoutBackgroundImages, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
+import { DEFAULT_HOMEPAGE, DEFAULT_PASSWORD, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
 import { useDefaultNavigate, useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { useBiometric } from '@subwallet/extension-koni-ui/hooks/biometric';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
@@ -171,8 +171,6 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   return (
     <PageWrapper className={CN(className)}>
       <Layout.WithSubHeaderOnly
-        backgroundImages={simpleSettingsScreensLayoutBackgroundImages}
-        backgroundStyle={'secondary'}
         onBack={goBack}
         rightFooterButton={{
           children: t('Finish'),

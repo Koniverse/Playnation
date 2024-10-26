@@ -3,11 +3,9 @@
 
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
 import { CampaignBannerModal, Layout } from '@subwallet/extension-koni-ui/components';
-import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { homeScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -36,8 +34,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   // @ts-ignore
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   const firstBanner = useMemo((): CampaignBanner | undefined => banners[0], [banners]);
-
-  const [backgroundStyle, setBackgroundStyle] = useState<LayoutBaseProps['backgroundStyle'] | undefined>();
   const navigate = useNavigate();
 
   const onOpenGlobalSearchToken = useCallback(() => {
@@ -73,11 +69,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   const onTabSelected = useCallback(
     (key: string) => {
-      if (key === 'tokens') {
-        setBackgroundStyle(undefined);
-      } else {
-        setBackgroundStyle('primary');
-      }
+      //
     },
     []
   );
@@ -91,8 +83,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       }}
       >
         <Layout.Home
-          backgroundImages={homeScreensLayoutBackgroundImages}
-          backgroundStyle={backgroundStyle}
           className={CN('home', 'home-container', className, containerClass)}
           onClickSearchIcon={onOpenGlobalSearchToken}
           onTabSelected={onTabSelected}
