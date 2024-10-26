@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { FilterTabItemType, FilterTabs } from '@subwallet/extension-koni-ui/components/FilterTabs';
-import { EventDifficulty, EventItem, EventStatus } from '@subwallet/extension-koni-ui/components/Mythical';
+import { EventDifficulty, EventItem, EventStatus, MainScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -77,6 +77,10 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   return (
     <div className={className}>
+      <MainScreenHeader
+        title={t('Events')}
+      />
+
       <FilterTabs
         className={'filter-tabs-container'}
         items={filterTabItems}
@@ -105,14 +109,19 @@ const Event = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#000',
+    height: '100%',
+
+    '.filter-tabs-container': {
+      marginBottom: 16
+    },
 
     '.event-list-container': {
       flex: 1,
       overflow: 'auto',
+      paddingTop: 12,
       paddingLeft: 16,
       paddingRight: 16,
-      paddingBottom: 34
+      paddingBottom: 12
     },
 
     '.event-item + .event-item': {

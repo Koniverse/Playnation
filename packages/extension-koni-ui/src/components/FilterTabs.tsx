@@ -46,10 +46,12 @@ function Component ({ className = '', items, onSelect, selectedItem }: Props): R
   );
 }
 
-export const FilterTabs = styled(Component)<Props>(({ theme: { token } }: Props) => {
+export const FilterTabs = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
     display: 'flex',
     gap: token.size,
+    paddingLeft: 16,
+    paddingRight: 16,
 
     '.__tab-item': {
       cursor: 'pointer',
@@ -58,13 +60,16 @@ export const FilterTabs = styled(Component)<Props>(({ theme: { token } }: Props)
     },
 
     '.__tab-item-label': {
-      fontSize: token.fontSizeLG,
-      lineHeight: token.lineHeightLG,
-      paddingTop: token.sizeXS + 2,
-      paddingBottom: token.sizeXS,
-      fontWeight: token.headingFontWeight,
+      fontFamily: extendToken.fontDruk,
+      fontSize: '24px',
+      fontStyle: 'normal',
+      fontWeight: 500,
+      lineHeight: '26px',
+      letterSpacing: '-0.72px',
       textTransform: 'uppercase',
-      'white-space': 'nowrap'
+      'white-space': 'nowrap',
+      paddingTop: 4,
+      paddingBottom: 2
     },
 
     '.__tab-item:after': {

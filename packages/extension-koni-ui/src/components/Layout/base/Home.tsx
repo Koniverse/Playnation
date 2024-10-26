@@ -29,6 +29,7 @@ const Component = ({ backgroundStyle, children, className, onClickFilterIcon, on
 
   return (
     <Layout.Base
+      backgroundStyle={backgroundStyle}
       className={className}
       headerCenter={false}
       headerLeft={'default'}
@@ -45,12 +46,5 @@ const Component = ({ backgroundStyle, children, className, onClickFilterIcon, on
 };
 
 export const Home = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token } }: LayoutBaseProps) => ({
-  '.invite-button': {
-    position: 'relative'
-  },
 
-  '.invite-tooltip': {
-    position: 'absolute',
-    right: 0
-  }
 }));

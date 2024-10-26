@@ -76,8 +76,6 @@ const Component = ({ className }: Props): React.ReactElement => {
 
 const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    backgroundColor: '#000',
-
     '.top-account-item-wrapper': {
       maxWidth: 94,
       flex: 1,

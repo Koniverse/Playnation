@@ -181,6 +181,8 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
 };
 
 const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token } }: LayoutBaseProps) => ({
+  backgroundColor: extendToken.mythColorDark,
+
   '.ant-sw-screen-layout-body': {
     overflow: 'hidden'
   },
@@ -193,11 +195,15 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
   },
 
   '&.-background-style-1': {
-
+    backgroundImage: 'url(/images/mythical/layout/background-1.jpg)',
+    backgroundPosition: 'center bottom',
+    backgroundSize: 'cover'
   },
 
   '&.-background-style-2': {
-
+    backgroundImage: 'url(/images/mythical/layout/background-2.jpg)',
+    backgroundPosition: 'center bottom',
+    backgroundSize: 'cover'
   },
 
   '> .ant-sw-screen-layout-header .ant-sw-header-bg-default': {

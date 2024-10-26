@@ -1,8 +1,9 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useMemo } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
 import { TaskItem, TaskItemType } from './TaskItem';
@@ -15,6 +16,8 @@ type TaskSectionType = {
 }
 
 const Component = ({ className }: Props): React.ReactElement => {
+  const { setBackgroundStyle } = useContext(HomeContext);
+
   const taskSections: TaskSectionType[] = useMemo(() => {
     return [
       {
@@ -130,6 +133,14 @@ const Component = ({ className }: Props): React.ReactElement => {
     ] as TaskSectionType[];
   }, []);
 
+  useEffect(() => {
+    setBackgroundStyle('style-2');
+
+    return () => {
+      setBackgroundStyle(undefined);
+    };
+  }, [setBackgroundStyle]);
+
   return (
     <div className={className}>
       {
@@ -160,8 +171,6 @@ const Component = ({ className }: Props): React.ReactElement => {
 
 const MissionTemp = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    backgroundColor: '#0e8a6a',
-
     '.task-section-title': {
       fontFamily: extendToken.fontDruk,
       fontSize: '28px',
