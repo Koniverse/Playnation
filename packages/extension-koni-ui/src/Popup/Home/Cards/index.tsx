@@ -104,7 +104,6 @@ const Cards = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
 
     '.card-list-container': {
       overflow: 'auto',
-      maxWidth: 384,
       display: 'flex',
       flexWrap: 'wrap',
       paddingRight: 16,

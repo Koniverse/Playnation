@@ -23,7 +23,6 @@ const Component = ({ className }: Props): React.ReactElement => {
 
 export const ToolArea = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    maxWidth: 384,
     paddingLeft: 20,
     paddingRight: 20,
     display: 'flex',
