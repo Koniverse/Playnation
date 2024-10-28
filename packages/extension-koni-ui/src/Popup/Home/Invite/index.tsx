@@ -7,7 +7,7 @@ import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccou
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, ReferralRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { detailScreensLayoutBackgroundImages, rankPointMap } from '@subwallet/extension-koni-ui/constants';
+import { rankPointMap } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
@@ -125,8 +125,6 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   return (
     <Layout.WithSubHeaderOnly
-      backgroundImages={detailScreensLayoutBackgroundImages}
-      backgroundStyle={'primary'}
       className={CN(className)}
       subHeaderIcons={subHeaderIcons}
       title={t('Invite frens')}

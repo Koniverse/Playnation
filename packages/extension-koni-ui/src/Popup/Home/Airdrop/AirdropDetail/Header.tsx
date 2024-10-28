@@ -25,7 +25,7 @@ function Component ({ airdropInfo, className }: Props) {
   const { t } = useTranslation();
 
   const { currentTimeline, pastTimelines } = (() => {
-    const { start, end, start_snapshot, end_claim, start_claim } = airdropInfo;
+    const { end, end_claim, start, start_claim, start_snapshot } = airdropInfo;
     const currentDate = Date.now();
     const startMs = new Date(start).getTime();
     const endMs = new Date(end).getTime();

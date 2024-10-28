@@ -6,7 +6,6 @@ import { _getBlockExplorerFromChain, _getChainNativeTokenBasicInfo, _getChainSub
 import { isUrl } from '@subwallet/extension-base/utils';
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { ProviderSelector } from '@subwallet/extension-koni-ui/components/Field/ProviderSelector';
-import { settingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
@@ -268,8 +267,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       resolve={dataContext.awaitStores(['chainStore'])}
     >
       <Layout.Base
-        backgroundImages={settingsScreensLayoutBackgroundImages}
-        backgroundStyle={'secondary'}
         onBack={onBack}
         rightFooterButton={{
           block: true,

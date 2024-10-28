@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
-import { simpleSettingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { useDefaultNavigate, useFocusFormItem, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { useBiometric } from '@subwallet/extension-koni-ui/hooks/biometric';
 import { keyringChangeMasterPassword } from '@subwallet/extension-koni-ui/messaging';
@@ -95,8 +94,6 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   return (
     <PageWrapper className={CN(className)}>
       <Layout.WithSubHeaderOnly
-        backgroundImages={simpleSettingsScreensLayoutBackgroundImages}
-        backgroundStyle={'secondary'}
         leftFooterButton={{
           children: t('Cancel'),
           onClick: goBack,

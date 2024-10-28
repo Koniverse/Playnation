@@ -10,6 +10,7 @@ import { quickFormatAddressToCompare } from '@subwallet/extension-base/utils';
 import { AccountSelector, BasicInputEvent, ChainSelector, EmptyList, FilterModal, HistoryItem, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { HISTORY_DETAIL_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
+import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useChainInfoWithState, useFilterModal, useHistorySelection, useSelector, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { cancelSubscription, subscribeTransactionHistory } from '@subwallet/extension-koni-ui/messaging';
 import { ChainItemType, ThemeProps, TransactionHistoryDisplayData, TransactionHistoryDisplayItem } from '@subwallet/extension-koni-ui/types';
@@ -24,7 +25,6 @@ import styled from 'styled-components';
 import { isEthereumAddress } from '@polkadot/util-crypto';
 
 import { HistoryDetailModal } from './Detail';
-import {HomeContext} from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 
 type Props = ThemeProps
 

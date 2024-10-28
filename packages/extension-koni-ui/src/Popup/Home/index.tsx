@@ -4,16 +4,13 @@
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
 import { CampaignBannerModal, Layout } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
-import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { homeScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Outlet } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -25,7 +22,6 @@ const apiSDK = BookaSdk.instance;
 const metadataHandler = MetadataHandler.instance;
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
-  const { activeModal, inactiveModal } = useContext(ModalContext);
   const chainsByAccountType = useGetChainSlugsByAccountType();
   const tokenGroupStructure = useTokenGroup(chainsByAccountType);
   const accountBalance = useAccountBalance(tokenGroupStructure.tokenGroupMap);
@@ -39,14 +35,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   const [backgroundStyle, setBackgroundStyle] = useState<LayoutBaseProps['backgroundStyle'] | undefined>();
   const navigate = useNavigate();
-
-  const onOpenGlobalSearchToken = useCallback(() => {
-    activeModal(GlobalSearchTokenModalId);
-  }, [activeModal]);
-
-  const onCloseGlobalSearchToken = useCallback(() => {
-    inactiveModal(GlobalSearchTokenModalId);
-  }, [inactiveModal]);
 
   useEffect(() => {
     const handleMaintenance = (info: MaintenanceInfo) => {
@@ -71,43 +59,22 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     };
   }, [navigate]);
 
-  const onTabSelected = useCallback(
-    (key: string) => {
-      if (key === 'tokens') {
-        setBackgroundStyle(undefined);
-      } else {
-        setBackgroundStyle('primary');
-      }
-    },
-    []
-  );
-
   return (
     <>
       <HomeContext.Provider value={{
         tokenGroupStructure,
         accountBalance,
-        setContainerClass
+        setContainerClass,
+        setBackgroundStyle
       }}
       >
         <Layout.Home
-          backgroundImages={homeScreensLayoutBackgroundImages}
           backgroundStyle={backgroundStyle}
           className={CN('home', 'home-container', className, containerClass)}
-          onClickSearchIcon={onOpenGlobalSearchToken}
-          onTabSelected={onTabSelected}
-          showGiftIcon
         >
           <Outlet />
         </Layout.Home>
       </HomeContext.Provider>
-
-      <GlobalSearchTokenModal
-        id={GlobalSearchTokenModalId}
-        onCancel={onCloseGlobalSearchToken}
-        sortedTokenSlugs={tokenGroupStructure.sortedTokenSlugs}
-        tokenBalanceMap={accountBalance.tokenBalanceMap}
-      />
       {firstBanner && <CampaignBannerModal banner={firstBanner} />}
     </>
   );

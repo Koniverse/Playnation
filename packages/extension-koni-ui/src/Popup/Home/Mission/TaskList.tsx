@@ -16,7 +16,7 @@ type Props = ThemeProps & {
   reloadTask: number;
 };
 
-const Component = ({ actionReloadPoint, className, taskCategoryInfoMap, taskCategoryMap, openWidget, reloadTask }: Props): React.ReactElement => {
+const Component = ({ actionReloadPoint, className, openWidget, reloadTask, taskCategoryInfoMap, taskCategoryMap }: Props): React.ReactElement => {
   const { t } = useTranslation();
 
   const taskCategoryInfoList = useMemo(() => {
