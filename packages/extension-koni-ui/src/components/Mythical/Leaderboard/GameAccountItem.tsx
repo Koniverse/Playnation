@@ -8,13 +8,15 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
-type Props = ThemeProps & {
+export type GameAccountItemType = {
   name?: string;
   prefix?: string;
   point?: number;
   avatarSrc?: string;
   isMine?: boolean;
 };
+
+type Props = ThemeProps & GameAccountItemType;
 
 function Component ({ avatarSrc, className, isMine, name, point, prefix }: Props) {
   const { t } = useTranslation();

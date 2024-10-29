@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { GameAccountItem, MainScreenHeader, TimeRemaining, TopAccountItem } from '@subwallet/extension-koni-ui/components/Mythical';
+import { GameAccountItemType } from '@subwallet/extension-koni-ui/components/Mythical/Leaderboard/GameAccountItem';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -15,6 +16,42 @@ type Props = ThemeProps;
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/leaderboard');
   const { t } = useTranslation();
+
+  const mockItems = useMemo(() => {
+    const mineOrdinal = 100;
+
+    const mineItem: GameAccountItemType = {
+      avatarSrc: '/images/mythical/user-image.png',
+      isMine: true,
+      name: 'Brad_MaddenMaster',
+      point: 7712000,
+      prefix: `${mineOrdinal}`.padStart(2, '0')
+    };
+
+    const result: GameAccountItemType[] = [];
+
+    for (let i = mineOrdinal - 20; i < mineOrdinal; i++) {
+      result.push({
+        avatarSrc: '/images/mythical/user-image.png',
+        name: `Brad_MaddenMaster_${i}`,
+        point: 7712000,
+        prefix: `${i}`.padStart(2, '0')
+      });
+    }
+
+    result.push(mineItem);
+
+    for (let i = mineOrdinal + 1; i <= mineOrdinal + 20; i++) {
+      result.push({
+        avatarSrc: '/images/mythical/user-image.png',
+        name: `Brad_MaddenMaster_${i}`,
+        point: 7712000,
+        prefix: `${i}`.padStart(2, '0')
+      });
+    }
+
+    return result;
+  }, []);
 
   return (
     <div className={className}>
@@ -66,33 +103,15 @@ const Component = ({ className }: Props): React.ReactElement => {
           title={'Want to take your profile to the next level?'}
         />
 
-        <div className={'game-account-list'}>
-          <GameAccountItem
-            avatarSrc={'/images/mythical/user-image.png'}
-            className={'game-account-item'}
-            name={'Brad_MaddenMaster'}
-            point={7712000}
-            prefix={'100'}
-          />
-
-          <GameAccountItem
-            avatarSrc={'/images/mythical/user-image.png'}
-            className={'game-account-item'}
-            name={'Brad_MaddenMaster'}
-            point={7712000}
-            prefix={'100'}
-          />
-
-          <GameAccountItem
-            avatarSrc={'/images/mythical/user-image.png'}
-            className={'game-account-item'}
-            isMine={true}
-            name={'Brad_MaddenMaster'}
-            point={7712000}
-            prefix={'100'}
-          />
-        </div>
-
+        {
+          mockItems.map((item) => (
+            <GameAccountItem
+              {...item}
+              className={'game-account-item'}
+              key={item.prefix}
+            />
+          ))
+        }
       </div>
     </div>
   );
