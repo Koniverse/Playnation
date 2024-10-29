@@ -149,6 +149,7 @@ const GameAccountItem = styled(Component)<Props>(({ theme: { extendToken, token 
 
     '&.-is-mine': {
       '.__background-layer:before': {
+        backgroundColor: extendToken.mythColorDark,
         backgroundImage: 'linear-gradient(270deg, rgba(255, 255, 255, 0.00) 0%, rgba(255, 255, 255, 0.2) 100%), linear-gradient(75deg, rgba(54, 53, 53, 0.32) 25.94%, rgba(25, 25, 25, 0.32) 63.11%)'
       },
 

@@ -27,69 +27,72 @@ const Component = ({ className }: Props): React.ReactElement => {
         <TimeRemaining datetime={'12day 10hrs'} />
       </div>
 
-      <div className='top-three-area'>
-        <div className='top-account-item-wrapper'>
-          {
-            <TopAccountItem
-              point={8712762}
-              rank={2}
-              tokenValue={762}
-            />
-          }
+      <div className='scroll-container'>
+        <div className='top-three-area'>
+          <div className='top-account-item-wrapper'>
+            {
+              <TopAccountItem
+                point={8712762}
+                rank={2}
+                tokenValue={762}
+              />
+            }
+          </div>
+          <div className='top-account-item-wrapper -is-first'>
+            {
+              <TopAccountItem
+                isFirst
+                point={9712762}
+                rank={1}
+                tokenValue={762}
+              />
+            }
+          </div>
+          <div className='top-account-item-wrapper'>
+            {
+              <TopAccountItem
+                point={8212762}
+                rank={3}
+                tokenValue={762}
+              />
+            }
+          </div>
         </div>
-        <div className='top-account-item-wrapper -is-first'>
-          {
-            <TopAccountItem
-              isFirst
-              point={9712762}
-              rank={1}
-              tokenValue={762}
-            />
-          }
-        </div>
-        <div className='top-account-item-wrapper'>
-          {
-            <TopAccountItem
-              point={8212762}
-              rank={3}
-              tokenValue={762}
-            />
-          }
-        </div>
-      </div>
 
-      <CallToAction
-        buttonLabel={'Play now'}
-        className={'call-to-action'}
-        subtitle={'Download NFL Rivals App'}
-        title={'Want to take your profile to the next level?'}
-      />
-
-      <div>
-        <GameAccountItem
-          avatarSrc={'/images/mythical/user-image.png'}
-          className={'game-account-item'}
-          name={'Brad_MaddenMaster'}
-          point={7712000}
-          prefix={'100'}
+        <CallToAction
+          buttonLabel={'Play now'}
+          className={'call-to-action'}
+          subtitle={'Download NFL Rivals App'}
+          title={'Want to take your profile to the next level?'}
         />
 
-        <GameAccountItem
-          avatarSrc={'/images/mythical/user-image.png'}
-          className={'game-account-item'}
-          name={'Brad_MaddenMaster'}
-          point={7712000}
-          prefix={'100'}
-        />
+        <div className={'game-account-list'}>
+          <GameAccountItem
+            avatarSrc={'/images/mythical/user-image.png'}
+            className={'game-account-item'}
+            name={'Brad_MaddenMaster'}
+            point={7712000}
+            prefix={'100'}
+          />
 
-        <GameAccountItem
-          avatarSrc={'/images/mythical/user-image.png'}
-          className={'game-account-item'}
-          isMine={true}
-          name={'Brad_MaddenMaster'}
-          point={7712000}
-          prefix={'100'}
-        />
+          <GameAccountItem
+            avatarSrc={'/images/mythical/user-image.png'}
+            className={'game-account-item'}
+            name={'Brad_MaddenMaster'}
+            point={7712000}
+            prefix={'100'}
+          />
+
+          <GameAccountItem
+            avatarSrc={'/images/mythical/user-image.png'}
+            className={'game-account-item'}
+            isMine={true}
+            name={'Brad_MaddenMaster'}
+            point={7712000}
+            prefix={'100'}
+          />
+        </div>
+
       </div>
     </div>
   );
@@ -97,6 +100,11 @@ const Component = ({ className }: Props): React.ReactElement => {
 
 const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'auto',
+    height: '100%',
+
     '.main-screen-header': {
       maxWidth: 250
     },
@@ -104,7 +112,13 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     '.time-remaining-wrapper': {
       paddingLeft: 16,
       paddingRight: 16,
-      marginBottom: 20
+      marginBottom: 12
+    },
+
+    '.scroll-container': {
+      flex: 1,
+      overflow: 'auto',
+      paddingTop: 8
     },
 
     '.top-account-item-wrapper': {
@@ -134,6 +148,13 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
 
     '.game-account-item + .game-account-item': {
       marginTop: 4
+    },
+
+    '.game-account-item.-is-mine': {
+      position: 'sticky',
+      bottom: 4,
+      top: 0,
+      zIndex: 5
     }
   };
 });
