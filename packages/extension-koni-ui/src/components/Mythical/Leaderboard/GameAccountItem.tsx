@@ -74,7 +74,7 @@ const GameAccountItem = styled(Component)<Props>(({ theme: { extendToken, token 
       '&:before': {
         content: '""',
         display: 'block',
-        backgroundImage: 'linear-gradient(75deg, rgba(54, 53, 53, 1) 25.94%, rgba(25, 25, 25, 1) 63.11%)',
+        backgroundImage: 'linear-gradient(75deg, rgba(54, 53, 53, 0.32) 25.94%, rgba(25, 25, 25, 0.32) 63.11%)',
         maskImage: 'url(/images/mythical/game-account-item-background.png)',
         maskSize: '100% 100%',
         maskPosition: 'top left',
@@ -149,7 +149,7 @@ const GameAccountItem = styled(Component)<Props>(({ theme: { extendToken, token 
 
     '&.-is-mine': {
       '.__background-layer:before': {
-        backgroundImage: 'linear-gradient(270deg, rgba(255, 255, 255, 0.00) 0%, rgba(255, 255, 255, 0.2) 100%), linear-gradient(75deg, rgba(54, 53, 53, 1) 25.94%, rgba(25, 25, 25, 1) 63.11%)'
+        backgroundImage: 'linear-gradient(270deg, rgba(255, 255, 255, 0.00) 0%, rgba(255, 255, 255, 0.2) 100%), linear-gradient(75deg, rgba(54, 53, 53, 0.32) 25.94%, rgba(25, 25, 25, 0.32) 63.11%)'
       },
 
       '.__point': {

@@ -75,8 +75,6 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { setContainerClass } = useContext(HomeContext);
   const [gameEvents, setGameEvents] = useState<GameEvent[]>(apiSDK.gameEventList);
 
-  console.log('gameEvents', gameEvents);
-
   const [eventItems, setEventItems] = useState<EventItemType[]>([]);
 
   const { t } = useTranslation();

@@ -246,7 +246,8 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       minWidth: 181,
       paddingLeft: 25,
       paddingRight: 12,
-      paddingTop: 4
+      paddingTop: 4,
+      zIndex: 3
     },
 
     '.__item-name-text': {

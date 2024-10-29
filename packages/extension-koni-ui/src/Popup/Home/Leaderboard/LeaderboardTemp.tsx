@@ -19,11 +19,11 @@ const Component = ({ className }: Props): React.ReactElement => {
   return (
     <div className={className}>
       <MainScreenHeader
-        className={'__main-screen-header'}
+        className={'main-screen-header'}
         title={t('Weekly leaderboard')}
       />
 
-      <div className='__time-remaining-wrapper'>
+      <div className='time-remaining-wrapper'>
         <TimeRemaining datetime={'12day 10hrs'} />
       </div>
 
@@ -60,6 +60,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
       <CallToAction
         buttonLabel={'Play now'}
+        className={'call-to-action'}
         subtitle={'Download NFL Rivals App'}
         title={'Want to take your profile to the next level?'}
       />
@@ -70,6 +71,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           className={'game-account-item'}
           name={'Brad_MaddenMaster'}
           point={7712000}
+          prefix={'100'}
         />
 
         <GameAccountItem
@@ -95,13 +97,14 @@ const Component = ({ className }: Props): React.ReactElement => {
 
 const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    '.__main-screen-header': {
+    '.main-screen-header': {
       maxWidth: 250
     },
 
-    '.__time-remaining-wrapper': {
+    '.time-remaining-wrapper': {
       paddingLeft: 16,
-      paddingRight: 16
+      paddingRight: 16,
+      marginBottom: 20
     },
 
     '.top-account-item-wrapper': {
@@ -123,6 +126,10 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
       paddingRight: token.paddingXS,
       gap: 8,
       paddingBottom: token.size
+    },
+
+    '.call-to-action': {
+      marginBottom: 12
     },
 
     '.game-account-item + .game-account-item': {
