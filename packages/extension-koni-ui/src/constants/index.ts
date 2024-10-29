@@ -22,3 +22,4 @@ export * from './earning';
 export * from './error';
 export * from './session';
 export * from './leaderboard';
+export * from './myth';

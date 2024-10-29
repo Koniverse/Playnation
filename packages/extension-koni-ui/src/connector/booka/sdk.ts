@@ -147,7 +147,7 @@ export class BookaSdk {
   }
 
   public get gameEventList () {
-    return this.gameListSubject.value;
+    return this.gameEventSubject.value;
   }
 
   public get gameItemMap () {
@@ -361,7 +361,7 @@ export class BookaSdk {
   }
 
   subscribeGameEventList () {
-    return this.taskCategoryListSubject;
+    return this.gameEventSubject;
   }
 
   subscribeAchievementList () {
@@ -581,7 +581,8 @@ export class BookaSdk {
         await Promise.all([
           this.fetchEnergyConfig(),
           this.fetchRankInfoMap(),
-          this.fetchGameList(),
+          // this.fetchGameList(),
+          this.fetchGameEventList(),
           this.fetchGameEventList(),
           this.fetchNFLRivalCardList(),
           this.fetchTaskCategoryList(),
@@ -591,8 +592,6 @@ export class BookaSdk {
           // this.fetchGameInventoryItemList(),
           // this.fetchGameItemInGameList()
         ]);
-
-        await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchAirdropCampaign()]);
       }
     } catch (error: any) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

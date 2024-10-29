@@ -14,19 +14,29 @@ export enum EventDifficulty {
   HARD = 'hard'
 }
 
-export enum EventStatus {
-  READY = 'ready',
+export enum EventState {
+  AVAILABLE = 'available',
   COMPLETED = 'completed',
   COMING_SOON = 'comingSoon',
+  UNKNOWN = 'unknown',
 }
 
-type EventItemProps = ThemeProps & {
-  className?: string;
+// todo: will have game info
+export type EventItemType = {
+  id: number;
   difficulty: EventDifficulty;
-  status: EventStatus;
+  state: EventState;
+  stats: string[];
+  round: number;
+  logoSrc: string;
+  datetime: string;
+  bonusText?: string;
+  name: string;
 };
 
-function Component ({ className, difficulty, status }: EventItemProps) {
+type Props = ThemeProps & EventItemType;
+
+function Component ({ bonusText, className, datetime, difficulty, logoSrc, name, round, state, stats }: Props) {
   const { t } = useTranslation();
 
   const difficultyText = useMemo(() => {
@@ -41,24 +51,24 @@ function Component ({ className, difficulty, status }: EventItemProps) {
     return t('Hard');
   }, [difficulty, t]);
 
-  const statusText = useMemo(() => {
-    if (status === EventStatus.READY) {
+  const stateText = useMemo(() => {
+    if (state === EventState.AVAILABLE) {
       return t('Time remaining');
     }
 
-    if (status === EventStatus.COMING_SOON) {
+    if (state === EventState.COMING_SOON) {
       return t('Starts in');
     }
 
     return t('Completed');
-  }, [status, t]);
+  }, [state, t]);
 
   const buttonLabel = useMemo(() => {
-    if (status === EventStatus.READY) {
+    if (state === EventState.AVAILABLE) {
       return t('Start event');
     }
 
-    if (status === EventStatus.COMING_SOON) {
+    if (state === EventState.COMING_SOON) {
       return t('Coming soon');
     }
 
@@ -68,17 +78,44 @@ function Component ({ className, difficulty, status }: EventItemProps) {
         <span>280</span>
       </>
     );
-  }, [status, t]);
+  }, [state, t]);
+
+  const statItems = useMemo(() => {
+    const result: string[] = [];
+
+    const abbMap: Record<string, string> = {
+      power: 'POW',
+      strength: 'STR',
+      acceleration: 'ACC',
+      jump: 'JMP',
+      quickness: 'QUI',
+      presence: 'PRS',
+      endurance: 'END',
+      carry: 'CAR'
+    };
+
+    stats.forEach((item, index) => {
+      if (index > 3) {
+        return;
+      }
+
+      if (abbMap[item]) {
+        result.push(abbMap[item]);
+      }
+    });
+
+    return result;
+  }, [stats]);
 
   return (
     <>
       <div className={CN(className)}>
         <div className='__item-name-block'>
-          <div className='__item-name-text'>Road Hero Pros</div>
+          <div className='__item-name-text'>{name}</div>
         </div>
 
         <div className='__item-round-block'>
-          <div className='__item-round-number'>5</div>
+          <div className='__item-round-number'>{round}</div>
           <div className='__item-round-text'>{t('Rounds')}</div>
         </div>
 
@@ -89,32 +126,37 @@ function Component ({ className, difficulty, status }: EventItemProps) {
         <img
           alt={'alt'}
           className='__item-logo'
-          src={'/images/mythical/event-logo-example.png'}
+          src={logoSrc}
         />
 
         <div className={'__item-body-area'}>
-          <div className='__item-bonus-info'>
-            <div className='__item-bonus-label __item-info-label'>{t('Bonus')}</div>
-            <div className='__item-bonus-value'>
-              Draft 2024 * 5% NFL Rivals
-            </div>
-          </div>
+          {
+            !!bonusText && (
+              <div className='__item-bonus-info'>
+                <div className='__item-bonus-label __item-info-label'>{t('Bonus')}</div>
+                <div className='__item-bonus-value'>
+                  {bonusText}
+                </div>
+              </div>
+            )
+          }
 
           <div className='__item-stat-info'>
             <div className='__item-stats-label __item-info-label'>{t('Stats')}</div>
             <div className='__item-stats-value'>
-              <span>Str</span>
-              <span>Acc</span>
-              <span>Jmp</span>
-              <span>Pow</span>
+              {
+                statItems.map((item) => (
+                  <span key={item}>{item}</span>
+                ))
+              }
             </div>
           </div>
         </div>
 
         <div className='__item-footer-area'>
           <div className='__item-footer-area-left-part'>
-            <div className='__item-status-text'>
-              {statusText}
+            <div className='__item-state-text'>
+              {stateText}
             </div>
 
             <div className={'__item-time'}>
@@ -123,7 +165,7 @@ function Component ({ className, difficulty, status }: EventItemProps) {
               />
 
               <div className='__item-time-text'>
-                12day 10hrs
+                {datetime}
               </div>
             </div>
           </div>
@@ -131,9 +173,9 @@ function Component ({ className, difficulty, status }: EventItemProps) {
           <div className='__item-footer-area-right-part'>
             <MythButton
               className={CN('__item-button', {
-                '-ready': status === EventStatus.READY,
-                '-coming-soon': status === EventStatus.COMING_SOON,
-                '-completed': status === EventStatus.COMPLETED
+                '-available': state === EventState.AVAILABLE,
+                '-coming-soon': state === EventState.COMING_SOON,
+                '-completed': state === EventState.COMPLETED
               })}
             >
               {buttonLabel}
@@ -145,8 +187,8 @@ function Component ({ className, difficulty, status }: EventItemProps) {
   );
 }
 
-export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
-  theme: { extendToken, token } }: EventItemProps) => {
+export const EventItem = styled(Component)<Props>(({ difficulty,
+  theme: { extendToken, token } }: Props) => {
   const itemBackground = (() => {
     if (difficulty === EventDifficulty.EASY) {
       return '/images/mythical/event-item-easy-background.png';
@@ -173,16 +215,20 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
 
   return ({
     minHeight: 297,
-
     position: 'relative',
+    paddingTop: 79,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingBottom: 16,
 
     '&:before': {
       content: '""',
       position: 'absolute',
       display: 'block',
       inset: 0,
+      top: 12,
       backgroundImage: `url("${itemBackground}")`,
-      backgroundSize: '100% 285px',
+      backgroundSize: '100% 100%',
       filter: 'drop-shadow(4px 6px 0px #000)',
       backgroundPosition: 'left bottom',
       backgroundRepeat: 'no-repeat'
@@ -199,7 +245,7 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
       top: 0,
       minWidth: 181,
       paddingLeft: 25,
-      paddingRight: 8,
+      paddingRight: 12,
       paddingTop: 4
     },
 
@@ -224,7 +270,8 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
       backgroundPosition: 'left bottom',
       backgroundRepeat: 'no-repeat',
       textAlign: 'center',
-      paddingTop: 4
+      paddingTop: 4,
+      zIndex: 2
     },
 
     '.__item-round-number': {
@@ -258,7 +305,8 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
       backgroundPosition: 'left bottom',
       backgroundRepeat: 'no-repeat',
       textAlign: 'center',
-      paddingTop: 11
+      paddingTop: 11,
+      zIndex: 2
     },
 
     '.__item-difficulty-text': {
@@ -275,19 +323,24 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
       right: -12,
       top: -11,
       width: 165,
-      height: 'auto'
+      height: 'auto',
+      zIndex: 2
     },
 
     // body
 
     '.__item-body-area': {
-      position: 'absolute',
-      top: 78,
-      left: 16,
-      right: 16,
+      position: 'relative',
+      zIndex: 1,
+      marginRight: -1.57,
+      minHeight: 141.57,
       paddingLeft: 20,
       paddingTop: 20,
-      paddingRight: 11
+      paddingRight: 11,
+      paddingBottom: 27.57,
+      backgroundImage: 'url("/images/mythical/event-item-body-area-background.png")',
+      backgroundSize: '100% 100%',
+      marginBottom: 4.43
     },
 
     '.__item-info-label': {
@@ -303,10 +356,15 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
 
     '.__item-bonus-value': {
       color: '#fff',
+      paddingRight: 116,
       fontFamily: extendToken.fontBarlowCondensed,
       lineHeight: '18px',
       fontWeight: 400,
-      fontSize: 16
+      fontSize: 16,
+      display: '-webkit-box',
+      '-webkit-line-clamp': '3',
+      '-webkit-box-orient': 'vertical',
+      overflow: 'hidden'
     },
 
     '.__item-bonus-info + .__item-stat-info': {
@@ -327,11 +385,13 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
     // footer
 
     '.__item-footer-area': {
-      position: 'absolute',
-      left: 16,
-      right: 16,
-      bottom: 21,
-      height: 57,
+      position: 'relative',
+      zIndex: 1,
+      backgroundImage: 'url("/images/mythical/event-item-footer-area-background.png")',
+      backgroundSize: '100% 100%',
+      minHeight: 58.57,
+      marginBottom: -1.57,
+      marginRight: -1.57,
       display: 'flex',
       paddingLeft: 19,
       paddingRight: 10,
@@ -349,8 +409,8 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
       maxWidth: 158
     },
 
-    // status text
-    '.__item-status-text': {
+    // state text
+    '.__item-state-text': {
       fontFamily: extendToken.fontDruk,
       fontSize: 20,
       lineHeight: '22px',
@@ -406,7 +466,7 @@ export const EventItem = styled(Component)<EventItemProps>(({ difficulty,
       }
     },
 
-    '.__item-button.-ready': {
+    '.__item-button.-available': {
       cursor: 'pointer',
 
       '.__button-content': {

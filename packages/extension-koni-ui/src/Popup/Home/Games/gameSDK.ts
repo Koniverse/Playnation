@@ -9,7 +9,7 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { camelCase } from 'lodash';
-import z, { undefined } from 'zod';
+import z from 'zod';
 
 export interface GameAppOptions {
   viewport: HTMLIFrameElement;

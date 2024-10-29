@@ -456,7 +456,7 @@ export interface GameEvent {
   name: string;
   gameId: number;
   icon: string;
-  description?: any;
+  description?: string;
   startTime: string;
   endTime: string;
   tossUpInfo: TossUpInfo;
