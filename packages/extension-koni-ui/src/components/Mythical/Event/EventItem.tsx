@@ -237,9 +237,10 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
     '.__item-name-block': {
       backgroundImage: 'url("/images/mythical/event-item-name.png")',
       backgroundSize: '100% 36px',
-      minHeight: 36,
       backgroundPosition: 'left bottom',
       backgroundRepeat: 'no-repeat',
+      filter: 'drop-shadow(1.57px 1.57px 0px #000)',
+      minHeight: 36,
       position: 'absolute',
       left: -7,
       top: 0,
@@ -247,7 +248,8 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       paddingLeft: 25,
       paddingRight: 12,
       paddingTop: 4,
-      zIndex: 3
+      zIndex: 3,
+      maxWidth: 300
     },
 
     '.__item-name-text': {
@@ -255,7 +257,10 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       lineHeight: '20px',
       fontWeight: 400,
       fontSize: 16,
-      color: extendToken.mythColorDark
+      color: extendToken.mythColorDark,
+      overflow: 'hidden',
+      'white-space': 'nowrap',
+      textOverflow: 'ellipsis'
     },
 
     // round block
@@ -270,6 +275,7 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       backgroundImage: 'url("/images/mythical/event-item-round.png")',
       backgroundPosition: 'left bottom',
       backgroundRepeat: 'no-repeat',
+      filter: 'drop-shadow(1.862px 1.862px 0px #000)',
       textAlign: 'center',
       paddingTop: 4,
       zIndex: 2
@@ -305,6 +311,7 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       backgroundImage: 'url("/images/mythical/event-item-difficulty.png")',
       backgroundPosition: 'left bottom',
       backgroundRepeat: 'no-repeat',
+      filter: 'drop-shadow(1.57px 1.57px 0px #000)',
       textAlign: 'center',
       paddingTop: 11,
       zIndex: 2
@@ -453,7 +460,7 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       height: 40,
 
       '.__button-content': {
-        marginTop: -5
+        paddingBottom: 5
       },
 
       '.__button-background': {

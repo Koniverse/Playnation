@@ -22,7 +22,7 @@ function getEventDifficult (difficult: number): EventDifficulty {
   }
 
   if (difficult <= 6 && difficult >= 4) {
-    return EventDifficulty.HARD;
+    return EventDifficulty.MEDIUM;
   }
 
   return EventDifficulty.EASY;
@@ -43,30 +43,28 @@ function getEventState (gameEvent: GameEvent, dateNow: number): EventState {
   return EventState.UNKNOWN;
 }
 
-function getTimeRemaining (dateNow: number, targetTime: string) {
+function getTimeRemaining (dateNow: number, targetTime: string): string {
   const end = new Date(targetTime).getTime();
   const diff = end - dateNow;
 
   if (diff <= 0) {
-    return '---';
+    return "Time's up!";
   }
 
-  let days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
-  // Adjust hours to ensure it’s always less than 24
-  if (hours === 24) {
-    days += 1;
-    hours = 0;
-  }
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
   const dayLabel = days === 1 ? 'day' : 'days';
   const hourLabel = hours === 1 ? 'hr' : 'hrs';
+  const minuteLabel = minutes === 1 ? 'minute' : 'minutes';
 
   if (days > 0) {
     return `${days} ${dayLabel} ${hours} ${hourLabel}`;
+  } else if (hours > 0) {
+    return `${hours} ${hourLabel} ${minutes} ${minuteLabel}`;
   } else {
-    return `${hours} ${hourLabel}`;
+    return `0 hr ${minutes} ${minuteLabel}`;
   }
 }
 

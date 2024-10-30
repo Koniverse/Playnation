@@ -125,7 +125,12 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     height: '100%',
 
     '.main-screen-header': {
-      maxWidth: 250
+      maxWidth: 250,
+
+      '.__screen-title': {
+        fontSize: '32px',
+        lineHeight: '40px'
+      }
     },
 
     '.time-remaining-wrapper': {
