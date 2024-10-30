@@ -40,7 +40,10 @@ const Component = ({ className }: Props): React.ReactElement => {
       gameIframe.current.style.opacity = '0';
     }
 
+    apiSDK.fetchGameEventList().catch(console.error);
+
     setTimeout(() => {
+      setCurrentGameEvent(undefined);
       setCurrentGame(undefined);
     }, 600);
   }, []);
