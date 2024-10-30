@@ -42,10 +42,10 @@ const MainScreenHeader = styled(Component)<ThemeProps>(({ theme: { extendToken, 
     '.__screen-title': {
       color: token.colorWhite,
       fontFamily: extendToken.fontPermanentMarker,
-      fontSize: '28px',
+      fontSize: '32px',
+      lineHeight: '40px',
       fontStyle: 'normal',
       fontWeight: 400,
-      lineHeight: '34px',
       textTransform: 'uppercase'
     },
 
