@@ -107,6 +107,13 @@ const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, to
 
     '.__token-Value': {
       color: token.colorWhite,
+      textAlign: 'center',
+      fontFamily: extendToken.fontBarlowCondensed,
+      fontSize: '14px',
+      fontStyle: 'normal',
+      fontWeight: 400,
+      lineHeight: '16px',
+      letterSpacing: '0.28px',
       borderRadius: 100,
       backgroundImage: 'linear-gradient(75deg, #363535 25.94%, #191919 63.11%)',
       padding: '4px 12px'

@@ -468,10 +468,6 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       width: '100%',
       height: 40,
 
-      '.__button-content': {
-        paddingBottom: 5
-      },
-
       '.__button-background': {
         filter: 'drop-shadow(2px 3px 0px #000)'
       },

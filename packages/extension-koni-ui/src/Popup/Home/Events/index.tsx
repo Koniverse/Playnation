@@ -186,13 +186,15 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, []);
 
+  const showGame = !!currentGame;
+
   useEffect(() => {
-    setContainerClass('events-screen-wrapper');
+    setContainerClass(showGame ? 'events-screen-wrapper -show-game' : 'events-screen-wrapper');
 
     return () => {
       setContainerClass(undefined);
     };
-  }, [setContainerClass]);
+  }, [setContainerClass, showGame]);
 
   return (
     <div className={className}>

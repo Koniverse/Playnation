@@ -1,12 +1,13 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { EventDifficulty, EventItem, EventItemType, EventState } from '@subwallet/extension-koni-ui/components/Mythical';
+import { EmptyListContent, EventDifficulty, EventItem, EventItemType, EventState } from '@subwallet/extension-koni-ui/components/Mythical';
 import { GameEvent } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { EventTab } from '@subwallet/extension-koni-ui/Popup/Home/Events/shared';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { customFormatDate } from '@subwallet/extension-koni-ui/utils';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
@@ -27,8 +28,17 @@ function getEventDifficult (difficult: number): EventDifficulty {
   return EventDifficulty.EASY;
 }
 
-// todo: update logic for ongoing event (filter the completed game)
+function isEventCompleted (gameEvent: GameEvent, dateNow: number): boolean {
+  const endTime = new Date(gameEvent.endTime).getTime();
+
+  return dateNow >= endTime || (gameEvent.gamePlays?.length >= gameEvent.tossUpInfo.gameplayPerEvent);
+}
+
 function isEventOngoing (gameEvent: GameEvent, dateNow: number): boolean {
+  if (isEventCompleted(gameEvent, dateNow)) {
+    return false;
+  }
+
   const startTime = new Date(gameEvent.startTime).getTime();
   const endTime = new Date(gameEvent.endTime).getTime();
 
@@ -39,11 +49,6 @@ function isEventUpcoming (gameEvent: GameEvent, dateNow: number): boolean {
   const startTime = new Date(gameEvent.startTime).getTime();
 
   return dateNow < startTime;
-}
-
-// todo: update logic for completed event (with score)
-function isEventCompleted (gameEvent: GameEvent, dateNow: number): boolean {
-  return gameEvent.gamePlays?.length >= gameEvent.tossUpInfo.gameplayPerEvent;
 }
 
 function getEventState (gameEvent: GameEvent, dateNow: number): EventState {
@@ -87,7 +92,18 @@ function getTimeRemaining (dateNow: number, targetTime: string): string {
   }
 }
 
+function getEventEndTime (gameEvent: GameEvent) {
+  const latestGamePlay = gameEvent.gamePlays?.length ? gameEvent.gamePlays[gameEvent.gamePlays.length - 1] : undefined;
+
+  if (latestGamePlay) {
+    return latestGamePlay.endTime || latestGamePlay.startTime;
+  }
+
+  return gameEvent.endTime;
+}
+
 const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): React.ReactElement => {
+  const { t } = useTranslation();
   const [eventItems, setEventItems] = useState<EventItemType[]>([]);
 
   // get gameEvents that is sorted and filtered
@@ -150,7 +166,7 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): 
 
       _completedItems.sort((a: GameEvent, b: GameEvent) => {
         // most recently completed events appear first
-        return new Date(b.endTime).getTime() - new Date(a.endTime).getTime();
+        return new Date(getEventEndTime(b)).getTime() - new Date(getEventEndTime(a)).getTime();
       });
 
       return [
@@ -180,10 +196,20 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): 
         }
 
         if (eventState === EventState.COMPLETED) {
-          return customFormatDate(eventInfo.endTime, '#MM#/#DD#/#YY# #hh#:#mm#');
+          return customFormatDate(getEventEndTime(eventInfo), '#MM#/#DD#/#YY# #hh#:#mm#');
         }
 
         return '---';
+      })();
+
+      const score = (() => {
+        if (eventState === EventState.COMPLETED && eventInfo.gamePlays) {
+          return eventInfo.gamePlays.reduce((totalScore, game) => {
+            return totalScore + (game.point || 0);
+          }, 0);
+        }
+
+        return undefined;
       })();
 
       result.push({
@@ -196,7 +222,8 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): 
         datetime,
         bonusText: eventInfo.description,
         name: eventInfo.name,
-        onPlayEvent
+        onPlayEvent,
+        score
       });
     });
 
@@ -218,7 +245,17 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): 
   return (
     <div className={className}>
       {
-        eventItems.map((item) => (
+        !eventItems.length && (
+          <EmptyListContent
+            className={'empty-list-content'}
+            content={t('Look for ongoing events in the “All Events” tab')}
+            title={t('oops! no events found')}
+          />
+        )
+      }
+
+      {
+        !!eventItems.length && eventItems.map((item) => (
           <EventItem
             {...item}
             className={'event-item'}
@@ -232,6 +269,10 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): 
 
 export const EventListContainer = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
+    '.empty-list-content': {
+      paddingTop: 136
+    },
+
     '.event-item + .event-item': {
       marginTop: 12
     }

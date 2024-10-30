@@ -91,8 +91,7 @@ const CallToAction = styled(Component)<ThemeProps>(({ theme: { extendToken, toke
       paddingRight: 2,
 
       '.__button-content': {
-        color: extendToken.mythColorDark,
-        paddingBottom: 6
+        color: extendToken.mythColorDark
       },
 
       '.__button-background': {

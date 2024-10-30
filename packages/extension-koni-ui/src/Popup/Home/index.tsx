@@ -94,12 +94,12 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
       }
     },
 
-    '&.game-screen-wrapper.-show-game': {
+    '&.events-screen-wrapper.-show-game': {
       '.ant-sw-screen-layout-body-inner': {
         position: 'static'
       },
 
-      '.ant-sw-screen-layout-footer, .layout-background-image': {
+      '.ant-sw-screen-layout-footer': {
         opacity: 0,
         pointerEvents: 'none'
       }

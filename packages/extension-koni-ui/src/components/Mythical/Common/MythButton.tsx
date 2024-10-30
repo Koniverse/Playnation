@@ -45,12 +45,14 @@ const MythButton = styled(Component)<ThemeProps>(({ theme: { extendToken, token 
     outline: 'none',
     padding: 0,
     cursor: 'pointer',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
 
     '.__button-inner': {
       display: 'flex',
       position: 'relative',
-      zIndex: 2,
-      justifyContent: 'center'
+      zIndex: 2
     },
 
     '.__button-content': {
@@ -59,7 +61,8 @@ const MythButton = styled(Component)<ThemeProps>(({ theme: { extendToken, token 
       fontStyle: 'italic',
       fontWeight: 500,
       lineHeight: '22px',
-      textTransform: 'uppercase'
+      textTransform: 'uppercase',
+      paddingBottom: 6
     },
 
     '.__button-background': {
