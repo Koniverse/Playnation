@@ -5,7 +5,7 @@ import { ClockIcon, MythButton } from '@subwallet/extension-koni-ui/components/M
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 
 export enum EventDifficulty {
@@ -32,11 +32,12 @@ export type EventItemType = {
   datetime: string;
   bonusText?: string;
   name: string;
+  onPlayEvent: (eventID: number) => void;
 };
 
 type Props = ThemeProps & EventItemType;
 
-function Component ({ bonusText, className, datetime, difficulty, logoSrc, name, round, state, stats }: Props) {
+function Component ({ bonusText, className, datetime, difficulty, id, logoSrc, name, onPlayEvent, round, state, stats }: Props) {
   const { t } = useTranslation();
 
   const difficultyText = useMemo(() => {
@@ -79,6 +80,12 @@ function Component ({ bonusText, className, datetime, difficulty, logoSrc, name,
       </>
     );
   }, [state, t]);
+
+  const _onClickPlayEvent = useCallback(() => {
+    if (state === EventState.AVAILABLE) {
+      onPlayEvent(id);
+    }
+  }, [id, onPlayEvent, state]);
 
   const statItems = useMemo(() => {
     const result: string[] = [];
@@ -177,6 +184,7 @@ function Component ({ bonusText, className, datetime, difficulty, logoSrc, name,
                 '-coming-soon': state === EventState.COMING_SOON,
                 '-completed': state === EventState.COMPLETED
               })}
+              onClick={_onClickPlayEvent}
             >
               {buttonLabel}
             </MythButton>

@@ -14,7 +14,7 @@ import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-export const DEFAULT_INIT_DATA = process.env.DEFAULT_INIT_DATA;
+export const DEFAULT_INIT_DATA = 'query_id=AAHa5GRXAAAAANrkZFez9CTH&user=%7B%22id%22%3A1466229978%2C%22first_name%22%3A%22Peter%22%2C%22last_name%22%3A%22Mai%22%2C%22username%22%3A%22petermai%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1730256492&hash=e30c22d19aedd4ea315e6c0b5f2d9932323c69728775c3d1c0cc5bca7278b133';
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
 const storage = SWStorage.instance;
@@ -55,6 +55,7 @@ const metadataHandler = MetadataHandler.instance;
 
 export class BookaSdk {
   private syncHandler = createPromiseHandler<void>();
+  private cardListHandler = createPromiseHandler<void>();
   private accountSubject = new BehaviorSubject<BookaAccount | undefined>(undefined);
   private taskListSubject = new BehaviorSubject<Task[]>([]);
   private achievementListSubject = new BehaviorSubject<Achievement[]>([]);
@@ -381,11 +382,19 @@ export class BookaSdk {
       localStorage.setItem(CACHE_KEYS.gameEventList, JSON.stringify(response.cards));
     }
 
+    this.cardListHandler.resolve();
+
     return response?.cards || [];
   }
 
   subscribeNFLRivalCardList () {
-    return this.taskCategoryListSubject;
+    return this.nflRivalCardListSubject;
+  }
+
+  async getNFLRivalCardList () {
+    await this.cardListHandler.promise;
+
+    return this.nflRivalCardListSubject.value;
   }
 
   /**
@@ -581,7 +590,7 @@ export class BookaSdk {
         await Promise.all([
           this.fetchEnergyConfig(),
           this.fetchRankInfoMap(),
-          // this.fetchGameList(),
+          this.fetchGameList(),
           this.fetchGameEventList(),
           this.fetchGameEventList(),
           this.fetchNFLRivalCardList(),
@@ -656,11 +665,12 @@ export class BookaSdk {
     return result.signature;
   }
 
-  async playGame ({ energyUsed, gameId, initData }: { gameId: number, energyUsed: number, initData?: object }): Promise<GamePlay> {
+  async playGame ({ energyUsed, gameEventId, gameId, gameInitData }: { gameId: number, gameEventId?: number, energyUsed: number, gameInitData?: object }): Promise<GamePlay> {
     await this.waitForSync;
     const gamePlay = await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/new-game`, {
       gameId,
-      initData
+      gameEventId,
+      gameInitData
     });
 
     // Update account energy

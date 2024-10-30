@@ -1,12 +1,12 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { BuyInGameItemResponse, ErrorCode, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, Player, PlaynationSDKError, PlayResponse, SDKInitParams, Tournament, UpdateStatePayload, UseInGameItemResponse } from '@playnation/game-sdk';
+import { BuyInGameItemResponse, ErrorCode, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, NewGamePlayPayload, Player, PlaynationSDKError, PlayResponse, SDKInitParams, Tournament, UpdateStatePayload, UseInGameItemResponse } from '@playnation/game-sdk';
 import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { addLazy, createPromiseHandler, removeLazy } from '@subwallet/extension-base/utils';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Game } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { Game, GameEvent } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { camelCase } from 'lodash';
 import z from 'zod';
@@ -15,6 +15,7 @@ export interface GameAppOptions {
   viewport: HTMLIFrameElement;
   apiSDK: BookaSdk;
   currentGameInfo: Game;
+  currentGameEvent?: GameEvent;
   onExit: () => void;
 }
 
@@ -27,6 +28,7 @@ export class GameApp {
   private viewport: HTMLIFrameElement;
   private apiSDK: BookaSdk;
   private currentGameInfo: Game;
+  private currentGameEvent?: GameEvent;
   private inventoryQuantityMap: Record<string, number> = {};
   private gameItemInGame: Record<string, InGameItem> = {};
 
@@ -38,6 +40,7 @@ export class GameApp {
     this.viewport = options.viewport;
     this.apiSDK = options.apiSDK;
     this.currentGameInfo = options.currentGameInfo;
+    this.currentGameEvent = options.currentGameEvent;
     this.inventoryQuantityMap = this.apiSDK.gameInventoryItemInGameList;
     this.gameItemInGame = this.apiSDK.gameItemInGameList;
 
@@ -72,6 +75,7 @@ export class GameApp {
     const state = await this.gameStateHandler.promise;
 
     const player: Player = {
+      totalScore: 0,
       id: playerId,
       balance: point,
       name: `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}` || 'Player',
@@ -86,7 +90,8 @@ export class GameApp {
           quantity
         })),
       balanceNPS: account?.attributes.point || 0,
-      state
+      state,
+      event: this.currentGameEvent
     };
 
     return player;
@@ -103,17 +108,11 @@ export class GameApp {
     const tickets = Math.floor((account.attributes.energy + 0.3) / currentGame.energyPerGame);
 
     const tour: Tournament = {
-      id: 'tour1',
+      id: 1,
       name: 'Tour 01',
       startTime: new Date().toISOString(),
       endTime: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
-      entryFee: 1,
-      entryTickets: 10,
-      prizePool: {
-        total: 10
-      },
-      tickets: tickets,
-      totalPlayers: 100
+      tickets: tickets
     };
 
     return tour;
@@ -125,19 +124,26 @@ export class GameApp {
     return { items };
   }
 
-  async onPlay () {
+  async onPlay (payload?: NewGamePlayPayload) {
     const account = this.apiSDK.account;
     const currentGame = this.currentGameInfo;
+    const currentEvent = this.currentGameEvent;
     const energy = account?.attributes.energy || 0;
 
     if (energy < currentGame.energyPerGame) {
       throw newError('Not enought energy', ErrorCode.NOT_ENOUGH_ENERGY);
     }
 
+    console.log('Datax', payload?.gameInitData);
+
     const gamePlay = await this.apiSDK.playGame({
       gameId: currentGame.id,
-      energyUsed: currentGame.energyPerGame
+      gameEventId: currentEvent?.id,
+      energyUsed: currentGame.energyPerGame,
+      gameInitData: payload?.gameInitData as object
     });
+
+    console.log('gamePlay', gamePlay);
 
     if (!account || !currentGame) {
       throw newError('invalid account or game', ErrorCode.SYSTEM_ERROR);
@@ -146,7 +152,10 @@ export class GameApp {
     const remainingEnergy = account.attributes.energy - currentGame.energyPerGame;
 
     const res: PlayResponse = {
+      gamePlayId: `gp-${gamePlay.id}`,
       token: gamePlay.token,
+      initData: gamePlay.initState as unknown,
+      stateData: gamePlay.stateData,
       remainingTickets: Math.floor(remainingEnergy / currentGame.energyPerGame),
       energy: remainingEnergy
     };
@@ -196,19 +205,22 @@ export class GameApp {
     }
   }
 
-  async onSubmitAction ({ action, payload }: {action: string, payload: GameState<any>}) {
+  async onSubmitAction ({ gamePlayId, state }: {gamePlayId: string, state: GameState<any>}) {
     const currentGamePlay = this.apiSDK.currentGamePlay;
 
-    if (currentGamePlay?.id && this.theLastSignature !== payload.signature) {
-      this.theLastSignature = payload.signature;
+    console.log('onSubmitAction', gamePlayId, state);
+
+    if (currentGamePlay?.id && this.theLastSignature !== state.signature) {
+      this.theLastSignature = state.signature;
       const response = await this.apiSDK.submitState({
         gamePlayId: currentGamePlay.id,
-        stateData: payload
+        stateData: state
       }).catch(console.error);
 
       return {
         success: !!response,
-        payload: response?.gamePlay?.state as unknown
+        stateData: response?.gamePlay?.stateData,
+        point: response?.gamePlay?.point
       };
     }
 
@@ -298,7 +310,7 @@ export class GameApp {
   }
 
   async getLatestGameState () {
-    const skd = this.apiSDK;
+    const sdk = this.apiSDK;
 
     while (!this.currentGameInfo?.id) {
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -306,8 +318,22 @@ export class GameApp {
 
     const gameId = this.currentGameInfo.id;
 
-    if (this.currentGameInfo.gameType !== 'farming') {
+    console.log(this.currentGameInfo.gameType);
+
+    if (this.currentGameInfo.gameType === 'casual') {
       this.gameStateHandler.resolve({} as GameState<any>);
+
+      return;
+    }
+
+    if (this.currentGameInfo.gameType === 'mythical-card') {
+      this.gameStateHandler.resolve({
+        data: {
+          mythicalCards: await sdk.getNFLRivalCardList()
+        },
+        signature: '0x0000',
+        timestamp: new Date().toISOString()
+      });
 
       return;
     }
@@ -326,7 +352,7 @@ export class GameApp {
     }
 
     async function getAPIState () {
-      const lastGameplay = await skd.getLastState(gameId);
+      const lastGameplay = await sdk.getLastState(gameId);
 
       if (lastGameplay?.state) {
         let stateStr = lastGameplay.state as object | string;
@@ -373,6 +399,8 @@ export class GameApp {
 
   private async _onMessage (event: MessageEvent) {
     await this.apiSDK.waitForSync;
+
+    console.log('onMessage', event.data);
 
     const schema = z.object({
       source: z.enum(['game-sdk']),

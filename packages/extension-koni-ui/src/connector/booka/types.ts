@@ -81,7 +81,7 @@ export interface Game {
   endTime: string | null;
   active: boolean;
   pointConversionRate: number;
-  gameType: 'casual' | 'farming';
+  gameType: 'casual' | 'farming' | 'mythical-card';
   leaderboard_groups: LeaderboardGroups[];
   restrictedAccess: string[] | null;
   restrictedAccessText: string | null;
@@ -243,6 +243,7 @@ export interface GamePlay {
   gameId: number;
   accountId: number;
   gameDataId: number;
+  gameEventId?: number;
   token: string;
   startTime: Date;
   energy: number;
