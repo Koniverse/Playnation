@@ -32,11 +32,12 @@ export type EventItemType = {
   datetime: string;
   bonusText?: string;
   name: string;
+  score?: number;
 };
 
 type Props = ThemeProps & EventItemType;
 
-function Component ({ bonusText, className, datetime, difficulty, logoSrc, name, round, state, stats }: Props) {
+function Component ({ bonusText, className, datetime, difficulty, logoSrc, name, round, score = 0, state, stats }: Props) {
   const { t } = useTranslation();
 
   const difficultyText = useMemo(() => {
@@ -75,10 +76,10 @@ function Component ({ bonusText, className, datetime, difficulty, logoSrc, name,
     return (
       <>
         {t('Score')}&nbsp;
-        <span>280</span>
+        <span>{score}</span>
       </>
     );
-  }, [state, t]);
+  }, [score, state, t]);
 
   const statItems = useMemo(() => {
     const result: string[] = [];
