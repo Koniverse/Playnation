@@ -28,6 +28,12 @@ function getEventDifficult (difficult: number): EventDifficulty {
   return EventDifficulty.EASY;
 }
 
+function isEventExpired (gameEvent: GameEvent, dateNow: number): boolean {
+  const endTime = new Date(gameEvent.endTime).getTime();
+
+  return dateNow >= endTime && (!gameEvent.gamePlays || (gameEvent.gamePlays?.length < gameEvent.tossUpInfo.gameplayPerEvent));
+}
+
 function isEventCompleted (gameEvent: GameEvent, dateNow: number): boolean {
   const endTime = new Date(gameEvent.endTime).getTime();
 
@@ -92,7 +98,7 @@ function getTimeRemaining (dateNow: number, targetTime: string): string {
   }
 }
 
-function getEventEndTime (gameEvent: GameEvent) {
+function getEventGameEndTime (gameEvent: GameEvent) {
   const latestGamePlay = gameEvent.gamePlays?.length ? gameEvent.gamePlays[gameEvent.gamePlays.length - 1] : undefined;
 
   if (latestGamePlay) {
@@ -166,7 +172,7 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): 
 
       _completedItems.sort((a: GameEvent, b: GameEvent) => {
         // most recently completed events appear first
-        return new Date(getEventEndTime(b)).getTime() - new Date(getEventEndTime(a)).getTime();
+        return new Date(getEventGameEndTime(b)).getTime() - new Date(getEventGameEndTime(a)).getTime();
       });
 
       return [
@@ -196,7 +202,7 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): 
         }
 
         if (eventState === EventState.COMPLETED) {
-          return customFormatDate(getEventEndTime(eventInfo), '#MM#/#DD#/#YY# #hh#:#mm#');
+          return customFormatDate(getEventGameEndTime(eventInfo), '#MM#/#DD#/#YY# #hh#:#mm#');
         }
 
         return '---';
@@ -223,6 +229,7 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): 
         bonusText: eventInfo.description,
         name: eventInfo.name,
         onPlayEvent,
+        isExpired: isEventExpired(eventInfo, dateNow),
         score
       });
     });

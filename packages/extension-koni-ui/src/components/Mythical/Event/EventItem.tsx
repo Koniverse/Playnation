@@ -34,11 +34,12 @@ export type EventItemType = {
   name: string;
   onPlayEvent: (eventID: number) => void;
   score?: number;
+  isExpired?: boolean;
 };
 
 type Props = ThemeProps & EventItemType;
 
-function Component ({ bonusText, className, datetime, difficulty, id, logoSrc, name, onPlayEvent, round, score = 0, state, stats }: Props) {
+function Component ({ bonusText, className, datetime, difficulty, id, isExpired, logoSrc, name, onPlayEvent, round, score = 0, state, stats }: Props) {
   const { t } = useTranslation();
 
   const difficultyText = useMemo(() => {
@@ -62,8 +63,12 @@ function Component ({ bonusText, className, datetime, difficulty, id, logoSrc, n
       return t('Starts in');
     }
 
+    if (isExpired) {
+      return t('Expired');
+    }
+
     return t('Completed');
-  }, [state, t]);
+  }, [isExpired, state, t]);
 
   const buttonLabel = useMemo(() => {
     if (state === EventState.AVAILABLE) {
