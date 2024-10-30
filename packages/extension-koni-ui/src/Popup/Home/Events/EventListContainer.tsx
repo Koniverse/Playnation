@@ -12,6 +12,7 @@ import styled from 'styled-components';
 type Props = ThemeProps & {
   gameEvents: GameEvent[];
   selectedTab: string;
+  onPlayEvent: (eventID: number) => void;
 };
 
 function getEventDifficult (difficult: number): EventDifficulty {
@@ -42,22 +43,20 @@ function isEventUpcoming (gameEvent: GameEvent, dateNow: number): boolean {
 
 // todo: update logic for completed event (with score)
 function isEventCompleted (gameEvent: GameEvent, dateNow: number): boolean {
-  const endTime = new Date(gameEvent.endTime).getTime();
-
-  return dateNow >= endTime;
+  return gameEvent.gamePlays?.length >= gameEvent.tossUpInfo.gameplayPerEvent;
 }
 
 function getEventState (gameEvent: GameEvent, dateNow: number): EventState {
-  if (isEventUpcoming(gameEvent, dateNow)) {
-    return EventState.COMING_SOON;
+  if (isEventCompleted(gameEvent, dateNow)) {
+    return EventState.COMPLETED;
   }
 
   if (isEventOngoing(gameEvent, dateNow)) {
     return EventState.AVAILABLE;
   }
 
-  if (isEventCompleted(gameEvent, dateNow)) {
-    return EventState.COMPLETED;
+  if (isEventUpcoming(gameEvent, dateNow)) {
+    return EventState.COMING_SOON;
   }
 
   return EventState.UNKNOWN;
@@ -88,7 +87,7 @@ function getTimeRemaining (dateNow: number, targetTime: string): string {
   }
 }
 
-const Component = ({ className, gameEvents, selectedTab }: Props): React.ReactElement => {
+const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): React.ReactElement => {
   const [eventItems, setEventItems] = useState<EventItemType[]>([]);
 
   // get gameEvents that is sorted and filtered
@@ -196,12 +195,13 @@ const Component = ({ className, gameEvents, selectedTab }: Props): React.ReactEl
         logoSrc: eventInfo.icon,
         datetime,
         bonusText: eventInfo.description,
-        name: eventInfo.name
+        name: eventInfo.name,
+        onPlayEvent
       });
     });
 
     return result;
-  }, [getProcessedGameEvents]);
+  }, [getProcessedGameEvents, onPlayEvent]);
 
   useEffect(() => {
     setEventItems(getEventItems());

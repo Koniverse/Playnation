@@ -134,8 +134,6 @@ export class GameApp {
       throw newError('Not enought energy', ErrorCode.NOT_ENOUGH_ENERGY);
     }
 
-    console.log('Datax', payload?.gameInitData);
-
     const gamePlay = await this.apiSDK.playGame({
       gameId: currentGame.id,
       gameEventId: currentEvent?.id,
@@ -399,8 +397,6 @@ export class GameApp {
 
   private async _onMessage (event: MessageEvent) {
     await this.apiSDK.waitForSync;
-
-    console.log('onMessage', event.data);
 
     const schema = z.object({
       source: z.enum(['game-sdk']),

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { FilterTabItemType, FilterTabs } from '@subwallet/extension-koni-ui/components/FilterTabs';
-import {EventItemType, MainScreenHeader} from '@subwallet/extension-koni-ui/components/Mythical';
+import { MainScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game, GameEvent } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
@@ -15,10 +15,10 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } 
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
-const telegramConnector = TelegramConnector.instance;
-
 import { EventListContainer } from './EventListContainer';
 import { EventTab } from './shared';
+
+const telegramConnector = TelegramConnector.instance;
 
 type Props = ThemeProps;
 
@@ -31,7 +31,6 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [selectedFilterTab, setSelectedFilterTab] = useState<string>(EventTab.ALL_EVENTS);
   const [gameEvents, setGameEvents] = useState<GameEvent[]>(apiSDK.gameEventList);
   const [gameList, setGameList] = useState<Game[]>(apiSDK.gameList);
-  const [eventItems, setEventItems] = useState<EventItemType[]>([]);
   const gameIframe = useRef<HTMLIFrameElement>(null);
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
   const [currentGameEvent, setCurrentGameEvent] = useState<GameEvent | undefined>(undefined);
@@ -217,6 +216,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       <EventListContainer
         className={'event-list-container'}
         gameEvents={gameEvents}
+        onPlayEvent={onPlayEvent}
         selectedTab={selectedFilterTab}
       />
     </div>

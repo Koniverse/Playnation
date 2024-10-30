@@ -462,7 +462,7 @@ export interface GameEvent {
   endTime: string;
   tossUpInfo: TossUpInfo;
   tossUpBonus: TossUpBonus[];
-  gamePlays: Pick<GamePlay, 'id' | 'startTime' | 'success' | 'point' | 'gamePoint' | 'endTime' | 'stateData'>;
+  gamePlays: Pick<GamePlay, 'id' | 'startTime' | 'success' | 'point' | 'gamePoint' | 'endTime' | 'stateData'>[];
 }
 
 interface TossUpBonus {

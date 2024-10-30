@@ -14,7 +14,7 @@ import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-export const DEFAULT_INIT_DATA = 'query_id=AAHa5GRXAAAAANrkZFez9CTH&user=%7B%22id%22%3A1466229978%2C%22first_name%22%3A%22Peter%22%2C%22last_name%22%3A%22Mai%22%2C%22username%22%3A%22petermai%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1730256492&hash=e30c22d19aedd4ea315e6c0b5f2d9932323c69728775c3d1c0cc5bca7278b133';
+export const DEFAULT_INIT_DATA = process.env.DEFAULT_INIT_DATA;
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
 const storage = SWStorage.instance;
