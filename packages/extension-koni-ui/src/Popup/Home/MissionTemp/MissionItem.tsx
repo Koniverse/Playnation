@@ -4,21 +4,21 @@
 import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
 
-export type TaskItemType = {
+export type MissionItemType = {
   id: string;
   title: string;
   statusText: string;
   actionContent?: React.ReactNode;
-  doAction?: VoidFunction;
+  doAction?: (setLoading: React.Dispatch<React.SetStateAction<boolean>>) => void;
   type: 'oneTime' | 'achievement';
   point: number;
   state: 'UNCOMPLETED' | 'CLAIMABLE' | 'COMPLETED'
 };
 
-type Props = ThemeProps & TaskItemType;
+type Props = ThemeProps & MissionItemType;
 
 const Component = ({ actionContent, className,
   doAction,
@@ -27,6 +27,12 @@ const Component = ({ actionContent, className,
   statusText,
   title,
   type }: Props): React.ReactElement => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const onAction = useCallback(() => {
+    doAction?.(setIsLoading);
+  }, [doAction]);
+
   return (
     <div className={CN(className, {
       '-not-completed': state !== 'COMPLETED',
@@ -56,7 +62,8 @@ const Component = ({ actionContent, className,
             state !== 'COMPLETED' && !!actionContent && (
               <MythButton
                 className={'__action-button'}
-                onClick={doAction}
+                isLoading={isLoading}
+                onClick={onAction}
               >
                 {actionContent}
               </MythButton>
@@ -78,10 +85,10 @@ const Component = ({ actionContent, className,
   );
 };
 
-export const TaskItem = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
+export const MissionItem = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     minHeight: 78,
-    backgroundImage: 'url(/images/mythical/task-item/background.png)',
+    backgroundImage: 'url(/images/mythical/mission-item/background.png)',
     backgroundPosition: 'center center',
     backgroundSize: '100% 100%',
     filter: 'drop-shadow(2px 2px 0px #000)',
@@ -181,7 +188,7 @@ export const TaskItem = styled(Component)<ThemeProps>(({ theme: { extendToken, t
 
       '.__button-background:before': {
         backgroundColor: token.colorPrimary,
-        maskImage: 'url(/images/mythical/task-item/action-button.png)',
+        maskImage: 'url(/images/mythical/mission-item/action-button.png)',
         maskSize: '100% 100%',
         maskPosition: 'top left'
       }
@@ -189,11 +196,9 @@ export const TaskItem = styled(Component)<ThemeProps>(({ theme: { extendToken, t
 
     '.__point': {
       position: 'relative',
-      textAlign: 'center',
-      paddingLeft: 5,
-      paddingRight: 3,
+      paddingLeft: 7,
+      paddingRight: 5,
       paddingTop: 5,
-
       minWidth: 47,
       height: 39,
       backgroundPosition: 'center center',
@@ -222,14 +227,14 @@ export const TaskItem = styled(Component)<ThemeProps>(({ theme: { extendToken, t
     '&.-not-completed': {
       '.__point': {
         color: extendToken.mythColorDark,
-        backgroundImage: 'url(/images/mythical/task-item/score-uncompleted.png)'
+        backgroundImage: 'url(/images/mythical/mission-item/score-uncompleted.png)'
       }
     },
 
     '&.-completed': {
       '.__point': {
         color: extendToken.mythColorGray1,
-        backgroundImage: 'url(/images/mythical/task-item/score-completed.png)'
+        backgroundImage: 'url(/images/mythical/mission-item/score-completed.png)'
       },
 
       '.__item-left-part, .__item-right-part': {

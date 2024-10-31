@@ -10,24 +10,42 @@ type Props = ThemeProps & {
   children?: React.ReactNode;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   disabled?: boolean;
+  isLoading?: boolean;
 };
 
 const Component = ({ children,
   className,
   disabled,
   icon,
+  isLoading,
   onClick }: Props): React.ReactElement => {
   return (
     <button
       className={className}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       onClick={onClick}
     >
       <span className='__button-inner'>
-        {icon}
-        <span className='__button-content'>
-          {children}
-        </span>
+        {
+          !isLoading && (
+            <>
+              {icon}
+              <span className='__button-content'>
+                {children}
+              </span>
+            </>
+          )
+        }
+
+        {
+          isLoading && (
+            <>
+              <span className='__button-content'>
+                ...
+              </span>
+            </>
+          )
+        }
       </span>
 
       <span className='__button-background'>
@@ -80,6 +98,7 @@ const MythButton = styled(Component)<ThemeProps>(({ theme: { extendToken, token 
     },
 
     '&:disabled': {
+      opacity: 0.62,
       cursor: 'default'
     }
   };

@@ -63,7 +63,6 @@ export const LinkAccountArea = styled(Component)<ThemeProps>(({ theme: { extendT
     paddingRight: 16,
 
     '.__button': {
-      display: 'block',
       width: '100%',
       height: 52,
 

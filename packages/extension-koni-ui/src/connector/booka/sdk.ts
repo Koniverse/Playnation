@@ -140,7 +140,7 @@ export class BookaSdk {
   }
 
   public get achievementList () {
-    return this.taskCategoryListSubject.value;
+    return this.achievementListSubject.value;
   }
 
   public get gameList () {
@@ -594,6 +594,7 @@ export class BookaSdk {
           this.fetchGameEventList(),
           this.fetchGameEventList(),
           this.fetchNFLRivalCardList(),
+          this.fetchAchievementList(),
           this.fetchTaskCategoryList(),
           this.fetchTaskList(),
           this.fetchLeaderboardConfigList()

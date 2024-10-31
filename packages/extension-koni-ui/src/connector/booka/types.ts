@@ -209,6 +209,8 @@ export interface Achievement {
   logViewType: LogViewType;
   conditions: Condition[];
   progress: ProgressData[];
+  pointReward: number;
+  metricTypeMap?: Record<string, string>;
   name: string;
   id: number;
   milestoneId: number;
