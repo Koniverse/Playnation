@@ -31,13 +31,13 @@ function getEventDifficult (difficult: number): EventDifficulty {
 function isEventExpired (gameEvent: GameEvent, dateNow: number): boolean {
   const endTime = new Date(gameEvent.endTime).getTime();
 
-  return dateNow >= endTime && (!gameEvent.gamePlays || (gameEvent.gamePlays?.length < gameEvent.tossUpInfo.gameplayPerEvent));
+  return dateNow >= endTime && (!gameEvent.gamePlays || ((gameEvent.gamePlays?.length || 0) < (gameEvent.tossUpInfo?.gameplayPerEvent || 1)));
 }
 
 function isEventCompleted (gameEvent: GameEvent, dateNow: number): boolean {
   const endTime = new Date(gameEvent.endTime).getTime();
 
-  return dateNow >= endTime || (gameEvent.gamePlays?.length >= gameEvent.tossUpInfo.gameplayPerEvent);
+  return dateNow >= endTime || ((gameEvent.gamePlays?.length || 0) >= (gameEvent.tossUpInfo?.gameplayPerEvent || 1));
 }
 
 function isEventOngoing (gameEvent: GameEvent, dateNow: number): boolean {

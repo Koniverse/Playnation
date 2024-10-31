@@ -597,6 +597,7 @@ export class BookaSdk {
           this.fetchAchievementList(),
           this.fetchTaskCategoryList(),
           this.fetchTaskList(),
+          this.fetchAchievementList(),
           this.fetchLeaderboardConfigList()
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
