@@ -210,7 +210,14 @@ export interface Achievement {
   conditions: Condition[];
   progress: ProgressData[];
   pointReward: number;
-  metricTypeMap?: Record<string, string>;
+  metrics: [
+    {
+      id: number,
+      type: string,
+      metricId: string,
+    }
+  ],
+  milestoneOrdinal: number;
   name: string;
   id: number;
   milestoneId: number;

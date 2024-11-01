@@ -36,11 +36,63 @@ function getTaskState (task: Task) {
 }
 
 function getAchievementState (achievement: Achievement): MissionItemType['state'] {
+  if (achievement.status === AchievementLogStatus.CLAIMED) {
+    return 'COMPLETED';
+  }
+
+  if (achievement.status === AchievementLogStatus.CLAIMABLE) {
+    return 'CLAIMABLE';
+  }
+
   return 'UNCOMPLETED';
 }
 
+const metricLabelMap: Record<string, string> = {
+  'all:nps': 'all:nps',
+  'task:nps': 'task:nps',
+  'task:quantity': 'task:quantity',
+  'referral:nps': 'referral:nps',
+  'referral:quantity': 'referral:quantity',
+  'referral:inviteToPlay:nps': 'referral:inviteToPlay:nps',
+  'referral:inviteToPlay:quantity': 'referral:inviteToPlay:quantity',
+  'game:casual:nps': 'game:casual:nps',
+  'game:casual:point': 'game:casual:point',
+  'game:casual:quantity': 'game:casual:quantity',
+  'game:farming:point': 'game:farming:point',
+  'game:farming:totalPoint': 'game:farming:totalPoint',
+  'game:farming:earnSpeed': 'game:farming:earnSpeed',
+  'account:daily:quantity': 'account:daily:quantity'
+};
+
 function getMetricCounterpart (metricId: string, achievement: Achievement): string {
-  return metricId;
+  const metric = achievement.metrics.find((m) => m.metricId === metricId);
+
+  return metric ? (metricLabelMap[metric.type] || '') : '';
+}
+
+function filterAchievements (achievements: Achievement[], taskSectionMap: Record<number, MissionSectionType>): Achievement[] {
+  const result: Record<string, Achievement> = {};
+
+  achievements.forEach((item) => {
+    if (!item.categoryId || !taskSectionMap[item.categoryId]) {
+      return;
+    }
+
+    // Skip items with CLAIMED status
+    if (item.status === AchievementLogStatus.CLAIMED) {
+      return;
+    }
+
+    // If there's no existing item in the result for this slug, or if the new item has a lower milestoneOrdinal, update it
+    if (
+      !result[item.slug] ||
+      item.milestoneOrdinal < result[item.slug].milestoneOrdinal
+    ) {
+      result[item.slug] = item;
+    }
+  });
+
+  return Object.values(result);
 }
 
 const apiSDK = BookaSdk.instance;
@@ -148,7 +200,7 @@ const Component = ({ accountInfo,
     const firstProcessItem = achievement.progress[0];
 
     if (firstProcessItem) {
-      return `${firstProcessItem.completed}/${firstProcessItem.required} ${getMetricCounterpart(firstProcessItem.metricId, achievement)}`;
+      return `${firstProcessItem.completed}/${firstProcessItem.required} ${getMetricCounterpart(firstProcessItem.metricId, achievement)}`.trim();
     }
 
     return '';
@@ -208,11 +260,9 @@ const Component = ({ accountInfo,
       });
     });
 
-    achievements.forEach((ach) => {
-      if (!ach.categoryId || !taskSectionMap[ach.categoryId]) {
-        return;
-      }
+    const filteredAchievements = filterAchievements(achievements, taskSectionMap);
 
+    filteredAchievements.forEach((ach) => {
       taskSectionMap[ach.categoryId].items.push({
         id: `${ach.id}`,
         title: ach.name || '',

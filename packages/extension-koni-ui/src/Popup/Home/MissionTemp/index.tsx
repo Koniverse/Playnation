@@ -70,15 +70,15 @@ const Component = ({ className }: Props): React.ReactElement => {
   useEffect(() => {
     const taskCategoryListSub = apiSDK.subscribeTaskCategoryList().subscribe((data) => {
       setTaskCategories(data);
-      console.log('data----taskCategoryListSub', data);
+      // console.log('data----taskCategoryListSub', data);
     });
     const taskListSubjectSub = apiSDK.subscribeTaskList().subscribe((data) => {
       setTasks(data);
-      console.log('data----taskListSubjectSub', data);
+      // console.log('data----taskListSubjectSub', data);
     });
     const achievementListSub = apiSDK.subscribeAchievementList().subscribe((data) => {
       setAchievements(data);
-      console.log('data----achievementListSub', data);
+      // console.log('data----achievementListSub', data);
     });
 
     return () => {
