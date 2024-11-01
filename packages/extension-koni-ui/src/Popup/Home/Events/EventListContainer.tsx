@@ -75,26 +75,49 @@ function getEventState (gameEvent: GameEvent, dateNow: number): EventState {
 
 function getTimeRemaining (dateNow: number, targetTime: string): string {
   const end = new Date(targetTime).getTime();
-  const diff = end - dateNow;
+  let diff = end - dateNow;
 
   if (diff <= 0) {
-    return "Time's up!";
+    return '---';
   }
 
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  let days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  diff %= (1000 * 60 * 60 * 24);
+  let hours = Math.floor(diff / (1000 * 60 * 60));
+
+  diff %= (1000 * 60 * 60);
+  let minutes = Math.floor(diff / (1000 * 60));
+  let seconds = Math.ceil((diff % (1000 * 60)) / 1000);
+
+  // Round up components as necessary
+  if (seconds === 60) {
+    seconds = 0;
+    minutes += 1;
+  }
+
+  if (minutes === 60) {
+    minutes = 0;
+    hours += 1;
+  }
+
+  if (hours === 24) {
+    hours = 0;
+    days += 1;
+  }
 
   const dayLabel = days === 1 ? 'day' : 'days';
   const hourLabel = hours === 1 ? 'hr' : 'hrs';
-  const minuteLabel = minutes === 1 ? 'minute' : 'minutes';
+  const minuteLabel = minutes === 1 ? 'min' : 'mins';
 
   if (days > 0) {
-    return `${days} ${dayLabel} ${hours} ${hourLabel}`;
+    return `${days} ${dayLabel} ${hours ? `${hours} ${hourLabel}` : ''}`.trim();
   } else if (hours > 0) {
-    return `${hours} ${hourLabel} ${minutes} ${minuteLabel}`;
+    return `${hours} ${hourLabel} ${minutes ? `${minutes} ${minuteLabel}` : ''}`.trim();
+  } else if (minutes > 0) {
+    return `${minutes} ${minuteLabel}`;
   } else {
-    return `0 hr ${minutes} ${minuteLabel}`;
+    return '1 min';
   }
 }
 
@@ -202,7 +225,7 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): 
         }
 
         if (eventState === EventState.COMPLETED) {
-          return customFormatDate(getEventGameEndTime(eventInfo), '#MM#/#DD#/#YY# #hh#:#mm#');
+          return customFormatDate(getEventGameEndTime(eventInfo), '#MM#/#DD#/#YY# #hhhh#:#mm#');
         }
 
         return '---';
