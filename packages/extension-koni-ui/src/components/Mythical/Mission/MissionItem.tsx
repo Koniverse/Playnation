@@ -89,8 +89,9 @@ export const MissionItem = styled(Component)<ThemeProps>(({ theme: { extendToken
   return {
     minHeight: 78,
     backgroundImage: 'url(/images/mythical/mission-item/background.png)',
-    backgroundPosition: 'center center',
+    backgroundPosition: '0 0',
     backgroundSize: '100% 100%',
+    backgroundRepeat: 'no-repeat',
     filter: 'drop-shadow(2px 2px 0px #000)',
     paddingLeft: 12,
     paddingTop: 12,

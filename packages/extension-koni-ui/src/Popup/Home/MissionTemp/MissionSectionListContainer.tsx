@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
+import { MissionItem, MissionItemType } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Achievement, AchievementLogStatus, BookaAccount, Task, TaskCategory, TaskCategoryType } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
@@ -10,8 +11,6 @@ import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task'
 import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-
-import { MissionItem, MissionItemType } from './MissionItem';
 
 type Props = ThemeProps & {
   taskCategories: TaskCategory[];

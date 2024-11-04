@@ -70,7 +70,8 @@ const MythButton = styled(Component)<ThemeProps>(({ theme: { extendToken, token 
     '.__button-inner': {
       display: 'flex',
       position: 'relative',
-      zIndex: 2
+      zIndex: 2,
+      alignItems: 'center'
     },
 
     '.__button-content': {
