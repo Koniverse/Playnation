@@ -8,12 +8,13 @@ import { LayoutBackgroundImages, LayoutBackgroundStyle, ThemeProps } from '@subw
 import { Icon, SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
-import { ArrowLeft, ChartBar, House, Target, UserCirclePlus } from 'phosphor-react';
+import { ArrowLeft, ChartBar, Gift, House, Target, UserCirclePlus } from 'phosphor-react';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+import useNotification from '../../../hooks/common/useNotification';
 import SelectAccount from '../parts/SelectAccount';
 
 export interface LayoutBaseProps extends Omit<
@@ -28,14 +29,17 @@ SwScreenLayoutProps,
 
 const specialLanguages: Array<LanguageType> = ['ja', 'ru'];
 
+type TabItemType = Omit<SwTabBarItem, 'onClick'> & { url: string };
+
 const Component = ({ backgroundImages, backgroundStyle, children, className, headerIcons, onBack, onTabSelected, ...props }: LayoutBaseProps) => {
   const navigate = useNavigate();
   const { goHome } = useDefaultNavigate();
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const { language } = useSelector((state) => state.settings);
+  const notify = useNotification();
 
-  const tabBarItems = useMemo((): Array<Omit<SwTabBarItem, 'onClick'> & { url: string }> => ([
+  const tabBarItems = useMemo((): TabItemType[] => ([
     // {
     //   icon: {
     //     type: 'customIcon',
@@ -83,6 +87,16 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
       },
       label: t('Leaderboard'),
       key: 'leaderboard',
+      url: '/home/leaderboard'
+    },
+    {
+      icon: {
+        type: 'phosphor',
+        phosphorIcon: Gift,
+        weight: 'fill'
+      },
+      label: t('Mint'),
+      key: 'mint',
       url: '/home/leaderboard'
     }
     // {
@@ -171,10 +185,19 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
   }, [pathname]);
 
   const onSelectTab = useCallback(
-    (url: string) => () => {
-      navigate(url);
+    (item: TabItemType) => () => {
+      if (item.key === 'mint') {
+        notify({
+          message: 'Coming soon',
+          duration: 3
+        });
+
+        return;
+      }
+
+      navigate(item.url);
     },
-    [navigate]
+    [navigate, notify]
   );
 
   const defaultOnBack = useCallback(() => {
@@ -209,7 +232,7 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
       selectedTabBarItem={selectedTab}
       tabBarItems={tabBarItems.map((item) => ({
         ...item,
-        onClick: onSelectTab(item.url)
+        onClick: onSelectTab(item)
       }))}
     >
       <div className={'ant-sw-screen-layout-body-inner'}>

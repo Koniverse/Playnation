@@ -46,6 +46,16 @@
       overflow: hidden;
     }
 
+    .startup-screen-background {
+      position: absolute;
+      inset: 0;
+      background-image: url("/images/startup-screen/background.png");
+      background-repeat: no-repeat;
+      background-size: 390px auto;
+      background-position: center bottom;
+      z-index: 1;
+    }
+
     .startup-screen-title {
       font-size: 40px;
       line-height: 52px;
@@ -54,62 +64,23 @@
       max-width: 240px;
       position: relative;
       z-index: 10;
-      margin-top: 40px;
+      margin-top: 24px;
       margin-left: 28px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .startup-screen-subtitle {
+      position: relative;
+      z-index: 2;
       font-size: 20px;
-      margin-left: 28px;
-      line-height: 1.32;
+      line-height: 26px;
       color: #000;
       font-weight: 600;
-      position: relative;
-      z-index: 10;
-    }
-
-    .startup-screen-mockup-1 {
-      position: absolute;
-      width: 238px;
-      height: auto;
-      top: 42px;
-      right: -77px;
-      z-index: 5;
-    }
-
-    .startup-screen-mockup-2 {
-      position: absolute;
-      width: 123px;
-      height: auto;
-      top: 200px;
-      right: 156px;
-      z-index: 5;
-    }
-
-    .startup-screen-mockup-3 {
-      position: absolute;
-      width: 84px;
-      height: auto;
-      top: 303px;
-      right: 10px;
-      z-index: 5;
-    }
-
-    .startup-screen-mockup-4 {
-      width: 379px;
-      height: auto;
-      position: absolute;
-      z-index: 0;
-      bottom: -5px;
-      right: -12px;
+      margin-left: 28px;
     }
 
     @media screen and (max-height: 721px) {
-      .startup-screen-mockup-4 {
-        bottom: auto;
-        top: 335px;
-      }
+
     }
 
     @keyframes fadeInOut {
@@ -151,6 +122,8 @@
 <body style="background-color: #F0F7F8;">
   <div id="root"></div>
   <div id="loading-placeholder" class="startup-screen" style="position:fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000">
+    <div class="startup-screen-background"></div>
+
     <div class="startup-screen-title">
       Welcome to Koni Story
     </div>
@@ -158,11 +131,6 @@
     <div class="startup-screen-subtitle">
       Your IP journey awaits…
     </div>
-
-    <img class="startup-screen-mockup-1" src="/images/startup-screen/token-1.png" alt="mockup-1">
-    <img class="startup-screen-mockup-2" src="/images/startup-screen/token-2.png" alt="mockup-2">
-    <img class="startup-screen-mockup-3" src="/images/startup-screen/token-3.png" alt="mockup-3">
-    <img class="startup-screen-mockup-4" src="/images/startup-screen/bottom-background-image.png" alt="mockup-4">
   </div>
 
   <script>
