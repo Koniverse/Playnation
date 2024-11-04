@@ -8,9 +8,13 @@ import CN from 'classnames';
 import React from 'react';
 import styled from 'styled-components';
 
-type Props = ThemeProps;
+type Props = ThemeProps & {
+  onCopy?: VoidFunction;
+  onInvite?: VoidFunction;
+};
 
-const Component = ({ className }: Props): React.ReactElement => {
+const Component = ({ className, onCopy,
+  onInvite }: Props): React.ReactElement => {
   const { t } = useTranslation();
 
   return (
@@ -32,6 +36,7 @@ const Component = ({ className }: Props): React.ReactElement => {
               <CopyIcon />
             </span>
           )}
+          onClick={onCopy}
         >
           {t('Copy link')}
         </MythButton>
@@ -43,6 +48,7 @@ const Component = ({ className }: Props): React.ReactElement => {
               <UsersIcon />
             </span>
           )}
+          onClick={onInvite}
         >
           {t('Invite now')}
         </MythButton>

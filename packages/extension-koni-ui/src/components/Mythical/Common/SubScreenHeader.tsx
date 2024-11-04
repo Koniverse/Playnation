@@ -54,6 +54,7 @@ const SubScreenHeader = styled(Component)<ThemeProps>(({ theme: { extendToken, t
     },
 
     '.__back-button': {
+      cursor: 'pointer',
       minWidth: 30,
       height: 32,
       marginRight: 16,

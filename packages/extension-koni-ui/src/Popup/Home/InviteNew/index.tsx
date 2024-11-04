@@ -4,9 +4,12 @@
 import { Layout } from '@subwallet/extension-koni-ui/components';
 import { GameAccountItem, SubScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
 import { GameAccountItemType } from '@subwallet/extension-koni-ui/components/Mythical/Leaderboard/GameAccountItem';
-import { useDefaultNavigate, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { useDefaultNavigate, useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useMemo } from 'react';
+import { copyToClipboard } from '@subwallet/extension-koni-ui/utils';
+import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 
 import CallToAction from '../../../components/Mythical/Common/CallToAction';
@@ -15,9 +18,13 @@ import { InviteMissionArea } from './InviteMissionArea';
 
 type Props = ThemeProps;
 
+const apiSDK = BookaSdk.instance;
+const telegramConnector = TelegramConnector.instance;
+
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/invite');
   const { goBack } = useDefaultNavigate();
+  const notify = useNotification();
 
   const { t } = useTranslation();
 
@@ -35,6 +42,25 @@ const Component = ({ className }: Props): React.ReactElement => {
     return result;
   }, []);
 
+  const inviteURL = useMemo(() => {
+    const encodeURL = apiSDK.getInviteURL();
+
+    return `https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent('Invite your friend and earn a bonus gift for each friend you bring in!')}`;
+  }, []);
+
+  const inviteFriend = useCallback(() => {
+    telegramConnector.openTelegramLink(inviteURL);
+  }, [inviteURL]);
+
+  const copyLink = useCallback(() => {
+    copyToClipboard(apiSDK.getInviteURL());
+
+    notify({
+      key: 'invite-copied',
+      message: t('Copied to clipboard')
+    });
+  }, [notify, t]);
+
   return (
     <Layout.Base
       className={className}
@@ -46,7 +72,11 @@ const Component = ({ className }: Props): React.ReactElement => {
         title={t('Your friends')}
       />
 
-      <InviteFriendsArea className={'invite-friends-area'} />
+      <InviteFriendsArea
+        className={'invite-friends-area'}
+        onCopy={copyLink}
+        onInvite={inviteFriend}
+      />
 
       <InviteMissionArea className={'invite-mission-area'} />
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { FilterTabItemType, FilterTabs } from '@subwallet/extension-koni-ui/components/FilterTabs';
-import { MainScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
+import { MainScreenHeader, UsersThreeIcon } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game, GameEvent } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
@@ -13,6 +13,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { isDesktop, isMobile } from '@subwallet/extension-koni-ui/utils';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { EventListContainer } from './EventListContainer';
@@ -26,6 +27,7 @@ const apiSDK = BookaSdk.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/events');
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { setContainerClass } = useContext(HomeContext);
   const [selectedFilterTab, setSelectedFilterTab] = useState<string>(EventTab.ALL_EVENTS);
@@ -125,6 +127,10 @@ const Component = ({ className }: Props): React.ReactElement => {
     setSelectedFilterTab(value);
   }, []);
 
+  const navigateToInvite = useCallback(() => {
+    navigate('/invite');
+  }, [navigate]);
+
   // const reloadGame = useCallback((slug: string) => {
   //   setCurrentGame(undefined);
   //
@@ -199,6 +205,16 @@ const Component = ({ className }: Props): React.ReactElement => {
   return (
     <div className={className}>
       <MainScreenHeader
+        rightPartNode={
+          (
+            <button
+              className={'invite-button'}
+              onClick={navigateToInvite}
+            >
+              <UsersThreeIcon />
+            </button>
+          )
+        }
         title={t('Events')}
       />
 
@@ -234,6 +250,17 @@ const Event = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
+
+    '.invite-button': {
+      minWidth: 32,
+      height: 32,
+      padding: 0,
+      backgroundColor: 'transparent',
+      border: 0,
+      fontSize: 32,
+      color: extendToken.mythColorGray1,
+      cursor: 'pointer'
+    },
 
     '.game-iframe': {
       top: 0,

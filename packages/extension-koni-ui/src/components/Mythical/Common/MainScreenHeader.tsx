@@ -34,6 +34,7 @@ const MainScreenHeader = styled(Component)<ThemeProps>(({ theme: { extendToken, 
   return {
     display: 'flex',
     padding: '20px 16px',
+    alignItems: 'center',
 
     '.__left-part': {
       flex: 1
@@ -50,7 +51,7 @@ const MainScreenHeader = styled(Component)<ThemeProps>(({ theme: { extendToken, 
     },
 
     '.__right-part': {
-      flex: 1
+
     }
   };
 });
