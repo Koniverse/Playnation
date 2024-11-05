@@ -15,6 +15,7 @@ import styled from 'styled-components';
 type RewardItemType = {
   id: number;
   name: string;
+  point?: number;
 }
 
 export type InitRewardsModalProps = {

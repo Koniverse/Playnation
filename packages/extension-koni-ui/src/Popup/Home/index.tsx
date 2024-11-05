@@ -62,7 +62,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     setInitRewardModalProps(undefined);
   }, [inactiveModal]);
 
-  const openYourRewardsModal = useCallback((props: AddRewardsModalProps) => {
+  const openAddRewardsModal = useCallback((props: AddRewardsModalProps) => {
     setAddRewardModalProps(props);
     activeModal(ACCOUNT_ADD_POINT_MODAL);
   }, [activeModal]);
@@ -71,11 +71,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     inactiveModal(ACCOUNT_ADD_POINT_MODAL);
     setAddRewardModalProps(undefined);
   }, [inactiveModal]);
-
-  const onViewDetailRewardModal = useCallback(() => {
-    navigate('/reward-detail');
-    closeYourRewardsModal();
-  }, [closeYourRewardsModal, navigate]);
 
   const onOkRewardModal = useCallback(() => {
     closeYourRewardsModal();
@@ -132,49 +127,48 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   useEffect(() => {
     const initNps = account?.initNps || [];
-
-    initNps.forEach((np) => {
-      np.isNew = true;
-    });
-
     const newInitNps = initNps.filter((np) => np.isNew);
+    const isAllNew = newInitNps.length === initNps.length;
 
     if (newInitNps.length > 0) {
-      openInitRewardModal({
-        isInit: true,
-        rewards: [
-          { id: 1, name: 'Join Story Telegram group' },
-          { id: 2, name: 'Join Mycellium Telegram group' },
-          { id: 3, name: 'Message count bonus' },
-          { id: 4, name: 'OG status bonus' }
-        ],
-        totalPoint: 200,
-        onContinue: closeInitRewardModal
-      });
-      // if (newInitNps.length === initNps.length) {
-      //   openInitRewardModal({
-      //     rewards: [
-      //       { id: 1, name: 'Join Story Telegram group' },
-      //       { id: 2, name: 'Join Mycellium Telegram group' },
-      //       { id: 3, name: 'Message count bonus' },
-      //       { id: 4, name: 'OG status bonus' }
-      //     ],
-      //     totalPoint: 200
-      //   });
-      // } else {
-      //   openYourRewardsModal({
-      //     onViewDetail: onViewDetailRewardModal,
-      //     onOk: onOkRewardModal,
-      //     onCancel: onCancelRewardModal,
-      //     rewardInfo: {
-      //       iconSrc: '/images/games/token-icon.png',
-      //       value: 200,
-      //       symbol: 'SP'
-      //     }
-      //   });
-      // }
+      const totalPoint = newInitNps.reduce((acc, item) => acc + item.point, 0);
+
+      if (isAllNew) {
+        openInitRewardModal({
+          isInit: true,
+          rewards: newInitNps.map((item) => ({
+            id: item.id,
+            name: item.note,
+            point: item.point
+          })),
+          totalPoint: totalPoint,
+          onContinue: closeInitRewardModal
+        });
+      } else {
+        openAddRewardsModal({
+          onViewDetail: () => {
+            openInitRewardModal({
+              isInit: false,
+              rewards: newInitNps.map((item) => ({
+                id: item.id,
+                name: item.note,
+                point: item.point
+              })),
+              totalPoint: totalPoint,
+              onContinue: closeInitRewardModal
+            });
+          },
+          onOk: onOkRewardModal,
+          onCancel: onCancelRewardModal,
+          rewardInfo: {
+            iconSrc: '/images/games/token-icon.png',
+            value: totalPoint,
+            symbol: 'SP'
+          }
+        });
+      }
     }
-  }, [account, closeInitRewardModal, onCancelRewardModal, onOkRewardModal, onViewDetailRewardModal, openInitRewardModal, openYourRewardsModal]);
+  }, [account, closeInitRewardModal, onCancelRewardModal, onOkRewardModal, openInitRewardModal, openAddRewardsModal]);
 
   return (
     <>

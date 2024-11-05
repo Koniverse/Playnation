@@ -213,7 +213,6 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
         redirectTarget = welcomeUrl;
       }
     } else if (pathName === DEFAULT_ROUTER_PATH) {
-      alert('DEFAULT_ROUTER_PATH');
       redirectTarget = DEFAULT_HOMEPAGE;
     } else if (pathName === loginUrl && !needUnlock) {
       redirectTarget = DEFAULT_ROUTER_PATH;
