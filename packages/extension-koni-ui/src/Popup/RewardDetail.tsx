@@ -1,24 +1,42 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { detectTranslate } from '@subwallet/extension-base/utils';
 import { Layout } from '@subwallet/extension-koni-ui/components';
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, Progress, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { ArrowCircleRight, Check } from 'phosphor-react';
-import React, { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Check, CheckCircle } from 'phosphor-react';
+import React, { useMemo } from 'react';
+import { Trans } from 'react-i18next';
 import styled from 'styled-components';
 
+import useDefaultNavigate from '../hooks/router/useDefaultNavigate';
+
 type Props = ThemeProps;
+type RewardItemType = {
+  id: number;
+  name: string;
+}
 
 function Component ({ className }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const onContinue = useCallback(() => {
-    navigate('/accounts/new-seed-phrase');
-  }, [navigate]);
+
+  const { goHome } = useDefaultNavigate();
+
+  const rewardItems = useMemo<RewardItemType[]>(() => {
+    return [
+      { id: 1, name: 'Join Story Telegram group' },
+      { id: 2, name: 'Join Mycellium Telegram group' },
+      { id: 3, name: 'Message count bonus' },
+      { id: 4, name: 'OG status bonus' }
+    ];
+  }, []);
+
+  const rewardValue = useMemo(() => {
+    return '200 SP';
+  }, []);
 
   return (
     <Layout.Base
@@ -38,91 +56,49 @@ function Component ({ className }: Props): React.ReactElement<Props> {
             className={'title'}
             level={4}
           >
-            {t('Let your IPventure begin')}
+            {t('Your rewards')}
           </Typography.Title>
           <Typography.Text className={'sub-title'}>
-            {t('Craft your unique stories within the Story ecosystem!')}
+            <Trans
+              components={{
+                highlight: (
+                  <span className='highlight' />
+                )
+              }}
+              i18nKey={detectTranslate('Congratulations! You\'ve received <highlight>{{rewardValue}}</highlight> for these following activities')}
+              values={{ rewardValue }}
+            />
           </Typography.Text>
         </header>
 
         <div className='kick-starting-list'>
           <div className='__list'>
-            <div className={'starting-item'}>
-              <div className='__top'>
-                <span className='__label'>
-                  {t('Account age bonus')}
-                </span>
-                <Icon
-                  customSize={'12px'}
-                  phosphorIcon={Check}
-                  weight={'bold'}
-                />
-              </div>
-              <Progress
-                className={'process-bar'}
-                percent={100}
-                showInfo={false}
-                status={'active'}
-                type={'line'}
-              />
-            </div>
-            <div className={'starting-item'}>
-              <div className='__top'>
-                <span className='__label'>
-                  {t('Premium account bonus')}
-                </span>
-                <Icon
-                  customSize={'12px'}
-                  phosphorIcon={Check}
-                  weight={'bold'}
-                />
-              </div>
-              <Progress
-                className={'process-bar'}
-                percent={100}
-                showInfo={false}
-                status={'active'}
-                type={'line'}
-              />
-            </div>
-            <div className={'starting-item'}>
-              <div className='__top'>
-                <span className='__label'>
-                  {t('Message count bonus')}
-                </span>
-                <Icon
-                  customSize={'12px'}
-                  phosphorIcon={Check}
-                  weight={'bold'}
-                />
-              </div>
-              <Progress
-                className={'process-bar'}
-                percent={100}
-                showInfo={false}
-                status={'active'}
-                type={'line'}
-              />
-            </div>
-            <div className={'starting-item'}>
-              <div className='__top'>
-                <span className='__label'>
-                  {t('OG status bonus')}
-                </span>
-                <Icon
-                  customSize={'12px'}
-                  phosphorIcon={Check}
-                  weight={'bold'}
-                />
-              </div>
-              <Progress
-                className={'process-bar'}
-                percent={100}
-                showInfo={false}
-                status={'active'}
-                type={'line'}
-              />
-            </div>
+            {
+              rewardItems.map((item) => (
+                <div
+                  className={'starting-item'}
+                  key={item.id}
+                >
+                  <div className='__top'>
+                    <span className='__label'>
+                      {item.name}
+                    </span>
+                    <Icon
+                      customSize={'12px'}
+                      phosphorIcon={Check}
+                      weight={'bold'}
+                    />
+                  </div>
+                  <Progress
+                    className={'process-bar'}
+                    percent={100}
+                    showInfo={false}
+                    status={'active'}
+                    type={'line'}
+                  />
+                </div>
+              ))
+            }
           </div>
           <div className='__actions'>
             <Button
@@ -130,16 +106,16 @@ function Component ({ className }: Props): React.ReactElement<Props> {
               icon={(
                 <Icon
                   customSize={'20px'}
-                  phosphorIcon={ArrowCircleRight}
+                  phosphorIcon={CheckCircle}
                   weight={'fill'}
                 />
               )}
-              onClick={onContinue}
+              onClick={goHome}
               schema={'primary'}
               shape={'round'}
               size={'sm'}
             >
-              {t('Continue')}
+              {t('Got it!')}
             </Button>
           </div>
         </div>
@@ -206,6 +182,11 @@ const Welcome = styled(Component)<Props>(({ theme: { extendToken, token } }: Pro
 
       '.sub-title': {
         color: token.colorTextDark3
+      },
+
+      '.sub-title span': {
+        color: token.colorTextDark2,
+        fontWeight: 600
       }
     },
 

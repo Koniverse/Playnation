@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
-import { CampaignBannerModal, Layout } from '@subwallet/extension-koni-ui/components';
+import { CampaignBannerModal, Layout, YourRewardsModal, YourRewardsModalProps } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { homeScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
+import { homeScreensLayoutBackgroundImages, YOUR_REWARD_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -30,6 +30,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const tokenGroupStructure = useTokenGroup(chainsByAccountType);
   const accountBalance = useAccountBalance(tokenGroupStructure.tokenGroupMap);
   const [containerClass, setContainerClass] = useState<string | undefined>();
+  const [yourRewardsModalProps, setYourRewardsModalProps] = useState<YourRewardsModalProps | undefined>();
 
   const banners = useGetBannerByScreen('home');
 
@@ -82,6 +83,42 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     []
   );
 
+  const openYourRewardsModal = useCallback((props: YourRewardsModalProps) => {
+    setYourRewardsModalProps(props);
+    activeModal(YOUR_REWARD_MODAL);
+  }, [activeModal]);
+
+  const closeYourRewardsModal = useCallback(() => {
+    inactiveModal(YOUR_REWARD_MODAL);
+    setYourRewardsModalProps(undefined);
+  }, [inactiveModal]);
+
+  const onViewDetailRewardModal = useCallback(() => {
+    navigate('/reward-detail');
+    closeYourRewardsModal();
+  }, [closeYourRewardsModal, navigate]);
+
+  const onOkRewardModal = useCallback(() => {
+    closeYourRewardsModal();
+  }, [closeYourRewardsModal]);
+
+  const onCancelRewardModal = useCallback(() => {
+    closeYourRewardsModal();
+  }, [closeYourRewardsModal]);
+
+  useEffect(() => {
+    openYourRewardsModal({
+      onViewDetail: onViewDetailRewardModal,
+      onOk: onOkRewardModal,
+      onCancel: onCancelRewardModal,
+      rewardInfo: {
+        iconSrc: '/images/games/token-icon.png',
+        value: 200,
+        symbol: 'SP'
+      }
+    });
+  }, [onCancelRewardModal, onOkRewardModal, onViewDetailRewardModal, openYourRewardsModal]);
+
   return (
     <>
       <HomeContext.Provider value={{
@@ -109,6 +146,13 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         tokenBalanceMap={accountBalance.tokenBalanceMap}
       />
       {firstBanner && <CampaignBannerModal banner={firstBanner} />}
+      {
+        !!yourRewardsModalProps && (
+          <YourRewardsModal
+            {...yourRewardsModalProps}
+          />
+        )
+      }
     </>
   );
 }

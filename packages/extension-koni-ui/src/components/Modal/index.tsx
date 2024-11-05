@@ -20,3 +20,4 @@ export * from './ReceiveModal';
 export * from './Common';
 export * from './Announcement';
 export * from './Shop';
+export * from './YourRewardsModal';
