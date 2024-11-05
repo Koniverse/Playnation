@@ -57,6 +57,11 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     activeModal(ACCOUNT_INIT_POINT_MODAL);
   }, [activeModal]);
 
+  const closeInitRewardModal = useCallback(() => {
+    inactiveModal(ACCOUNT_INIT_POINT_MODAL);
+    setInitRewardModalProps(undefined);
+  }, [inactiveModal]);
+
   const openYourRewardsModal = useCallback((props: AddRewardsModalProps) => {
     setAddRewardModalProps(props);
     activeModal(ACCOUNT_ADD_POINT_MODAL);
@@ -143,7 +148,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           { id: 3, name: 'Message count bonus' },
           { id: 4, name: 'OG status bonus' }
         ],
-        totalPoint: 200
+        totalPoint: 200,
+        onContinue: closeInitRewardModal
       });
       // if (newInitNps.length === initNps.length) {
       //   openInitRewardModal({
@@ -168,7 +174,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       //   });
       // }
     }
-  }, [account, onCancelRewardModal, onOkRewardModal, onViewDetailRewardModal, openInitRewardModal, openYourRewardsModal]);
+  }, [account, closeInitRewardModal, onCancelRewardModal, onOkRewardModal, onViewDetailRewardModal, openInitRewardModal, openYourRewardsModal]);
 
   return (
     <>

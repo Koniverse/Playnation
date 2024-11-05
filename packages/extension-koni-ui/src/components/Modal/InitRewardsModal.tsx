@@ -3,7 +3,7 @@
 
 import { detectTranslate } from '@subwallet/extension-base/utils';
 import { ACCOUNT_INIT_POINT_MODAL } from '@subwallet/extension-koni-ui/constants';
-import { useDefaultNavigate, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, Progress, SwModal, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
@@ -20,24 +20,24 @@ type RewardItemType = {
 export type InitRewardsModalProps = {
   rewards: RewardItemType[];
   totalPoint: number;
-  isInit: boolean
+  isInit: boolean,
+  onContinue: VoidFunction;
 }
 
 type Props = ThemeProps & InitRewardsModalProps;
 
-function Component ({ className, rewards, totalPoint }: Props): React.ReactElement<Props> {
+function Component ({ className, isInit, onContinue, rewards, totalPoint }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const { goHome } = useDefaultNavigate();
+
   const rewardValue = useMemo(() => {
     return `${totalPoint} SP`;
   }, [totalPoint]);
 
   return (
     <SwModal
-      className={CN(className)}
+      className={CN(className, '-full-size')}
       id={ACCOUNT_INIT_POINT_MODAL}
     >
-      <div className='bg-image' />
       <div className='body-container'>
         <div className='logo-container'>
           <img
@@ -51,18 +51,32 @@ function Component ({ className, rewards, totalPoint }: Props): React.ReactEleme
             className={'title'}
             level={4}
           >
-            {t('Your rewards')}
+            {
+              isInit && t('Let your IPventure begin')
+            }
+
+            {
+              !isInit && t('Your rewards')
+            }
           </Typography.Title>
           <Typography.Text className={'sub-title'}>
-            <Trans
-              components={{
-                highlight: (
-                  <span className='highlight' />
-                )
-              }}
-              i18nKey={detectTranslate('Congratulations! You\'ve received <highlight>{{rewardValue}}</highlight> for these following activities')}
-              values={{ rewardValue }}
-            />
+            {
+              isInit && t('Craft your unique stories within the Story ecosystem!')
+            }
+
+            {
+              !isInit && (
+                <Trans
+                  components={{
+                    highlight: (
+                      <span className='highlight' />
+                    )
+                  }}
+                  i18nKey={detectTranslate('Congratulations! You\'ve received <highlight>{{rewardValue}}</highlight> for these following activities')}
+                  values={{ rewardValue }}
+                />
+              )
+            }
           </Typography.Text>
         </header>
 
@@ -105,7 +119,7 @@ function Component ({ className, rewards, totalPoint }: Props): React.ReactEleme
                   weight={'fill'}
                 />
               )}
-              onClick={goHome}
+              onClick={onContinue}
               schema={'primary'}
               shape={'round'}
               size={'sm'}
@@ -121,11 +135,26 @@ function Component ({ className, rewards, totalPoint }: Props): React.ReactEleme
 
 export const InitRewardsModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
-    background: extendToken.colorBgGradient || '#fff',
-    position: 'relative',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
+    '.ant-sw-modal-header': {
+      display: 'none'
+    },
+
+    '.ant-sw-modal-content': {
+      paddingTop: 0
+    },
+
+    '.ant-sw-modal-body': {
+      height: '100%',
+      padding: 0,
+      display: 'flex',
+      flexDirection: 'column',
+
+      '&:before, &:after': {
+        content: '""',
+        display: 'block',
+        flex: 1
+      }
+    },
 
     '.body-container': {
       padding: token.sizeLG,
@@ -223,6 +252,18 @@ export const InitRewardsModal = styled(Component)<Props>(({ theme: { extendToken
         '.process-bar': {
           width: '100%'
         }
+      }
+    },
+
+    '.__actions': {
+      '.anticon': {
+        width: '1em',
+        height: '1em'
+      },
+
+      '.ant-btn-content-wrapper': {
+        fontSize: token.fontSize,
+        lineHeight: token.lineHeight
       }
     }
   };
