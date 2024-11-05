@@ -6,7 +6,7 @@ import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, Progress, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { ArrowCircleRight, Check, Gift, StarFour } from 'phosphor-react';
+import { ArrowCircleRight, Check } from 'phosphor-react';
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -26,26 +26,12 @@ function Component ({ className }: Props): React.ReactElement<Props> {
     >
       <div className='bg-image' />
       <div className='body-container'>
-        <div className='icon-container'>
-          <div className='icon-group'>
-            <Icon
-              className={'__main-icon'}
-              customSize={'60px'}
-              phosphorIcon={Gift}
-              weight={'fill'}
-            />
-            <Icon
-              className={'__sub-icon p1'}
-              customSize={'36px'}
-              phosphorIcon={StarFour}
-            />
-            <Icon
-              className={'__sub-icon p2'}
-              customSize={'12px'}
-              phosphorIcon={StarFour}
-              weight={'fill'}
-            />
-          </div>
+        <div className='logo-container'>
+          <img
+            alt='logo'
+            className='logo'
+            src={'/images/games/default-avatar.png'}
+          />
         </div>
         <header className='header'>
           <Typography.Title
@@ -172,15 +158,17 @@ const Welcome = styled(Component)<Props>(({ theme: { extendToken, token } }: Pro
 
     '.body-container': {
       padding: token.sizeLG,
+      paddingLeft: token.sizeXS,
+      paddingRight: token.sizeXS,
       textAlign: 'center',
       opacity: 0.999, // Hot fix show wrong opacity in browser
 
       header: {
-        marginBottom: token.marginXL
+        marginBottom: token.marginLG
       },
 
       '.icon-container': {
-        marginBottom: token.marginXL
+        marginBottom: token.marginLG
       },
 
       '.icon-group': {
@@ -212,12 +200,22 @@ const Welcome = styled(Component)<Props>(({ theme: { extendToken, token } }: Pro
       },
 
       '.title': {
-        color: token.colorTextBase
+        color: token.colorTextBase,
+        marginBottom: token.marginSM
       },
 
       '.sub-title': {
         color: token.colorTextDark3
       }
+    },
+
+    '.logo-container': {
+      marginBottom: 24
+    },
+
+    '.logo': {
+      width: 104,
+      height: 104
     },
 
     '.kick-starting-list': {

@@ -188,7 +188,7 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
     (item: TabItemType) => () => {
       if (item.key === 'mint') {
         notify({
-          message: 'Coming soon',
+          message: 'Coming soon!',
           duration: 3
         });
 
