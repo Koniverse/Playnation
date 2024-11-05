@@ -178,6 +178,14 @@ export interface GameData {
   rank: number;
 }
 
+export interface InitNpsRecord {
+  id: number;
+  key: string;
+  point: number;
+  note: string;
+  isNew?: boolean;
+}
+
 export interface BookaAccount {
   info: {
     id: number;
@@ -195,7 +203,8 @@ export interface BookaAccount {
     updatedAt: string;
     inviteCode: string;
     isActive: boolean;
-  };
+  }
+  initNps: InitNpsRecord[],
   attributes: {
     energy: number;
     accumulatePoint: number;

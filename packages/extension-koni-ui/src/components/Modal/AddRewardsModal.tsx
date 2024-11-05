@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { YOUR_REWARD_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { ACCOUNT_ADD_POINT_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
@@ -17,16 +17,16 @@ export type YourRewardInfo = {
   symbol: string
 }
 
-export type YourRewardsModalProps = {
+export type AddRewardsModalProps = {
   onViewDetail?: VoidFunction;
   onOk?: VoidFunction;
   onCancel?: VoidFunction;
   rewardInfo: YourRewardInfo;
 }
 
-type Props = ThemeProps & YourRewardsModalProps;
+type Props = ThemeProps & AddRewardsModalProps;
 
-const modalId = YOUR_REWARD_MODAL;
+const modalId = ACCOUNT_ADD_POINT_MODAL;
 
 function Component (props: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
@@ -113,7 +113,7 @@ function Component (props: Props): React.ReactElement<Props> {
   );
 }
 
-export const YourRewardsModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
+export const AddRewardsModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '.ant-sw-modal-body': {
       paddingLeft: token.paddingXS,

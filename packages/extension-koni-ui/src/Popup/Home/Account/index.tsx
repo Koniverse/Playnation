@@ -6,6 +6,7 @@ import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
 import InviteCTA from '@subwallet/extension-koni-ui/components/Invite/InviteCTA';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { showAccountAddress } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -16,7 +17,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import {showAccountAddress} from "@subwallet/extension-koni-ui/constants";
 
 type Props = ThemeProps;
 const apiSDK = BookaSdk.instance;
@@ -41,9 +41,10 @@ const Component: React.FC<Props> = (props: Props) => {
   const currentPoint = account?.attributes.accumulatePoint || 0;
 
   useEffect(() => {
-    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
-      setAccount(data);
-    });
+    const accountSub = apiSDK.subscribeAccount()
+      .subscribe((data) => {
+        setAccount(data);
+      });
 
     return () => {
       accountSub.unsubscribe();
@@ -83,7 +84,6 @@ const Component: React.FC<Props> = (props: Props) => {
           </div>
         </div>}
       </div>
-
       <div className='block-info-card'>
         <div className='account-detail-area'>
           <div className='__title'>

@@ -34,7 +34,7 @@ export const RouteState = {
 };
 
 const welcomeUrl = '/welcome';
-// const tokenUrl = '/home/token';
+const createAccountUrl = '/accounts/new-seed-phrase';
 const loginUrl = '/keyring/login';
 const phishingUrl = '/phishing-page-detected';
 const createPasswordUrl = '/keyring/create-password';
@@ -115,7 +115,11 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       const targetAddress = (currentAddress && !isAccountAll(currentAddress)) ? currentAddress : accounts[0].address;
 
       if (targetAddress !== syncAddress.current) {
-        BookaSdk.instance.login(targetAddress).catch(console.error);
+        BookaSdk.instance.login(targetAddress)
+          .then(() => {
+            console.log(BookaSdk.instance.account);
+          })
+          .catch(console.error);
         syncAddress.current = targetAddress;
       }
     }).catch(console.error);
@@ -199,7 +203,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     } else if (!hasMasterPassword) {
       if (noAccount) {
         if (![...allowImportAccountUrls, welcomeUrl, createPasswordUrl, securityUrl].includes(pathName)) {
-          redirectTarget = welcomeUrl;
+          redirectTarget = createAccountUrl;
         }
       } else if (pathName !== createDoneUrl) {
         redirectTarget = createPasswordUrl;
@@ -209,15 +213,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
         redirectTarget = welcomeUrl;
       }
     } else if (pathName === DEFAULT_ROUTER_PATH) {
-      // if (hasConfirmations) {
-      //   openPModal('confirmations');
-      // } else
-      // if (firstRender.current && currentPage) {
-      //   redirectTarget = currentPage;
-      // } else {
-      //   redirectTarget = gameUrl;
-      // }
-
+      alert('DEFAULT_ROUTER_PATH');
       redirectTarget = DEFAULT_HOMEPAGE;
     } else if (pathName === loginUrl && !needUnlock) {
       redirectTarget = DEFAULT_ROUTER_PATH;

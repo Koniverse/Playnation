@@ -141,8 +141,6 @@ const NotFound = new LazyLoader('NotFound', () => import('@subwallet/extension-k
 const AccountBanned = new LazyLoader('AccountBaned', () => import('@subwallet/extension-koni-ui/Popup/Account/AccountBanned'));
 const Maintenance = new LazyLoader('AccountBaned', () => import('@subwallet/extension-koni-ui/Popup/Maintenance'));
 
-const RewardDetail = new LazyLoader('RewardDetail', () => import('@subwallet/extension-koni-ui/Popup/RewardDetail'));
-
 // A Placeholder page
 export function Example () {
   const location = useLocation();
@@ -229,9 +227,6 @@ export const router = createBrowserRouter([
       },
       {
         ...AirDropDetail.generateRouterObject('airdrop/detail/:id')
-      },
-      {
-        ...RewardDetail.generateRouterObject('reward-detail')
       },
       {
         ...TransactionDone.generateRouterObject('transaction-done/:address/:chain/:transactionId')

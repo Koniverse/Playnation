@@ -12,7 +12,7 @@ import React, { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 import styled from 'styled-components';
 
-import useDefaultNavigate from '../hooks/router/useDefaultNavigate';
+import useDefaultNavigate from '../../../hooks/router/useDefaultNavigate';
 
 type Props = ThemeProps;
 type RewardItemType = {
@@ -124,7 +124,7 @@ function Component ({ className }: Props): React.ReactElement<Props> {
   );
 }
 
-const Welcome = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
+const RewardDetailModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
     background: extendToken.colorBgGradient || '#fff',
     position: 'relative',
@@ -233,4 +233,4 @@ const Welcome = styled(Component)<Props>(({ theme: { extendToken, token } }: Pro
   };
 });
 
-export default Welcome;
+export default RewardDetailModal;

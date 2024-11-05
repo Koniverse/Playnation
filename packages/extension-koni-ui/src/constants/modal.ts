@@ -30,7 +30,6 @@ export const REMIND_BACKUP_SEED_PHRASE_MODAL = 'remind-backup-seed-phrase-modal'
 export const REMIND_UPGRADE_FIREFOX_VERSION = 'remind-update-firefox-version';
 export const EXPORT_ACCOUNTS_PASSWORD_MODAL = 'export-accounts-password-modal';
 export const LEADERBOARD_MODAL = 'leaderboard_modal';
-export const YOUR_REWARD_MODAL = 'your-reward-modal';
 
 /* Campaign */
 export const HOME_CAMPAIGN_BANNER_MODAL = 'home-campaign-banner-modal';
@@ -62,3 +61,7 @@ export const SWAP_IDLE_WARNING_MODAL = 'swap-idle-warning-modal';
 export const CLAIM_DAPP_STAKING_REWARDS_MODAL = 'claim-dapp-staking-rewards-modal';
 export const EARNING_MIGRATION_MODAL = 'earning-migration-modal';
 /* Announcement */
+
+/* Init point */
+export const ACCOUNT_INIT_POINT_MODAL = 'account-init-point-modal';
+export const ACCOUNT_ADD_POINT_MODAL = 'account-add-point-modal';
