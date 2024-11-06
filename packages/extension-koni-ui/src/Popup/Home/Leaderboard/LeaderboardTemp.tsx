@@ -1,15 +1,13 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GameAccountItem, MainScreenHeader, TimeRemaining, TopAccountItem } from '@subwallet/extension-koni-ui/components/Mythical';
+import { CallToAction, GameAccountItem, InfoIcon, MainScreenHeader, TimeRemaining, TopAccountItem } from '@subwallet/extension-koni-ui/components/Mythical';
 import { GameAccountItemType } from '@subwallet/extension-koni-ui/components/Mythical/Leaderboard/GameAccountItem';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-
-import CallToAction from '../../../components/Mythical/Common/CallToAction';
 
 type Props = ThemeProps;
 
@@ -57,6 +55,15 @@ const Component = ({ className }: Props): React.ReactElement => {
     <div className={className}>
       <MainScreenHeader
         className={'main-screen-header'}
+        rightPartNode={
+          (
+            <button
+              className={'info-button'}
+            >
+              <InfoIcon />
+            </button>
+          )
+        }
         title={t('Weekly leaderboard')}
       />
 
@@ -125,12 +132,22 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     height: '100%',
 
     '.main-screen-header': {
-      maxWidth: 250,
-
       '.__screen-title': {
-        fontSize: '32px',
-        lineHeight: '40px'
+        maxWidth: 250,
+        fontSize: 28,
+        lineHeight: '34px'
       }
+    },
+
+    '.info-button': {
+      minWidth: 32,
+      height: 32,
+      padding: 0,
+      backgroundColor: 'transparent',
+      border: 0,
+      fontSize: 32,
+      color: extendToken.mythColorGray1,
+      cursor: 'pointer'
     },
 
     '.time-remaining-wrapper': {
@@ -146,22 +163,21 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     },
 
     '.top-account-item-wrapper': {
-      maxWidth: 94,
       flex: 1,
-      overflow: 'hidden'
+      overflow: 'hidden',
+      minWidth: 94
     },
 
     '.top-account-item-wrapper.-is-first': {
-      maxWidth: 123,
+      flex: '0 1 auto',
       minWidth: 123
     },
 
     '.top-three-area': {
       display: 'flex',
       alignItems: 'flex-end',
-      justifyContent: 'center',
-      paddingLeft: token.paddingXS,
-      paddingRight: token.paddingXS,
+      paddingLeft: 24,
+      paddingRight: 24,
       gap: 8,
       paddingBottom: token.size
     },

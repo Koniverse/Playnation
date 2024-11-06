@@ -5,3 +5,4 @@ export { default as ClockIcon } from './ClockIcon';
 export { default as CopyIcon } from './CopyIcon';
 export { default as UsersIcon } from './UsersIcon';
 export { default as UsersThreeIcon } from './UsersThreeIcon';
+export { default as InfoIcon } from './InfoIcon';
