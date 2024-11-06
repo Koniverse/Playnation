@@ -32,7 +32,7 @@ jobs:
         NFT_MINTING_HOST: ${{ secrets.NFT_MINTING_HOST }}
         BRANCH_NAME: master
         GAME_API_HOST: ${{ github.ref_name == 'story-protocol-od-prod' && 'https://sp-odyssey-api.playnation.app' || 'https://sp-odyssey-dev-api.playnation.app' }}
-        TELEGRAM_WEBAPP_LINK: ${{ github.ref_name == 'story-protocol-od-prod' && 'story_protocol_odyssey_bot/app' || 'story_protocol_odyssey_dev_bot/app' }}
+        TELEGRAM_WEBAPP_LINK: ${{ github.ref_name == 'story-protocol-od-prod' && 'KoniStory_bot/app' || 'story_protocol_odyssey_dev_bot/app' }}
       run: |
         yarn install --immutable | grep -v 'YN0013'
         yarn webapp:build
