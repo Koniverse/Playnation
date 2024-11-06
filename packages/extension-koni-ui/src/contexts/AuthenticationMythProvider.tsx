@@ -38,14 +38,13 @@ const config = {
 };
 
 const bookaSDK = BookaSdk.instance;
-const initData = Telegram.WebApp.initData;
+const initData = Telegram.WebApp.initData || process.env.DEFAULT_INIT_DATA || '0x0';
 const startData = Telegram.WebApp.initDataUnsafe;
 
 const linkSDK = new TelegramBotLink(config as LinkConfig);
 
 export const AuthenticationMythProvider = ({ children }: AuthenticationMythProviderProps) => {
   const [account, setAccount] = useState<AccountPublicInfo>({} as AccountPublicInfo);
-  const [validatedData, setValidateData] = useState<boolean>();
   const [tokenData, setTokenData] = useState<TTokenData>();
   const [linkData, setLinkData] = useState<LinkResult>();
   const [isLinked, setIsLinked] = useState<boolean>(false);
@@ -65,10 +64,6 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
   }, [authContext]);
 
   const onSubmitMythAccount = useCallback(async (address: string) => {
-    if (!validatedData) {
-      throw new Error('Please validate data first');
-    }
-
     if (!tokenData?.email || !authContext.token) {
       Telegram.WebApp.showAlert('Please login first');
 
@@ -90,7 +85,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
       setIsLinked(rs.success);
       setLinkData(rs.data);
     }
-  }, [authContext.token, tokenData?.email, validatedData]);
+  }, [authContext.token, tokenData?.email]);
 
   const linkMythAccount = useCallback(async (address: string) => {
     if (!tokenData?.email || !authContext.token) {
@@ -135,24 +130,18 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
   }, [linkData]);
 
   useEffect(() => {
-    linkSDK.validateData({ initData }).then((rs) => {
-      if (rs.success) {
-        setValidateData(rs.data?.validData);
-      }
-    }).then(() => {
-      if (startData?.user?.id) {
-        linkSDK.findLink({
-          telegram_id: startData.user.id
-        }).then((rs) => {
-          if (rs.success) {
-            setIsLinked(rs.success);
-            setLinkData(rs.data);
-          } else {
-            linkMythAccount(currentAccount?.address || '0x0').catch(console.error);
-          }
-        }).catch(console.error);
-      }
-    }).catch(console.error);
+    if (startData?.user?.id) {
+      linkSDK.findLink({
+        telegram_id: startData.user.id
+      }).then((rs) => {
+        if (rs.success) {
+          setIsLinked(rs.success);
+          setLinkData(rs.data);
+        } else {
+          linkMythAccount(currentAccount?.address || '0x0').catch(console.error);
+        }
+      }).catch(console.error);
+    }
   }, [authContext.token, currentAccount?.address, linkMythAccount, tokenData?.email]);
 
   const authenticationValue: AuthenticationMythContextProps = {
