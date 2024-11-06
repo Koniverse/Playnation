@@ -2,19 +2,37 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React from 'react';
+import { getTimeRemaining } from '@subwallet/extension-koni-ui/utils';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 import { ClockIcon } from '../Icon';
 
 type Props = ThemeProps & {
-  datetime: string;
+  endTime: string;
 };
 
 const Component = ({ className,
-  datetime }: Props): React.ReactElement => {
+  endTime }: Props): React.ReactElement => {
   const { t } = useTranslation();
+  const [dateTime, setDateTime] = useState<string>('---');
+
+  useEffect(() => {
+    const updateDateTime = () => {
+      setDateTime(getTimeRemaining(Date.now(), endTime));
+    };
+
+    updateDateTime();
+
+    const timeout: NodeJS.Timeout = setTimeout(() => {
+      updateDateTime();
+    }, 1000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [endTime]);
 
   return (
     <div
@@ -29,7 +47,7 @@ const Component = ({ className,
       <ClockIcon className={'__clock-icon'} />
 
       <div className='__datetime'>
-        {datetime}
+        {dateTime}
       </div>
     </div>
   );

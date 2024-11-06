@@ -68,7 +68,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       />
 
       <div className='time-remaining-wrapper'>
-        <TimeRemaining datetime={'12day 10hrs'} />
+        <TimeRemaining endTime={'2024-12-24T17:00:00.000Z'} />
       </div>
 
       <div className='scroll-container'>

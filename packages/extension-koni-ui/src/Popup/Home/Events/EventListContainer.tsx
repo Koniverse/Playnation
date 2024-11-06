@@ -5,7 +5,7 @@ import { EmptyListContent, EventDifficulty, EventItem, EventItemType, EventState
 import { GameEvent } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { EventTab } from '@subwallet/extension-koni-ui/Popup/Home/Events/shared';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { customFormatDate } from '@subwallet/extension-koni-ui/utils';
+import { customFormatDate, getTimeRemaining } from '@subwallet/extension-koni-ui/utils';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -71,54 +71,6 @@ function getEventState (gameEvent: GameEvent, dateNow: number): EventState {
   }
 
   return EventState.UNKNOWN;
-}
-
-function getTimeRemaining (dateNow: number, targetTime: string): string {
-  const end = new Date(targetTime).getTime();
-  let diff = end - dateNow;
-
-  if (diff <= 0) {
-    return '---';
-  }
-
-  let days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  diff %= (1000 * 60 * 60 * 24);
-  let hours = Math.floor(diff / (1000 * 60 * 60));
-
-  diff %= (1000 * 60 * 60);
-  let minutes = Math.floor(diff / (1000 * 60));
-  let seconds = Math.ceil((diff % (1000 * 60)) / 1000);
-
-  // Round up components as necessary
-  if (seconds === 60) {
-    seconds = 0;
-    minutes += 1;
-  }
-
-  if (minutes === 60) {
-    minutes = 0;
-    hours += 1;
-  }
-
-  if (hours === 24) {
-    hours = 0;
-    days += 1;
-  }
-
-  const dayLabel = days === 1 ? 'day' : 'days';
-  const hourLabel = hours === 1 ? 'hr' : 'hrs';
-  const minuteLabel = minutes === 1 ? 'min' : 'mins';
-
-  if (days > 0) {
-    return `${days} ${dayLabel} ${hours ? `${hours} ${hourLabel}` : ''}`.trim();
-  } else if (hours > 0) {
-    return `${hours} ${hourLabel} ${minutes ? `${minutes} ${minuteLabel}` : ''}`.trim();
-  } else if (minutes > 0) {
-    return `${minutes} ${minuteLabel}`;
-  } else {
-    return '1 min';
-  }
 }
 
 function getEventGameEndTime (gameEvent: GameEvent) {
