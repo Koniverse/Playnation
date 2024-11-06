@@ -2,7 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
-import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, InitRewardsModal, InitRewardsModalProps, Layout } from '@subwallet/extension-koni-ui/components';
+import {
+  AddRewardsModal,
+  AddRewardsModalProps,
+  CampaignBannerModal,
+  InitRewardsModal,
+  InitRewardsModalProps,
+  Layout,
+  LoadingScreen
+} from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
@@ -172,7 +180,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   return (
     <>
-      <HomeContext.Provider value={{
+      {!account && <LoadingScreen />}
+      {!!account && <HomeContext.Provider value={{
         tokenGroupStructure,
         accountBalance,
         setContainerClass
@@ -188,7 +197,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         >
           <Outlet />
         </Layout.Home>
-      </HomeContext.Provider>
+      </HomeContext.Provider>}
 
       <GlobalSearchTokenModal
         id={GlobalSearchTokenModalId}
