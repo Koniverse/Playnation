@@ -7,16 +7,14 @@ import { settingsScreensLayoutBackgroundImages } from '@subwallet/extension-koni
 import { EXTENSION_VERSION, SUPPORT_URL } from '@subwallet/extension-koni-ui/constants/common';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import useDefaultNavigate from '@subwallet/extension-koni-ui/hooks/router/useDefaultNavigate';
-import { saveCameraSetting } from '@subwallet/extension-koni-ui/messaging';
 import GeneralSetting from '@subwallet/extension-koni-ui/Popup/Settings/GeneralSetting';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { BackgroundIcon, Icon, SettingItem, SwIconProps, Switch } from '@subwallet/react-ui';
-import CN from 'classnames';
-import { ArrowSquareOut, BookBookmark, Camera, CaretRight, Coins, Graph, Headset } from 'phosphor-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { BackgroundIcon, Icon, SettingItem, SwIconProps } from '@subwallet/react-ui';
+import { ArrowSquareOut, Headset } from 'phosphor-react';
+import React, { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import styled from 'styled-components';
 
 type Props = ThemeProps
@@ -69,12 +67,9 @@ function generateRightIcon (icon: SwIconProps['phosphorIcon']): React.ReactNode 
 // const modalId = 'about-subwallet-modal';
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
-  const navigate = useNavigate();
-
   const { goHome } = useDefaultNavigate();
   const { t } = useTranslation();
   const { camera } = useSelector((state: RootState) => state.settings);
-  const [loadingCamera, setLoadingCamera] = useState(false);
   // const { activeModal } = useContext(ModalContext);
 
   // const onReset = useCallback(() => {
@@ -83,38 +78,38 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   // todo: i18n all titles, labels below
   const SettingGroupItemType = useMemo((): SettingGroupItemType[] => ([
-    {
-      key: 'assets-&-addresses',
-      items: [
-        {
-          key: 'manage-networks',
-          leftIcon: Graph,
-          rightIcon: CaretRight,
-          title: t('Manage networks'),
-          onClick: () => {
-            navigate('/settings/chains/manage');
-          }
-        },
-        {
-          key: 'manage-tokens',
-          leftIcon: Coins,
-          rightIcon: CaretRight,
-          title: t('Manage tokens'),
-          onClick: () => {
-            navigate('/settings/tokens/manage');
-          }
-        },
-        {
-          key: 'manage-address-book',
-          leftIcon: BookBookmark,
-          rightIcon: CaretRight,
-          title: t('Manage address book'),
-          onClick: () => {
-            navigate('/settings/address-book');
-          }
-        }
-      ]
-    },
+    // {
+    //   key: 'assets-&-addresses',
+    //   items: [
+    //     {
+    //       key: 'manage-networks',
+    //       leftIcon: Graph,
+    //       rightIcon: CaretRight,
+    //       title: t('Manage networks'),
+    //       onClick: () => {
+    //         navigate('/settings/chains/manage');
+    //       }
+    //     },
+    //     {
+    //       key: 'manage-tokens',
+    //       leftIcon: Coins,
+    //       rightIcon: CaretRight,
+    //       title: t('Manage tokens'),
+    //       onClick: () => {
+    //         navigate('/settings/tokens/manage');
+    //       }
+    //     },
+    //     {
+    //       key: 'manage-address-book',
+    //       leftIcon: BookBookmark,
+    //       rightIcon: CaretRight,
+    //       title: t('Manage address book'),
+    //       onClick: () => {
+    //         navigate('/settings/address-book');
+    //       }
+    //     }
+    //   ]
+    // },
     {
       key: 'community-&-support',
       items: [
@@ -165,19 +160,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         // }
       ]
     }
-  ]), [navigate, t]);
-
-  const updateCamera = useCallback((currentValue: boolean) => {
-    return () => {
-      setLoadingCamera(true);
-
-      saveCameraSetting(!currentValue)
-        .catch(console.error)
-        .finally(() => {
-          setLoadingCamera(false);
-        });
-    };
-  }, []);
+  ]), [t]);
 
   useEffect(() => {
     if (camera) {
@@ -205,28 +188,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
             <GeneralSetting
               className={'__group-container'}
             />
-
-            <div className='setting-group-container __group-container'>
-              <SettingItem
-                className={CN('__setting-item setting-group-item')}
-                leftItemIcon={(
-                  <BackgroundIcon
-                    phosphorIcon={Camera}
-                    size='sm'
-                    type='phosphor'
-                    weight='fill'
-                  />
-                )}
-                name={t('Camera access for QR')}
-                rightItem={(
-                  <Switch
-                    checked={camera}
-                    loading={loadingCamera}
-                    onClick={updateCamera(camera)}
-                  />
-                )}
-              />
-            </div>
 
             {
               SettingGroupItemType.map((group) => {

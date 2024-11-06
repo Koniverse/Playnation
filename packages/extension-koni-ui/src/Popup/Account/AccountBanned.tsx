@@ -1,8 +1,12 @@
-import React from 'react';
-import styled from 'styled-components';
+// Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import { SUPPORT_URL } from '@subwallet/extension-koni-ui/constants';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Props } from 'react-select';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Props } from 'react-select';
+import styled from 'styled-components';
 
 const Component = ({ className }: Props): React.ReactElement => {
   const { t } = useTranslation();
@@ -11,7 +15,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     <div className={className}>
       <h1>{t('Account suspended')}</h1>
       <p>{t('Your account has been suspended due to unusual activities.')}</p>
-      <p>{t('If you think this is a mistake, contact our support team')} <a href={"https://t.me/playnation_globalchat"}>Playnation Suport</a> </p>
+      <p>{t('If you think this is a mistake, contact our support team')} <a href={SUPPORT_URL}>Koni Story Suport</a> </p>
     </div>
   );
 };
@@ -30,14 +34,14 @@ const AccountBanned = styled(Component)<ThemeProps>(({ theme: { extendToken, tok
     h1: {
       fontSize: token.fontSizeLG,
       fontWeight: 'bold',
-      marginBottom: token.marginMD,
+      marginBottom: token.marginMD
     },
     p: {
       fontSize: 14,
       marginBottom: token.marginSM,
       textAlign: 'center',
-      maxWidth: '80%',
-    },
+      maxWidth: '80%'
+    }
   };
 });
 

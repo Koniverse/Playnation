@@ -202,27 +202,32 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   return (
     <div className={CN('setting-group-container general-setting', className)}>
-      <SelectModal
-        background={'default'}
-        className={CN(`__modal ${className}`, '-secondary-theme')}
-        customInput={renderModalTrigger({
-          key: 'languages-trigger',
-          leftIcon: GlobeHemisphereEast,
-          leftIconBgColor: token['green-6'],
-          title: t('Language')
-        })}
-        disabled={loadingMap.language}
-        id='languages-select-modal'
-        inputWidth={'100%'}
-        itemKey='key'
-        items={languageItems}
-        onSelect={onSelectLanguage}
-        renderItem={renderSelectionItem}
-        selected={_language}
-        shape='round'
-        size='small'
-        title={t('Language')}
-      />
+      {
+        !1 && (
+          <SelectModal
+            background={'default'}
+            className={CN(`__modal ${className}`, '-secondary-theme')}
+            customInput={renderModalTrigger({
+              key: 'languages-trigger',
+              leftIcon: GlobeHemisphereEast,
+              leftIconBgColor: token['green-6'],
+              title: t('Language')
+            })}
+            disabled={loadingMap.language}
+            id='languages-select-modal'
+            inputWidth={'100%'}
+            itemKey='key'
+            items={languageItems}
+            onSelect={onSelectLanguage}
+            renderItem={renderSelectionItem}
+            selected={_language}
+            shape='round'
+            size='small'
+            title={t('Language')}
+          />
+
+        )
+      }
 
       <SelectModal
         background={'default'}
