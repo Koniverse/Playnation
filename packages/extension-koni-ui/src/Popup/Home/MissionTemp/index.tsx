@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { FilterTabItemType, FilterTabs } from '@subwallet/extension-koni-ui/components/FilterTabs';
-import { MainScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
+import { CallToAction, MainScreenHeader, TimeRemaining } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Achievement, Task, TaskCategory, TaskCategoryType } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
@@ -70,15 +70,15 @@ const Component = ({ className }: Props): React.ReactElement => {
   useEffect(() => {
     const taskCategoryListSub = apiSDK.subscribeTaskCategoryList().subscribe((data) => {
       setTaskCategories(data);
-      // console.log('data----taskCategoryListSub', data);
+      console.log('data----taskCategoryListSub', data);
     });
     const taskListSubjectSub = apiSDK.subscribeTaskList().subscribe((data) => {
       setTasks(data);
-      // console.log('data----taskListSubjectSub', data);
+      console.log('data----taskListSubjectSub', data);
     });
     const achievementListSub = apiSDK.subscribeAchievementList().subscribe((data) => {
       setAchievements(data);
-      // console.log('data----achievementListSub', data);
+      console.log('data----achievementListSub', data);
     });
 
     return () => {
@@ -101,6 +101,10 @@ const Component = ({ className }: Props): React.ReactElement => {
         selectedItem={selectedFilterTab}
       />
 
+      <div className='time-remaining-wrapper'>
+        <TimeRemaining datetime={'12day 10hrs'} />
+      </div>
+
       <MissionSectionListContainer
         accountInfo={accountInfo}
         achievements={achievements}
@@ -108,6 +112,13 @@ const Component = ({ className }: Props): React.ReactElement => {
         selectedTab={selectedFilterTab as TaskCategoryType}
         taskCategories={taskCategories}
         tasks={tasks}
+      />
+
+      <CallToAction
+        buttonLabel={'Play now'}
+        className={'call-to-action'}
+        subtitle={'Download NFL Rivals App'}
+        title={'Want to score more points?'}
       />
     </div>
   );
@@ -121,12 +132,23 @@ const MissionTemp = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     height: '100%',
 
     '.filter-tabs-container': {
-      marginBottom: 16
+      marginBottom: 24
+    },
+
+    '.time-remaining-wrapper': {
+      paddingLeft: 16,
+      paddingRight: 16,
+      marginBottom: 24
     },
 
     '.task-section-list-container': {
       flex: 1,
-      overflow: 'auto'
+      overflow: 'auto',
+      paddingBottom: 12
+    },
+
+    '.call-to-action': {
+      marginBottom: 12
     }
   };
 });

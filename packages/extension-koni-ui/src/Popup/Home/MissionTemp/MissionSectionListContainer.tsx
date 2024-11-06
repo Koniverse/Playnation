@@ -5,6 +5,7 @@ import { SWTransactionResponse } from '@subwallet/extension-base/services/transa
 import { MissionItem, MissionItemType } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Achievement, AchievementLogStatus, BookaAccount, Task, TaskCategory, TaskCategoryType } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
@@ -95,6 +96,7 @@ function filterAchievements (achievements: Achievement[], taskSectionMap: Record
 }
 
 const apiSDK = BookaSdk.instance;
+const telegramConnector = TelegramConnector.instance;
 
 const Component = ({ accountInfo,
   achievements,
@@ -187,6 +189,14 @@ const Component = ({ accountInfo,
           extrinsicHash = res.extrinsicHash || '';
         }
 
+        const redirectUrl = task.url;
+
+        if (redirectUrl) {
+          setTimeout(() => {
+            telegramConnector.openLink(redirectUrl);
+          }, 100);
+        }
+
         await apiSDK.finishTask(taskId, extrinsicHash, networkKey);
       })().catch(console.error).finally(() => {
         setLoading(false);
@@ -242,8 +252,14 @@ const Component = ({ accountInfo,
       };
     });
 
+    const dateNow = Date.now();
+
     tasks.forEach((tk) => {
       if (!tk.categoryId || !taskSectionMap[tk.categoryId]) {
+        return;
+      }
+
+      if (tk.endTime && (new Date(tk.endTime).getTime() <= dateNow)) {
         return;
       }
 
@@ -441,7 +457,7 @@ const MissionSectionListContainer = styled(Component)<ThemeProps>(({ theme: { ex
       paddingRight: 4
     },
 
-    '.mission-section + .task-section': {
+    '.mission-section + .mission-section': {
       marginTop: 24
     },
 
