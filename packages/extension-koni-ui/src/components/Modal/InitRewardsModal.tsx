@@ -125,7 +125,9 @@ function Component ({ className, isInit, onContinue, rewards, totalPoint }: Prop
               shape={'round'}
               size={'sm'}
             >
-              {t('Got it!')}
+              {
+                isInit ? t('Continue') : t('Got it!')
+              }
             </Button>
           </div>
         </div>
@@ -140,8 +142,9 @@ export const InitRewardsModal = styled(Component)<Props>(({ theme: { extendToken
       display: 'none'
     },
 
-    '.ant-sw-modal-content': {
-      paddingTop: 0
+    '.ant-sw-modal-content.ant-sw-modal-content': {
+      paddingTop: 0,
+      background: extendToken.colorBgGradient || token.colorPrimary
     },
 
     '.ant-sw-modal-body': {
