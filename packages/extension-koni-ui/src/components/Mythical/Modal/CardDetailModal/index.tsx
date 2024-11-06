@@ -1,65 +1,22 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { CardStatItemType, StatItem } from '@subwallet/extension-koni-ui/components/Mythical/Modal/CardDetailModal/StatItem';
+import { StatItem } from '@subwallet/extension-koni-ui/components/Mythical/Modal/CardDetailModal/StatItem';
+import { NFLRivalCard } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { eventStat } from '@subwallet/extension-koni-ui/constants';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React, { useMemo } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
   id: string,
-  cardSrc?: string;
+  card: NFLRivalCard;
   onCancel?: () => void,
 }
 
-function Component ({ cardSrc, className = '', id, onCancel }: Props): React.ReactElement<Props> {
-  const statItems: CardStatItemType[] = useMemo(() => {
-    return [
-      {
-        name: 'Power',
-        abb: 'POW',
-        value: 75
-      },
-      {
-        name: 'Quickness',
-        abb: 'QUI',
-        value: 34
-      },
-      {
-        name: 'Endurance',
-        abb: 'END',
-        value: 82
-      },
-      {
-        name: 'Acceleration',
-        abb: 'ACC',
-        value: 45
-      },
-      {
-        name: 'Strength',
-        abb: 'STR',
-        value: 15
-      },
-      {
-        name: 'Carry',
-        abb: 'CAR',
-        value: 67
-      },
-      {
-        name: 'Presence',
-        abb: 'Pow',
-        value: 12
-      },
-      {
-        name: 'Jump',
-        abb: 'JMP',
-        value: 65
-      }
-    ] as CardStatItemType[];
-  }, []);
-
+function Component ({ card, className = '', id, onCancel }: Props): React.ReactElement<Props> {
   return (
     <SwModal
       className={CN(className, '-full-size')}
@@ -69,19 +26,19 @@ function Component ({ cardSrc, className = '', id, onCancel }: Props): React.Rea
       <div
         className='__card-image'
         style={{
-          backgroundImage: cardSrc ? `url("/images/mythical/cards/${cardSrc}.png")` : undefined
+          backgroundImage: `url("${card.image}")`
         }}
       ></div>
 
       <div className='__stat-item-list'>
         {
-          statItems.map((item) => (
+          Object.entries(eventStat).map(([abb, name]) => (
             <StatItem
-              abb={item.abb}
+              abb={abb}
               className={'__stat-item'}
-              key={item.abb}
-              name={item.name}
-              value={item.value}
+              key={abb}
+              name={name.toUpperCase()}
+              value={card[name as keyof NFLRivalCard] as number}
             />
           ))
         }

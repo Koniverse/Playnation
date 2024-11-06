@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import TelegramBotLink, { LinkConfig, LinkResult } from '@koniverse/telegram-bot-link';
+import { isSameAddress } from '@subwallet/extension-base/utils';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AccountPublicInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { AUTHENTICATE_LINKING_BOT, AUTHENTICATE_LINKING_SERVICE, AUTHENTICATE_LINKING_TOKEN, AUTHENTICATE_LINKING_URL } from '@subwallet/extension-koni-ui/constants';
@@ -126,8 +127,12 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
           uid: linkData.link_uid
         };
       });
+
+      if (linkData.link_address && !isSameAddress(bookaSDK.account?.info.address || '', linkData.link_address)) {
+        onLoginWithTelegramAccount(linkData.link_address).catch(console.error);
+      }
     }
-  }, [linkData]);
+  }, [linkData, onLoginWithTelegramAccount]);
 
   useEffect(() => {
     if (startData?.user?.id) {
@@ -138,11 +143,11 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
           setIsLinked(rs.success);
           setLinkData(rs.data);
         } else {
-          linkMythAccount(currentAccount?.address || '0x0').catch(console.error);
+          onSubmitMythAccount(currentAccount?.address || '0x0').catch(console.error);
         }
       }).catch(console.error);
     }
-  }, [authContext.token, currentAccount?.address, linkMythAccount, tokenData?.email]);
+  }, [authContext.token, currentAccount?.address, onLoginWithTelegramAccount, onSubmitMythAccount, tokenData?.email]);
 
   const authenticationValue: AuthenticationMythContextProps = {
     account,

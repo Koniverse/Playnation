@@ -1,22 +1,23 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { NFLRivalCard } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import React from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
-  imageSrc: string;
+  card: NFLRivalCard;
   onClick?: VoidFunction;
 };
 
-const Component = ({ className, imageSrc, onClick }: Props): React.ReactElement => {
+const Component = ({ card, className, onClick }: Props): React.ReactElement => {
   return (
     <div
       className={className}
       onClick={onClick}
       style={{
-        backgroundImage: `url("/images/mythical/cards/${imageSrc}.png")`
+        backgroundImage: `url("${card.image}")`
       }}
     ></div>
   );

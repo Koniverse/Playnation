@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export const eventStat = {
-  POWER: 'power',
-  STRENGTH: 'strength',
-  QUICKNESS: 'quickness',
-  ACCELERATION: 'acceleration',
-  PRESENCE: 'presence',
-  ENDURANCE: 'endurance',
-  JUMP: 'jump',
-  CARRY: 'carry'
+  POW: 'power',
+  STR: 'strength',
+  QUI: 'quickness',
+  ACC: 'acceleration',
+  PRE: 'presence',
+  END: 'endurance',
+  JMP: 'jump',
+  CAR: 'carry'
 };
 
 export * from './authentication';
