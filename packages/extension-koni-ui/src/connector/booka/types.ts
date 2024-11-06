@@ -303,9 +303,12 @@ export interface AccountPublicInfo {
   telegramUsername: string;
   firstName: string;
   lastName: string;
-  address: string;
+  email: string;
+  domain: string | null,
+  signature: string | null;
+  address: string | null;
+  uid: string | null;
   avatar?: string;
-
 }
 
 export interface LeaderboardPerson {

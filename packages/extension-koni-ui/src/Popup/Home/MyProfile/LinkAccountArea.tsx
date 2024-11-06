@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
+import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React from 'react';
+import { toShort } from '@subwallet/extension-koni-ui/utils';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -14,6 +16,7 @@ type Props = ThemeProps & {
 
 const Component = ({ className, doLinkAccount, isLinked }: Props): React.ReactElement => {
   const { t } = useTranslation();
+  const { account } = useContext(AuthenticationMythContext);
 
   return (
     <div className={className}>
@@ -31,8 +34,8 @@ const Component = ({ className, doLinkAccount, isLinked }: Props): React.ReactEl
                 src={'/images/mythical/user-image.png'}
               />
               <div className={'__linked-account-text'}>
-                <span className={'__linked-account-gmail'}>John_doe01_user@gmail.com</span>
-                <span className={'__linked-account-address'}>&nbsp;(0Dew...6eB1)</span>
+                <span className={'__linked-account-gmail'}>{account?.email}</span>
+                <span className={'__linked-account-address'}>&nbsp;({account?.address && toShort(account?.address, 3, 3)})</span>
               </div>
             </div>
           </div>

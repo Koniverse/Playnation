@@ -11,3 +11,5 @@ export const eventStat = {
   JUMP: 'jump',
   CARRY: 'carry'
 };
+
+export * from './authentication';

@@ -582,6 +582,8 @@ export class BookaSdk {
     try {
       const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login`, syncData);
 
+      console.log('account', account);
+
       if (account) {
         this.accountSubject.next(account);
         localStorage.setItem(CACHE_KEYS.account, JSON.stringify(account));
