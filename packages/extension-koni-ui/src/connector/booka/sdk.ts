@@ -544,13 +544,12 @@ export class BookaSdk {
           this.fetchGameList(),
           this.fetchTaskCategoryList(),
           this.fetchTaskList(),
-          this.fetchLeaderboardConfigList()
+          this.fetchLeaderboardConfigList(),
+          this.fetchAirdropCampaign()
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
           // this.fetchGameItemInGameList()
         ]);
-
-        await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchAirdropCampaign()]);
       }
     } catch (error: any) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

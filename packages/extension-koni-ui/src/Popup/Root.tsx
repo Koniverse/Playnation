@@ -210,7 +210,8 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       }
     } else if (noAccount) {
       if (![...allowImportAccountUrls, welcomeUrl, createPasswordUrl, securityUrl].includes(pathName)) {
-        redirectTarget = welcomeUrl;
+        // redirectTarget = welcomeUrl;
+        redirectTarget = createAccountUrl;
       }
     } else if (pathName === DEFAULT_ROUTER_PATH) {
       redirectTarget = DEFAULT_HOMEPAGE;
@@ -220,7 +221,8 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       redirectTarget = DEFAULT_ROUTER_PATH;
     } else if (pathName === migratePasswordUrl && !needMigrate) {
       if (noAccount) {
-        redirectTarget = welcomeUrl;
+        // redirectTarget = welcomeUrl;
+        redirectTarget = createAccountUrl;
       } else {
         redirectTarget = DEFAULT_ROUTER_PATH;
       }
