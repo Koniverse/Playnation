@@ -3,7 +3,7 @@
 
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { rankPointMap } from '@subwallet/extension-koni-ui/constants';
+import { rankPointMap, TELEGRAM_INVITATION_CONTENT } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
@@ -31,7 +31,7 @@ const Component = ({ className, hideCopyLink }: Props) => {
     apiSDK.waitForSync.then(() => {
       const encodeURL = apiSDK.getInviteURL();
 
-      setInviteURL(`https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent('Invite your friend and earn a bonus gift for each friend you bring in!')}`);
+      setInviteURL(`https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent(TELEGRAM_INVITATION_CONTENT)}`);
       setIsLoading(false);
     }).catch(console.error);
   }, []);

@@ -8,6 +8,7 @@ import InviteCTA from '@subwallet/extension-koni-ui/components/Invite/InviteCTA'
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, ReferralRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { TELEGRAM_INVITATION_CONTENT } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
@@ -60,7 +61,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const inviteURL = useMemo(() => {
     const encodeURL = apiSDK.getInviteURL();
 
-    return `https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent('Invite your friend and earn a bonus gift for each friend you bring in!')}`;
+    return `https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent(TELEGRAM_INVITATION_CONTENT)}`;
   }, []);
 
   const inviteFriend = useCallback(() => {
