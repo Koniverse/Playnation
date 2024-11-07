@@ -189,6 +189,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           className={CN('home', 'home-container', className, containerClass)}
           onClickSearchIcon={onOpenGlobalSearchToken}
           onTabSelected={onTabSelected}
+          showGiftIcon
         >
           <Outlet />
         </Layout.Home>

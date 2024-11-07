@@ -7,7 +7,7 @@ import { VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/const
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ButtonProps, Icon, ModalContext, Tooltip } from '@subwallet/react-ui';
-import {Export, FadersHorizontal, MagnifyingGlass} from 'phosphor-react';
+import { Export, FadersHorizontal, MagnifyingGlass } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +30,7 @@ type Props = {
 
 const Component = ({ backgroundImages, backgroundStyle, children, className, onClickFilterIcon, onClickSearchIcon, onTabSelected, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar }: Props) => {
   const navigate = useNavigate();
+  // @ts-ignore
   const [isVisitedInvitationScreen, setIsVisitedInvitationScreen] = useLocalStorage(VISIT_INVITATION_SCREEN_FLAG, false);
   // @ts-ignore
   const { t } = useTranslation();
@@ -101,7 +102,7 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, onC
     }
 
     return icons;
-  }, [showFilterIcon, showSearchIcon, showGiftIcon, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, isVisitedInvitationScreen, t, onOpenInvite]);
+  }, [showFilterIcon, showSearchIcon, showGiftIcon, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, t, onOpenInvite]);
 
   const onClickListIcon = useCallback(() => {
     navigate('/settings/list');
@@ -129,7 +130,10 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, onC
 
 export const Home = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token } }: LayoutBaseProps) => ({
   '.invite-button': {
-    position: 'relative'
+    position: 'relative',
+    visibility: 'hidden',
+    pointerEvents: 'none',
+    opacity: 0
   },
 
   '.invite-tooltip': {
