@@ -10,7 +10,7 @@ import { showAccountAddress } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { copyToClipboard, toShort } from '@subwallet/extension-koni-ui/utils';
+import { copyToClipboard, toDisplayNumber, toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon } from '@subwallet/react-ui';
 import { Copy } from 'phosphor-react';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -90,7 +90,7 @@ const Component: React.FC<Props> = (props: Props) => {
             Your Story Point (SP)
           </div>
           <div className='__point'>
-            {currentPoint}
+            {toDisplayNumber(currentPoint)}
           </div>
         </div>
         <div className={'separator'}>

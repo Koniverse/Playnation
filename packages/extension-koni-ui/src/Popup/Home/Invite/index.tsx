@@ -149,7 +149,7 @@ const Component = ({ className }: Props): React.ReactElement => {
             size={18}
           />
           <div className='friend-count'>
-            {totalCount} {t(totalCount > 1 ? 'frens' : 'fren')}
+            {totalCount} {t(totalCount > 1 ? 'friends' : 'friend')}
           </div>
         </div>
 
@@ -216,7 +216,7 @@ const Component = ({ className }: Props): React.ReactElement => {
               <EmptyList
                 className={'empty-list-block'}
                 emptyMessage={t('Invite now')}
-                emptyTitle={t('Uh oh, no frens invited')}
+                emptyTitle={t('Uh oh, no friends invited')}
                 phosphorIcon={SmileySad}
               />
             )

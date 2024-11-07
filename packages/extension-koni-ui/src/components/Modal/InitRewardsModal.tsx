@@ -7,7 +7,7 @@ import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, Progress, SwModal, Typography } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Check, CheckCircle } from 'phosphor-react';
+import { ArrowCircleRight, Check, CheckCircle } from 'phosphor-react';
 import React, { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 import styled from 'styled-components';
@@ -116,7 +116,7 @@ function Component ({ className, isInit, onContinue, rewards, totalPoint }: Prop
               icon={(
                 <Icon
                   customSize={'20px'}
-                  phosphorIcon={CheckCircle}
+                  phosphorIcon={isInit ? ArrowCircleRight : CheckCircle}
                   weight={'fill'}
                 />
               )}

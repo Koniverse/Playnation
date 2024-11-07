@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { AccountRankType, RankInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { rankPointMap, TELEGRAM_INVITATION_CONTENT } from '@subwallet/extension-koni-ui/constants';
+import { TELEGRAM_INVITATION_CONTENT } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
@@ -22,7 +23,8 @@ const telegramConnector = TelegramConnector.instance;
 
 const Component = ({ className, hideCopyLink }: Props) => {
   const { t } = useTranslation();
-  const invitePoint = useMemo(() => (rankPointMap.iron || 0), []);
+  const [rankInfoMap, setRankInfoMap] = useState<Record<AccountRankType, RankInfo> | undefined>(apiSDK.rankInfoMap);
+  const invitePoint = useMemo(() => (rankInfoMap?.iron?.invitePoint || 0), [rankInfoMap?.iron?.invitePoint]);
   const notify = useNotification();
   const [isLoading, setIsLoading] = useState(true);
   const [inviteURL, setInviteURL] = useState('');
@@ -34,6 +36,16 @@ const Component = ({ className, hideCopyLink }: Props) => {
       setInviteURL(`https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent(TELEGRAM_INVITATION_CONTENT)}`);
       setIsLoading(false);
     }).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    const rankInfoSub = apiSDK.subscribeRankInfoMap().subscribe((data) => {
+      setRankInfoMap(data);
+    });
+
+    return () => {
+      rankInfoSub.unsubscribe();
+    };
   }, []);
 
   const inviteFriend = useCallback(() => {
@@ -56,7 +68,7 @@ const Component = ({ className, hideCopyLink }: Props) => {
       </div>
 
       <div className='invitation-reward'>
-        {t('Up to')} <b>{toDisplayNumber(invitePoint)} SP</b> {t('per invite!')}
+        {t('Up to')} <b>{toDisplayNumber(invitePoint)} SP</b> {t('per invite')}
       </div>
 
       <div className='invitation-buttons'>
