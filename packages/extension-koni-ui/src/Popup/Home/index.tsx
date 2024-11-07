@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
+import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
 import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, InitRewardsModal, InitRewardsModalProps, Layout, LoadingScreen } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
@@ -163,7 +164,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           onOk: onOkRewardModal,
           onCancel: onCancelRewardModal,
           rewardInfo: {
-            iconSrc: '/images/games/token-icon.png',
+            iconSrc: DefaultLogosMap.token_icon,
             value: totalPoint,
             symbol: 'SP'
           }

@@ -53,7 +53,7 @@ function Component (props: Props): React.ReactElement<Props> {
           size={'sm'}
         >
 
-          {t('View Detail')}
+          {t('View details')}
         </Button>
 
         <Button

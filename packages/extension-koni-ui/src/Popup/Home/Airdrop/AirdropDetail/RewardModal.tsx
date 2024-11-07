@@ -104,7 +104,7 @@ function Component (props: Props): React.ReactElement<Props> {
   const rewardInfo: RewardInfo = (() => {
     if (raffle?.rewardType === 'NPS') {
       return {
-        iconSrc: '/images/games/token-icon.png',
+        iconSrc: DefaultLogosMap.token_icon,
         value: raffle?.rewardAmount || 0,
         symbol: 'NPS'
       };
