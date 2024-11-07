@@ -24,6 +24,7 @@ type Props = ThemeProps;
 export const GlobalSearchTokenModalId = 'globalSearchToken';
 const apiSDK = BookaSdk.instance;
 const metadataHandler = MetadataHandler.instance;
+let isAddPointShowed = false; // Use let instead of ref to avoid reload all components
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const { activeModal, inactiveModal } = useContext(ModalContext);
@@ -130,7 +131,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     const newInitNps = initNps.filter((np) => np.isNew);
     const isAllNew = newInitNps.length === initNps.length;
 
-    if (newInitNps.length > 0) {
+    if (newInitNps.length > 0 && !isAddPointShowed) {
       const totalPoint = newInitNps.reduce((acc, item) => acc + item.point, 0);
 
       if (isAllNew) {
@@ -168,6 +169,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
           }
         });
       }
+
+      isAddPointShowed = true;
     }
   }, [account, closeInitRewardModal, onCancelRewardModal, onOkRewardModal, openInitRewardModal, openAddRewardsModal, closeAddRewardsModal]);
 
