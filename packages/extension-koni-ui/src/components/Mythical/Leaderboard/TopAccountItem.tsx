@@ -1,40 +1,46 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components/Mythical';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
 import React from 'react';
 import styled from 'styled-components';
 
-type Props = ThemeProps & {
+export type TopAccountItemType = {
   isFirst?: boolean;
   rank: number;
-  point: number;
-  tokenValue: number;
+  point?: number;
+  name?: string;
+  avatarSrc?: string;
+  tokenValue?: number;
+}
+
+type Props = ThemeProps & TopAccountItemType & {
+  isLoading?: boolean
 };
 
-const Component = ({ className, isFirst, point, rank, tokenValue }: Props): React.ReactElement => {
+const Component = ({ avatarSrc, className, isFirst, isLoading, name = '---', point = 0, rank, tokenValue = 0 }: Props): React.ReactElement => {
   return (
     <div className={CN(
       className, {
         '-is-first': isFirst
       })}
     >
-      <div className='__avatar-wrapper'>
-        <img
-          alt={'avatar'}
-          className={'__avatar-image'}
-          src={'/images/mythical/user-image.png'}
-        />
-
-        <div className='__rank'>
-          {rank}
-        </div>
-      </div>
+      <GameAccountAvatar
+        avatarSrc={avatarSrc}
+        className={'__avatar-wrapper'}
+        isPlaceholder={isLoading}
+        partNode={(
+          <div className='__rank'>
+            {rank}
+          </div>
+        )}
+      />
 
       <div className={CN('__account-name')}>
-        Emi_SpeedsterSupr01
+        {name}
       </div>
 
       <div className='__point'>

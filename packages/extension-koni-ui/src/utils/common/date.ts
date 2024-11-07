@@ -252,6 +252,11 @@ export const formatHistoryDate = (dateMilli: string | number | Date, language: L
 
 export function getTimeRemaining (dateNow: number, targetTime: string): string {
   const end = new Date(targetTime).getTime();
+
+  if (isNaN(end)) {
+    return '---';
+  }
+
   let diff = end - dateNow;
 
   if (diff <= 0) {

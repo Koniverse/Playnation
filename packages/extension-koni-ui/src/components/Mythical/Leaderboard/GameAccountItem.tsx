@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components/Mythical';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
@@ -29,11 +30,12 @@ function Component ({ avatarSrc, className, isMine, name, point, prefix }: Props
     >
       <div className='__inner'>
         {prefix && <div className={'__prefix'}>{prefix}</div>}
-        <img
-          alt={'avatar'}
-          className={'__avatar'}
-          src={avatarSrc || ''}
+
+        <GameAccountAvatar
+          avatarSrc={avatarSrc}
+          className={'__avatar-wrapper'}
         />
+
         <div className={'__name'}>{name}</div>
         {
           isMine && (
@@ -97,7 +99,7 @@ const GameAccountItem = styled(Component)<Props>(({ theme: { extendToken, token 
       minWidth: 46
     },
 
-    '.__avatar': {
+    '.__avatar-image': {
       marginRight: 12,
       width: 44,
       height: 44,

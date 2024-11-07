@@ -84,16 +84,6 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return ({
     height: '100%',
 
-    '&.leaderboard-screen-wrapper': {
-      '> .ant-sw-screen-layout-body > .ant-sw-screen-layout-body-inner': {
-        paddingBottom: 0,
-
-        '> div': {
-          height: '100%'
-        }
-      }
-    },
-
     '&.events-screen-wrapper.-show-game': {
       '.ant-sw-screen-layout-body-inner': {
         position: 'static'

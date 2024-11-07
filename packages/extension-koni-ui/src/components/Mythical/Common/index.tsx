@@ -7,3 +7,4 @@ export { default as TimeRemaining } from './TimeRemaining';
 export { default as MainScreenHeader } from './MainScreenHeader';
 export { default as SubScreenHeader } from './SubScreenHeader';
 export { default as EmptyListContent } from './EmptyListContent';
+export { default as GameAccountAvatar } from './GameAccountAvatar';

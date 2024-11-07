@@ -344,7 +344,7 @@ export interface KeyValueStore {
   value: LeaderboardGroups[];
 }
 export interface LeaderboardGroups {
-  leaderboards: LeaderboardItem[];
+  leaderboards: { id: number }[];
   leaderboardGroupId: number;
   leaderboardGroupName: string;
 }

@@ -81,7 +81,7 @@ const MythButton = styled(Component)<ThemeProps>(({ theme: { extendToken, token 
       fontWeight: 500,
       lineHeight: '22px',
       textTransform: 'uppercase',
-      paddingBottom: 6
+      paddingBottom: 2
     },
 
     '.__button-background': {
