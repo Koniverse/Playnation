@@ -278,6 +278,10 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
     zIndex: 5
   },
 
+  '.layout-background-image': {
+    opacity: 0
+  },
+
   '&.-primary-style': {
     background: extendToken.colorBgGradient || token.colorPrimary
   },

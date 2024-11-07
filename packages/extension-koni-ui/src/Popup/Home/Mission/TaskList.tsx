@@ -16,7 +16,7 @@ type Props = ThemeProps & {
   reloadTask: number;
 };
 
-const Component = ({ actionReloadPoint, className, taskCategoryInfoMap, taskCategoryMap, openWidget, reloadTask }: Props): React.ReactElement => {
+const Component = ({ actionReloadPoint, className, openWidget, reloadTask, taskCategoryInfoMap, taskCategoryMap }: Props): React.ReactElement => {
   const { t } = useTranslation();
 
   const taskCategoryInfoList = useMemo(() => {
@@ -54,7 +54,7 @@ const Component = ({ actionReloadPoint, className, taskCategoryInfoMap, taskCate
                 </div>
 
                 <div className='__complete-missions'>
-                  {`${tci.completeCount}/${tci.tasks.length}`} {t('missions')}
+                  {`${tci.completeCount}/${tci.tasks.length}`} {t(tci.tasks.length > 1 ? 'missions' : 'mission')}
                 </div>
               </div>
               <div className='__tasks-container'>
