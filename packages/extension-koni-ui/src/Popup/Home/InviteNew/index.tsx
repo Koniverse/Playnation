@@ -33,7 +33,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
     for (let i = 1; i <= 20; i++) {
       result.push({
-        avatarSrc: '/images/mythical/user-image.png',
+        avatarSrc: '',
         name: `Brad_MaddenMaster_${i}`,
         point: 7712000
       });

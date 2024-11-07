@@ -41,7 +41,7 @@ export const InviteMissionArea = styled(Component)<ThemeProps>(({ theme: { exten
       paddingLeft: 24,
       paddingTop: 20,
       paddingRight: 24,
-      paddingBottom: 16
+      paddingBottom: 19
     }
   };
 });
