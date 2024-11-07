@@ -2,15 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
-import {
-  AddRewardsModal,
-  AddRewardsModalProps,
-  CampaignBannerModal,
-  InitRewardsModal,
-  InitRewardsModalProps,
-  Layout,
-  LoadingScreen
-} from '@subwallet/extension-koni-ui/components';
+import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, InitRewardsModal, InitRewardsModalProps, Layout, LoadingScreen } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
@@ -75,18 +67,18 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     activeModal(ACCOUNT_ADD_POINT_MODAL);
   }, [activeModal]);
 
-  const closeYourRewardsModal = useCallback(() => {
+  const closeAddRewardsModal = useCallback(() => {
     inactiveModal(ACCOUNT_ADD_POINT_MODAL);
     setAddRewardModalProps(undefined);
   }, [inactiveModal]);
 
   const onOkRewardModal = useCallback(() => {
-    closeYourRewardsModal();
-  }, [closeYourRewardsModal]);
+    closeAddRewardsModal();
+  }, [closeAddRewardsModal]);
 
   const onCancelRewardModal = useCallback(() => {
-    closeYourRewardsModal();
-  }, [closeYourRewardsModal]);
+    closeAddRewardsModal();
+  }, [closeAddRewardsModal]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount()
@@ -165,6 +157,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
               totalPoint: totalPoint,
               onContinue: closeInitRewardModal
             });
+            closeAddRewardsModal();
           },
           onOk: onOkRewardModal,
           onCancel: onCancelRewardModal,
@@ -176,7 +169,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         });
       }
     }
-  }, [account, closeInitRewardModal, onCancelRewardModal, onOkRewardModal, openInitRewardModal, openAddRewardsModal]);
+  }, [account, closeInitRewardModal, onCancelRewardModal, onOkRewardModal, openInitRewardModal, openAddRewardsModal, closeAddRewardsModal]);
 
   return (
     <>
