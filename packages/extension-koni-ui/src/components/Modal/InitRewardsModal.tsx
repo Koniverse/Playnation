@@ -44,7 +44,7 @@ function Component ({ className, isInit, onContinue, rewards, totalPoint }: Prop
           <img
             alt='logo'
             className='logo'
-            src={'/images/games/default-avatar.png'}
+            src={'/images/reward-avatar.png'}
           />
         </div>
         <header className='header'>
