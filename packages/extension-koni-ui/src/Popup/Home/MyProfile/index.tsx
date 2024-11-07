@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MainScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
+import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
+import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useContext } from 'react';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { AccountEditorArea } from './AccountEditorArea';
@@ -17,20 +20,21 @@ type Props = ThemeProps;
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/my-profile');
 
-  const [isAccountLinked, setIsAccountLinked] = useState<boolean>(false);
+  const { isLinkedMyth, linkMythAccount } = useContext(AuthenticationMythContext);
+  const { currentAccount } = useSelector((state: RootState) => state.accountState);
 
   const doLinkAccount = useCallback(() => {
-    setIsAccountLinked(true);
-  }, []);
+    currentAccount?.address && linkMythAccount(currentAccount?.address).catch(console.error);
+  }, [currentAccount?.address, linkMythAccount]);
 
   return (
     <div className={className}>
-      <MainScreenHeader />
+      <MainScreenHeader title={'123213213'} />
       <AccountEditorArea className={'account-editor-area'} />
       <LinkAccountArea
         className={'link-account-area'}
         doLinkAccount={doLinkAccount}
-        isLinked={isAccountLinked}
+        isLinked={isLinkedMyth}
       />
       <WalletInfoArea className={'wallet-info-area'} />
       <RewardHistoryArea className={'reward-history-area'} />

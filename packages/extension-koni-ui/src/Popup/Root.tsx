@@ -6,8 +6,9 @@ import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
+import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
+import { AuthenticationMythProvider } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { SecurityContextProvider } from '@subwallet/extension-koni-ui/contexts/SecurityContext';
 import { usePredefinedModal, WalletModalContextProvider } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
@@ -22,6 +23,7 @@ import { changeHeaderLogo } from '@subwallet/react-ui';
 import { NotificationProps } from '@subwallet/react-ui/es/notification/NotificationProvider';
 import CN from 'classnames';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { AuthProvider, TAuthConfig, TRefreshTokenExpiredEvent } from 'react-oauth2-code-pkce';
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
@@ -276,14 +278,28 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
 
 export function Root (): React.ReactElement {
   // Implement WalletModalContext in Root component to make it available for all children and can use react-router-dom and ModalContextProvider
+  const AuthConfig: TAuthConfig = {
+    clientId: CLIENT_ID,
+    authorizationEndpoint: AUTHORIZATION_ENDPOINT,
+    tokenEndpoint: TOKEN_ENDPOINT,
+    redirectUri: AUTHENTICATE_REDIRECT_URI,
+    logoutEndpoint: LOGOUT_ENDPOINT,
+    logoutRedirect: AUTHENTICATE_LOGOUT_REDIRECT,
+    autoLogin: false,
+    onRefreshTokenExpire: (event: TRefreshTokenExpiredEvent) => event.logIn(undefined, undefined, 'popup')
+  };
 
   return (
-    <SecurityContextProvider>
-      <WalletModalContextProvider>
-        <DefaultRoute>
-          <Outlet />
-        </DefaultRoute>
-      </WalletModalContextProvider>
-    </SecurityContextProvider>
+    <AuthProvider authConfig={AuthConfig}>
+      <AuthenticationMythProvider>
+        <SecurityContextProvider>
+          <WalletModalContextProvider>
+            <DefaultRoute>
+              <Outlet />
+            </DefaultRoute>
+          </WalletModalContextProvider>
+        </SecurityContextProvider>
+      </AuthenticationMythProvider>
+    </AuthProvider>
   );
 }

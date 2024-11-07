@@ -3519,6 +3519,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@koniverse/telegram-bot-link@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@koniverse/telegram-bot-link@npm:1.0.1"
+  dependencies:
+    cross-fetch: ^4.0.0
+  checksum: 9cfde29036d102df41e8d5cf77d2e874ed8f8d8bbf800fb5cc822b798795916626298bb61d840bc4f7853acd8844ae26004cabf9bdd522058a5c3f9aa787b858
+  languageName: node
+  linkType: hard
+
 "@laminar/type-definitions@npm:0.3.1":
   version: 0.3.1
   resolution: "@laminar/type-definitions@npm:0.3.1"
@@ -6247,6 +6256,7 @@ __metadata:
     "@fortawesome/free-regular-svg-icons": ^6.2.1
     "@fortawesome/free-solid-svg-icons": ^6.2.1
     "@fortawesome/react-fontawesome": ^0.2.0
+    "@koniverse/telegram-bot-link": ^1.0.1
     "@ledgerhq/hw-app-eth": ^6.35.0
     "@playnation/game-sdk": ^1.1.2-beta.0
     "@polkadot/api-contract": ^11.0.3
@@ -6311,6 +6321,7 @@ __metadata:
     react-lazyload: ^3.2.0
     react-loading-skeleton: ^3.1.0
     react-markdown: ^9.0.1
+    react-oauth2-code-pkce: ^1.22.1
     react-qr-code: ^2.0.11
     react-qr-reader: ^3.0.0-beta-1
     react-redux: ^8.0.5
@@ -23550,6 +23561,15 @@ __metadata:
     "@types/react": ">=18"
     react: ">=18"
   checksum: ca1daa650d48b84a5a9771683cdb3f3d2d418247ce0faf73ede3207c65f2a21cdebb9df37afda67f6fc8f0f0a7b9ce00eb239781954a4d6c7ad88ea4df068add
+  languageName: node
+  linkType: hard
+
+"react-oauth2-code-pkce@npm:^1.22.1":
+  version: 1.22.2
+  resolution: "react-oauth2-code-pkce@npm:1.22.2"
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 59b5162c5ecc6829855d172668ad4a90e9d83c335dd708f48ca8dba4ebf1f6b9524855a3b7dffcc9cbdaf609b8fa9c581953f7b1839c73f98bd21e22959f9456
   languageName: node
   linkType: hard
 

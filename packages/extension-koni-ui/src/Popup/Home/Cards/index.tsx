@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CardDetailModal, CardItem } from '@subwallet/extension-koni-ui/components/Mythical';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { NFLRivalCard } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 import { ToolArea } from './ToolArea';
@@ -13,36 +15,25 @@ import { ToolArea } from './ToolArea';
 type Props = ThemeProps;
 
 const cardDetailModalId = 'cardDetailModalId';
+const bookaSDK = BookaSdk.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   const { setContainerClass } = useContext(HomeContext);
   const { activeModal, inactiveModal } = useContext(ModalContext);
-  const [selectedCard, setSelectedCard] = useState<string | undefined>(undefined);
+  const [selectedCard, setSelectedCard] = useState<NFLRivalCard | undefined>(undefined);
+  const [cardItems, setCardItems] = useState<NFLRivalCard[]>([]);
 
-  const cardItems = useMemo(() => {
-    return [
-      '1dhenry22ti10',
-      '1dholmes30gi17',
-      '1dhopkins7bw10',
-      '1dhunter99vi19',
-      '1djamesjr3cg11',
-      '1dlongjr51do7',
-      '1dmetcalf14sh15',
-      '1draftpick8_5',
-      '1draftpick10_5',
-      '1jjefferso18vi6',
-      '1jwilliams73bn19',
-      '1lsneed38cf19',
-      '1msanders26ea18',
-      '1pmahomes15cf13',
-      '1tedmunds49br15',
-      '1twatt90sl13',
-      '2averatuc75je21',
-      '2gs23player2week1'
-    ];
+  useEffect(() => {
+    const unsubscribe = bookaSDK.subscribeNFLRivalCardList().subscribe((cardList) => {
+      setCardItems(cardList);
+    });
+
+    return () => {
+      unsubscribe.unsubscribe();
+    };
   }, []);
 
-  const onClickCard = useCallback((cardSrc: string) => {
+  const onClickCard = useCallback((cardSrc: NFLRivalCard) => {
     return () => {
       setSelectedCard(cardSrc);
       activeModal(cardDetailModalId);
@@ -71,9 +62,9 @@ const Component = ({ className }: Props): React.ReactElement => {
           {
             cardItems.map((item) => (
               <CardItem
+                card={item}
                 className={'card-item'}
-                imageSrc={item}
-                key={item}
+                key={item.defId}
                 onClick={onClickCard(item)}
               />
             ))
@@ -85,7 +76,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       {
         !!selectedCard && (
           <CardDetailModal
-            cardSrc={selectedCard}
+            card={selectedCard}
             id={cardDetailModalId}
             onCancel={onCloseDetailModal}
           />
