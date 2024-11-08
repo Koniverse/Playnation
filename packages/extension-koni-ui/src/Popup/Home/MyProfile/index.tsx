@@ -1,13 +1,15 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { MainScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
+import { MainScreenHeader, MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import CN from 'classnames';
 import React, { useCallback, useContext } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { AccountEditorArea } from './AccountEditorArea';
@@ -19,6 +21,7 @@ type Props = ThemeProps;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/my-profile');
+  const navigate = useNavigate();
 
   const { isLinkedMyth, linkMythAccount } = useContext(AuthenticationMythContext);
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
@@ -27,9 +30,25 @@ const Component = ({ className }: Props): React.ReactElement => {
     currentAccount?.address && linkMythAccount(currentAccount?.address).catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
 
+  const login = useCallback(() => {
+    navigate('/login');
+  }, [navigate]);
+
   return (
     <div className={className}>
-      <MainScreenHeader title={'My profile'} />
+      <MainScreenHeader
+        rightPartNode={
+          (
+            <MythButton
+              className={CN('login-button')}
+              onClick={login}
+            >
+              Log in
+            </MythButton>
+          )
+        }
+        title={'My profile'}
+      />
       <AccountEditorArea className={'account-editor-area'} />
       <LinkAccountArea
         className={'link-account-area'}
@@ -45,6 +64,16 @@ const Component = ({ className }: Props): React.ReactElement => {
 const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     backgroundColor: '#000',
+
+    '.login-button': {
+      paddingLeft: 16,
+      paddingRight: 16,
+      height: 40,
+
+      '.__button-content': {
+        color: token.colorWhite
+      }
+    },
 
     '.account-editor-area': {
       marginBottom: 20
