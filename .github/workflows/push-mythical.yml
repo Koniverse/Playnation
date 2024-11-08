@@ -14,6 +14,7 @@ jobs:
     if: "!startsWith(github.event.head_commit.message, '[CI Skip]')"
     name: Deploy Telegram MiniApp
     runs-on: ubuntu-22.04
+    environment: ${{ github.ref_name }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -31,14 +32,14 @@ jobs:
         COINBASE_PAY_ID: ${{ secrets.COINBASE_PAY_ID }}
         NFT_MINTING_HOST: ${{ secrets.NFT_MINTING_HOST }}
         BRANCH_NAME: master
-        GAME_API_HOST: ${{ github.ref_name == 'mythical-prod' && 'https://mythical-api.playnation.app' || 'https://mythical-api-dev.playnation.app' }}
-        TELEGRAM_WEBAPP_LINK: ${{ github.ref_name == 'mythical-prod' && 'MythicalGamesBot/app' || 'mythical_dev1_bot/app' }}
-        AUTHENTICATE_CLIENT_ID: ${{ github.ref_name == 'mythical-prod' && secrets.AUTHENTICATE_CLIENT_ID || '' }}
-        AUTHENTICATE_REDIRECT_URI: ${{ github.ref_name == 'mythical-prod' && vars.AUTHENTICATE_REDIRECT_URI || '' }}
-        LINKING_URL: ${{ github.ref_name == 'mythical-prod' && vars.LINKING_URL || '' }}
-        LINKING_SERVICE: ${{ github.ref_name == 'mythical-prod' && vars.LINKING_SERVICE || '' }}
-        LINKING_BOT: ${{ github.ref_name == 'mythical-prod' && vars.LINKING_BOT || '' }}
-        LINKING_TOKEN: ${{ github.ref_name == 'mythical-prod' && secrets.LINKING_TOKEN || secrets.LINKING_TOKEN_DEV }}
+        GAME_API_HOST: ${{ vars.GAME_API_HOST }}
+        TELEGRAM_WEBAPP_LINK: ${{ vars.TELEGRAM_WEBAPP_LINK }}
+        AUTHENTICATE_CLIENT_ID: ${{ secrets.AUTHENTICATE_CLIENT_ID }}
+        AUTHENTICATE_REDIRECT_URI: ${{ vars.AUTHENTICATE_REDIRECT_URI }}
+        LINKING_URL: ${{ vars.LINKING_URL }}
+        LINKING_SERVICE: ${{ vars.LINKING_SERVICE }}
+        LINKING_BOT: ${{ vars.LINKING_BOT }}
+        LINKING_TOKEN: ${{ secrets.LINKING_TOKEN }}
 
       run: |
         yarn install --immutable | grep -v 'YN0013'
