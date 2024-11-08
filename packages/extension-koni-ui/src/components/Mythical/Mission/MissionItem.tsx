@@ -12,7 +12,7 @@ export type MissionItemType = {
   title: string;
   statusText: string;
   actionContent?: React.ReactNode;
-  doAction?: (setLoading: React.Dispatch<React.SetStateAction<boolean>>) => void;
+  doAction?: () => Promise<void>;
   type: 'oneTime' | 'achievement';
   point: number;
   state: 'UNCOMPLETED' | 'CLAIMABLE' | 'COMPLETED'
@@ -30,7 +30,14 @@ const Component = ({ actionContent, className,
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const onAction = useCallback(() => {
-    doAction?.(setIsLoading);
+    if (doAction) {
+      setIsLoading(true);
+      doAction()
+        .catch(console.error)
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
   }, [doAction]);
 
   return (

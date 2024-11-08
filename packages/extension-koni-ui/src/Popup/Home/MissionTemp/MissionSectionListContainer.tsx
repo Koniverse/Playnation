@@ -4,13 +4,14 @@
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import { MissionItem, MissionItemType } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Achievement, AchievementLogStatus, BookaAccount, Task, TaskCategory, TaskCategoryType } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { Achievement, AchievementLogStatus, BookaAccount, Task, TaskActionComponent, TaskActionDirect, TaskActionOnchain, TaskActionOpenScreen, TaskActionShare, TaskActionUrl, TaskCategory, TaskCategoryType } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
 import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
@@ -47,27 +48,10 @@ function getAchievementState (achievement: Achievement): MissionItemType['state'
   return 'UNCOMPLETED';
 }
 
-const metricLabelMap: Record<string, string> = {
-  'all:nps': 'all:nps',
-  'task:nps': 'task:nps',
-  'task:quantity': 'task:quantity',
-  'referral:nps': 'referral:nps',
-  'referral:quantity': 'referral:quantity',
-  'referral:inviteToPlay:nps': 'referral:inviteToPlay:nps',
-  'referral:inviteToPlay:quantity': 'referral:inviteToPlay:quantity',
-  'game:casual:nps': 'game:casual:nps',
-  'game:casual:point': 'game:casual:point',
-  'game:casual:quantity': 'game:casual:quantity',
-  'game:farming:point': 'game:farming:point',
-  'game:farming:totalPoint': 'game:farming:totalPoint',
-  'game:farming:earnSpeed': 'game:farming:earnSpeed',
-  'account:daily:quantity': 'account:daily:quantity'
-};
-
 function getMetricCounterpart (metricId: string, achievement: Achievement): string {
   const metric = achievement.metrics.find((m) => m.metricId === metricId);
 
-  return metric ? (metricLabelMap[metric.type] || '') : '';
+  return metric ? (metric.unit || '') : '';
 }
 
 function filterAchievements (achievements: Achievement[], taskSectionMap: Record<number, MissionSectionType>): Achievement[] {
@@ -106,103 +90,144 @@ const Component = ({ accountInfo,
   tasks }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const notify = useNotification();
+  const navigate = useNavigate();
 
   const getTaskStatusText = useCallback((task: Task) => {
     return isTaskComplete(task) ? t('Done') : t('To do');
   }, [t]);
 
   const getTaskActionContent = useCallback((task: Task) => {
-    return t('Go');
+    const action = task.action;
+
+    return action?.label || t('Go');
   }, [t]);
 
-  const doTaskAction = useCallback((task: Task) => {
-    if (!accountInfo) {
-      return undefined;
+  const handleOnChainTask = useCallback(async (task: Task) => {
+    const taskId = task.id;
+    const action = task.action as TaskActionOnchain;
+    const { address } = accountInfo?.info || {};
+
+    if (!address) {
+      return;
     }
 
-    return (setLoading: React.Dispatch<React.SetStateAction<boolean>>) => {
-      const taskId = task.id;
-      const onChainType = task.onChainType;
-      const { address } = accountInfo?.info || {};
+    let res: SWTransactionResponse | null = null;
+    const networkKey = action.network || '';
 
-      if (!address) {
+    const now = new Date();
+    const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    const data = JSON.stringify({ address, type: action.type, date });
+
+    const checkCompleted = await apiSDK.checkCompleteTask(taskId);
+
+    if (checkCompleted) {
+      if (checkCompleted.completed) {
         return;
       }
 
-      setLoading(true);
+      if (checkCompleted.isSubmitting) {
+        notify({
+          message: t('Mission in progress on another device. Use one device to complete it.'),
+          type: 'warning'
+        });
 
-      (async () => {
-        let res: SWTransactionResponse | null = null;
-        const networkKey = task.network || '';
+        return;
+      }
+    }
 
-        if (onChainType) {
-          const now = new Date();
-          const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-          const data = JSON.stringify({ address, type: onChainType, date });
+    res = await actionTaskOnChain(action.type, networkKey, address, data);
 
-          const checkCompleted = await apiSDK.completeTask(taskId);
+    if ((res && res.errors.length > 0) || !res) {
+      let message = t(`Network ${networkKey} not enable`);
 
-          if (checkCompleted) {
-            if (checkCompleted.completed) {
-              setLoading(false);
+      if (res && res.errors.length > 0) {
+        const error = res?.errors[0] || {};
 
-              return;
-            }
+        // @ts-ignore
+        message = error?.message || '';
+      }
 
-            if (checkCompleted.isSubmitting) {
-              setLoading(false);
-
-              notify({
-                message: t('Mission in progress on another device. Use one device to complete it.'),
-                type: 'warning'
-              });
-
-              return;
-            }
-          }
-
-          res = await actionTaskOnChain(onChainType, networkKey, address, data);
-
-          if ((res && res.errors.length > 0) || !res) {
-            setLoading(false);
-            let message = t(`Network ${networkKey} not enable`);
-
-            if (res && res.errors.length > 0) {
-              const error = res?.errors[0] || {};
-
-              // @ts-ignore
-              message = error?.message || '';
-            }
-
-            notify({
-              message: message,
-              type: 'error'
-            });
-
-            return;
-          }
-        }
-
-        let extrinsicHash = '';
-
-        if (res) {
-          extrinsicHash = res.extrinsicHash || '';
-        }
-
-        const redirectUrl = task.url;
-
-        if (redirectUrl) {
-          setTimeout(() => {
-            telegramConnector.openLink(redirectUrl);
-          }, 100);
-        }
-
-        await apiSDK.finishTask(taskId, extrinsicHash, networkKey);
-      })().catch(console.error).finally(() => {
-        setLoading(false);
+      notify({
+        message: message,
+        type: 'error'
       });
+
+      return;
+    }
+
+    return res.extrinsicHash;
+  }, [accountInfo?.info, notify, t]);
+
+  const handleUrlTask = useCallback(async (task: Task) => {
+    const action = task.action as TaskActionUrl;
+
+    action.url && telegramConnector.openLink(action.url);
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }, []);
+
+  const handleOpenScreenTask = useCallback(async (task: Task) => {
+    const action = task.action as TaskActionOpenScreen;
+    const screen = action.screen;
+
+    if (screen === 'events') {
+      navigate('/home/events');
+    } else if (screen === 'mission') {
+      navigate('/home/mission');
+    } else if (screen === 'leaderboard') {
+      navigate('/home/leaderboard');
+    } else if (screen === 'cards') {
+      navigate('/home/cards');
+    } else if (screen === 'account') {
+      navigate('/home/my-profile');
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }, [navigate]);
+
+  const handleDirectTask = useCallback(async (task: Task) => {
+    const action = task.action as TaskActionDirect;
+    const type = action.type;
+
+    if (type === 'invite') {
+      alert('Implement invite action');
+    } else if (type === 'mythical-login') {
+      alert('Implement mythical login');
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }, []);
+
+  const handleShareTask = useCallback(async (task: Task) => {
+    const action = task.action as TaskActionShare;
+
+    alert(`Implement share action: ${action.url}`);
+
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }, []);
+
+  const doTaskAction = useCallback((task: Task) => {
+    return async () => {
+      const action = task.action;
+      const actionType = action?.__component;
+      const networkKey = (action as TaskActionOnchain)?.network || '';
+      let extrinsicHash: string | undefined = '';
+
+      if (actionType === TaskActionComponent.ONCHAIN) {
+        extrinsicHash = await handleOnChainTask(task);
+      } else if (actionType === TaskActionComponent.URL) {
+        await handleUrlTask(task);
+      } else if (actionType === TaskActionComponent.OPEN_SCREEN) {
+        await handleOpenScreenTask(task);
+      } else if (actionType === TaskActionComponent.DIRECT) {
+        await handleDirectTask(task);
+      } else if (actionType === TaskActionComponent.SHARE) {
+        await handleShareTask(task);
+      }
+
+      // Finish the task
+      extrinsicHash !== undefined && await apiSDK.finishTask(task.id, extrinsicHash, networkKey);
     };
-  }, [accountInfo, notify, t]);
+  }, [handleDirectTask, handleOnChainTask, handleOpenScreenTask, handleShareTask, handleUrlTask]);
 
   // todo: will support multi achievement process, current only support the first one
   const getAchievementStatusText = useCallback((achievement: Achievement) => {
@@ -228,12 +253,8 @@ const Component = ({ accountInfo,
       return undefined;
     }
 
-    return (setLoading: React.Dispatch<React.SetStateAction<boolean>>) => {
-      setLoading(true);
-
-      apiSDK.claimAchievement(achievement.milestoneId).catch(console.error).finally(() => {
-        setLoading(false);
-      });
+    return async () => {
+      await apiSDK.claimAchievement(achievement.milestoneId);
     };
   }, []);
 

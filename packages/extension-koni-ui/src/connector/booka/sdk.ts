@@ -440,7 +440,7 @@ export class BookaSdk {
     return this.taskListSubject;
   }
 
-  async completeTask (taskId: number | undefined) {
+  async checkCompleteTask (taskId: number | undefined) {
     const taskHistoryCheck = await this.postRequest<{ completed: boolean, isSubmitting: boolean }>(`${GAME_API_HOST}/api/task/check-complete-task`, { taskId });
 
     if (taskHistoryCheck && taskHistoryCheck.completed) {

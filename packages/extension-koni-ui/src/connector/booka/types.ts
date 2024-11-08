@@ -100,41 +100,57 @@ export interface ShareLeaderboard {
   end_time: string;
 }
 
-interface AchievementData {
-  id: number;
-  from_date: string;
-  to_date: string;
-  value: number;
+export enum TaskActionComponent {
+  URL = 'task.action-url',
+  SHARE = 'task.action-share',
+  OPEN_SCREEN = 'task.action-open-screen',
+  ONCHAIN = 'task.action-onchain',
+  DIRECT = 'task.action-direct',
+}
+
+export interface TaskAction {
+  __component: TaskActionComponent;
+  label: string;
+}
+
+export interface TaskActionUrl extends TaskAction {
+  url: string;
+}
+
+export interface TaskActionShare extends TaskAction {
+  url: string;
+  content: string;
+}
+
+export interface TaskActionOpenScreen extends TaskAction {
+  screen: string;
+}
+
+export interface TaskActionOnchain extends TaskAction {
   type: string;
+  network: string;
+}
+
+export interface TaskActionDirect extends TaskAction {
+  type: 'invite' | 'mythical-login';
 }
 
 export interface Task {
   id: number; // id on db
-  contentId: number;
-  slug: string;
   gameId?: number | null;
   categoryId?: number | null;
-  url?: string | null;
   name?: string | null;
   description?: string | null;
   icon?: string | null;
   pointReward?: number | null;
-  itemReward?: number | null;
   startTime?: string | null;
   endTime?: string | null;
-  onChainType?: string | null;
-  network?: string | null;
   interval?: number | null;
+  action?: TaskAction;
 
   status: TaskHistoryStatus;
   completedAt?: string;
   taskHistoryId?: number;
-  share_leaderboard?: string | null;
-  airlyftType?: string | null;
-  airlyftWidgetId?: string | null;
-  airlyftId?: string | null;
-  buttonView?: string | null;
-  achievement?: AchievementData | null;
 }
 
 export enum TaskCategoryType {
@@ -209,12 +225,14 @@ export interface Achievement {
   logViewType: LogViewType;
   conditions: Condition[];
   progress: ProgressData[];
+  action: TaskAction;
   pointReward: number;
   metrics: [
     {
       id: number,
       type: string,
       metricId: string,
+      unit: string,
     }
   ],
   milestoneOrdinal: number;
