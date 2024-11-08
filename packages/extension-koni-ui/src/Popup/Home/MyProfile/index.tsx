@@ -29,7 +29,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   return (
     <div className={className}>
-      <MainScreenHeader title={'123213213'} />
+      <MainScreenHeader title={'My profile'} />
       <AccountEditorArea className={'account-editor-area'} />
       <LinkAccountArea
         className={'link-account-area'}
