@@ -33,6 +33,13 @@ jobs:
         BRANCH_NAME: master
         GAME_API_HOST: ${{ github.ref_name == 'mythical-prod' && 'https://mythical-api.playnation.app' || 'https://mythical-api-dev.playnation.app' }}
         TELEGRAM_WEBAPP_LINK: ${{ github.ref_name == 'mythical-prod' && 'MythicalGamesBot/app' || 'mythical_dev1_bot/app' }}
+        AUTHENTICATE_CLIENT_ID: ${{ github.ref_name == 'mythical-prod' && secrets.AUTHENTICATE_CLIENT_ID || '' }}
+        AUTHENTICATE_REDIRECT_URI: ${{ github.ref_name == 'mythical-prod' && vars.AUTHENTICATE_REDIRECT_URI || '' }}
+        LINKING_URL: ${{ github.ref_name == 'mythical-prod' && vars.LINKING_URL || '' }}
+        LINKING_SERVICE: ${{ github.ref_name == 'mythical-prod' && vars.LINKING_SERVICE || '' }}
+        LINKING_BOT: ${{ github.ref_name == 'mythical-prod' && vars.LINKING_BOT || '' }}
+        LINKING_TOKEN: ${{ github.ref_name == 'mythical-prod' && secrets.LINKING_TOKEN || secrets.LINKING_TOKEN_DEV }}
+
       run: |
         yarn install --immutable | grep -v 'YN0013'
         yarn webapp:build
