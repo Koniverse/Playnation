@@ -240,7 +240,7 @@ export interface Achievement {
   id: number;
   milestoneId: number;
   milestoneName: string,
-  slug: string;
+  documentId: string;
   icon: string,
   nps: number,
   status: AchievementLogStatus,

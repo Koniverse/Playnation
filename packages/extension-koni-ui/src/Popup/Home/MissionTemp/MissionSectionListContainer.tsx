@@ -69,10 +69,10 @@ function filterAchievements (achievements: Achievement[], taskSectionMap: Record
 
     // If there's no existing item in the result for this slug, or if the new item has a lower milestoneOrdinal, update it
     if (
-      !result[item.slug] ||
-      item.milestoneOrdinal < result[item.slug].milestoneOrdinal
+      !result[item.documentId] ||
+      item.milestoneOrdinal < result[item.documentId].milestoneOrdinal
     ) {
-      result[item.slug] = item;
+      result[item.documentId] = item;
     }
   });
 
