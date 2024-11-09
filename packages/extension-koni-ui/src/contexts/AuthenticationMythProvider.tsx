@@ -66,8 +66,6 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
 
   const onSubmitMythAccount = useCallback(async (address: string) => {
     if (!tokenData?.email || !authContext.token) {
-      Telegram.WebApp.showAlert('Please login first');
-
       return;
     }
 

@@ -13,3 +13,4 @@ export const eventStat = {
 };
 
 export * from './authentication';
+export * from './cardModal';
