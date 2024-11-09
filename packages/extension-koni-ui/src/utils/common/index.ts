@@ -13,3 +13,11 @@ export * from './i18n';
 export * from './number';
 export * from './string';
 export * from './version';
+
+export const preloadImages = (imageUrls: string[]) => {
+  imageUrls.forEach((url) => {
+    const img = new Image();
+
+    img.src = url;
+  });
+};

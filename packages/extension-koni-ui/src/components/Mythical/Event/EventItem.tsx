@@ -516,7 +516,7 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       },
 
       '.__button-background:before': {
-        backgroundColor: extendToken.mythColorGray3
+        backgroundColor: extendToken.mythColorGray4
       }
     }
   });

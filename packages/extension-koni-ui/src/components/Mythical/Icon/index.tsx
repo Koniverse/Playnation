@@ -6,3 +6,6 @@ export { default as CopyIcon } from './CopyIcon';
 export { default as UsersIcon } from './UsersIcon';
 export { default as UsersThreeIcon } from './UsersThreeIcon';
 export { default as InfoIcon } from './InfoIcon';
+export { default as LockIcon } from './LockIcon';
+export { default as XIcon } from './XIcon';
+export { default as CalendarIcon } from './CalendarIcon';

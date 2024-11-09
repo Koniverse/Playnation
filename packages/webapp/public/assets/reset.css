@@ -663,8 +663,7 @@ div#popup-container {
 }
 
 .ant-sw-modal-root .ant-sw-modal-mask.ant-sw-modal-mask {
-  background-color: rgba(31, 31, 35, 0.65);
-  backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.72);
 }
 
 .ant-sw-modal .ant-sw-modal-header.ant-sw-modal-header {

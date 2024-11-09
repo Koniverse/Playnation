@@ -92,7 +92,7 @@ export const LinkAccountArea = styled(Component)<ThemeProps>(({ theme: { extendT
 
     '.__contact-support-button': {
       '.__button-background:before': {
-        backgroundColor: extendToken.mythColorGray3
+        backgroundColor: extendToken.mythColorGray4
       }
     },
 

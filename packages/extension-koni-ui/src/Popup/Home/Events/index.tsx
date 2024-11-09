@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { DailyRewardsArea } from './DailyRewards';
 import { EventListContainer } from './EventListContainer';
 import { EventTab } from './shared';
 
@@ -205,14 +206,18 @@ const Component = ({ className }: Props): React.ReactElement => {
   return (
     <div className={className}>
       <MainScreenHeader
+        className={'screen-header'}
         rightPartNode={
           (
-            <button
-              className={'invite-button'}
-              onClick={navigateToInvite}
-            >
-              <UsersThreeIcon />
-            </button>
+            <>
+              <DailyRewardsArea />
+              <button
+                className={'invite-button'}
+                onClick={navigateToInvite}
+              >
+                <UsersThreeIcon />
+              </button>
+            </>
           )
         }
         title={t('Events')}
@@ -250,6 +255,14 @@ const Event = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
+
+    '.screen-header': {
+      '.__right-part': {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 16
+      }
+    },
 
     '.invite-button': {
       minWidth: 32,

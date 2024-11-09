@@ -41,7 +41,8 @@ export interface ExtraToken {
   mythColorDark: string,
   mythColorGray1: string,
   mythColorGray2: string,
-  mythColorGray3: string
+  mythColorGray3: string,
+  mythColorGray4: string
 }
 
 export type Theme = {
@@ -86,7 +87,8 @@ function genDefaultExtraTokens (token: AliasToken): ExtraToken {
     mythColorDark: '#0f0f0f',
     mythColorGray1: '#BEBEBE',
     mythColorGray2: '#7E7E7E',
-    mythColorGray3: '#42423F'
+    mythColorGray3: '#5A5A5A',
+    mythColorGray4: '#42423F'
   };
 }
 

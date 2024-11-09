@@ -69,7 +69,7 @@ export const GameAccountListArea = ({ isLoading, leaderboardPersonItems }: Props
     }
 
     return result;
-  }, [leaderboardPersonItems]);
+  }, [leaderboardPersonItems, mineAccount]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
