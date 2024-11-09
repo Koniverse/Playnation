@@ -380,8 +380,10 @@ export interface LeaderboardInfo {
   slug: string;
   type: string;
   specialTime: string;
-  startTime?: any;
-  endTime?: any;
+  startTime?: string;
+  endTime?: string;
+  startTimeTs?: number;
+  endTimeTs?: number;
   metadata?: any;
   games: number[];
   tasks: number[];

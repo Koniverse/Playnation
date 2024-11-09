@@ -105,8 +105,8 @@ const Component = ({ className }: Props): React.ReactElement => {
         title={leaderboardInfo?.name || t('Leaderboard')}
       />
 
-      {leaderboardInfo?.endTime && leaderboardInfo?.specialTime && <div className='time-remaining-wrapper'>
-        <TimeRemaining endTime={leaderboardInfo.endTime as unknown as string} />
+      {leaderboardInfo?.endTimeTs && leaderboardInfo?.specialTime && <div className='time-remaining-wrapper'>
+        <TimeRemaining endTime={new Date(leaderboardInfo.endTimeTs).toString()} />
       </div>}
 
       <div className='scroll-container'>
