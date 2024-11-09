@@ -28,11 +28,11 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 
       <div className='content-area'>
         <div className='welcome-text'>
-          {t('Welcome to NFL rivals')}
+          {t('Welcome to football rivals')}
         </div>
 
         <div className='sub-content-text'>
-          {t('Captivating gameplay with top NFL digital player cards: an experience like no other!')}
+          {t('An exciting new way to build and  play with your RIVALS collection!')}
         </div>
 
         <MythButton
@@ -109,6 +109,8 @@ const Login = styled(Component)<Props>(({ theme: { extendToken, token } }: Props
     },
 
     '.sub-content-text': {
+      paddingLeft: 52,
+      paddingRight: 52,
       color: extendToken.mythColorGray1,
       textAlign: 'center',
       fontFamily: extendToken.fontBarlowCondensed,
@@ -135,6 +137,11 @@ const Login = styled(Component)<Props>(({ theme: { extendToken, token } }: Props
     '.action-button': {
       width: '100%',
       height: 52,
+
+      '.__button-content': {
+        fontSize: 22,
+        lineHeight: '24px'
+      },
 
       '.__button-background': {
         filter: 'drop-shadow(2px 3px 0px #000)'
