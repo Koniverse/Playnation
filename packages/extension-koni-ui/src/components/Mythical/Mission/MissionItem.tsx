@@ -183,8 +183,8 @@ export const MissionItem = styled(Component)<ThemeProps>(({ theme: { extendToken
     '.__action-button': {
       minWidth: 57,
       height: 40,
-      paddingLeft: 4,
-      paddingRight: 2,
+      paddingLeft: 8,
+      paddingRight: 6,
 
       '.__button-content': {
         color: extendToken.mythColorDark

@@ -4,7 +4,7 @@
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import { MissionItem, MissionItemType } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Achievement, AchievementLogStatus, BookaAccount, Task, TaskActionComponent, TaskActionDirect, TaskActionOnchain, TaskActionOpenScreen, TaskActionShare, TaskActionUrl, TaskCategory, TaskCategoryType } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { Achievement, AchievementLogStatus, BookaAccount, Task, TaskAction, TaskActionComponent, TaskActionDirect, TaskActionOnchain, TaskActionOpenScreen, TaskActionShare, TaskActionUrl, TaskCategory, TaskCategoryType } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -102,9 +102,7 @@ const Component = ({ accountInfo,
     return action?.label || t('Go');
   }, [t]);
 
-  const handleOnChainTask = useCallback(async (task: Task) => {
-    const taskId = task.id;
-    const action = task.action as TaskActionOnchain;
+  const handleOnChainAction = useCallback(async (taskId: number, action: TaskActionOnchain) => {
     const { address } = accountInfo?.info || {};
 
     if (!address) {
@@ -158,15 +156,12 @@ const Component = ({ accountInfo,
     return res.extrinsicHash;
   }, [accountInfo?.info, notify, t]);
 
-  const handleUrlTask = useCallback(async (task: Task) => {
-    const action = task.action as TaskActionUrl;
-
+  const handleUrlAction = useCallback(async (action: TaskActionUrl) => {
     action.url && telegramConnector.openLink(action.url);
     await new Promise((resolve) => setTimeout(resolve, 3000));
   }, []);
 
-  const handleOpenScreenTask = useCallback(async (task: Task) => {
-    const action = task.action as TaskActionOpenScreen;
+  const handleOpenScreenAction = useCallback(async (action: TaskActionOpenScreen) => {
     const screen = action.screen;
 
     if (screen === 'events') {
@@ -184,50 +179,66 @@ const Component = ({ accountInfo,
     await new Promise((resolve) => setTimeout(resolve, 3000));
   }, [navigate]);
 
-  const handleDirectTask = useCallback(async (task: Task) => {
-    const action = task.action as TaskActionDirect;
+  const handleDirectAction = useCallback(async (action: TaskActionDirect) => {
     const type = action.type;
 
     if (type === 'invite') {
-      alert('Implement invite action');
+      navigate('/invite');
     } else if (type === 'mythical-login') {
       alert('Implement mythical login');
     }
 
     await new Promise((resolve) => setTimeout(resolve, 3000));
-  }, []);
+  }, [navigate]);
 
-  const handleShareTask = useCallback(async (task: Task) => {
-    const action = task.action as TaskActionShare;
-
+  const handleShareAction = useCallback(async (action: TaskActionShare) => {
     alert(`Implement share action: ${action.url}`);
 
     await new Promise((resolve) => setTimeout(resolve, 3000));
   }, []);
 
-  const doTaskAction = useCallback((task: Task) => {
-    return async () => {
-      const action = task.action;
+  const doAction = useCallback((action: TaskAction, taskId?: number) => {
+    return (async () => {
       const actionType = action?.__component;
       const networkKey = (action as TaskActionOnchain)?.network || '';
       let extrinsicHash: string | undefined = '';
 
       if (actionType === TaskActionComponent.ONCHAIN) {
-        extrinsicHash = await handleOnChainTask(task);
+        if (taskId) {
+          extrinsicHash = await handleOnChainAction(taskId, action as TaskActionOnchain);
+        }
       } else if (actionType === TaskActionComponent.URL) {
-        await handleUrlTask(task);
+        await handleUrlAction(action as TaskActionUrl);
       } else if (actionType === TaskActionComponent.OPEN_SCREEN) {
-        await handleOpenScreenTask(task);
+        await handleOpenScreenAction(action as TaskActionOpenScreen);
       } else if (actionType === TaskActionComponent.DIRECT) {
-        await handleDirectTask(task);
+        await handleDirectAction(action as TaskActionDirect);
       } else if (actionType === TaskActionComponent.SHARE) {
-        await handleShareTask(task);
+        await handleShareAction(action as TaskActionShare);
       }
+
+      // Finish the task
+      return {
+        extrinsicHash,
+        networkKey
+      };
+    })();
+  }, [handleDirectAction, handleOnChainAction, handleOpenScreenAction, handleShareAction, handleUrlAction]);
+
+  const doTaskAction = useCallback((task: Task) => {
+    const action = task.action;
+
+    if (!action) {
+      return undefined;
+    }
+
+    return async () => {
+      const { extrinsicHash, networkKey } = await doAction(action, task.id);
 
       // Finish the task
       extrinsicHash !== undefined && await apiSDK.finishTask(task.id, extrinsicHash, networkKey);
     };
-  }, [handleDirectTask, handleOnChainTask, handleOpenScreenTask, handleShareTask, handleUrlTask]);
+  }, [doAction]);
 
   // todo: will support multi achievement process, current only support the first one
   const getAchievementStatusText = useCallback((achievement: Achievement) => {
@@ -243,20 +254,28 @@ const Component = ({ accountInfo,
   const getAchievementActionContent = useCallback((achievement: Achievement) => {
     if (achievement.status === AchievementLogStatus.CLAIMABLE) {
       return t('Claim');
+    } else if (achievement.action?.label) {
+      return achievement.action?.label;
     }
 
     return undefined;
   }, [t]);
 
   const doAchievementAction = useCallback((achievement: Achievement) => {
-    if (achievement.status !== AchievementLogStatus.CLAIMABLE) {
-      return undefined;
+    const action = achievement.action;
+
+    if (achievement.status === AchievementLogStatus.CLAIMABLE) {
+      return async () => {
+        await apiSDK.claimAchievement(achievement.milestoneId);
+      };
+    } else if (action) {
+      return async () => {
+        await doAction(action);
+      };
     }
 
-    return async () => {
-      await apiSDK.claimAchievement(achievement.milestoneId);
-    };
-  }, []);
+    return undefined;
+  }, [doAction]);
 
   const missionSections: MissionSectionType[] = useMemo(() => {
     const taskSectionMap: Record<number, MissionSectionType> = {};

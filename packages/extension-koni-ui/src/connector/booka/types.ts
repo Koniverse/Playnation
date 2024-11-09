@@ -146,7 +146,7 @@ export interface Task {
   startTime?: string | null;
   endTime?: string | null;
   interval?: number | null;
-  action?: TaskAction;
+  action?: TaskAction | null;
 
   status: TaskHistoryStatus;
   completedAt?: string;
@@ -225,7 +225,7 @@ export interface Achievement {
   logViewType: LogViewType;
   conditions: Condition[];
   progress: ProgressData[];
-  action: TaskAction;
+  action?: TaskAction | null;
   pointReward: number;
   metrics: [
     {
