@@ -75,6 +75,7 @@ export class BookaSdk {
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
   private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
   private nflRivalCardListSubject = new BehaviorSubject<NFLRivalCard[]>([]);
+  private metadataSubject = new BehaviorSubject<AppMetadata | undefined>(undefined);
 
   // Special cases
   // Check if the account is banned
@@ -229,15 +230,15 @@ export class BookaSdk {
   }
 
   initMetadataHandling () {
-    this.fetchMetadata().then((metadata) => {
-      metadata && metadataHandler.updateMetadata(metadata);
-    }).catch(console.error);
+    this.fetchMetadata().catch(console.error);
 
     setInterval(() => {
-      this.fetchMetadata().then((metadata) => {
-        metadata && metadataHandler.updateMetadata(metadata);
-      }).catch(console.error);
+      this.fetchMetadata().catch(console.error);
     }, 30000);
+
+    this.metadataSubject.subscribe((metadata) => {
+      metadata && metadataHandler.updateMetadata(metadata);
+    });
 
     // Listen to metadata changes
     metadataHandler.on('updateVersion', ({ achievement, airdrop, application, game, leaderboard, task }) => {
@@ -280,7 +281,19 @@ export class BookaSdk {
   }
 
   async fetchMetadata () {
-    return await this.getRequest<AppMetadata>(`${GAME_API_HOST}/api/metadata/fetch`);
+    const metadata = await this.getRequest<AppMetadata>(`${GAME_API_HOST}/api/metadata/fetch`);
+
+    metadata && this.metadataSubject.next(metadata);
+
+    return metadata;
+  }
+
+  getMetadata () {
+    return this.metadataSubject.value;
+  }
+
+  subscribeMetadata () {
+    return this.metadataSubject;
   }
 
   async reloadAccount () {

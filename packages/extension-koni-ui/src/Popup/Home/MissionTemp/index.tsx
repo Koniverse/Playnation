@@ -27,6 +27,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [tasks, setTasks] = useState<Task[]>(apiSDK.taskList);
   const [achievements, setAchievements] = useState<Achievement[]>(apiSDK.achievementList);
   const [selectedFilterTab, setSelectedFilterTab] = useState<string>(TaskCategoryType.DAILY);
+  const [metadata, setMetadata] = useState(apiSDK.getMetadata());
 
   const filterTabItems = useMemo<FilterTabItemType[]>(() => {
     return [
@@ -49,6 +50,16 @@ const Component = ({ className }: Props): React.ReactElement => {
     setSelectedFilterTab(value);
   }, []);
 
+  const endTime = useMemo(() => {
+    if (selectedFilterTab === TaskCategoryType.DAILY && metadata?.timeRange?.daily) {
+      return new Date(metadata?.timeRange?.daily?.end).toString();
+    } else if (selectedFilterTab === TaskCategoryType.WEEKLY && metadata?.timeRange?.weekly) {
+      return new Date(metadata?.timeRange?.weekly?.end).toString();
+    } else {
+      return undefined;
+    }
+  }, [metadata?.timeRange, selectedFilterTab]);
+
   useEffect(() => {
     setBackgroundStyle('style-2');
 
@@ -58,11 +69,15 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [setBackgroundStyle]);
 
   useEffect(() => {
+    const metadataSub = apiSDK.subscribeMetadata().subscribe((data) => {
+      setMetadata(data);
+    });
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
       setAccountInfo(data);
     });
 
     return () => {
+      metadataSub.unsubscribe();
       accountSub.unsubscribe();
     };
   }, []);
@@ -101,9 +116,9 @@ const Component = ({ className }: Props): React.ReactElement => {
         selectedItem={selectedFilterTab}
       />
 
-      <div className='time-remaining-wrapper'>
-        <TimeRemaining endTime={'2024-12-24T17:00:00.000Z'} />
-      </div>
+      {endTime && <div className='time-remaining-wrapper'>
+        <TimeRemaining endTime={endTime} />
+      </div>}
 
       <MissionSectionListContainer
         accountInfo={accountInfo}

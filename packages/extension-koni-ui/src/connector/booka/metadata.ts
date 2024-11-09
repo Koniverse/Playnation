@@ -40,8 +40,13 @@ export enum RecordVersionType {
   GAME = 'game'
 }
 
+export type TimeRangeData ={
+  start: number
+  end: number
+}
+
 export interface AppMetadata {
-  lastUpdated: number
+  updatedAt: number
   maintenanceInfo?: MaintenanceInfo
   versions: {
     [VersionType.APPLICATION]: VersionInfo
@@ -53,6 +58,12 @@ export interface AppMetadata {
   },
   recordVersions?: {
     [RecordVersionType.GAME]?: RecordVersionInfo[]
+  }
+  timeRange: {
+    daily: TimeRangeData,
+    weekly: TimeRangeData,
+    monthly: TimeRangeData,
+    yearly: TimeRangeData
   }
 }
 
