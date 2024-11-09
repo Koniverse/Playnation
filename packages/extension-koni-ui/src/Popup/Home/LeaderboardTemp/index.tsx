@@ -102,7 +102,7 @@ const Component = ({ className }: Props): React.ReactElement => {
             </button>
           )
         }
-        title={leaderboardInfo?.name || t('Leaderboard')}
+        title={t('Weekly leaderboard')}
       />
 
       {leaderboardInfo?.endTimeTs && leaderboardInfo?.specialTime && <div className='time-remaining-wrapper'>
