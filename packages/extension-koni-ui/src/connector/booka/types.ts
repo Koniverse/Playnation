@@ -345,6 +345,11 @@ export interface LeaderboardPerson {
   accountInfo: AccountPublicInfo;
 }
 
+export interface LeaderboardResult {
+  results: LeaderboardPerson[]
+  filter: LeaderboardInfo
+}
+
 export interface ReferralRecord {
   point: number;
   total_count: number;
@@ -356,7 +361,7 @@ export interface ConfigRecord {
   id: number;
   name: string;
   slug: string;
-  value: LeaderboardItem[] | undefined;
+  value: LeaderboardInfo[] | undefined;
 }
 
 export interface KeyValueStore {
@@ -369,7 +374,7 @@ export interface LeaderboardGroups {
   leaderboardGroupId: number;
   leaderboardGroupName: string;
 }
-export interface LeaderboardItem {
+export interface LeaderboardInfo {
   id: number;
   name: string;
   slug: string;
@@ -380,6 +385,8 @@ export interface LeaderboardItem {
   metadata?: any;
   games: number[];
   tasks: number[];
+  gameEventIds: number[];
+  specialTimeDelayDuration?: number;
   sharing: Sharing;
 }
 interface Sharing {

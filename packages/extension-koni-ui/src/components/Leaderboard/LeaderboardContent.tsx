@@ -5,7 +5,7 @@ import { TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import GameAccount from '@subwallet/extension-koni-ui/components/Games/GameAccount';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { LeaderboardPerson, LeaderboardResult } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { leaderboardPointIconMap } from '@subwallet/extension-koni-ui/constants';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon } from '@subwallet/react-ui';
@@ -39,13 +39,15 @@ type GameItemPlaceholderType = {
 
 const apiSDK = BookaSdk.instance;
 
-const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Props): React.ReactElement => {
+const Component = ({ className, defaultSelectedTab, tabGroupItems }: Props): React.ReactElement => {
   const [selectedTab, setSelectedTab] = useState<string>(defaultSelectedTab);
-  const [leaderboardItems, setLeaderboardItems] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardResult | undefined>(apiSDK.leaderBoard);
   const [mine, setMine] = useState<LeaderboardPerson | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const filteredLeaderboardItems = leaderboardItems.filter((item) => item.point > 0);
+  const filteredLeaderboardItems = useMemo(() => {
+    return leaderboardData?.results.filter((item) => item.point > 0) || [];
+  }, [leaderboardData?.results]);
 
   const placeholderItems = (() => {
     if (filteredLeaderboardItems.length >= 10) {
@@ -72,8 +74,8 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
   }, [selectedTab, tabGroupItems]);
 
   const _onClickShare = useCallback(() => {
-    currentTabInfo?.leaderboardInfo?.onClickShare?.(leaderboardItems.find((item) => item.mine));
-  }, [currentTabInfo?.leaderboardInfo, leaderboardItems]);
+    currentTabInfo?.leaderboardInfo?.onClickShare?.(leaderboardData?.results.find((item) => item.mine));
+  }, [currentTabInfo?.leaderboardInfo, leaderboardData]);
 
   const pointIconSrc = useMemo(() => {
     if (!currentTabInfo) {
@@ -90,7 +92,7 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
   useEffect(() => {
     let cancel = false;
 
-    setLeaderboardItems([]);
+    setLeaderboardData(undefined);
     setIsLoading(true);
 
     currentTabInfo && apiSDK.fetchLeaderboard(currentTabInfo.leaderboardInfo.id, currentTabInfo.leaderboardInfo.context)
@@ -99,9 +101,9 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
           return;
         }
 
-        setLeaderboardItems(data);
+        setLeaderboardData(data);
 
-        const mine = data.find((item) => item.mine);
+        const mine = data.results.find((item) => item.mine);
 
         if (mine) {
           setMine(mine);

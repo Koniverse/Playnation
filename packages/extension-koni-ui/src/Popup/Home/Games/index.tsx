@@ -6,7 +6,7 @@ import { LeaderboardTabGroupItemType } from '@subwallet/extension-koni-ui/compon
 import { ShopModalId } from '@subwallet/extension-koni-ui/components/Modal/Shop/ShopModal';
 import { MetadataHandler, UpdateRecordPayload } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { EnergyConfig, Game, GameInventoryItem, GameItem, LeaderboardGroups, LeaderboardItem, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { EnergyConfig, Game, GameInventoryItem, GameItem, LeaderboardGroups, LeaderboardInfo, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
@@ -205,7 +205,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const onOpenLeaderboard = useCallback((game: Game) => {
     let defaultTab = '';
     const leaderboardGroups = game.leaderboard_groups as unknown as LeaderboardGroups[];
-    const leaderboards = leaderboardConfig.leaderboard_map as unknown as LeaderboardItem[];
+    const leaderboards = leaderboardConfig.leaderboard_map as unknown as LeaderboardInfo[];
 
     const tabGroupItems: LeaderboardTabGroupItemType[] = [];
 
@@ -217,7 +217,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       }
 
       // @ts-ignore
-      value.leaderboards.forEach((item: LeaderboardItem) => {
+      value.leaderboards.forEach((item: LeaderboardInfo) => {
         const id = item.id;
         const leaderboard = leaderboards.find((l) => l.id === id);
         let _onClickShare = null;

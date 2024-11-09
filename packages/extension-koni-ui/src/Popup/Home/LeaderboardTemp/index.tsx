@@ -3,7 +3,7 @@
 
 import { CallToAction, InfoIcon, MainScreenHeader, TimeRemaining } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { LeaderboardGroups, LeaderboardItem, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { LeaderboardGroups, LeaderboardInfo, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameAccountListArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/GameAccountListArea';
@@ -22,17 +22,15 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const { setContainerClass } = useContext(HomeContext);
   const [leaderboardConfig, setLeaderboardConfig] = useState(apiSDK.leaderboardConfig);
-  const [currentLeaderboardInfo, setCurrentLeaderboardInfo] = useState<LeaderboardItem | undefined>(undefined);
-  const [leaderboardEndTime, setLeaderboardEndTime] = useState<string>('');
+  const [currentLeaderboardInfo, setCurrentLeaderboardInfo] = useState<LeaderboardInfo | undefined>(undefined);
   const [leaderboardPersonItems, setLeaderboardPersonItems] = useState<LeaderboardPerson[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [leaderboardInfo, setLeaderboardInfo] = useState<LeaderboardInfo | undefined>(undefined);
 
   useEffect(() => {
     const subscriptionLeaderboard = apiSDK.subscribeLeaderboardConfig().subscribe((data) => {
       setLeaderboardConfig(data);
     });
-
-    setLeaderboardEndTime('2024-12-24T17:00:00.000Z');
 
     return () => {
       subscriptionLeaderboard.unsubscribe();
@@ -42,7 +40,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   useEffect(() => {
     const getCurrentLeaderboardInfo = () => {
       const leaderboardGeneral = leaderboardConfig.leaderboard_general as unknown as LeaderboardGroups[];
-      const leaderboards = leaderboardConfig.leaderboard_map as unknown as LeaderboardItem[];
+      const leaderboards = leaderboardConfig.leaderboard_map as unknown as LeaderboardInfo[];
 
       if (leaderboardGeneral && leaderboards) {
         const firstLeaderboardGroups = leaderboardGeneral[0];
@@ -71,7 +69,8 @@ const Component = ({ className }: Props): React.ReactElement => {
           return;
         }
 
-        setLeaderboardPersonItems(data);
+        setLeaderboardPersonItems(data.results);
+        setLeaderboardInfo(data.filter);
 
         setIsLoading(false);
       })
@@ -103,12 +102,12 @@ const Component = ({ className }: Props): React.ReactElement => {
             </button>
           )
         }
-        title={t('Weekly leaderboard')}
+        title={leaderboardInfo?.name || t('Leaderboard')}
       />
 
-      <div className='time-remaining-wrapper'>
-        <TimeRemaining endTime={leaderboardEndTime} />
-      </div>
+      {leaderboardInfo?.endTime && leaderboardInfo?.specialTime && <div className='time-remaining-wrapper'>
+        <TimeRemaining endTime={leaderboardInfo.endTime as unknown as string} />
+      </div>}
 
       <div className='scroll-container'>
         <TopThreeArea

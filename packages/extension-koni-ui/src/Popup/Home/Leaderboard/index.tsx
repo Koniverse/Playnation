@@ -4,7 +4,7 @@
 import { LeaderboardContent } from '@subwallet/extension-koni-ui/components';
 import { LeaderboardTabGroupItemType } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardContent';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { LeaderboardGroups, LeaderboardItem, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { LeaderboardGroups, LeaderboardInfo, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
@@ -72,7 +72,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   useEffect(() => {
     const getTabGroupInfo = (): LeaderboardTabGroupItemType[] => {
       const leaderboardGeneral = leaderboardConfig.leaderboard_general as unknown as LeaderboardGroups[];
-      const leaderboards = leaderboardConfig.leaderboard_map as unknown as LeaderboardItem[];
+      const leaderboards = leaderboardConfig.leaderboard_map as unknown as LeaderboardInfo[];
 
       if (leaderboardGeneral && leaderboards) {
         const value = leaderboardGeneral.length > 0 ? leaderboardGeneral[0] : null;
@@ -84,7 +84,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         const data: LeaderboardTabGroupItemType[] = [];
 
         // @ts-ignore
-        value.leaderboards.forEach((item: LeaderboardItem) => {
+        value.leaderboards.forEach((item: LeaderboardInfo) => {
           const id = item.id;
           const leaderboard = leaderboards.find((l) => l.id === id);
           let _onClickShare = null;
