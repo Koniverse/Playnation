@@ -311,6 +311,10 @@ export interface LeaderboardPerson {
   accountInfo: AccountPublicInfo;
 }
 
+export interface LeaderboardResult {
+  results: LeaderboardPerson[]
+  filter: LeaderboardItem
+}
 export interface ReferralRecord {
   point: number;
   total_count: number;
@@ -346,6 +350,8 @@ export interface LeaderboardItem {
   metadata?: any;
   games: number[];
   tasks: number[];
+  gameEventIds: number[];
+  specialTimeDelayDuration?: number;
   sharing: Sharing;
 }
 interface Sharing {

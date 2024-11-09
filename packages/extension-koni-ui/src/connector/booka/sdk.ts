@@ -6,7 +6,7 @@ import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardItem, LeaderboardPerson, LeaderboardResult, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -60,7 +60,7 @@ export class BookaSdk {
   private gameListSubject = new BehaviorSubject<Game[]>([]);
   private gameEventSubject = new BehaviorSubject<GameEvent[]>([]);
   private currentGamePlaySubject = new BehaviorSubject<GamePlay | undefined>(undefined);
-  private leaderBoardSubject = new BehaviorSubject<LeaderboardPerson[]>([]);
+  private leaderBoardSubject = new BehaviorSubject<LeaderboardResult>({ results: [], filter: {} as unknown as LeaderboardItem });
   private referralListSubject = new BehaviorSubject<ReferralRecord[]>([]);
   private gameItemMapSubject = new BehaviorSubject<Record<string, GameItem[]>>({});
   private gameInventoryItemListSubject = new BehaviorSubject<GameInventoryItem[]>([]);
@@ -820,7 +820,7 @@ export class BookaSdk {
 
   async fetchLeaderboard (id: number, context: Record<string, unknown> = {}) {
     await this.waitForSync;
-    const leaderBoard = await this.postRequest<LeaderboardPerson[]>(`${GAME_API_HOST}/api/leaderboard/fetch`, {
+    const leaderBoard = await this.postRequest<LeaderboardResult>(`${GAME_API_HOST}/api/leaderboard/fetch`, {
       id,
       context
     });

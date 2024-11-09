@@ -41,7 +41,7 @@ const apiSDK = BookaSdk.instance;
 
 const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Props): React.ReactElement => {
   const [selectedTab, setSelectedTab] = useState<string>(defaultSelectedTab);
-  const [leaderboardItems, setLeaderboardItems] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard);
+  const [leaderboardItems, setLeaderboardItems] = useState<LeaderboardPerson[]>(apiSDK.leaderBoard.results);
   const [mine, setMine] = useState<LeaderboardPerson | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -99,9 +99,9 @@ const Component = ({ className, defaultSelectedTab, gameId, tabGroupItems }: Pro
           return;
         }
 
-        setLeaderboardItems(data);
+        setLeaderboardItems(data.results);
 
-        const mine = data.find((item) => item.mine);
+        const mine = data.results.find((item) => item.mine);
 
         if (mine) {
           setMine(mine);
