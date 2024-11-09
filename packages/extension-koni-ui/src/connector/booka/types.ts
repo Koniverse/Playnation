@@ -315,6 +315,7 @@ export interface LeaderboardResult {
   results: LeaderboardPerson[]
   filter: LeaderboardItem
 }
+
 export interface ReferralRecord {
   point: number;
   total_count: number;
