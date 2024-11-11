@@ -85,7 +85,8 @@ export const ToolSortModal = styled(Component)<ThemeProps>(({ theme: { extendTok
       backgroundImage: 'url(/images/mythical/radio-not-selected.png)',
       backgroundColor: 'transparent',
       height: 24,
-      width: 24
+      width: 24,
+      border: 'none'
     },
 
     '.ant-radio-wrapper span.ant-radio+*': {
@@ -99,7 +100,8 @@ export const ToolSortModal = styled(Component)<ThemeProps>(({ theme: { extendTok
       backgroundImage: 'url(/images/mythical/radio.png)',
       backgroundColor: 'transparent',
       height: 24,
-      width: 24
+      width: 24,
+      border: 'none'
     },
 
     '.ant-radio-checked .ant-radio-inner': {

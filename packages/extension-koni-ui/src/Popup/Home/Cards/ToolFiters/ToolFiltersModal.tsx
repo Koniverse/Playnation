@@ -188,6 +188,7 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
       backgroundImage: 'url("/images/mythical/check-selected.png")',
       backgroundPosition: 'center center',
       backgroundSize: '100% 100%',
+      filter: 'drop-shadow(0.97px 0.97px 0px #000)'
     },
 
     '.ant-checkbox-wrapper .ant-checkbox .ant-checkbox-checked .ant-checkbox-inner.ant-checkbox-inner': {
