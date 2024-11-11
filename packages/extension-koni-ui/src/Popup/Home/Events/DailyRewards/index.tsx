@@ -46,7 +46,7 @@ function Component (props: Props): React.ReactElement<Props> {
             onClick={openDailyRewardsModal}
           >
 
-            {t('Daily  Reward')}
+            {t('Daily rewards')}
           </MythButton>
 
           <div className={'__notice-icon'}></div>
@@ -71,8 +71,8 @@ export const DailyRewardsArea = styled(Component)<Props>(({ theme: { extendToken
 
     '.__action-button': {
       height: 40,
-      paddingLeft: 10,
-      paddingRight: 8,
+      paddingLeft: 9,
+      paddingRight: 7,
 
       '.__button-inner': {
         gap: 4

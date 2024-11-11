@@ -89,7 +89,8 @@ export const CheckInItem = styled(Component)<ThemeProps>(({ theme: { extendToken
       justifyContent: 'center',
       marginBottom: 4,
       position: 'relative',
-      zIndex: 1
+      zIndex: 1,
+      gap: 2
     },
 
     '.__lock-icon': {
