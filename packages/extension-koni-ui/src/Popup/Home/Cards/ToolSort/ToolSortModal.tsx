@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Checkbox, ModalContext, SwModal } from '@subwallet/react-ui';
+import { ModalContext, Radio, SwModal} from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -50,7 +50,7 @@ const Component = ({ className, sortItems, sortedType }: Props): React.ReactElem
       <div className='__sort-list'>
         {
           sortItems.map(({ label, onClick, subLabel }, index) => (
-            <Checkbox
+            <Radio
               checked={itemSelected === index}
               className='__sort-item'
               key={index}
@@ -62,7 +62,7 @@ const Component = ({ className, sortItems, sortedType }: Props): React.ReactElem
                   {subLabel}
                 </div>}
               </div>
-            </Checkbox>
+            </Radio>
           ))
         }
       </div>
@@ -77,6 +77,37 @@ export const ToolSortModal = styled(Component)<ThemeProps>(({ theme: { extendTok
       backgroundPosition: 'center center',
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat'
+    },
+
+    '.ant-radio-inner.ant-radio-inner': {
+      backgroundSize: '100% 100%',
+      backgroundPosition: 'center center',
+      backgroundImage: 'url(/images/mythical/radio-not-selected.png)',
+      backgroundColor: 'transparent',
+      height: 24,
+      width: 24
+    },
+
+    '.ant-radio-wrapper span.ant-radio+*': {
+      paddingInlineStart: 12,
+      paddingInlineEnd: 12
+    },
+
+    '.ant-radio-checked .ant-radio-inner.ant-radio-inner': {
+      backgroundSize: '100% 100%',
+      backgroundPosition: 'center center',
+      backgroundImage: 'url(/images/mythical/radio.png)',
+      backgroundColor: 'transparent',
+      height: 24,
+      width: 24
+    },
+
+    '.ant-radio-checked .ant-radio-inner': {
+      borderColor: token.colorTextLight1
+    },
+
+    '.ant-radio-wrapper .ant-radio-checked .ant-radio-inner::after': {
+      visibility: 'hidden'
     },
 
     '& .ant-sw-modal-content.ant-sw-modal-content': {
@@ -97,8 +128,8 @@ export const ToolSortModal = styled(Component)<ThemeProps>(({ theme: { extendTok
     },
 
     '.ant-sw-modal-header.ant-sw-modal-header': {
-      paddingTop: 14,
-      paddingBottom: 14
+      paddingBottom: 12,
+      paddingTop: 12
     },
 
     '& .ant-sw-header-container-center .ant-sw-header-center-part ': {

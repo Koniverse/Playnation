@@ -173,6 +173,41 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
       backgroundRepeat: 'no-repeat'
     },
 
+    '.__filter-item': {
+      display: 'flex',
+      alignItems: 'center'
+    },
+    '.__filter-list': {
+      paddingTop: 20,
+      gap: 12,
+      flexDirection: 'column',
+      display: 'flex'
+    },
+
+    '.ant-checkbox-checked.ant-checkbox-checked': {
+      backgroundImage: 'url("/images/mythical/check-selected.png")',
+      backgroundPosition: 'center center',
+      backgroundSize: '100% 100%',
+    },
+
+    '.ant-checkbox-wrapper .ant-checkbox .ant-checkbox-checked .ant-checkbox-inner.ant-checkbox-inner': {
+      backgroundColor: 'transparent'
+    },
+
+    '.ant-checkbox-wrapper.ant-checkbox-wrapper .ant-checkbox-checked:after': {
+      borderColor: 'transparent'
+    },
+
+    '.ant-checkbox-inner': {
+      visibility: 'hidden',
+    },
+
+    '.ant-checkbox': {
+      backgroundImage: 'url("/images/mythical/check-unselected.png")',
+      backgroundPosition: 'center center',
+      backgroundSize: '100% 100%',
+    },
+
     '& .ant-sw-modal-content.ant-sw-modal-content': {
       borderRadius: 0
     },

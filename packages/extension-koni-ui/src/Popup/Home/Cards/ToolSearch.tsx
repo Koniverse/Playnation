@@ -58,7 +58,7 @@ const Component = ({ className, isSearchAction, setConditionProcess, setIsSearch
             className={'__tool-search-button'}
             onClick={handleSearchAction(true)}
           />
-          : <>
+          : <div className={'__tool-search-wrapper'}>
             <Input.Search
               className='__tool-search-input'
               onChange={handleInputChange}
@@ -72,7 +72,7 @@ const Component = ({ className, isSearchAction, setConditionProcess, setIsSearch
             >
               {t('Cancel')}
             </MythButton>
-          </>
+          </div>
       }
     </div>
 
@@ -82,6 +82,7 @@ const Component = ({ className, isSearchAction, setConditionProcess, setIsSearch
 export const ToolSearch = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     display: 'flex',
+    flex: 1,
 
     '.__tool-search-button': {
       cursor: 'pointer',
@@ -93,16 +94,63 @@ export const ToolSearch = styled(Component)<ThemeProps>(({ theme: { extendToken,
       backgroundPosition: 'top left'
     },
 
+    '.ant-input-affix-wrapper': {
+      backgroundSize: '100% 100%',
+      backgroundPosition: 'center center',
+      backgroundImage: 'url(/images/mythical/search-area-img.png)'
+    },
+
+    '.ant-input-container.ant-input-container': {
+      backgroundColor: token.colorTextDark1,
+      flex: 1
+    },
+
+    '& .ant-input-container.ant-input-container.ant-input-container:hover:before': {
+      borderColor: 'transparent'
+    },
+
+    '.ant-input-container.ant-input-container.ant-input-container:before': {
+      display: 'none'
+    },
+
+
+    '.__tool-search-wrapper': {
+      flex: 1,
+      display: 'flex',
+      justifyContent: 'space-between'
+    },
+
+    '.ant-input-container': {
+      color: token.colorTextLight1
+    },
+    '.ant-input-wrapper': {
+      maxHeight: 42
+    },
+
+    '.ant-input': {
+      maxHeight: 42,
+      '::placeholder': {
+        color: token.colorTextLight1,
+        opacity: 1
+      }
+    },
+
+    '.ant-input-wrapper .ant-input-affix-wrapper .ant-input-prefix': {
+      color: extendToken.mythColorGray1
+    },
+    '.ant-input-wrapper .ant-input-suffix .__input-action': {
+      color: extendToken.mythColorGray1
+    },
+
     '.__tool-search-input-cancel': {
       minWidth: 68,
       height: 42,
 
       '.__button-content': {
-        color: extendToken.mythColorDark
-      },
-
-      '.__button-background': {
-        filter: 'drop-shadow(2px 3px 0px #000)'
+        color: token.colorTextLight1,
+        fontStyle: 'normal',
+        fontSize: 16,
+        lineHeight: 18
       },
 
       '.__button-background:before': {
