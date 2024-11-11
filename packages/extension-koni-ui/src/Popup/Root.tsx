@@ -6,7 +6,8 @@ import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
+import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, TRANSACTION_STORAGES, VISIT_LOGIN_CTA_FLAG } from '@subwallet/extension-koni-ui/constants';
+import { VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE } from '@subwallet/extension-koni-ui/constants/localStorageDefaultValue';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
 import { AuthenticationMythProvider } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
@@ -27,6 +28,7 @@ import { AuthProvider, TAuthConfig, TRefreshTokenExpiredEvent } from 'react-oaut
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+import { useLocalStorage } from 'usehooks-ts';
 
 changeHeaderLogo(<Logo2D />);
 
@@ -40,6 +42,7 @@ const welcomeUrl = '/welcome';
 const eventsUrl = '/home/events';
 // const tokenUrl = '/home/token';
 const loginUrl = '/keyring/login';
+const loginCTAUrl = '/login';
 const phishingUrl = '/phishing-page-detected';
 const createPasswordUrl = '/keyring/create-password';
 const migratePasswordUrl = '/keyring/migrate-password';
@@ -76,7 +79,7 @@ function removeLoadingPlaceholder (animation: boolean): void {
       setTimeout(() => {
       // Remove element
         element.parentNode?.removeChild(element);
-      }, 150);
+      }, 3000);
     } else {
       element.parentNode?.removeChild(element);
     }
@@ -103,6 +106,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const noAccount = useMemo(() => isNoAccount(accounts), [accounts]);
   const { isUILocked } = useUILock();
   const needUnlock = isUILocked || (isLocked && unlockType === WalletUnlockType.ALWAYS_REQUIRED);
+  const [isVisitedLoginCTA] = useLocalStorage(VISIT_LOGIN_CTA_FLAG, VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE);
 
   const syncAddress = useRef<string | undefined>();
 
@@ -242,19 +246,23 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     // Remove loading on finished first compute
     firstRender.current && setRootLoading((val) => {
       if (val) {
-        removeLoadingPlaceholder(!needUnlock);
+        removeLoadingPlaceholder(true);
         firstRender.current = false;
       }
 
       return false;
     });
 
+    if (!isVisitedLoginCTA) {
+      redirectTarget = loginCTAUrl;
+    }
+
     if (redirectTarget && redirectTarget !== pathName) {
       return redirectTarget;
     } else {
       return null;
     }
-  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, openPModal]);
+  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, isVisitedLoginCTA, openPModal]);
 
   // Remove transaction persist state
   useEffect(() => {

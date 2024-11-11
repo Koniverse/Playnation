@@ -181,8 +181,8 @@ export const router = createBrowserRouter([
         ...Home.generateRouterObject('/home'),
         children: [
           // Games.generateRouterObject('games'),
-          Events.generateRouterObject('events'),
           Cards.generateRouterObject('cards'),
+          Events.generateRouterObject('events'),
           Mission.generateRouterObject('mission'),
           Leaderboard.generateRouterObject('leaderboard'),
           Tokens.generateRouterObject('tokens'),

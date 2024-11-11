@@ -2,18 +2,28 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
+import { VISIT_LOGIN_CTA_FLAG } from '@subwallet/extension-koni-ui/constants';
+import { VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE } from '@subwallet/extension-koni-ui/constants/localStorageDefaultValue';
 import { useDefaultNavigate } from '@subwallet/extension-koni-ui/hooks';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
-import React from 'react';
+import React, { useCallback } from 'react';
 import styled from 'styled-components';
+import { useLocalStorage } from 'usehooks-ts';
 
 type Props = ThemeProps;
 
 const Component: React.FC<Props> = ({ className }: Props) => {
   const { t } = useTranslation();
+  const [, setIsVisitedLoginCTA] = useLocalStorage(VISIT_LOGIN_CTA_FLAG, VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE);
+
   const { goHome } = useDefaultNavigate();
+
+  const continueWithTelegram = useCallback(() => {
+    setIsVisitedLoginCTA(true);
+    goHome();
+  }, [goHome, setIsVisitedLoginCTA]);
 
   return (
     <div className={CN(className)}>
@@ -37,14 +47,14 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 
         <MythButton
           className={CN('action-button link-myth-button')}
-          onClick={goHome}
+          onClick={continueWithTelegram}
         >
           {t('Link your mythical account')}
         </MythButton>
 
         <MythButton
           className={CN('action-button continue-telegram-button')}
-          onClick={goHome}
+          onClick={continueWithTelegram}
         >
           {t('Continue with telegram')}
         </MythButton>
@@ -55,7 +65,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 
         <MythButton
           className={CN('action-button create-myth-button')}
-          onClick={goHome}
+          onClick={continueWithTelegram}
         >
           {t('Create your Mythical account')}
         </MythButton>
