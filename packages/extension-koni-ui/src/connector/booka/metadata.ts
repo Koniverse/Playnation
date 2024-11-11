@@ -60,6 +60,7 @@ export interface AppMetadata {
     [RecordVersionType.GAME]?: RecordVersionInfo[]
   }
   timeRange: {
+    now: number,
     daily: TimeRangeData,
     weekly: TimeRangeData,
     monthly: TimeRangeData,

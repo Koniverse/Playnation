@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { getTimeRemaining } from '@subwallet/extension-koni-ui/utils';
 import React, { useEffect, useState } from 'react';
@@ -13,24 +14,28 @@ type Props = ThemeProps & {
   endTime: string;
 };
 
+const apiSDK = BookaSdk.instance;
+
 const Component = ({ className,
   endTime }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const [dateTime, setDateTime] = useState<string>('---');
 
   useEffect(() => {
+    const serverTimeSubject = apiSDK.subscribeServerTime();
+
     const updateDateTime = () => {
-      setDateTime(getTimeRemaining(Date.now(), endTime));
+      setDateTime(getTimeRemaining(serverTimeSubject.value, endTime));
     };
 
     updateDateTime();
 
-    const timeout: NodeJS.Timeout = setTimeout(() => {
+    const timeSub = serverTimeSubject.subscribe(() => {
       updateDateTime();
-    }, 1000);
+    });
 
     return () => {
-      clearTimeout(timeout);
+      timeSub.unsubscribe();
     };
   }, [endTime]);
 

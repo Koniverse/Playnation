@@ -76,6 +76,7 @@ export class BookaSdk {
   private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
   private nflRivalCardListSubject = new BehaviorSubject<NFLRivalCard[]>([]);
   private metadataSubject = new BehaviorSubject<AppMetadata | undefined>(undefined);
+  private serverTimeSubject = new BehaviorSubject<number>(Date.now());
 
   // Special cases
   // Check if the account is banned
@@ -118,6 +119,10 @@ export class BookaSdk {
 
       localStorage.setItem('cache-version', cacheVersion);
     }
+  }
+
+  public subscribeServerTime () {
+    return this.serverTimeSubject;
   }
 
   public get waitForSync () {
@@ -238,6 +243,11 @@ export class BookaSdk {
 
     this.metadataSubject.subscribe((metadata) => {
       metadata && metadataHandler.updateMetadata(metadata);
+      const serverTime = metadata?.timeRange?.now;
+
+      if (serverTime) {
+        this.serverTimeSubject.next(serverTime);
+      }
     });
 
     // Listen to metadata changes
