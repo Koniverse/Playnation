@@ -153,7 +153,19 @@ const Cards = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
     },
 
     '.__call-to-action': {
-      marginBottom: token.marginMD
+      marginBottom: token.marginMD,
+      '.__button-content': {
+        letterSpacing: '-0.6px'
+      },
+      '.__right-part': {
+        minWidth: 143
+      },
+      '.__action-button': {
+        paddingLeft: 10
+      },
+      '.__button-background': {
+        minWidth: 143
+      }
     },
 
     '.__card-item': {
