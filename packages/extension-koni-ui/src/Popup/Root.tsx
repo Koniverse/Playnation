@@ -70,16 +70,21 @@ function removeLoadingPlaceholder (animation: boolean): void {
 
   if (element) {
     if (animation) {
-      // Add transition effect
-      element.style.transition = 'opacity 0.1s ease-in-out';
-      // Set opacity to 0
-      element.style.opacity = '0';
-
       // Callback after 1 second
       setTimeout(() => {
-      // Remove element
-        element.parentNode?.removeChild(element);
+        // Add transition effect
+        element.style.transition = 'opacity 0.1s ease-in-out';
+        // Set opacity to 0
+        element.style.opacity = '0';
+        element.style.pointerEvents = 'none';
       }, 3000);
+
+      setTimeout(() => {
+        // Add transition effect
+        element.parentNode?.removeChild(element);
+      }, 3500);
+
+      // Remove element
     } else {
       element.parentNode?.removeChild(element);
     }
