@@ -615,8 +615,8 @@ export class BookaSdk {
           this.fetchRankInfoMap(),
           this.fetchLeaderboardConfigList(),
           this.fetchGameList(),
-          this.fetchGameEventList()
-          // this.fetchNFLRivalCardList(),
+          this.fetchGameEventList(),
+          this.fetchNFLRivalCardList()
           // this.fetchTaskCategoryList(),
           // this.fetchTaskList(),
           // this.fetchAchievementList()
