@@ -9,7 +9,7 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, TRANSACTION_STORAGES, VISIT_LOGIN_CTA_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE } from '@subwallet/extension-koni-ui/constants/localStorageDefaultValue';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
-import { AuthenticationMythProvider } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
+import { AuthenticationMythContext, AuthenticationMythProvider } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { SecurityContextProvider } from '@subwallet/extension-koni-ui/contexts/SecurityContext';
 import { usePredefinedModal, WalletModalContextProvider } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
@@ -111,7 +111,8 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const noAccount = useMemo(() => isNoAccount(accounts), [accounts]);
   const { isUILocked } = useUILock();
   const needUnlock = isUILocked || (isLocked && unlockType === WalletUnlockType.ALWAYS_REQUIRED);
-  const [isVisitedLoginCTA] = useLocalStorage(VISIT_LOGIN_CTA_FLAG, VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE);
+  const { checkIsExistedLinking } = useContext(AuthenticationMythContext);
+  const [isVisitedLoginCTA, setIsVisitedLoginCTA] = useLocalStorage(VISIT_LOGIN_CTA_FLAG, VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE);
 
   const syncAddress = useRef<string | undefined>();
 
@@ -279,6 +280,12 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       setInitAccount(currentAccount);
     }
   }, [currentAccount, initAccount]);
+
+  useEffect(() => {
+    checkIsExistedLinking().then((rs) => {
+      setIsVisitedLoginCTA((prevState) => prevState || rs);
+    }).catch(console.error);
+  }, [checkIsExistedLinking, setIsVisitedLoginCTA]);
 
   if (rootLoading || redirectPath) {
     return <>{redirectPath && <Navigate to={redirectPath} />}</>;

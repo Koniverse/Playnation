@@ -8,6 +8,7 @@ import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
 import React, { useCallback, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -21,18 +22,28 @@ type Props = ThemeProps;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/my-profile');
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { isLinkedMyth, linkMythAccount } = useContext(AuthenticationMythContext);
+  const { isLinkedMyth, linkMythAccount, onLogout } = useContext(AuthenticationMythContext);
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
 
   const doLinkAccount = useCallback(() => {
     currentAccount?.address && linkMythAccount(currentAccount?.address).catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
 
-  const login = useCallback(() => {
+  const logIn = useCallback(() => {
     navigate('/login');
   }, [navigate]);
+
+  const logOut = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    onLogout().then(() => {
+
+    }).catch(console.error);
+  }, [onLogout]);
+
+  console.log(isLinkedMyth, 'isLinkedMyth');
 
   return (
     <div className={className}>
@@ -41,9 +52,9 @@ const Component = ({ className }: Props): React.ReactElement => {
           (
             <MythButton
               className={CN('login-button')}
-              onClick={login}
+              onClick={!isLinkedMyth ? logIn : logOut}
             >
-              Log in
+              {!isLinkedMyth ? t('Log in') : t('Log out')}
             </MythButton>
           )
         }
