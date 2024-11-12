@@ -121,7 +121,7 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
-      paddingBottom: 4
+      paddingBottom: 38
     },
 
     '.header-area': {

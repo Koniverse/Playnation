@@ -2,23 +2,95 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MissionItem, MissionItemType } from '@subwallet/extension-koni-ui/components/Mythical';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { Achievement, AchievementLogStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
 
-const Component = ({ className }: Props): React.ReactElement => {
-  const missionData: MissionItemType = useMemo<MissionItemType>(() => {
+// todo: Some functions is the same with the ones in Mission, move them to utils later
+function getAccordantAchievement (achievements: Achievement[]): Achievement | undefined {
+  const resultMap: Record<string, Achievement> = {};
+
+  achievements.forEach((achievement) => {
+    // Skip items with CLAIMED status
+    if ([AchievementLogStatus.CLAIMED, AchievementLogStatus.CLAIMABLE].includes(achievement.status)) {
+      return;
+    }
+
+    if (!achievement.metrics.some((m) => m.type === 'referral:quantity')) {
+      return;
+    }
+
+    // If there's no existing item in the result for this slug, or if the new item has a lower milestoneOrdinal, update it
+    if (
+      !resultMap[achievement.documentId] ||
+      achievement.milestoneOrdinal < resultMap[achievement.documentId].milestoneOrdinal
+    ) {
+      resultMap[achievement.documentId] = achievement;
+    }
+  });
+
+  return Object.values(resultMap).filter((a) => !!a)[0];
+}
+
+function getMetricCounterpart (metricId: string, achievement: Achievement): string {
+  const metric = achievement.metrics.find((m) => m.metricId === metricId);
+
+  return metric ? (metric.unit || '') : '';
+}
+
+const apiSDK = BookaSdk.instance;
+
+const Component = ({ className }: Props) => {
+  const [achievements, setAchievements] = useState<Achievement[]>(apiSDK.achievementList);
+
+  const getAchievementStatusText = useCallback((achievement: Achievement) => {
+    const firstProcessItem = achievement.progress[0];
+
+    if (firstProcessItem) {
+      const completed = Math.min(firstProcessItem.completed || 0, firstProcessItem.required);
+
+      return `${completed}/${firstProcessItem.required} ${getMetricCounterpart(firstProcessItem.metricId, achievement)}`.trim();
+    }
+
+    return '';
+  }, []);
+
+  const missionData: MissionItemType | undefined = useMemo<MissionItemType | undefined>(() => {
+    const accordantAchievement = getAccordantAchievement(achievements);
+
+    if (!accordantAchievement) {
+      return;
+    }
+
     return {
-      id: 'invite-friends',
-      title: 'Invite invite 6 friends over this week',
-      statusText: '2/6 friends',
+      id: `${accordantAchievement.id}`,
+      title: accordantAchievement.name || '',
+      statusText: getAchievementStatusText(accordantAchievement),
       type: 'achievement',
-      point: 50,
+      point: accordantAchievement.pointReward || 0,
       state: 'UNCOMPLETED'
     };
+  }, [achievements, getAchievementStatusText]);
+
+  useEffect(() => {
+    const achievementListSub = apiSDK.subscribeAchievementList().subscribe((data) => {
+      setAchievements(data);
+    });
+
+    apiSDK.fetchAchievementList().catch(console.error);
+
+    return () => {
+      achievementListSub.unsubscribe();
+    };
   }, []);
+
+  if (!missionData) {
+    return null;
+  }
 
   return (
     <div
