@@ -245,7 +245,9 @@ const Component = ({ accountInfo,
     const firstProcessItem = achievement.progress[0];
 
     if (firstProcessItem) {
-      return `${firstProcessItem.completed}/${firstProcessItem.required} ${getMetricCounterpart(firstProcessItem.metricId, achievement)}`.trim();
+      const completed = Math.min(firstProcessItem.completed || 0, firstProcessItem.required);
+
+      return `${completed}/${firstProcessItem.required} ${getMetricCounterpart(firstProcessItem.metricId, achievement)}`.trim();
     }
 
     return '';
