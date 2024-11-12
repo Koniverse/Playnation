@@ -309,7 +309,7 @@ export const updateWalletConnectSessions = (data: SessionTypes.Struct[]) => {
   store.dispatch({ type: 'walletConnect/updateSessions', payload: payload });
 };
 
-export const subscribeWalletConnectSessions = lazySubscribeMessage('pri(walletConnect.session.subscribe)', null, updateWalletConnectSessions, updateWalletConnectSessions);
+export const subscribeWalletConnectSessions = lazySubscribeMessage('pri(walletConnect.subscribe.session)', null, updateWalletConnectSessions, updateWalletConnectSessions);
 
 export const updateWCNotSupportRequests = (data: WalletConnectNotSupportRequest[]) => {
   // Convert data to object with key as id

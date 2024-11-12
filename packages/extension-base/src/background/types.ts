@@ -57,6 +57,7 @@ export interface AccountJson extends AbstractAddressJson {
   parentAddress?: string;
   source?: string;
   suri?: string;
+  wcTopic?: string;
 }
 
 export interface AddressJson extends AbstractAddressJson {

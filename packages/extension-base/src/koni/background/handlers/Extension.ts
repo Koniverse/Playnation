@@ -41,7 +41,7 @@ import { isProposalExpired, isSupportWalletConnectChain, isSupportWalletConnectN
 import { ResultApproveWalletConnectSession, WalletConnectNotSupportRequest, WalletConnectSessionRequest } from '@subwallet/extension-base/services/wallet-connect-service/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { AccountsStore } from '@subwallet/extension-base/stores';
-import { BalanceJson, BuyServiceInfo, BuyTokenInfo, NominationPoolInfo, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, StorageDataInterface, TokenSpendingApprovalParams } from '@subwallet/extension-base/types';
+import { BalanceJson, BuyServiceInfo, BuyTokenInfo, NominationPoolInfo, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestWalletConnectCancelSessionPromise, RequestWalletConnectGetSessionPromise, StorageDataInterface, TokenSpendingApprovalParams } from '@subwallet/extension-base/types';
 import { CommonOptimalPath } from '@subwallet/extension-base/types/service-base';
 import { SwapPair, SwapQuoteResponse, SwapRequest, SwapRequestResult, SwapSubmitParams, ValidateSwapProcessParams } from '@subwallet/extension-base/types/swap';
 import { BN_ZERO, convertSubjectInfoToAddresses, createTransactionFromRLP, isSameAddress, MODULE_SUPPORT, reformatAddress, signatureToHex, Transaction as QrTransaction, uniqueStringArray } from '@subwallet/extension-base/utils';
@@ -3509,6 +3509,36 @@ export default class KoniExtension {
 
   /// Wallet connect
 
+  // Data
+
+  private subscribeWalletConnectSessions (id: string, port: chrome.runtime.Port): SessionTypes.Struct[] {
+    const cb = createSubscription<'pri(walletConnect.subscribe.session)'>(id, port);
+
+    const subscription = this.#koniState.walletConnectService.sessionSubject.subscribe((rs) => {
+      cb(rs);
+    });
+
+    port.onDisconnect.addListener((): void => {
+      subscription.unsubscribe();
+      this.cancelSubscription(id);
+    });
+
+    return this.#koniState.walletConnectService.sessions;
+  }
+
+  private subscribeWalletConnectProjectId (id: string, port: chrome.runtime.Port): string {
+    const cb = createSubscription<'pri(walletConnect.subscribe.projectId)'>(id, port);
+
+    const subscription = this.#koniState.walletConnectService.observables.projectId.subscribe(cb);
+
+    port.onDisconnect.addListener((): void => {
+      subscription.unsubscribe();
+      this.cancelSubscription(id);
+    });
+
+    return this.#koniState.walletConnectService.values.projectId;
+  }
+
   // Connect
   private async connectWalletConnect ({ uri }: RequestConnectWalletConnect): Promise<boolean> {
     await this.#koniState.walletConnectService.connect(uri);
@@ -3642,21 +3672,6 @@ export default class KoniExtension {
     return true;
   }
 
-  private subscribeWalletConnectSessions (id: string, port: chrome.runtime.Port): SessionTypes.Struct[] {
-    const cb = createSubscription<'pri(walletConnect.session.subscribe)'>(id, port);
-
-    const subscription = this.#koniState.walletConnectService.sessionSubject.subscribe((rs) => {
-      cb(rs);
-    });
-
-    port.onDisconnect.addListener((): void => {
-      subscription.unsubscribe();
-      this.cancelSubscription(id);
-    });
-
-    return this.#koniState.walletConnectService.sessions;
-  }
-
   private async disconnectWalletConnectSession ({ topic }: RequestDisconnectWalletConnectSession): Promise<boolean> {
     await this.#koniState.walletConnectService.disconnect(topic);
 
@@ -3691,6 +3706,18 @@ export default class KoniExtension {
     request.reject(new Error('USER_REJECTED'));
 
     return true;
+  }
+
+  private createWalletConnectSession () {
+    return this.#koniState.walletConnectService.createSession();
+  }
+
+  private getWCConnectPromise (id: RequestWalletConnectGetSessionPromise) {
+    return this.#koniState.walletConnectService.getConnectPromise(id);
+  }
+
+  private cancelWCSessionPromise (id: RequestWalletConnectGetSessionPromise) {
+    return this.#koniState.walletConnectService.cancelConnectPromise(id);
   }
 
   /// Manta
@@ -4597,7 +4624,12 @@ export default class KoniExtension {
         return this.subscribeChainLogoMap(id, port);
 
       /// Wallet Connect
-      case 'pri(walletConnect.connect)':
+      case 'pri(walletConnect.subscribe.session)':
+        return this.subscribeWalletConnectSessions(id, port);
+      case 'pri(walletConnect.subscribe.projectId)':
+        return this.subscribeWalletConnectProjectId(id, port);
+
+      case 'pri(walletConnect.session.connect)':
         return this.connectWalletConnect(request as RequestConnectWalletConnect);
       case 'pri(walletConnect.requests.connect.subscribe)':
         return this.connectWCSubscribe(id, port);
@@ -4605,10 +4637,14 @@ export default class KoniExtension {
         return this.approveWalletConnectSession(request as RequestApproveConnectWalletSession);
       case 'pri(walletConnect.session.reject)':
         return this.rejectWalletConnectSession(request as RequestRejectConnectWalletSession);
-      case 'pri(walletConnect.session.subscribe)':
-        return this.subscribeWalletConnectSessions(id, port);
       case 'pri(walletConnect.session.disconnect)':
         return this.disconnectWalletConnectSession(request as RequestDisconnectWalletConnectSession);
+      case 'pri(walletConnect.session.create)':
+        return this.createWalletConnectSession();
+      case 'pri(walletConnect.session.promise)':
+        return this.getWCConnectPromise(request as RequestWalletConnectGetSessionPromise);
+      case 'pri(walletConnect.session.cancel)':
+        return this.cancelWCSessionPromise(request as RequestWalletConnectCancelSessionPromise);
 
       // Not support
       case 'pri(walletConnect.requests.notSupport.subscribe)':

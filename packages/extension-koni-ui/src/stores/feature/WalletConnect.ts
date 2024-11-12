@@ -7,6 +7,7 @@ import { SessionTypes } from '@walletconnect/types';
 
 const initialState: WalletConnectStore = {
   sessions: {},
+  projectId: '',
   reduxStatus: ReduxStatus.INIT
 };
 
@@ -18,12 +19,21 @@ const walletConnectSlice = createSlice({
       const { payload } = action;
 
       return {
-        sessions: payload,
+        ...state,
+        sessions: payload
+      };
+    },
+    updateProjectId (state, action: PayloadAction<string>) {
+      const { payload } = action;
+
+      return {
+        ...state,
+        projectId: payload,
         reduxStatus: ReduxStatus.READY
       };
     }
   }
 });
 
-export const { updateSessions } = walletConnectSlice.actions;
+export const { updateProjectId, updateSessions } = walletConnectSlice.actions;
 export default walletConnectSlice.reducer;

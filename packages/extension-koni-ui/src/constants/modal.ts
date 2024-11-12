@@ -65,3 +65,6 @@ export const EARNING_MIGRATION_MODAL = 'earning-migration-modal';
 /* Init point */
 export const ACCOUNT_INIT_POINT_MODAL = 'account-init-point-modal';
 export const ACCOUNT_ADD_POINT_MODAL = 'account-add-point-modal';
+
+/* Wallet */
+export const CONNECT_WALLET_SUCCESS_MODAL = 'connect-wallet-success-modal';

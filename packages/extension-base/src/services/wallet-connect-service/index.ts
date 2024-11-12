@@ -6,6 +6,9 @@ import KoniState from '@subwallet/extension-base/koni/background/handlers/State'
 import RequestService from '@subwallet/extension-base/services/request-service';
 import Eip155RequestHandler from '@subwallet/extension-base/services/wallet-connect-service/handler/Eip155RequestHandler';
 import { SWStorage } from '@subwallet/extension-base/storage';
+import { ResponseWalletConnectCreateSession, SessionConnectStatus } from '@subwallet/extension-base/types';
+import { createPromiseHandler, PromiseHandler } from '@subwallet/extension-base/utils';
+import { getId } from '@subwallet/extension-base/utils/getId';
 import { IKeyValueStorage } from '@walletconnect/keyvaluestorage';
 import SignClient from '@walletconnect/sign-client';
 import { EngineTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
@@ -55,8 +58,11 @@ export default class WalletConnectService {
 
   #client: SignClient | undefined;
   #option: SignClientTypes.Options;
+  #connectPromises: Record<string, PromiseHandler<SessionConnectStatus>> = {};
+  #currentConnectionId = '';
 
   public readonly sessionSubject: BehaviorSubject<SessionTypes.Struct[]> = new BehaviorSubject<SessionTypes.Struct[]>([]);
+  public readonly projectIdSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   constructor (koniState: KoniState, requestService: RequestService, option: SignClientTypes.Options = DEFAULT_WALLET_CONNECT_OPTIONS) {
     this.#koniState = koniState;
@@ -65,8 +71,34 @@ export default class WalletConnectService {
     this.#option = option;
     this.#polkadotRequestHandler = new PolkadotRequestHandler(this, requestService);
     this.#eip155RequestHandler = new Eip155RequestHandler(this.#koniState, this);
+    this.updateProjectId();
 
-    this.initClient().catch(console.error);
+    this.initClient(true).catch(console.error);
+    this.subscribeSession();
+  }
+
+  private subscribeSession () {
+    this.sessionSubject.subscribe((sessions) => {
+      const len = sessions.length;
+
+      if (len > 0) {
+        // TODO: Filter by controller
+        const session = sessions[len - 1];
+        const topic = session.topic;
+        const currentAccount = session.namespaces[WALLET_CONNECT_EIP155_NAMESPACE].accounts[0];
+        const [,, _currentAddress] = currentAccount.split(':');
+
+        this.#koniState.keyringService.updateWalletConnectAddress(_currentAddress, topic);
+      } else {
+        this.#koniState.keyringService.updateWalletConnectAddress('');
+      }
+
+      console.debug('WalletConnectService sessions', sessions);
+    });
+  }
+
+  private updateProjectId () {
+    this.projectIdSubject.next(this.#option.projectId || '');
   }
 
   private async haveData () {
@@ -94,6 +126,35 @@ export default class WalletConnectService {
 
   public get sessions (): SessionTypes.Struct[] {
     return this.#client?.session.values || [];
+  }
+
+  public get values () {
+    const sessionSubject = this.sessionSubject;
+    const projectIdSubject = this.projectIdSubject;
+
+    return {
+      // TODO: Update handler to update data
+      get session () {
+        return sessionSubject.value;
+      },
+      get projectId () {
+        return projectIdSubject.value;
+      }
+    };
+  }
+
+  public get observables () {
+    const sessionSubject = this.sessionSubject;
+    const projectIdSubject = this.projectIdSubject;
+
+    return {
+      get session () {
+        return sessionSubject.asObservable();
+      },
+      get projectId () {
+        return projectIdSubject.asObservable();
+      }
+    };
   }
 
   #updateSessions () {
@@ -210,6 +271,7 @@ export default class WalletConnectService {
 
   public async changeOption (newOption: Omit<SignClientTypes.Options, 'projectId'>) {
     this.#option = Object.assign({}, this.#option, newOption);
+    this.updateProjectId();
     await this.initClient();
   }
 
@@ -221,6 +283,86 @@ export default class WalletConnectService {
     this.#checkClient();
 
     await this.#client?.pair({ uri });
+  }
+
+  public async createSession (): Promise<ResponseWalletConnectCreateSession> {
+    await this.initClient(true);
+
+    this.#checkClient();
+    const client = this.#client as SignClient;
+
+    if (this.#currentConnectionId) {
+      throw new Error(getInternalError('RESUBSCRIBED').message);
+    }
+
+    const { approval, uri } = await client.connect({
+      requiredNamespaces: {
+        // TODO: UPGRADE IF SCALE
+        [WALLET_CONNECT_EIP155_NAMESPACE]: {
+          methods: methodEVMRequire,
+          events: ['chainChanged', 'accountsChanged'],
+          chains: ['eip155:1']
+        }
+      }
+    });
+
+    const generatedId = getId();
+
+    const connectPromise = createPromiseHandler<SessionConnectStatus>();
+
+    this.#connectPromises[generatedId] = connectPromise;
+
+    approval()
+      .then((rs) => {
+        // If cancel, remove session
+        if (this.#connectPromises[generatedId]) {
+          const account = rs.namespaces[WALLET_CONNECT_EIP155_NAMESPACE].accounts[0];
+          const [,, approveAddress] = account.split(':');
+
+          connectPromise.resolve({
+            approveAddress,
+            isDone: true,
+            errorMessage: ''
+          });
+
+          this.#updateSessions();
+        } else {
+          const topic = rs.topic;
+
+          client.disconnect({
+            topic: topic,
+            reason: getSdkError('USER_DISCONNECTED')
+          })
+            .catch(console.error);
+        }
+      })
+      .catch((e: Error) => {
+        connectPromise.resolve({
+          approveAddress: '',
+          isDone: true,
+          errorMessage: e.message
+        });
+      })
+      .finally(() => {
+        this.#currentConnectionId = '';
+      });
+
+    return {
+      uri: uri || '',
+      id: generatedId
+    };
+  }
+
+  public getConnectPromise (id: string) {
+    return this.#connectPromises[id].promise;
+  }
+
+  public cancelConnectPromise (id: string) {
+    const connectPromise = this.#connectPromises[id];
+
+    if (connectPromise) {
+      delete this.#connectPromises[id];
+    }
   }
 
   public async approveSession (result: ResultApproveWalletConnectSession) {

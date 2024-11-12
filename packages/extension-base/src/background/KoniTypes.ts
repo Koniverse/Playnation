@@ -11,7 +11,7 @@ import { AuthUrls } from '@subwallet/extension-base/services/request-service/typ
 import { CrowdloanContributionsResponse } from '@subwallet/extension-base/services/subscan-service/types';
 import { SWTransactionResponse, SWTransactionResult } from '@subwallet/extension-base/services/transaction-service/types';
 import { WalletConnectNotSupportRequest, WalletConnectSessionRequest } from '@subwallet/extension-base/services/wallet-connect-service/types';
-import { BalanceJson, BuyServiceInfo, BuyTokenInfo, EarningRewardHistoryItem, EarningRewardJson, EarningStatus, HandleYieldStepParams, LeavePoolAdditionalData, NominationPoolInfo, OptimalYieldPath, OptimalYieldPathParams, RequestEarlyValidateYield, RequestGetYieldPoolTargets, RequestStakeCancelWithdrawal, RequestStakeClaimReward, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestYieldLeave, RequestYieldStepSubmit, RequestYieldWithdrawal, ResponseEarlyValidateYield, ResponseGetYieldPoolTargets, StorageDataInterface, SubmitYieldStepData, TokenSpendingApprovalParams, UnlockDotTransactionNft, UnstakingStatus, ValidateYieldProcessParams, YieldPoolInfo, YieldPositionInfo, YieldValidationStatus } from '@subwallet/extension-base/types';
+import { BalanceJson, BuyServiceInfo, BuyTokenInfo, EarningRewardHistoryItem, EarningRewardJson, EarningStatus, HandleYieldStepParams, LeavePoolAdditionalData, NominationPoolInfo, OptimalYieldPath, OptimalYieldPathParams, RequestEarlyValidateYield, RequestGetYieldPoolTargets, RequestStakeCancelWithdrawal, RequestStakeClaimReward, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestWalletConnectCancelSessionPromise, RequestWalletConnectCreateSession, RequestWalletConnectGetSessionPromise, RequestYieldLeave, RequestYieldStepSubmit, RequestYieldWithdrawal, ResponseEarlyValidateYield, ResponseGetYieldPoolTargets, ResponseWalletConnectCancelSessionPromise, ResponseWalletConnectCreateSession, ResponseWalletConnectGetSessionPromise, StorageDataInterface, SubmitYieldStepData, TokenSpendingApprovalParams, UnlockDotTransactionNft, UnstakingStatus, ValidateYieldProcessParams, YieldPoolInfo, YieldPositionInfo, YieldValidationStatus } from '@subwallet/extension-base/types';
 import { CommonOptimalPath } from '@subwallet/extension-base/types/service-base';
 import { SwapErrorType, SwapPair, SwapQuoteResponse, SwapRequest, SwapRequestResult, SwapSubmitParams, SwapTxData, ValidateSwapProcessParams } from '@subwallet/extension-base/types/swap';
 import { InjectedAccount, InjectedAccountWithMeta, MetadataDefBase } from '@subwallet/extension-inject/types';
@@ -2377,14 +2377,21 @@ export interface KoniRequestSignatures {
   'pub(token.add)': [RequestAddPspToken, boolean];
 
   /// Wallet connect
-  'pri(walletConnect.connect)': [RequestConnectWalletConnect, boolean];
-  'pri(walletConnect.requests.connect.subscribe)': [null, WalletConnectSessionRequest[], WalletConnectSessionRequest[]];
+  'pri(walletConnect.subscribe.session)': [null, SessionTypes.Struct[], SessionTypes.Struct[]];
+  'pri(walletConnect.subscribe.projectId)': [null, string, string];
+
+  'pri(walletConnect.session.connect)': [RequestConnectWalletConnect, boolean];
   'pri(walletConnect.session.approve)': [RequestApproveConnectWalletSession, boolean];
   'pri(walletConnect.session.reject)': [RequestRejectConnectWalletSession, boolean];
   'pri(walletConnect.session.reconnect)': [RequestReconnectConnectWalletSession, boolean];
-  'pri(walletConnect.session.subscribe)': [null, SessionTypes.Struct[], SessionTypes.Struct[]];
   'pri(walletConnect.session.disconnect)': [RequestDisconnectWalletConnectSession, boolean];
+  'pri(walletConnect.session.create)': [RequestWalletConnectCreateSession, ResponseWalletConnectCreateSession];
+  'pri(walletConnect.session.promise)': [RequestWalletConnectGetSessionPromise, ResponseWalletConnectGetSessionPromise];
+  'pri(walletConnect.session.cancel)': [RequestWalletConnectCancelSessionPromise, ResponseWalletConnectCancelSessionPromise];
+
+  'pri(walletConnect.requests.connect.subscribe)': [null, WalletConnectSessionRequest[], WalletConnectSessionRequest[]];
   'pri(walletConnect.requests.notSupport.subscribe)': [null, WalletConnectNotSupportRequest[], WalletConnectNotSupportRequest[]];
+
   'pri(walletConnect.notSupport.approve)': [RequestApproveWalletConnectNotSupport, boolean];
   'pri(walletConnect.notSupport.reject)': [RequestRejectWalletConnectNotSupport, boolean];
 

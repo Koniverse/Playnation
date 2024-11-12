@@ -10,15 +10,16 @@ export { default as RemindUpgradeVersionModal } from './RemindUpgradeFirefoxVers
 export { SortingModal } from './SortingModal';
 
 export * from './Account';
-export * from './AddressBook';
 export * from './ActionModal';
+export * from './AddRewardsModal';
+export * from './AddressBook';
+export * from './Announcement';
 export * from './Campaign';
+export * from './Common';
+export * from './ConnectWalletSuccessModal';
 export * from './Customize/CustomizeModal';
 export * from './FilterModal';
 export * from './GlobalSearchTokenModal';
-export * from './ReceiveModal';
-export * from './Common';
-export * from './Announcement';
-export * from './Shop';
-export * from './AddRewardsModal';
 export * from './InitRewardsModal';
+export * from './ReceiveModal';
+export * from './Shop';

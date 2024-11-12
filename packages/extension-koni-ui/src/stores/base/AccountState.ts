@@ -13,6 +13,7 @@ const initialState: AccountState = {
   // CurrentAccount
   currentAccount: null,
   isAllAccount: false,
+  wcAccount: null,
 
   // KeyringState
   isReady: false,
@@ -27,6 +28,10 @@ const initialState: AccountState = {
   master: undefined,
 
   reduxStatus: ReduxStatus.INIT
+};
+
+const filterWcAccount = (accounts: AccountJson[]): AccountJson | null => {
+  return accounts.find((account) => !!account.wcTopic) || null;
 };
 
 const accountStateSlice = createSlice({
@@ -48,6 +53,7 @@ const accountStateSlice = createSlice({
       return {
         ...state,
         ...payload,
+        wcAccount: filterWcAccount(payload.accounts),
         reduxStatus: ReduxStatus.READY
       };
     },
