@@ -269,6 +269,7 @@ const Component = ({ accountInfo,
     if (achievement.status === AchievementLogStatus.CLAIMABLE) {
       return async () => {
         await apiSDK.claimAchievement(achievement.milestoneId);
+        await apiSDK.fetchAchievementList();
       };
     } else if (action) {
       return async () => {
