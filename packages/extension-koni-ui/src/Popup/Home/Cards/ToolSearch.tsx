@@ -153,7 +153,7 @@ export const ToolSearch = styled(Component)<ThemeProps>(({ theme: { extendToken,
         color: token.colorTextLight1,
         fontStyle: 'normal',
         fontSize: 16,
-        lineHeight: 18
+        lineHeight: '18px'
       }
     }
 

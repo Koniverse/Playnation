@@ -79,6 +79,48 @@ export const ToolSortModal = styled(Component)<ThemeProps>(({ theme: { extendTok
       backgroundRepeat: 'no-repeat'
     },
 
+    '.ant-sw-modal-title': {
+      paddingRight: 16,
+      maxHeight: 32,
+      display: 'flex',
+      alignItems: 'center'
+    },
+
+    '.ant-btn.ant-btn': {
+      width: 30,
+      height: 32,
+      minWidth: 'auto'
+    },
+
+    '.ant-sw-header-container': {
+      flex: 1
+    },
+
+    '.ant-sw-header-container-center .ant-sw-header-center-part .ant-sw-sub-header-title.ant-sw-sub-header-title': {
+      minHeight: 32,
+      display: 'flex',
+      alignItems: 'center'
+    },
+
+    '.ant-sw-sub-header-title .ant-sw-sub-header-title-content.ant-sw-sub-header-title-content': {
+      fontSize: 16,
+      lineHeight: '20px'
+    },
+
+    '.ant-sw-header-container .ant-sw-header-right-part.ant-sw-header-right-part-no-content': {
+      minHeight: 32
+    },
+
+    '.ant-sw-header-center-part': {
+      maxHeight: 32
+    },
+
+    '.ant-sw-modal-header.ant-sw-modal-header.ant-sw-modal-header': {
+      paddingTop: 32,
+      paddingBottom: 12
+    },
+
+
     '.ant-radio-inner.ant-radio-inner': {
       backgroundSize: '100% 100%',
       backgroundPosition: 'center center',
