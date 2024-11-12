@@ -27,7 +27,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { goBack } = useDefaultNavigate();
   const notify = useNotification();
 
-  const [referralList, setReferralList] = useState<ReferralRecord[]>(apiSDK.referralList);
+  const [referralList, setReferralList] = useState<ReferralRecord[]>(apiSDK.referralList?.data || []);
 
   const { t } = useTranslation();
 
@@ -38,7 +38,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       result.push({
         avatarSrc: r.accountInfo.avatar,
         name: r.accountInfo.telegramUsername,
-        point: r.point
+        point: r.accountInfo.point
       });
     });
 
@@ -65,8 +65,8 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [notify, t]);
 
   useEffect(() => {
-    const referralSub = apiSDK.subscribeReferralList().subscribe((data) => {
-      setReferralList(data);
+    const referralSub = apiSDK.subscribeReferralList().subscribe((refData) => {
+      setReferralList(refData?.data || []);
     });
 
     return () => {

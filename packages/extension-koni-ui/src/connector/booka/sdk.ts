@@ -6,7 +6,7 @@ import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, NFLRivalCard, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, NFLRivalCard, RankInfo, ReferralData, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -64,7 +64,7 @@ export class BookaSdk {
   private gameEventSubject = new BehaviorSubject<GameEvent[]>([]);
   private currentGamePlaySubject = new BehaviorSubject<GamePlay | undefined>(undefined);
   private leaderBoardSubject = new BehaviorSubject<LeaderboardResult | undefined>(undefined);
-  private referralListSubject = new BehaviorSubject<ReferralRecord[]>([]);
+  private referralDataSubject = new BehaviorSubject<ReferralData | undefined>(undefined);
   private gameItemMapSubject = new BehaviorSubject<Record<string, GameItem[]>>({});
   private gameInventoryItemListSubject = new BehaviorSubject<GameInventoryItem[]>([]);
   private gameInventoryItemInGame = new BehaviorSubject<GameInventoryItem['inventoryInGame']>({});
@@ -178,7 +178,7 @@ export class BookaSdk {
   }
 
   public get referralList () {
-    return this.referralListSubject.value;
+    return this.referralDataSubject.value;
   }
 
   public get currentGamePlay () {
@@ -574,17 +574,17 @@ export class BookaSdk {
 
   async fetchReferralList () {
     await this.waitForSync;
-    const refList = await this.getRequest<ReferralRecord[]>(`${GAME_API_HOST}/api/account/get-rerferal-logs`);
+    const refList = await this.getRequest<ReferralData>(`${GAME_API_HOST}/api/account/get-rerferal-logs`);
 
     if (refList) {
-      this.referralListSubject.next(refList);
+      this.referralDataSubject.next(refList);
     }
   }
 
   subscribeReferralList () {
     this.fetchReferralList().catch(console.error);
 
-    return this.referralListSubject;
+    return this.referralDataSubject;
   }
 
   /**

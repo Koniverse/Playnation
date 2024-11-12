@@ -351,10 +351,16 @@ export interface LeaderboardResult {
 }
 
 export interface ReferralRecord {
+  id: number;
   point: number;
-  total_count: number;
-  referralSuccessTime: number;
-  accountInfo: AccountPublicInfo;
+  accountInfo: AccountPublicInfo & {
+    point: number;
+  };
+}
+
+export interface ReferralData {
+  count: number;
+  data: ReferralRecord[];
 }
 
 export interface ConfigRecord {
