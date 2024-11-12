@@ -50,7 +50,7 @@ export const ToolArea = styled(Component)<ThemeProps>(({ theme: { extendToken, t
     display: 'flex',
 
     '.__tool-sort': {
-      flex: 1,
+      flex: '1 0 auto',
       marginRight: 8
     }
   };

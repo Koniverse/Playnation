@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { CallToAction, CardDetailModal, CardItem, MainScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
+import { CallToAction, CardDetailModal, CardItem, EmptyListContent, MainScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { NFLRivalCard } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
@@ -108,19 +108,29 @@ const Component = ({ className }: Props): React.ReactElement => {
           setConditionProcess={setConditionProcess}
         />
 
-        <div className='__card-list-container'>
-          {
-            cardItems.map((item) => (
-              <CardItem
-                card={item}
-                className={'__card-item'}
-                key={item.defId}
-                onClick={onClickCard(item)}
-              />
-            ))
-          }
-          <div className={'__card-item'}></div>
-        </div>
+        {cardItems.length
+          ? (
+            <div className='__card-list-container'>
+              {
+                cardItems.map((item) => (
+                  <CardItem
+                    card={item}
+                    className={'__card-item'}
+                    key={item.defId}
+                    onClick={onClickCard(item)}
+                  />
+                ))
+              }
+            </div>
+          )
+          : (
+            <EmptyListContent
+              className={'empty-list-content'}
+              content={t('Change your filter and try again')}
+              title={t('oops! no cards found')}
+            />
+          )
+        }
       </div>
 
       {
@@ -152,7 +162,12 @@ const Cards = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
       display: 'flex',
       flexWrap: 'wrap',
       paddingRight: token.padding,
-      paddingLeft: token.padding
+      paddingLeft: token.padding,
+      flex: 1
+    },
+
+    '.empty-list-content': {
+      paddingTop: 134
     },
 
     '.__call-to-action': {

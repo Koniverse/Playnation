@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { CallToAction } from '@subwallet/extension-koni-ui/components/Mythical';
 import { StatItem } from '@subwallet/extension-koni-ui/components/Mythical/Modal/CardDetailModal/StatItem';
 import { NFLRivalCard } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { eventStat } from '@subwallet/extension-koni-ui/constants';
@@ -8,6 +9,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
@@ -17,6 +19,8 @@ type Props = ThemeProps & {
 }
 
 function Component ({ card, className = '', id, onCancel }: Props): React.ReactElement<Props> {
+  const { t } = useTranslation();
+
   return (
     <SwModal
       className={CN(className, '-full-size')}
@@ -43,6 +47,14 @@ function Component ({ card, className = '', id, onCancel }: Props): React.ReactE
           ))
         }
       </div>
+      <div className={'__footer-banner'}>
+        <CallToAction
+          buttonLabel={t('Get more players')}
+          className={'__call-to-action'}
+          subtitle={t('Visit the NFL Rivals marketplace')}
+          title={t('Want to get more cards?')}
+        />
+      </div>
     </SwModal>
   );
 }
@@ -53,14 +65,37 @@ export const CardDetailModal = styled(Component)<Props>(({ theme: { token } }: P
       paddingTop: 0
     },
 
+    '.ant-sw-sub-header-title': {
+      display: 'none'
+    },
+
+    '.__footer-banner': {
+      paddingTop: 23,
+      '.__button-content': {
+        letterSpacing: '-0.6px'
+      },
+      '.__right-part': {
+        minWidth: 143
+      },
+      '.__action-button': {
+        paddingLeft: 10
+      },
+      '.__button-background': {
+        minWidth: 143
+      }
+
+    },
+
     '.ant-sw-modal-body.ant-sw-modal-body': {
       paddingLeft: 0,
-      paddingRight: 0
+      paddingRight: 0,
+      paddingBottom: 38
     },
 
     '.ant-sw-modal-header.ant-sw-modal-header': {
       paddingTop: 14,
-      paddingBottom: 14
+      paddingBottom: 0,
+      marginBottom: -8
     },
 
     '.ant-sw-header-left-part .ant-btn': {
