@@ -49,10 +49,6 @@ export const ToolArea = styled(Component)<ThemeProps>(({ theme: { extendToken, t
     paddingRight: 20,
     display: 'flex',
 
-    '.__tool-search': {
-      marginRight: 13
-    },
-
     '.__tool-sort': {
       flex: 1,
       marginRight: 8
