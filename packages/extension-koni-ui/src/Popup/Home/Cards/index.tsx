@@ -99,7 +99,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         <CallToAction
           buttonLabel={t('Get more players')}
           className={'__call-to-action'}
-          subtitle={t('Visit the NFL Rivals marketplace')}
+          subtitle={t('Visit the Football Rivals marketplace')}
           title={t('Want to get more cards?')}
         />
 

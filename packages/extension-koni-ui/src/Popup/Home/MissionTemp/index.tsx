@@ -133,7 +133,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       <CallToAction
         buttonLabel={'Play now'}
         className={'call-to-action'}
-        subtitle={'Download NFL Rivals App'}
+        subtitle={'Download Football Rivals App'}
         title={'Want to score more points?'}
       />
     </div>

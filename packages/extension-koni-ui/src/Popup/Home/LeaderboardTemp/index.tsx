@@ -7,9 +7,11 @@ import { LeaderboardGroups, LeaderboardInfo, LeaderboardPerson } from '@subwalle
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameAccountListArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/GameAccountListArea';
+import { TERM_AND_CONDITION_MODAL_ID, TermAndConditionModal } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TermAndConditionModal';
 import { TopThreeArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TopThreeArea';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useContext, useEffect, useState } from 'react';
+import { ModalContext } from '@subwallet/react-ui';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -26,6 +28,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [leaderboardPersonItems, setLeaderboardPersonItems] = useState<LeaderboardPerson[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [leaderboardInfo, setLeaderboardInfo] = useState<LeaderboardInfo | undefined>(undefined);
+  const { activeModal, inactiveModal } = useContext(ModalContext);
 
   useEffect(() => {
     const subscriptionLeaderboard = apiSDK.subscribeLeaderboardConfig().subscribe((data) => {
@@ -89,6 +92,14 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [setContainerClass]);
 
+  const openTermAndConditionModal = useCallback(() => {
+    activeModal(TERM_AND_CONDITION_MODAL_ID);
+  }, []);
+
+  const closeTermAndConditionModal = useCallback(() => {
+    inactiveModal(TERM_AND_CONDITION_MODAL_ID);
+  }, []);
+
   return (
     <div className={className}>
       <MainScreenHeader
@@ -97,6 +108,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           (
             <button
               className={'info-button'}
+              onClick={openTermAndConditionModal}
             >
               <InfoIcon />
             </button>
@@ -119,8 +131,8 @@ const Component = ({ className }: Props): React.ReactElement => {
         <CallToAction
           buttonLabel={'Play now'}
           className={'call-to-action'}
-          subtitle={'Download NFL Rivals App'}
-          title={'Want to take your profile to the next level?'}
+          subtitle={'Download Football Rivals App'}
+          title={'Want to get to the big league?'}
         />
 
         <GameAccountListArea
@@ -128,6 +140,11 @@ const Component = ({ className }: Props): React.ReactElement => {
           leaderboardPersonItems={leaderboardPersonItems}
         />
       </div>
+
+      <TermAndConditionModal
+        onCancel={closeTermAndConditionModal}
+        onOk={closeTermAndConditionModal}
+      />
     </div>
   );
 };
