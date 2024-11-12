@@ -13,6 +13,7 @@ import styled from 'styled-components';
 type Props = ThemeProps & {
   gameEvents: GameEvent[];
   selectedTab: string;
+  serverTime: number;
   onPlayEvent: (eventID: number) => void;
 };
 
@@ -83,7 +84,7 @@ function getEventGameEndTime (gameEvent: GameEvent) {
   return gameEvent.endTime;
 }
 
-const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): React.ReactElement => {
+const Component = ({ className, gameEvents, onPlayEvent, selectedTab, serverTime }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const [eventItems, setEventItems] = useState<EventItemType[]>([]);
 
@@ -159,7 +160,7 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): 
   }, [gameEvents, selectedTab]);
 
   const getEventItems = useCallback(() => {
-    const dateNow = Date.now();
+    const dateNow = serverTime;
 
     const result: EventItemType[] = [];
     const processedGameEvents = getProcessedGameEvents(dateNow);
@@ -210,18 +211,10 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab }: Props): 
     });
 
     return result;
-  }, [getProcessedGameEvents, onPlayEvent]);
+  }, [getProcessedGameEvents, onPlayEvent, serverTime]);
 
   useEffect(() => {
     setEventItems(getEventItems());
-
-    const timer = setInterval(() => {
-      setEventItems(getEventItems());
-    }, 1000);
-
-    return () => {
-      clearInterval(timer);
-    };
   }, [getEventItems]);
 
   return (
