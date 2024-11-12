@@ -63,7 +63,7 @@ export interface SwThemeConfig extends ThemeConfig {
 
 function genDefaultExtraTokens (token: AliasToken): ExtraToken {
   return {
-    bodyBackgroundColor: token.colorBgBase,
+    bodyBackgroundColor: '#0f0f0f',
     logo: subWalletLogo,
     defaultImagePlaceholder,
     colorTextContent: token.colorTextDark3,

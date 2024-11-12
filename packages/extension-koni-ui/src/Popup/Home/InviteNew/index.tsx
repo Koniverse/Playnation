@@ -5,11 +5,12 @@ import { Layout } from '@subwallet/extension-koni-ui/components';
 import { GameAccountItem, SubScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
 import { GameAccountItemType } from '@subwallet/extension-koni-ui/components/Mythical/Leaderboard/GameAccountItem';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { ReferralRecord } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useDefaultNavigate, useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard } from '@subwallet/extension-koni-ui/utils';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import CallToAction from '../../../components/Mythical/Common/CallToAction';
@@ -26,21 +27,23 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { goBack } = useDefaultNavigate();
   const notify = useNotification();
 
+  const [referralList, setReferralList] = useState<ReferralRecord[]>(apiSDK.referralList);
+
   const { t } = useTranslation();
 
-  const mockItems = useMemo(() => {
+  const friendItems = useMemo(() => {
     const result: GameAccountItemType[] = [];
 
-    for (let i = 1; i <= 20; i++) {
+    referralList.forEach((r) => {
       result.push({
-        avatarSrc: '',
-        name: `Brad_MaddenMaster_${i}`,
-        point: 7712000
+        avatarSrc: r.accountInfo.avatar,
+        name: r.accountInfo.telegramUsername,
+        point: r.point
       });
-    }
+    });
 
     return result;
-  }, []);
+  }, [referralList]);
 
   const inviteURL = useMemo(() => {
     const encodeURL = apiSDK.getInviteURL();
@@ -60,6 +63,16 @@ const Component = ({ className }: Props): React.ReactElement => {
       message: t('Copied to clipboard')
     });
   }, [notify, t]);
+
+  useEffect(() => {
+    const referralSub = apiSDK.subscribeReferralList().subscribe((data) => {
+      setReferralList(data);
+    });
+
+    return () => {
+      referralSub.unsubscribe();
+    };
+  }, []);
 
   return (
     <Layout.Base
@@ -82,7 +95,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
       <div className='friend-list-container'>
         {
-          mockItems.map((item) => (
+          friendItems.map((item) => (
             <GameAccountItem
               {...item}
               className={'friend-item'}
