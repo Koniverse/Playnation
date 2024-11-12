@@ -613,15 +613,13 @@ export class BookaSdk {
         await Promise.all([
           this.fetchEnergyConfig(),
           this.fetchRankInfoMap(),
+          this.fetchLeaderboardConfigList(),
           this.fetchGameList(),
-          this.fetchGameEventList(),
-          this.fetchGameEventList(),
-          this.fetchNFLRivalCardList(),
-          this.fetchAchievementList(),
-          this.fetchTaskCategoryList(),
-          this.fetchTaskList(),
-          this.fetchAchievementList(),
-          this.fetchLeaderboardConfigList()
+          this.fetchGameEventList()
+          // this.fetchNFLRivalCardList(),
+          // this.fetchTaskCategoryList(),
+          // this.fetchTaskList(),
+          // this.fetchAchievementList()
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
           // this.fetchGameItemInGameList()

@@ -45,6 +45,8 @@ const Component = ({ className }: Props): React.ReactElement => {
       initCardItems.current = [...cardList];
     });
 
+    bookaSDK.fetchNFLRivalCardList().catch(console.error);
+
     return () => {
       unsubscribe.unsubscribe();
     };
