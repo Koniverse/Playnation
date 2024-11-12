@@ -4,11 +4,12 @@
 import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { VISIT_LOGIN_CTA_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE } from '@subwallet/extension-koni-ui/constants/localStorageDefaultValue';
+import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { useDefaultNavigate } from '@subwallet/extension-koni-ui/hooks';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
-import React, { useCallback } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import styled from 'styled-components';
 import { useLocalStorage } from 'usehooks-ts';
 
@@ -17,13 +18,23 @@ type Props = ThemeProps;
 const Component: React.FC<Props> = ({ className }: Props) => {
   const { t } = useTranslation();
   const [, setIsVisitedLoginCTA] = useLocalStorage(VISIT_LOGIN_CTA_FLAG, VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE);
-
+  const { isLinkedMyth, onLogin } = useContext(AuthenticationMythContext);
   const { goHome } = useDefaultNavigate();
 
   const continueWithTelegram = useCallback(() => {
     setIsVisitedLoginCTA(true);
     goHome();
   }, [goHome, setIsVisitedLoginCTA]);
+
+  const linkingWithMythAccount = useCallback(() => {
+    onLogin();
+  }, [onLogin]);
+
+  useEffect(() => {
+    if (isLinkedMyth) {
+      goHome();
+    }
+  }, [goHome, isLinkedMyth]);
 
   return (
     <div className={CN(className)}>
@@ -47,7 +58,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 
         <MythButton
           className={CN('action-button link-myth-button')}
-          onClick={continueWithTelegram}
+          onClick={linkingWithMythAccount}
         >
           {t('Link your mythical account')}
         </MythButton>
@@ -65,7 +76,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
 
         <MythButton
           className={CN('action-button create-myth-button')}
-          onClick={continueWithTelegram}
+          onClick={linkingWithMythAccount}
         >
           {t('Create your Mythical account')}
         </MythButton>
