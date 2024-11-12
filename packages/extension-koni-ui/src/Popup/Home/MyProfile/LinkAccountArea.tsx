@@ -4,8 +4,8 @@
 import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { toShort } from '@subwallet/extension-koni-ui/utils';
-import React, { useContext } from 'react';
+import { openInNewTab, toShort } from '@subwallet/extension-koni-ui/utils';
+import React, { useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -17,6 +17,9 @@ type Props = ThemeProps & {
 const Component = ({ className, doLinkAccount, isLinked }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const { account } = useContext(AuthenticationMythContext);
+  const openContactSupport = useCallback(() => {
+    openInNewTab('https://support.rivals.game/hc/en-us/requests/new')();
+  }, []);
 
   return (
     <div className={className}>
@@ -53,7 +56,10 @@ const Component = ({ className, doLinkAccount, isLinked }: Props): React.ReactEl
         )
       }
 
-      <MythButton className={'__contact-support-button __button'}>
+      <MythButton
+        className={'__contact-support-button __button'}
+        onClick={openContactSupport}
+      >
         {t('Contact Support')}
       </MythButton>
     </div>
