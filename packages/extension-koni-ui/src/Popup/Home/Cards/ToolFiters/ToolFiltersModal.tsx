@@ -173,6 +173,10 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
       backgroundRepeat: 'no-repeat'
     },
 
+    '.ant-checkbox-wrapper.ant-checkbox-wrapper.ant-checkbox-wrapper .ant-checkbox-checked.ant-checkbox-checked:after': {
+      borderColor: 'transparent'
+    },
+
     '.__filter-item': {
       display: 'flex',
       alignItems: 'center'
