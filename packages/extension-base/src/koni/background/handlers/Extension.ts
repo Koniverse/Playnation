@@ -41,7 +41,7 @@ import { isProposalExpired, isSupportWalletConnectChain, isSupportWalletConnectN
 import { ResultApproveWalletConnectSession, WalletConnectNotSupportRequest, WalletConnectSessionRequest } from '@subwallet/extension-base/services/wallet-connect-service/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { AccountsStore } from '@subwallet/extension-base/stores';
-import { BalanceJson, BuyServiceInfo, BuyTokenInfo, NominationPoolInfo, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestWalletConnectCancelSessionPromise, RequestWalletConnectGetSessionPromise, StorageDataInterface, TokenSpendingApprovalParams } from '@subwallet/extension-base/types';
+import { BalanceJson, BuyServiceInfo, BuyTokenInfo, NominationPoolInfo, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestWalletConnectCancelSessionPromise, RequestWalletConnectGetSessionPromise, RequestWCSendMessageRequest, ResponseWCSendMessageRequest, StorageDataInterface, TokenSpendingApprovalParams } from '@subwallet/extension-base/types';
 import { CommonOptimalPath } from '@subwallet/extension-base/types/service-base';
 import { SwapPair, SwapQuoteResponse, SwapRequest, SwapRequestResult, SwapSubmitParams, ValidateSwapProcessParams } from '@subwallet/extension-base/types/swap';
 import { BN_ZERO, convertSubjectInfoToAddresses, createTransactionFromRLP, isSameAddress, MODULE_SUPPORT, reformatAddress, signatureToHex, Transaction as QrTransaction, uniqueStringArray } from '@subwallet/extension-base/utils';
@@ -3720,6 +3720,21 @@ export default class KoniExtension {
     return this.#koniState.walletConnectService.cancelConnectPromise(id);
   }
 
+  // Send request
+
+  private async wcSendMessageRequest (request: RequestWCSendMessageRequest): Promise<ResponseWCSendMessageRequest> {
+    const { address, chainId, method, payload } = request;
+
+    const pair = keyring.getPair(address);
+    const topic = pair.meta.wcTopic as string || '';
+
+    const signature = await this.#koniState.walletConnectService.signEvmMessage(topic, chainId, address, method, payload);
+
+    return {
+      signature
+    };
+  }
+
   /// Manta
 
   private async enableMantaPay ({ address, password }: MantaPayEnableParams): Promise<MantaPayEnableResponse> { // always takes the current account
@@ -4629,22 +4644,28 @@ export default class KoniExtension {
       case 'pri(walletConnect.subscribe.projectId)':
         return this.subscribeWalletConnectProjectId(id, port);
 
-      case 'pri(walletConnect.session.connect)':
-        return this.connectWalletConnect(request as RequestConnectWalletConnect);
       case 'pri(walletConnect.requests.connect.subscribe)':
         return this.connectWCSubscribe(id, port);
+
+      case 'pri(walletConnect.session.connect)':
+        return this.connectWalletConnect(request as RequestConnectWalletConnect);
+      case 'pri(walletConnect.session.disconnect)':
+        return this.disconnectWalletConnectSession(request as RequestDisconnectWalletConnectSession);
+
       case 'pri(walletConnect.session.approve)':
         return this.approveWalletConnectSession(request as RequestApproveConnectWalletSession);
       case 'pri(walletConnect.session.reject)':
         return this.rejectWalletConnectSession(request as RequestRejectConnectWalletSession);
-      case 'pri(walletConnect.session.disconnect)':
-        return this.disconnectWalletConnectSession(request as RequestDisconnectWalletConnectSession);
+
       case 'pri(walletConnect.session.create)':
         return this.createWalletConnectSession();
       case 'pri(walletConnect.session.promise)':
         return this.getWCConnectPromise(request as RequestWalletConnectGetSessionPromise);
       case 'pri(walletConnect.session.cancel)':
         return this.cancelWCSessionPromise(request as RequestWalletConnectCancelSessionPromise);
+
+      case 'pri(walletConnect.requests.message.send)':
+        return this.wcSendMessageRequest(request as RequestWCSendMessageRequest);
 
       // Not support
       case 'pri(walletConnect.requests.notSupport.subscribe)':

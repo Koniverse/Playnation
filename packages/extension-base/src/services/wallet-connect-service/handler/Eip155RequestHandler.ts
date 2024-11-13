@@ -4,11 +4,13 @@
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils';
 import KoniState from '@subwallet/extension-base/koni/background/handlers/State';
 import WalletConnectService from '@subwallet/extension-base/services/wallet-connect-service';
-import { getEip155MessageAddress, getWCId, parseRequestParams } from '@subwallet/extension-base/services/wallet-connect-service/helpers';
-import { EIP155_SIGNING_METHODS } from '@subwallet/extension-base/services/wallet-connect-service/types';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { SignClientTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
+
+import { WALLET_CONNECT_EIP155_NAMESPACE } from '../constants';
+import { getEip155MessageAddress, getWCId, parseRequestParams } from '../helpers';
+import { EIP155_SIGNING_METHODS } from '../types';
 
 export default class Eip155RequestHandler {
   readonly #walletConnectService: WalletConnectService;
@@ -109,5 +111,16 @@ export default class Eip155RequestHandler {
     } else {
       throw Error(getSdkError('INVALID_METHOD').message + ' ' + method);
     }
+  }
+
+  public requestSignMessage (topic: string, chainId: number, address: string, method: string, message: unknown) {
+    return this.#walletConnectService.sendRequest<string>({
+      topic,
+      request: {
+        method,
+        params: [address, message]
+      },
+      chainId: `${WALLET_CONNECT_EIP155_NAMESPACE}:${chainId}`
+    });
   }
 }
