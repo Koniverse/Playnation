@@ -179,7 +179,8 @@ export const ToolSort = styled(Component)<ThemeProps>(({ theme: { extendToken, t
       overflow: 'hidden',
 
       '&.-active': {
-        flex: 1
+        flex: 1,
+        justifyContent: 'flex-end'
       }
     },
 

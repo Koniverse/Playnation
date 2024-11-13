@@ -169,7 +169,6 @@ const Cards = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
     '.__card-list-container': {
       display: 'grid',
       gridTemplateColumns: 'repeat(2, 1fr)',
-      gap: 12,
       marginBottom: 20
     },
     '.__card-list-wrapper': {

@@ -142,6 +142,11 @@ export const ToolSearch = styled(Component)<ThemeProps>(({ theme: { extendToken,
       color: extendToken.mythColorGray1
     },
 
+    '.__tool-search-input .ant-input-suffix': {
+      height: 42,
+      width: 42
+    },
+
     '.__tool-search-input-cancel': {
       minWidth: 68,
       height: 42,
