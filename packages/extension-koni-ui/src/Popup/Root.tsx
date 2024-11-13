@@ -6,8 +6,7 @@ import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, TRANSACTION_STORAGES, VISIT_LOGIN_CTA_FLAG } from '@subwallet/extension-koni-ui/constants';
-import { VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE } from '@subwallet/extension-koni-ui/constants/localStorageDefaultValue';
+import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
 import { AuthenticationMythProvider } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
@@ -28,7 +27,6 @@ import { AuthProvider, TAuthConfig, TRefreshTokenExpiredEvent } from 'react-oaut
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { useLocalStorage } from 'usehooks-ts';
 
 changeHeaderLogo(<Logo2D />);
 
@@ -42,14 +40,13 @@ const welcomeUrl = '/welcome';
 const eventsUrl = '/home/events';
 // const tokenUrl = '/home/token';
 const loginUrl = '/keyring/login';
-const loginSuccessUrl = '/login-successfully';
-const loginCTAUrl = '/login';
+const loginSuccessUrl = '/login-success';
+const myProfileUrl = '/home/my-profile';
 const phishingUrl = '/phishing-page-detected';
 const createPasswordUrl = '/keyring/create-password';
 const migratePasswordUrl = '/keyring/migrate-password';
 const securityUrl = '/settings/security';
 const createDoneUrl = '/create-done';
-const myProfileUrl = '/home/my-profile';
 const baseAccountPath = '/accounts';
 const allowImportAccountPaths = ['new-seed-phrase', 'import-seed-phrase', 'import-private-key', 'restore-json', 'import-by-qr', 'attach-read-only', 'connect-polkadot-vault', 'connect-keystone', 'connect-ledger'];
 
@@ -112,8 +109,6 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const noAccount = useMemo(() => isNoAccount(accounts), [accounts]);
   const { isUILocked } = useUILock();
   const needUnlock = isUILocked || (isLocked && unlockType === WalletUnlockType.ALWAYS_REQUIRED);
-  const [isVisitedLoginCTA] = useLocalStorage(VISIT_LOGIN_CTA_FLAG, VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE);
-  const needNavigateAfterLogin = useRef<boolean>(false);
   const syncAddress = useRef<string | undefined>();
 
   useEffect(() => {
@@ -222,9 +217,8 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       if (![...allowImportAccountUrls, welcomeUrl, createPasswordUrl, securityUrl].includes(pathName)) {
         redirectTarget = welcomeUrl;
       }
-    } else if (pathName === eventsUrl && needNavigateAfterLogin.current) {
+    } else if (pathName === loginSuccessUrl) {
       redirectTarget = myProfileUrl;
-      needNavigateAfterLogin.current = false;
     } else if (pathName === DEFAULT_ROUTER_PATH) {
       // if (hasConfirmations) {
       //   openPModal('confirmations');
@@ -261,19 +255,12 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       return false;
     });
 
-    if (pathName === loginSuccessUrl) {
-      needNavigateAfterLogin.current = true;
-      redirectTarget = myProfileUrl;
-    } else if (!isVisitedLoginCTA) {
-      redirectTarget = loginCTAUrl;
-    }
-
     if (redirectTarget && redirectTarget !== pathName) {
       return redirectTarget;
     } else {
       return null;
     }
-  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, isVisitedLoginCTA, openPModal]);
+  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, openPModal]);
 
   // Remove transaction persist state
   useEffect(() => {

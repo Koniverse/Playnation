@@ -101,8 +101,6 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
 
   const onLogout = useCallback(async () => {
     onLogoutMythAccount();
-    setIsLinked(false);
-    setLinkData(undefined);
 
     return Promise.resolve();
   }, [onLogoutMythAccount]);
