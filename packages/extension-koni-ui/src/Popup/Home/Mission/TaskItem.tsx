@@ -2,18 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
+import { WC_DEFAULT_CHAIN_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { GamePoint } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { ShareLeaderboard, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
+import { useNotification, useSelector, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { wcSendMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { customFormatDate, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
 import { Button, Icon, Image } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle } from 'phosphor-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = {
@@ -29,6 +32,11 @@ const telegramConnector = TelegramConnector.instance;
 const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const notify = useNotification();
+
+  const { connectWC, requireWC } = useContext(WalletConnectContext);
+
+  const { wcAccount } = useSelector((state) => state.accountState);
+
   const [account, setAccount] = useState(apiSDK.account);
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
@@ -68,7 +76,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
     (async () => {
       const taskId = task.id;
       const onChainType = task.onChainType;
-      const { address } = account?.info || {};
+      const { address, telegramId = '' } = account?.info || {};
 
       if (!address) {
         return;
@@ -76,7 +84,11 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
 
       setTaskLoading(true);
       let res: SWTransactionResponse | null = null;
+      const payload: Record<string, unknown> = {};
       const networkKey = task.network || '';
+      const isNftTask = !!task.metadata?.contractAddress;
+
+      payload.networkKey = networkKey;
 
       if (onChainType) {
         const now = new Date();
@@ -128,10 +140,8 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         }
       }
 
-      let extrinsicHash = '';
-
       if (res) {
-        extrinsicHash = res.extrinsicHash || '';
+        payload.extrinsicHash = res.extrinsicHash || '';
       }
 
       let shareLeaderboard: ShareLeaderboard | null = null;
@@ -144,7 +154,51 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         }
       }
 
-      apiSDK.finishTask(taskId, extrinsicHash, networkKey)
+      if (isNftTask) {
+        let address: string;
+
+        if (wcAccount) {
+          address = wcAccount.address;
+        } else {
+          try {
+            await requireWC();
+            address = await connectWC();
+          } catch (e) {
+            setTaskLoading(false);
+
+            return;
+          }
+        }
+
+        if (!address) {
+          setTaskLoading(false);
+
+          return;
+        }
+
+        const message = `Check NFT Ownership ${telegramId}`;
+
+        try {
+          const rs = await wcSendMessageRequest({
+            address,
+            chainId: WC_DEFAULT_CHAIN_ID,
+            payload: message,
+            method: 'personal_sign'
+          });
+
+          payload.signature = rs.signature;
+          payload.address = address;
+        } catch (e) {
+          const error = e as Error;
+
+          console.error('Fail to get signature', error);
+          setTaskLoading(false);
+
+          return;
+        }
+      }
+
+      apiSDK.finishTask(taskId, payload)
         .then(async (result) => {
           if (task.airlyftWidgetId && result.isOpenUrl) {
             await openWidget(task.airlyftWidgetId, task.airlyftId ?? '');
@@ -157,7 +211,10 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
             actionReloadPoint();
           }
         })
-        .catch(console.error);
+        .catch((e) => {
+          console.error('finishTask', e);
+          setTaskLoading(false);
+        });
 
       if (!task.airlyftId) {
         setTimeout(async () => {
@@ -176,7 +233,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         }, 100);
       }
     })().catch(console.error);
-  }, [account?.info, actionReloadPoint, notify, t, task.gameId, task.id, task.network, task.onChainType, task.share_leaderboard, task.url]);
+  }, [account, actionReloadPoint, connectWC, notify, openWidget, t, task, wcAccount, requireWC]);
 
   const { endTime,
     isDisabled,

@@ -13,12 +13,13 @@ import styled from 'styled-components';
 
 interface Props extends ThemeProps {
   address: string;
+  callback: (address: string) => void;
 }
 
 const modalId = CONNECT_WALLET_SUCCESS_MODAL;
 
 function Component (props: Props): React.ReactElement<Props> {
-  const { address, className = '' } = props;
+  const { address, callback, className = '' } = props;
 
   const { t } = useTranslation();
 
@@ -26,7 +27,8 @@ function Component (props: Props): React.ReactElement<Props> {
 
   const onClose = useCallback(() => {
     inactiveModal(modalId);
-  }, [inactiveModal]);
+    callback(address);
+  }, [address, callback, inactiveModal]);
 
   const modalFooter = (() => {
     return (

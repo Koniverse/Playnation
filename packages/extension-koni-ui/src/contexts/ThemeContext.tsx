@@ -591,6 +591,16 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
 
     '.ant-network-item.ant-network-item .ant-network-item-name': {
       color: token.colorTextDark2
+    },
+
+    '.confirm-modal-rework': {
+      '.ant-sw-modal-confirm-btns': {
+        flexDirection: 'row',
+
+        '.ant-btn': {
+          flex: 1
+        }
+      }
     }
   });
 });

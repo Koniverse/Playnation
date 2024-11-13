@@ -1,0 +1,236 @@
+// Copyright 2019-2022 @polkadot/extension-ui authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import { AccountJson } from '@subwallet/extension-base/background/types';
+import { ConnectWalletSuccessModal } from '@subwallet/extension-koni-ui/components';
+import { CONNECT_WALLET_SUCCESS_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { useConfirmModal } from '@subwallet/extension-koni-ui/hooks';
+import { disconnectWalletConnectConnection, wcCancelSessionPromise, wcGetSessionPromise, wcSessionCreate } from '@subwallet/extension-koni-ui/messaging';
+import { RootState } from '@subwallet/extension-koni-ui/stores';
+import { noop } from '@subwallet/extension-koni-ui/utils';
+import { Icon, Input, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
+import { WalletConnectModal } from '@walletconnect/modal';
+import CN from 'classnames';
+import { XCircle } from 'phosphor-react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
+interface Props {
+  children: React.ReactNode;
+}
+
+interface ModalCtrlState {
+  open: boolean;
+}
+
+type SuccessCallback = (address: string) => void;
+
+export interface WalletConnectContextType {
+  connectWC: () => Promise<string>;
+  disconnectWC: (wcAccount: AccountJson) => (() => Promise<void>);
+  requireWC: () => Promise<void>;
+}
+
+export const WalletConnectContext = React.createContext<WalletConnectContextType>({
+  connectWC: () => Promise.resolve(''),
+  disconnectWC: () => () => Promise.resolve(),
+  requireWC: () => Promise.resolve()
+});
+
+export const WalletConnectContextProvider = ({ children }: Props) => {
+  const { activeModal } = useContext(ModalContext);
+
+  const { t } = useTranslation();
+
+  const { wcAccount } = useSelector((state: RootState) => state.accountState);
+  const { projectId } = useSelector((state: RootState) => state.walletConnect);
+
+  const [wcModal, setWcModal] = useState<WalletConnectModal>();
+  const [onSuccessCb, setOnSuccessCb] = useState<SuccessCallback>(noop);
+
+  const disconnectModalProps = useMemo((): Partial<SwModalFuncProps> => ({
+    id: 'disconnect-wc',
+    className: CN('confirm-modal-rework'),
+    title: t('Disconnect'),
+    cancelText: t('Cancel'),
+    content: (
+      <div>
+        <div>{t('Are you sure to disconnect wallet?')}</div>
+        <Input
+          disabled={true}
+          value={wcAccount?.address || ''}
+        />
+      </div>
+    ),
+    okText: t('Disconnect'),
+    closable: true,
+    maskClosable: true,
+    okCancel: true,
+    cancelButtonProps: {
+      icon: (
+        <Icon
+          phosphorIcon={XCircle}
+          size='md'
+        />
+      ),
+      schema: 'secondary'
+    }
+  }), [t, wcAccount?.address]);
+
+  const requireAccountModalProps = useMemo((): Partial<SwModalFuncProps> => ({
+    id: 'require-wc',
+    className: CN('confirm-modal-rework'),
+    title: t('Connect your wallet'),
+    cancelText: t('Cancel'),
+    content: (
+      <div>
+        <div>{t('Wallet connection required')}</div>
+        <div>{t('You need to connect your wallet to continue ')}</div>
+      </div>
+    ),
+    okText: t('Connect'),
+    closable: true,
+    maskClosable: true,
+    okCancel: true,
+    cancelButtonProps: {
+      icon: (
+        <Icon
+          phosphorIcon={XCircle}
+          size='md'
+        />
+      ),
+      schema: 'secondary'
+    }
+  }), [t]);
+
+  const { handleSimpleConfirmModal: handleDisconnectModal } = useConfirmModal(disconnectModalProps);
+  const { handleSimpleConfirmModal: handleRequireModal } = useConfirmModal(requireAccountModalProps);
+
+  const connectWC = useCallback(async (): Promise<string> => {
+    if (!wcModal) {
+      setOnSuccessCb(() => {
+        return noop;
+      });
+
+      return Promise.reject(new Error('WalletConnectModal is not initialized'));
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises, no-async-promise-executor
+    return new Promise<string>(async (resolve, reject) => {
+      try {
+        setOnSuccessCb(() => {
+          return (address: string) => {
+            resolve(address);
+          };
+        });
+
+        const { id, uri } = await wcSessionCreate();
+
+        await wcModal.openModal({ uri });
+
+        let done = false;
+
+        const unsubscribe = wcModal.subscribeModal((newState: ModalCtrlState) => {
+          if (!newState.open) {
+            done = true;
+            unsubscribe();
+            wcCancelSessionPromise(id).catch(console.error);
+            resolve('');
+          }
+        });
+
+        try {
+          const data = await wcGetSessionPromise(id);
+
+          if (done) {
+            return;
+          }
+
+          unsubscribe();
+
+          if (data.approveAddress) {
+            // Connected with wallet
+            console.log('Connected with wallet', data.approveAddress);
+            wcModal.closeModal();
+            activeModal(CONNECT_WALLET_SUCCESS_MODAL);
+          } else {
+            // Wallet connect failed
+            console.error('Wallet connect failed', data.errorMessage);
+            wcModal.closeModal();
+            reject(new Error(data.errorMessage));
+          }
+        } catch (e) {
+          if (done) {
+            return;
+          }
+
+          const error = e as Error;
+
+          // Wallet connect failed
+          unsubscribe();
+          console.error('Wallet connect failed', error.message);
+          reject(error);
+        }
+      } catch (e) {
+        console.error(e);
+        reject(e);
+      }
+    });
+  }, [activeModal, wcModal]);
+
+  const disconnectWC = useCallback((wcAccount: AccountJson) => {
+    return () => {
+      const topic = wcAccount.wcTopic;
+
+      if (topic) {
+        return new Promise<void>((resolve) => {
+          handleDisconnectModal()
+            .then(() => {
+              disconnectWalletConnectConnection(topic)
+                .finally(resolve);
+            })
+            .catch(resolve);
+        });
+      }
+
+      return Promise.resolve();
+    };
+  }, [handleDisconnectModal]);
+
+  const requireWC = useCallback(() => {
+    return handleRequireModal();
+  }, [handleRequireModal]);
+
+  const contextValue = useMemo(() => ({
+    connectWC,
+    disconnectWC,
+    requireWC
+  }), [connectWC, disconnectWC, requireWC]);
+
+  useEffect(() => {
+    if (projectId) {
+      const wcModal = new WalletConnectModal({
+        themeVariables: {
+          '--wcm-z-index': '600'
+        },
+        themeMode: 'light',
+        projectId
+      });
+
+      setWcModal(wcModal);
+    }
+  }, [projectId]);
+
+  // todo: will remove ClaimDappStakingRewardsModal after Astar upgrade to v3
+
+  return (
+    <WalletConnectContext.Provider value={contextValue}>
+      {children}
+      <ConnectWalletSuccessModal
+        address={wcAccount?.address || ''}
+        callback={onSuccessCb}
+      />
+    </WalletConnectContext.Provider>
+  );
+};

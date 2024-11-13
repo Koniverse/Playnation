@@ -2,17 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AccountJson } from '@subwallet/extension-base/background/types';
-import { ConnectWalletSuccessModal, Layout } from '@subwallet/extension-koni-ui/components';
+import { Layout } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
-import { CONNECT_WALLET_SUCCESS_MODAL, VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/constants';
+import { VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
-import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
-import { useConfirmModal, useNotification, useSelector } from '@subwallet/extension-koni-ui/hooks';
-import { disconnectWalletConnectConnection, wcCancelSessionPromise, wcGetSessionPromise, wcSessionCreate } from '@subwallet/extension-koni-ui/messaging';
-import { noop } from '@subwallet/extension-koni-ui/utils';
-import { ButtonProps, Icon, Input, ModalContext, SwModalFuncProps, Tooltip } from '@subwallet/react-ui';
-import CN from 'classnames';
-import { Export, FadersHorizontal, MagnifyingGlass, Wallet, XCircle } from 'phosphor-react';
+import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
+import { useNotification, useSelector } from '@subwallet/extension-koni-ui/hooks';
+import { ButtonProps, Icon, ModalContext, Tooltip } from '@subwallet/react-ui';
+import { Export, FadersHorizontal, MagnifyingGlass, Wallet } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -43,41 +40,11 @@ const Component = (props: Props) => {
   // @ts-ignore
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
-  const { closeWCConnectModal, openWCConnectModal, subscribeWCConnectModal } = useContext(WalletModalContext);
+  const { connectWC, disconnectWC } = useContext(WalletConnectContext);
 
   const { wcAccount } = useSelector((state) => state.accountState);
 
   const notify = useNotification();
-
-  const disconnectModalProps = useMemo((): Partial<SwModalFuncProps> => ({
-    id: 'disconnect-wc',
-    className: CN('disconnect-wc-modal', className),
-    title: t('Disconnect'),
-    cancelText: t('Cancel'),
-    content: (
-      <div>
-        <div>{t('Are you sure to disconnect wallet?')}</div>
-        <Input
-          disabled={true}
-          value={wcAccount?.address || ''}
-        />
-      </div>
-    ),
-    okText: t('Disconnect'),
-    closable: true,
-    maskClosable: true,
-    okCancel: true,
-    cancelButtonProps: {
-      icon: (
-        <Icon
-          phosphorIcon={XCircle}
-          size='md'
-        />
-      ),
-      schema: 'secondary'
-    }
-  }), [className, t, wcAccount?.address]);
-  const { handleSimpleConfirmModal } = useConfirmModal(disconnectModalProps);
 
   const [connectLoading, setConnectLoading] = useState(false);
 
@@ -93,80 +60,31 @@ const Component = (props: Props) => {
   const onConnectWallet = useCallback(() => {
     setConnectLoading(true);
 
-    wcSessionCreate()
-      .then(({ id, uri }) => {
-        // Open wallet connect modal
-        openWCConnectModal(uri, id)
-          .catch(console.error);
-
-        const unsubscribe = subscribeWCConnectModal((newState) => {
-          if (!newState.open) {
-            unsubscribe();
-            wcCancelSessionPromise(id).catch(console.error);
-            setConnectLoading(false);
-          }
-        });
-
-        // Subscribe session result
-        wcGetSessionPromise(id)
-          .then((data) => {
-            unsubscribe();
-
-            if (data.approveAddress) {
-              // Connected with wallet
-              console.log('Connected with wallet', data.approveAddress);
-              closeWCConnectModal();
-              activeModal(CONNECT_WALLET_SUCCESS_MODAL);
-            } else {
-              // Wallet connect failed
-              console.error('Wallet connect failed', data.errorMessage);
-              closeWCConnectModal();
-              notify({
-                type: 'error',
-                message: data.errorMessage
-              });
-            }
-          })
-          .catch((e: Error) => {
-            // Wallet connect failed
-            unsubscribe();
-            console.error('Wallet connect failed', e.message);
-            notify({
-              type: 'error',
-              message: t('Failed to connect with wallet')
-            });
-          })
-          .finally(() => {
-            setConnectLoading(false);
-          });
+    connectWC()
+      .then((address: string) => {
+        console.debug('connectWC result', address);
       })
-      .catch((e) => {
-        console.error(e);
+      .catch((e: Error) => {
         notify({
-          message: t('Failed to create wallet connect session')
+          type: 'error',
+          message: e.message
         });
-
+      })
+      .finally(() => {
+        console.debug('connectWC finally');
         setConnectLoading(false);
       });
-  }, [openWCConnectModal, subscribeWCConnectModal, closeWCConnectModal, activeModal, notify, t]);
+  }, [connectWC, notify]);
 
-  const disconnectWc = useCallback((wcAccount: AccountJson) => {
+  const onDisconnectWallet = useCallback((wcAccount: AccountJson) => {
     return () => {
-      const topic = wcAccount.wcTopic;
-
-      if (topic) {
-        handleSimpleConfirmModal()
-          .then(() => {
-            setConnectLoading(true);
-            disconnectWalletConnectConnection(topic)
-              .finally(() => {
-                setConnectLoading(false);
-              });
-          })
-          .catch(noop);
-      }
+      setConnectLoading(true);
+      disconnectWC(wcAccount)()
+        .finally(() => {
+          setConnectLoading(false);
+        });
     };
-  }, [handleSimpleConfirmModal]);
+  }, [disconnectWC]);
 
   const headerIcons = useMemo<ButtonProps[]>(() => {
     const icons: ButtonProps[] = [];
@@ -232,13 +150,13 @@ const Component = (props: Props) => {
             weight='fill'
           />
         ),
-        onClick: wcAccount ? disconnectWc(wcAccount) : onConnectWallet,
+        onClick: wcAccount ? onDisconnectWallet(wcAccount) : onConnectWallet,
         loading: connectLoading
       });
     }
 
     return icons;
-  }, [showFilterIcon, showSearchIcon, showGiftIcon, showConnectIcon, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, t, onOpenInvite, wcAccount, disconnectWc, onConnectWallet, connectLoading]);
+  }, [showFilterIcon, showSearchIcon, showGiftIcon, showConnectIcon, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, t, onOpenInvite, wcAccount, onDisconnectWallet, onConnectWallet, connectLoading]);
 
   const onClickListIcon = useCallback(() => {
     navigate('/settings/list');
@@ -260,19 +178,10 @@ const Component = (props: Props) => {
       showTabBar={showTabBar ?? true}
     >
       {children}
-      <ConnectWalletSuccessModal address={wcAccount?.address || ''} />
     </Layout.Base>
   );
 };
 
 export const Home = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token } }: LayoutBaseProps) => ({
-  '&.disconnect-wc-modal': {
-    '.ant-sw-modal-confirm-btns': {
-      flexDirection: 'row',
 
-      '.ant-btn': {
-        flex: 1
-      }
-    }
-  }
 }));
