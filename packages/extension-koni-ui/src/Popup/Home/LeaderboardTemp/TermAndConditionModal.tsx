@@ -24,7 +24,7 @@ function Component (props: Props): React.ReactElement<Props> {
 
   useEffect(() => {
     preloadImages([
-      '/images/mythical/daily-rewards/modal-background.png',
+      '/images/mythical/leaderboard-terms-conditions-bg.png',
       '/images/mythical/close-button.png',
       '/images/mythical/okay-button-background.png'
     ]);
@@ -86,7 +86,7 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       borderRadius: 0,
       maxWidth: 370,
       paddingTop: 24,
-      backgroundImage: 'url(/images/mythical/daily-rewards/modal-background.png)',
+      backgroundImage: 'url(/images/mythical/leaderboard-terms-conditions-bg.png)',
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat',
       filter: 'drop-shadow(4px 6px 0px #000)',
