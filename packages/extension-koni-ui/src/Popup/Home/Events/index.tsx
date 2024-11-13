@@ -37,6 +37,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const gameIframe = useRef<HTMLIFrameElement>(null);
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
   const [currentGameEvent, setCurrentGameEvent] = useState<GameEvent | undefined>(undefined);
+  const [serverTime, setServerTime] = useState<number>(apiSDK.serverTime);
 
   const exitGame = useCallback(() => {
     if (gameIframe.current) {
@@ -196,6 +197,16 @@ const Component = ({ className }: Props): React.ReactElement => {
   const showGame = !!currentGame;
 
   useEffect(() => {
+    const timeSub = apiSDK.subscribeServerTime().subscribe((time) => {
+      setServerTime(time);
+    });
+
+    return () => {
+      timeSub.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
     setContainerClass(showGame ? 'events-screen-wrapper -show-game' : 'events-screen-wrapper');
 
     return () => {
@@ -244,6 +255,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         gameEvents={gameEvents}
         onPlayEvent={onPlayEvent}
         selectedTab={selectedFilterTab}
+        serverTime={serverTime}
       />
     </div>
   );

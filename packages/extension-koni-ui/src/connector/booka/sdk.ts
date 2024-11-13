@@ -125,6 +125,10 @@ export class BookaSdk {
     return this.serverTimeSubject;
   }
 
+  public get serverTime () {
+    return this.serverTimeSubject.value;
+  }
+
   public get waitForSync () {
     return this.syncHandler.promise;
   }
