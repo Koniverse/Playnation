@@ -4,6 +4,7 @@
 import { NFLRivalCard } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ConditionProcessState } from '@subwallet/extension-koni-ui/Popup/Home/Cards';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import CN from 'classnames';
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import styled from 'styled-components';
 
@@ -28,13 +29,14 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
         setIsSearchAction={setIsSearchAction}
       />
 
-      {!isSearchAction &&
+      {
         <>
           <ToolSort
-            className={'__tool-sort'}
+            className={CN('__tool-sort', { '__hidden-content': isSearchAction })}
             setConditionProcess={setConditionProcess}
           />
           <ToolFilters
+            className={CN('__tool-filters', { '__hidden-content': isSearchAction })}
             setConditionProcess={setConditionProcess}
           />
         </>
@@ -48,6 +50,10 @@ export const ToolArea = styled(Component)<ThemeProps>(({ theme: { extendToken, t
     paddingLeft: 20,
     paddingRight: 20,
     display: 'flex',
+
+    '.__hidden-content': {
+      display: 'none'
+    },
 
     '.__tool-sort': {
       flex: '1 0 auto',

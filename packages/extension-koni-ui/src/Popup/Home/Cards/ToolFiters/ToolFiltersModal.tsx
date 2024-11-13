@@ -333,7 +333,7 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
     },
 
     '.__action-button': {
-      minWidth: 174.5,
+      flex: 1,
       height: 52,
       filter: 'drop-shadow(2px 3px 0px #000)',
 
