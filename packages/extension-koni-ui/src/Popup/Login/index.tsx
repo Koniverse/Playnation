@@ -9,7 +9,7 @@ import { useDefaultNavigate } from '@subwallet/extension-koni-ui/hooks';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useContext } from 'react';
 import styled from 'styled-components';
 import { useLocalStorage } from 'usehooks-ts';
 
@@ -18,7 +18,7 @@ type Props = ThemeProps;
 const Component: React.FC<Props> = ({ className }: Props) => {
   const { t } = useTranslation();
   const [, setIsVisitedLoginCTA] = useLocalStorage(VISIT_LOGIN_CTA_FLAG, VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE);
-  const { isLinkedMyth, onLogin } = useContext(AuthenticationMythContext);
+  const { onLogin } = useContext(AuthenticationMythContext);
   const { goHome } = useDefaultNavigate();
 
   const continueWithTelegram = useCallback(() => {
@@ -27,14 +27,9 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   }, [goHome, setIsVisitedLoginCTA]);
 
   const linkingWithMythAccount = useCallback(() => {
+    setIsVisitedLoginCTA(true);
     onLogin();
-  }, [onLogin]);
-
-  useEffect(() => {
-    if (isLinkedMyth) {
-      goHome();
-    }
-  }, [goHome, isLinkedMyth]);
+  }, [onLogin, setIsVisitedLoginCTA]);
 
   return (
     <div className={CN(className)}>
