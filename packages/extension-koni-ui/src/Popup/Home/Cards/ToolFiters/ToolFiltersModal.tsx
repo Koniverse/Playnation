@@ -191,7 +191,7 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
     '.ant-checkbox-checked.ant-checkbox-checked': {
       backgroundImage: 'url("/images/mythical/check-selected.png")',
       backgroundPosition: 'center center',
-      backgroundSize: '100% 100%',
+      backgroundSize: '100% 24px',
       filter: 'drop-shadow(0.97px 0.97px 0px #000)'
     },
 
@@ -205,12 +205,14 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
 
     '.ant-checkbox-inner': {
       visibility: 'hidden',
+      width: 24,
+      height: 24
     },
 
     '.ant-checkbox': {
       backgroundImage: 'url("/images/mythical/check-unselected.png")',
       backgroundPosition: 'center center',
-      backgroundSize: '100% 100%',
+      backgroundSize: '100% 24px'
     },
 
     '& .ant-sw-modal-content.ant-sw-modal-content': {
@@ -233,7 +235,8 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
 
     '& .ant-sw-header-container-center .ant-sw-header-center-part ': {
       '.ant-sw-sub-header-title': {
-        justifyContent: 'flex-start'
+        justifyContent: 'flex-start',
+        paddingLeft: 8
       }
     },
 
@@ -293,16 +296,19 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
       color: token.colorWhite,
       fontFamily: extendToken.fontBarlowCondensed,
       fontSize: '14px',
-      lineHeight: '16px',
+      lineHeight: '18px',
       fontStyle: 'normal',
       display: 'flex',
-      fontWeight: 500,
-      width: '100%'
+      fontWeight: 700,
+      width: '100%',
+      letterSpacing: '0.28px'
     },
 
     '.ant-sw-modal-footer': {
       display: 'flex',
-      flex: 1
+      flex: 1,
+      flexDirection: 'column',
+      justifyContent: 'flex-end'
     },
 
     '.__option-group-label': {
@@ -321,17 +327,22 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
     '.__footer-container': {
       display: 'flex',
       gap: '8px',
-      justifyContent: 'center',
+      justifyContent: 'space-between',
       alignItems: 'flex-end',
       paddingBottom: token.paddingXL + 2
     },
 
     '.__action-button': {
-      minWidth: 167.5,
+      minWidth: 174.5,
       height: 52,
+      filter: 'drop-shadow(2px 3px 0px #000)',
 
       '.__button-content': {
-        color: extendToken.mythColorDark
+        color: extendToken.mythColorDark,
+        fontSize: 22,
+        fontStyle: 'italic',
+        lineHeight: '24px',
+        letterSpacing: '-0.88px'
       },
 
       '.__button-background': {
