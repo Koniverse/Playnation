@@ -110,17 +110,19 @@ const Component = ({ className }: Props): React.ReactElement => {
 
         {cardItems.length
           ? (
-            <div className='__card-list-container'>
-              {
-                cardItems.map((item) => (
-                  <CardItem
-                    card={item}
-                    className={'__card-item'}
-                    key={item.defId}
-                    onClick={onClickCard(item)}
-                  />
-                ))
-              }
+            <div className='__card-list-wrapper'>
+              <div className='__card-list-container'>
+                {
+                  cardItems.map((item) => (
+                    <CardItem
+                      card={item}
+                      className={'__card-item'}
+                      key={item.defId}
+                      onClick={onClickCard(item)}
+                    />
+                  ))
+                }
+              </div>
             </div>
           )
           : (
@@ -158,12 +160,14 @@ const Cards = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
     height: '100%',
 
     '.__card-list-container': {
-      overflow: 'auto',
-      display: 'flex',
-      flexWrap: 'wrap',
-      paddingRight: token.padding,
-      paddingLeft: token.padding,
-      flex: 1
+      display: 'grid',
+      gridTemplateColumns: 'repeat(2, 1fr)',
+      gap: 12,
+      marginBottom: 20
+    },
+    '.__card-list-wrapper': {
+      flex: 1,
+      overflow: 'auto'
     },
 
     '.empty-list-content': {
