@@ -1,13 +1,16 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { MainScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
+import { MainScreenHeader, MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import CN from 'classnames';
 import React, { useCallback, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { AccountEditorArea } from './AccountEditorArea';
@@ -19,18 +22,40 @@ type Props = ThemeProps;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/my-profile');
+  const { t } = useTranslation();
+  const navigate = useNavigate();
 
-  const { isLinkedMyth, linkMythAccount } = useContext(AuthenticationMythContext);
+  const { isLinkedMyth, linkMythAccount, onLogout } = useContext(AuthenticationMythContext);
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
 
   const doLinkAccount = useCallback(() => {
     currentAccount?.address && linkMythAccount(currentAccount?.address).catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
 
+  const logIn = useCallback(() => {
+    navigate('/login');
+  }, [navigate]);
+
+  const logOut = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    onLogout().then(() => {
+
+    }).catch(console.error);
+  }, [onLogout]);
+
   return (
     <div className={className}>
       <MainScreenHeader
-        className={'profile-header'}
+        rightPartNode={
+          (
+            <MythButton
+              className={CN('login-button')}
+              onClick={!isLinkedMyth ? logIn : logOut}
+            >
+              {!isLinkedMyth ? t('Log in') : t('Log out')}
+            </MythButton>
+          )
+        }
         title={'My profile'}
       />
       <AccountEditorArea className={'account-editor-area'} />
@@ -48,12 +73,6 @@ const Component = ({ className }: Props): React.ReactElement => {
 const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     backgroundColor: '#000',
-    '.profile-header': {
-      position: 'fixed',
-      zIndex: 10,
-      backgroundColor: '#000000',
-      width: '100%'
-    },
 
     '.login-button': {
       paddingLeft: 16,
@@ -66,8 +85,7 @@ const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token }
     },
 
     '.account-editor-area': {
-      marginBottom: 20,
-      paddingTop: 80
+      marginBottom: 20
     },
 
     '.link-account-area': {
