@@ -9,7 +9,7 @@ import { ShareLeaderboard, Task } from '@subwallet/extension-koni-ui/connector/b
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useNotification, useSelector, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
-import { wcSendMessageRequest } from '@subwallet/extension-koni-ui/messaging';
+import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { customFormatDate, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
@@ -181,7 +181,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         openWaiting();
 
         try {
-          const rs = await wcSendMessageRequest({
+          const rs = await wcSignMessageRequest({
             address,
             chainId: WC_DEFAULT_CHAIN_ID,
             payload: message,

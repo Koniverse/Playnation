@@ -41,7 +41,7 @@ import { isProposalExpired, isSupportWalletConnectChain, isSupportWalletConnectN
 import { ResultApproveWalletConnectSession, WalletConnectNotSupportRequest, WalletConnectSessionRequest } from '@subwallet/extension-base/services/wallet-connect-service/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { AccountsStore } from '@subwallet/extension-base/stores';
-import { BalanceJson, BuyServiceInfo, BuyTokenInfo, NominationPoolInfo, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestWalletConnectCancelSessionPromise, RequestWalletConnectGetSessionPromise, RequestWCSendMessageRequest, ResponseWCSendMessageRequest, StorageDataInterface, TokenSpendingApprovalParams } from '@subwallet/extension-base/types';
+import { BalanceJson, BuyServiceInfo, BuyTokenInfo, NominationPoolInfo, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestWalletConnectCancelSessionPromise, RequestWalletConnectGetSessionPromise, RequestWCSignMessageRequest, RequestWCSendTransactionRequest, ResponseWCSignMessageRequest, ResponseWCSendTransactionRequest, StorageDataInterface, TokenSpendingApprovalParams } from '@subwallet/extension-base/types';
 import { CommonOptimalPath } from '@subwallet/extension-base/types/service-base';
 import { SwapPair, SwapQuoteResponse, SwapRequest, SwapRequestResult, SwapSubmitParams, ValidateSwapProcessParams } from '@subwallet/extension-base/types/swap';
 import { BN_ZERO, convertSubjectInfoToAddresses, createTransactionFromRLP, isSameAddress, MODULE_SUPPORT, reformatAddress, signatureToHex, Transaction as QrTransaction, uniqueStringArray } from '@subwallet/extension-base/utils';
@@ -3722,13 +3722,26 @@ export default class KoniExtension {
 
   // Send request
 
-  private async wcSendMessageRequest (request: RequestWCSendMessageRequest): Promise<ResponseWCSendMessageRequest> {
+  private async wcSignMessageRequest (request: RequestWCSignMessageRequest): Promise<ResponseWCSignMessageRequest> {
     const { address, chainId, method, payload } = request;
 
     const pair = keyring.getPair(address);
     const topic = pair.meta.wcTopic as string || '';
 
-    const signature = await this.#koniState.walletConnectService.signEvmMessage(topic, chainId, address, method, payload);
+    const signature = await this.#koniState.walletConnectService.evmSignMessage(topic, chainId, address, method, payload);
+
+    return {
+      signature
+    };
+  }
+
+  private async wcSendTransactionRequest (request: RequestWCSendTransactionRequest): Promise<ResponseWCSendTransactionRequest> {
+    const { address, chainId, transaction } = request;
+
+    const pair = keyring.getPair(address);
+    const topic = pair.meta.wcTopic as string || '';
+
+    const signature = await this.#koniState.walletConnectService.evmSendTransaction(topic, chainId, address, transaction);
 
     return {
       signature
@@ -4664,8 +4677,10 @@ export default class KoniExtension {
       case 'pri(walletConnect.session.cancel)':
         return this.cancelWCSessionPromise(request as RequestWalletConnectCancelSessionPromise);
 
-      case 'pri(walletConnect.requests.message.send)':
-        return this.wcSendMessageRequest(request as RequestWCSendMessageRequest);
+      case 'pri(walletConnect.requests.evm.sign.message)':
+        return this.wcSignMessageRequest(request as RequestWCSignMessageRequest);
+      case 'pri(walletConnect.requests.evm.send.transaction)':
+        return this.wcSendTransactionRequest(request as RequestWCSendTransactionRequest);
 
       // Not support
       case 'pri(walletConnect.requests.notSupport.subscribe)':

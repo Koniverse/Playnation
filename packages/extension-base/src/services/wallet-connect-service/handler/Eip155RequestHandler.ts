@@ -4,9 +4,14 @@
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils';
 import KoniState from '@subwallet/extension-base/koni/background/handlers/State';
 import WalletConnectService from '@subwallet/extension-base/services/wallet-connect-service';
-import { isSameAddress } from '@subwallet/extension-base/utils';
+import { WalletConnectSendTransactionParams } from '@subwallet/extension-base/types';
+import { ethNumberToHex, isSameAddress } from '@subwallet/extension-base/utils';
 import { SignClientTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
+import { TransactionConfig } from 'web3-core';
+
+import { numberToHex } from '@polkadot/util';
+import { HexString } from '@polkadot/util/types';
 
 import { WALLET_CONNECT_EIP155_NAMESPACE } from '../constants';
 import { getEip155MessageAddress, getWCId, parseRequestParams } from '../helpers';
@@ -119,6 +124,30 @@ export default class Eip155RequestHandler {
       request: {
         method,
         params: [address, message]
+      },
+      chainId: `${WALLET_CONNECT_EIP155_NAMESPACE}:${chainId}`
+    });
+  }
+
+  public requestSendTransaction (topic: string, chainId: number, address: string, transaction: TransactionConfig) {
+    const data: WalletConnectSendTransactionParams = {
+      from: address as HexString,
+      data: transaction.data as HexString,
+      chainId: numberToHex(chainId),
+      gas: ethNumberToHex(transaction.gas),
+      gasPrice: ethNumberToHex(transaction.gasPrice),
+      maxFeePerGas: ethNumberToHex(transaction.maxFeePerGas),
+      maxPriorityFeePerGas: ethNumberToHex(transaction.maxPriorityFeePerGas),
+      nonce: ethNumberToHex(transaction.nonce),
+      value: ethNumberToHex(transaction.value),
+      to: transaction.to as HexString
+    };
+
+    return this.#walletConnectService.sendRequest<string>({
+      topic,
+      request: {
+        method: EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION,
+        params: [data]
       },
       chainId: `${WALLET_CONNECT_EIP155_NAMESPACE}:${chainId}`
     });

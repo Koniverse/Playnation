@@ -14,6 +14,7 @@ import SignClient from '@walletconnect/sign-client';
 import { EngineTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import { getInternalError, getSdkError } from '@walletconnect/utils';
 import { BehaviorSubject } from 'rxjs';
+import { TransactionConfig } from 'web3-core';
 
 import PolkadotRequestHandler from './handler/PolkadotRequestHandler';
 import { ALL_WALLET_CONNECT_EVENT, DEFAULT_WALLET_CONNECT_OPTIONS, WALLET_CONNECT_EIP155_NAMESPACE, WALLET_CONNECT_SUPPORTED_METHODS, WC_OPTIONAL_CHAIN_IDS, WC_REQUIRE_CHAIN_IDS } from './constants';
@@ -486,7 +487,11 @@ export default class WalletConnectService {
     }, [] as string[]);
   }
 
-  public signEvmMessage (topic: string, chainId: number, address: string, method: string, message: unknown) {
+  public evmSignMessage (topic: string, chainId: number, address: string, method: string, message: unknown) {
     return this.#eip155RequestHandler.requestSignMessage(topic, chainId, address, method, message);
+  }
+
+  public evmSendTransaction (topic: string, chainId: number, address: string, transaction: TransactionConfig) {
+    return this.#eip155RequestHandler.requestSendTransaction(topic, chainId, address, transaction);
   }
 }
