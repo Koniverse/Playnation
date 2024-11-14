@@ -77,6 +77,8 @@ export class BookaSdk {
   private nflRivalCardListSubject = new BehaviorSubject<NFLRivalCard[]>([]);
   private metadataSubject = new BehaviorSubject<AppMetadata | undefined>(undefined);
   private serverTimeSubject = new BehaviorSubject<number>(Date.now());
+  private dailyRewardAchievementsSubject = new BehaviorSubject<Achievement[]>([]);
+  private inviteAchievementsSubject = new BehaviorSubject<Achievement[]>([]);
 
   // Special cases
   // Check if the account is banned
@@ -424,6 +426,22 @@ export class BookaSdk {
     return this.nflRivalCardListSubject.value;
   }
 
+  getDailyRewardAchievements () {
+    return this.dailyRewardAchievementsSubject.value;
+  }
+
+  subscribeDailyRewardAchievements () {
+    return this.dailyRewardAchievementsSubject;
+  }
+
+  getInviteAchievements () {
+    return this.inviteAchievementsSubject.value;
+  }
+
+  subscribeInviteAchievements () {
+    return this.inviteAchievementsSubject;
+  }
+
   /**
     * Fetch achievement list
    * return Achievement[] the list of achievementList
@@ -433,7 +451,25 @@ export class BookaSdk {
     const achievementList = await this.getRequest<Achievement[]>(`${GAME_API_HOST}/api/achievement/fetch-v2`);
 
     if (achievementList) {
-      this.achievementListSubject.next(achievementList);
+      const dailyRewardAchievement: Achievement[] = [];
+      const inviteAchievement: Achievement[] = [];
+      const achievementListFiltered = achievementList.filter((item) => {
+        if (item.specialPurpose === 'daily_reward_mission') {
+          dailyRewardAchievement.push(item);
+
+          return false;
+        } else if (item.specialPurpose === 'invite_mission') {
+          inviteAchievement.push(item);
+
+          return false;
+        }
+
+        return true;
+      });
+
+      this.dailyRewardAchievementsSubject.next(dailyRewardAchievement);
+      this.inviteAchievementsSubject.next(inviteAchievement);
+      this.achievementListSubject.next(achievementListFiltered);
       localStorage.setItem(CACHE_KEYS.achievementList, JSON.stringify(achievementList));
     }
   }
@@ -620,10 +656,10 @@ export class BookaSdk {
           this.fetchLeaderboardConfigList(),
           this.fetchGameList(),
           this.fetchGameEventList(),
-          this.fetchNFLRivalCardList()
+          this.fetchNFLRivalCardList(),
           // this.fetchTaskCategoryList(),
           // this.fetchTaskList(),
-          // this.fetchAchievementList()
+          this.fetchAchievementList()
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
           // this.fetchGameItemInGameList()

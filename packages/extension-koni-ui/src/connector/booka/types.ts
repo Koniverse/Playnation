@@ -244,6 +244,7 @@ export interface Achievement {
   icon: string,
   nps: number,
   status: AchievementLogStatus,
+  specialPurpose?: string,
   createdAt: Date,
   completedAt: Date,
 }
