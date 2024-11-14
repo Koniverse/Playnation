@@ -53,6 +53,10 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
   const authContext = useContext(AuthContext);
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
 
+  useEffect(() => {
+    bookaSDK.fetchNFLRivalCardList(authContext.token).catch(console.error);
+  }, [authContext.token]);
+
   const onLoginWithMythAccount = useCallback(() => {
     authContext.logIn();
   }, [authContext]);

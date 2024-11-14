@@ -402,9 +402,11 @@ export class BookaSdk {
    * Fetch game event list
    * return GameEvent[] the list of game event
    */
-  async fetchNFLRivalCardList () {
+  async fetchNFLRivalCardList (token?: string) {
     await this.waitForSync;
-    const response = await this.getRequest<{cards: NFLRivalCard[]}>(`${GAME_API_HOST}/api/nfl-rival-card/fetch`);
+    const response = await this.postRequest<{cards: NFLRivalCard[]}>(`${GAME_API_HOST}/api/nfl-rival-card/fetch`, {
+      token
+    });
 
     if (response?.cards) {
       this.nflRivalCardListSubject.next(response.cards);
@@ -656,10 +658,10 @@ export class BookaSdk {
           this.fetchLeaderboardConfigList(),
           this.fetchGameList(),
           this.fetchGameEventList(),
-          this.fetchNFLRivalCardList(),
+          this.fetchAchievementList()
+          // this.fetchNFLRivalCardList(), // Run in the mythical login to get token
           // this.fetchTaskCategoryList(),
           // this.fetchTaskList(),
-          this.fetchAchievementList()
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
           // this.fetchGameItemInGameList()
