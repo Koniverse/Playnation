@@ -442,6 +442,12 @@ export class BookaSdk {
     return `http://x.com/share?${contentShare}url=${linkShare}`;
   }
 
+  async getSignatureMintNft (address: string) {
+    const data = await this.postRequest(`${GAME_API_HOST}/api/mint-nft/create-signature`, { address });
+
+    return data as { signature: string, validate: boolean };
+  }
+
   async fetchReferalList () {
     await this.waitForSync;
     const refList = await this.getRequest<ReferralRecord[]>(`${GAME_API_HOST}/api/account/get-rerferal-logs`);

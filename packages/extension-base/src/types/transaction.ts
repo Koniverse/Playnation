@@ -6,3 +6,9 @@ import { TransactionConfig } from 'web3-core';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 
 export type TransactionData = SubmittableExtrinsic<'promise'> | TransactionConfig;
+
+export interface RequestMintNft {
+  address: string;
+  chain: string;
+  signature: string;
+}
