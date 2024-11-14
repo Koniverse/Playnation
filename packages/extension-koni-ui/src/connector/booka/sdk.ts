@@ -347,8 +347,8 @@ export class BookaSdk {
     return taskHistoryCheck;
   }
 
-  async finishTask (taskId: number, extrinsicHash: string, network: string) {
-    const data = await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId, extrinsicHash, network });
+  async finishTask (taskId: number, payload: Record<string, unknown>) {
+    const data = await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId, ...payload });
 
     await this.fetchTaskCategoryList();
 

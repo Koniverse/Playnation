@@ -33,7 +33,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
   useSetCurrentPage('/home/mission');
   const notify = useNotification();
 
-  const { connectWC, requireWC } = useContext(WalletConnectContext);
+  const { connectWC, requireWC, waitingSigningModal: { close: closeWaiting, open: openWaiting } } = useContext(WalletConnectContext);
 
   const { wcAccount } = useSelector((state) => state.accountState);
 
@@ -178,6 +178,8 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
 
         const message = `Check NFT Ownership ${telegramId}`;
 
+        openWaiting();
+
         try {
           const rs = await wcSendMessageRequest({
             address,
@@ -186,9 +188,12 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
             method: 'personal_sign'
           });
 
+          closeWaiting();
+
           payload.signature = rs.signature;
           payload.address = address;
         } catch (e) {
+          closeWaiting();
           const error = e as Error;
 
           console.error('Fail to get signature', error);
@@ -233,7 +238,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         }, 100);
       }
     })().catch(console.error);
-  }, [account, actionReloadPoint, connectWC, notify, openWidget, t, task, wcAccount, requireWC]);
+  }, [account, actionReloadPoint, connectWC, notify, openWidget, t, task, wcAccount, requireWC, openWaiting, closeWaiting]);
 
   const { endTime,
     isDisabled,

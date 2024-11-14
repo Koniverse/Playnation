@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AccountJson } from '@subwallet/extension-base/background/types';
-import { ConnectWalletSuccessModal } from '@subwallet/extension-koni-ui/components';
-import { CONNECT_WALLET_SUCCESS_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { ConnectWalletSuccessModal, WalletConnectWaitingSigningModal } from '@subwallet/extension-koni-ui/components';
+import { CONNECT_WALLET_SUCCESS_MODAL, WALLET_CONNECT_WAITING_SIGNING_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { useConfirmModal } from '@subwallet/extension-koni-ui/hooks';
 import { disconnectWalletConnectConnection, wcCancelSessionPromise, wcGetSessionPromise, wcSessionCreate } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
@@ -30,16 +30,27 @@ export interface WalletConnectContextType {
   connectWC: () => Promise<string>;
   disconnectWC: (wcAccount: AccountJson) => (() => Promise<void>);
   requireWC: () => Promise<void>;
+  waitingSigningModal: {
+    open: () => void;
+    close: () => void;
+  };
 }
 
 export const WalletConnectContext = React.createContext<WalletConnectContextType>({
   connectWC: () => Promise.resolve(''),
   disconnectWC: () => () => Promise.resolve(),
-  requireWC: () => Promise.resolve()
+  requireWC: () => Promise.resolve(),
+  waitingSigningModal: {
+    close: noop,
+    open: noop
+  }
 });
 
+const waitingModal = WALLET_CONNECT_WAITING_SIGNING_MODAL;
+const connectSuccessModal = CONNECT_WALLET_SUCCESS_MODAL;
+
 export const WalletConnectContextProvider = ({ children }: Props) => {
-  const { activeModal } = useContext(ModalContext);
+  const { activeModal, inactiveModal } = useContext(ModalContext);
 
   const { t } = useTranslation();
 
@@ -153,7 +164,7 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
             // Connected with wallet
             console.log('Connected with wallet', data.approveAddress);
             wcModal.closeModal();
-            activeModal(CONNECT_WALLET_SUCCESS_MODAL);
+            activeModal(connectSuccessModal);
           } else {
             // Wallet connect failed
             console.error('Wallet connect failed', data.errorMessage);
@@ -202,11 +213,23 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
     return handleRequireModal();
   }, [handleRequireModal]);
 
-  const contextValue = useMemo(() => ({
+  const openWaiting = useCallback(() => {
+    activeModal(waitingModal);
+  }, [activeModal]);
+
+  const closeWaiting = useCallback(() => {
+    inactiveModal(waitingModal);
+  }, [inactiveModal]);
+
+  const contextValue = useMemo((): WalletConnectContextType => ({
     connectWC,
     disconnectWC,
-    requireWC
-  }), [connectWC, disconnectWC, requireWC]);
+    requireWC,
+    waitingSigningModal: {
+      close: closeWaiting,
+      open: openWaiting
+    }
+  }), [closeWaiting, connectWC, disconnectWC, openWaiting, requireWC]);
 
   useEffect(() => {
     if (projectId) {
@@ -231,6 +254,7 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
         address={wcAccount?.address || ''}
         callback={onSuccessCb}
       />
+      <WalletConnectWaitingSigningModal />
     </WalletConnectContext.Provider>
   );
 };
