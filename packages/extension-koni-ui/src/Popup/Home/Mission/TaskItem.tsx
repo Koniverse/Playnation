@@ -217,8 +217,15 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
           }
         })
         .catch((e) => {
+          const error = e as Error;
+
           console.error('finishTask', e);
           setTaskLoading(false);
+
+          notify({
+            message: error.message,
+            type: 'error'
+          });
         });
 
       if (!task.airlyftId) {
