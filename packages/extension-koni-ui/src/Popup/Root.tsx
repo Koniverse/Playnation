@@ -282,21 +282,21 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   }
 }
 
-export function Root (): React.ReactElement {
-  // Implement WalletModalContext in Root component to make it available for all children and can use react-router-dom and ModalContextProvider
-  const AuthConfig: TAuthConfig = {
-    clientId: CLIENT_ID,
-    authorizationEndpoint: AUTHORIZATION_ENDPOINT,
-    tokenEndpoint: TOKEN_ENDPOINT,
-    redirectUri: AUTHENTICATE_REDIRECT_URI,
-    logoutEndpoint: LOGOUT_ENDPOINT,
-    logoutRedirect: AUTHENTICATE_LOGOUT_REDIRECT,
-    autoLogin: false,
-    onRefreshTokenExpire: (event: TRefreshTokenExpiredEvent) => event.logIn(undefined, undefined, 'popup')
-  };
+// Implement WalletModalContext in Root component to make it available for all children and can use react-router-dom and ModalContextProvider
+const authConfig: TAuthConfig = {
+  clientId: CLIENT_ID,
+  authorizationEndpoint: AUTHORIZATION_ENDPOINT,
+  tokenEndpoint: TOKEN_ENDPOINT,
+  redirectUri: AUTHENTICATE_REDIRECT_URI,
+  logoutEndpoint: LOGOUT_ENDPOINT,
+  logoutRedirect: AUTHENTICATE_LOGOUT_REDIRECT,
+  autoLogin: false,
+  onRefreshTokenExpire: (event: TRefreshTokenExpiredEvent) => event.logIn(undefined, undefined, 'popup')
+};
 
+export function Root (): React.ReactElement {
   return (
-    <AuthProvider authConfig={AuthConfig}>
+    <AuthProvider authConfig={authConfig}>
       <AuthenticationMythProvider>
         <SecurityContextProvider>
           <WalletModalContextProvider>
