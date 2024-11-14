@@ -37,9 +37,8 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [navigate]);
 
   const logOut = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     onLogout().then(() => {
-
+      console.log('Logout success');
     }).catch(console.error);
   }, [onLogout]);
 
