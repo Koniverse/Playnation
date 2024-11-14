@@ -7,12 +7,10 @@ import { MintNftDetailAbout, MintNftDetailCondition } from '@subwallet/extension
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { NftAirdropMint } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { CONNECT_WALLET_SUCCESS_MODAL } from '@subwallet/extension-koni-ui/constants';
-import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
-import { useConfirmModal } from '@subwallet/extension-koni-ui/hooks';
+import { ALERT_CONNECT_WALLET_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { useConfirmModal, useDefaultNavigate } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
-import { wcCancelSessionPromise, wcGetSessionPromise, wcSessionCreate } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
@@ -20,7 +18,6 @@ import CN from 'classnames';
 import { ArrowCircleRight, ShareNetwork, XCircle } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
@@ -49,13 +46,11 @@ const enum NftAirdropMintProcess {
 const telegramConnector = TelegramConnector.instance;
 
 const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
-  const navigate = useNavigate();
   const notify = useNotification();
-  const { closeWCConnectModal, openWCConnectModal, subscribeWCConnectModal } = useContext(WalletModalContext);
-  const { activeModal } = useContext(ModalContext);
+  const { goHome } = useDefaultNavigate();
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
   const { t } = useTranslation();
-
+  const { activeModal } = useContext(ModalContext);
   const [selectedTab, setSelectedTab] = useState<string>(TabType.CONDITION);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -86,98 +81,11 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
     return false;
   }, [wcAccount?.address]);
 
-  const onConnectWallet = useCallback(() => {
-    setIsLoading(true);
-
-    wcSessionCreate()
-      .then(({ id, uri }) => {
-        // Open wallet connect modal
-        openWCConnectModal(uri, id)
-          .catch(console.error);
-
-        const unsubscribe = subscribeWCConnectModal((newState) => {
-          if (!newState.open) {
-            unsubscribe();
-            wcCancelSessionPromise(id).catch(console.error);
-            setIsLoading(false);
-          }
-        });
-
-        // Subscribe session result
-        wcGetSessionPromise(id)
-          .then((data) => {
-            unsubscribe();
-
-            if (data.approveAddress) {
-              // Connected with wallet
-              console.log('Connected with wallet', data.approveAddress);
-              closeWCConnectModal();
-              activeModal(CONNECT_WALLET_SUCCESS_MODAL);
-            } else {
-              // Wallet connect failed
-              console.error('Wallet connect failed', data.errorMessage);
-              closeWCConnectModal();
-              notify({
-                type: 'error',
-                message: data.errorMessage
-              });
-            }
-          })
-          .catch((e: Error) => {
-            // Wallet connect failed
-            unsubscribe();
-            console.error('Wallet connect failed', e.message);
-            notify({
-              type: 'error',
-              message: t('Failed to connect with wallet')
-            });
-          })
-          .finally(() => {
-            setIsLoading(false);
-          });
-      })
-      .catch((e) => {
-        console.error(e);
-        notify({
-          message: t('Failed to create wallet connect session')
-        });
-
-        setIsLoading(false);
-      });
-  }, [openWCConnectModal, subscribeWCConnectModal, closeWCConnectModal, activeModal, notify, t]);
-
-  const notifyConnectWCProps = useMemo((): Partial<SwModalFuncProps> => ({
-    id: 'alert-connect-wc',
-    className: CN('disconnect-wc-modal', className),
-    title: t('Connect your wallet'),
-    cancelText: t('Cancel'),
-    okText: t('Connect'),
-    content: (
-      <div>
-        <div>{t('Wallet connection required')}</div>
-        <div>{t('You need to connect your wallet to continue')}</div>
-      </div>
-    ),
-    closable: true,
-    maskClosable: true,
-    okCancel: true,
-    onOk: onConnectWallet,
-    cancelButtonProps: {
-      icon: (
-        <Icon
-          phosphorIcon={XCircle}
-          size='md'
-        />
-      ),
-      schema: 'secondary'
-    }
-  }), [className, onConnectWallet, t]);
-
   const notifyIneligibleProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: 'alert-ineligible-mint',
-    className: CN('disconnect-wc-modal', className),
+    className: CN('mint-detail-sup-modal', className),
     title: t('Ineligible to mint'),
-    cancelText: t('Back to home'),
+    okText: t('Back to home'),
     content: (
       <div>
         <div>{t('Oops, your account is not eligible')}</div>
@@ -186,11 +94,8 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
     ),
     closable: true,
     maskClosable: true,
-    okCancel: true,
-    onCancel: () => {
-      navigate('/');
-    },
-    cancelButtonProps: {
+    okCancel: false,
+    okButtonProps: {
       icon: (
         <Icon
           phosphorIcon={XCircle}
@@ -199,9 +104,8 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
       ),
       schema: 'secondary'
     }
-  }), [className, navigate, t]);
+  }), [className, t]);
 
-  const { handleSimpleConfirmModal } = useConfirmModal(notifyConnectWCProps);
   const { handleSimpleConfirmModal: handleIneligibleModal } = useConfirmModal(notifyIneligibleProps);
 
   const onSelectTab = useCallback((value: string) => {
@@ -262,27 +166,24 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
     setIsLoading(true);
 
     if (!wcAccount?.address) {
-      notify({
-        message: t('Please connect your wallet first.'),
-        type: 'error'
-      });
-
       setIsLoading(false);
-      handleSimpleConfirmModal().catch(console.error);
+      activeModal(ALERT_CONNECT_WALLET_MODAL);
 
       return;
     }
 
     fetchEligibility().then((eligibility) => {
       if (!eligibility) {
-        handleIneligibleModal().catch(console.error);
+        handleIneligibleModal().then(goHome).catch(console.error);
 
         return;
       }
 
+      // TODO: Implement minting logic
+
       notify({
         message: t('Please check your wallet'),
-        type: 'success'
+        type: 'warning'
       });
       setIsLoading(false);
     }).catch((error) => {
@@ -292,7 +193,7 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
       });
       setIsLoading(false);
     });
-  }, [wcAccount?.address, fetchEligibility, notify, t, handleSimpleConfirmModal, handleIneligibleModal]);
+  }, [wcAccount?.address, fetchEligibility, notify, t, handleIneligibleModal]);
 
   const renderButton = () => {
     return (
@@ -444,6 +345,20 @@ const MintNftDetail = styled(Component)<ThemeProps>(({ theme: { extendToken, tok
         fontSize: token.fontSizeHeading6,
         lineHeight: token.lineHeightHeading6,
         weight: 500
+      }
+    },
+
+    '&.mint-detail-sup-modal': {
+      maxHeight: '100%',
+      marginBottom: 0,
+      backgroundColor: 'transparent',
+      justifyContent: 'flex-end',
+      '.ant-sw-modal-confirm-btns': {
+        flexDirection: 'row',
+
+        '.ant-btn': {
+          flex: 1
+        }
       }
     }
   });

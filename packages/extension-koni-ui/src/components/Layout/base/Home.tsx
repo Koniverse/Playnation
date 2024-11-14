@@ -4,6 +4,7 @@
 import { AccountJson } from '@subwallet/extension-base/background/types';
 import { ConnectWalletSuccessModal, Layout } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
+import { AlertConnectWCModal } from '@subwallet/extension-koni-ui/components/Modal/AlertConnectWCModal';
 import { CONNECT_WALLET_SUCCESS_MODAL, VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
@@ -260,6 +261,7 @@ const Component = (props: Props) => {
       showTabBar={showTabBar ?? true}
     >
       {children}
+      <AlertConnectWCModal />
       <ConnectWalletSuccessModal address={wcAccount?.address || ''} />
     </Layout.Base>
   );

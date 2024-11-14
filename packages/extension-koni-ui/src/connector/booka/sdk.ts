@@ -554,7 +554,8 @@ export class BookaSdk {
           this.fetchTaskCategoryList(),
           this.fetchTaskList(),
           this.fetchLeaderboardConfigList(),
-          this.fetchAirdropCampaign()
+          this.fetchAirdropCampaign(),
+          this.fetchNftAirdrop()
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
           // this.fetchGameItemInGameList()
@@ -999,7 +1000,7 @@ export class BookaSdk {
   }
 
   async fetchStoryBadgeEligibility (address: string) {
-    return await this.postRequest<boolean>(`${STORY_BADGE_HOST}/api/eligible'`, { address });
+    return true;
   }
 
   async mintStoryBadge (address: string, eligibilityId: number) {

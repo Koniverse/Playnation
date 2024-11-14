@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { MintNftDetail, MintNftHeader, MintNftSuccess } from '@subwallet/extension-koni-ui/components/Mint';
+import { MintNftDetail, MintNftHeader } from '@subwallet/extension-koni-ui/components/Mint';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { NftAirdropMint } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
@@ -20,7 +20,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [nftAirdropList, setNftAirdropList] = useState<NftAirdropMint[]>(apiSDK.airdropNftMintList);
 
   const currentNftAirdropMint = useMemo(() => {
-    return nftAirdropList.find((a) => id && a.id === +id);
+    return nftAirdropList[0];
   }, [nftAirdropList, id]);
 
   useEffect(() => {
@@ -41,6 +41,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     <div className={className}>
       <MintNftHeader nftAirdropInfo={currentNftAirdropMint} />
       <MintNftDetail nftAirdropInfo={currentNftAirdropMint} />
+      {/* <MintNftSuccess nftAirdropInfo={currentNftAirdropMint} /> */}
     </div>
   );
 };
