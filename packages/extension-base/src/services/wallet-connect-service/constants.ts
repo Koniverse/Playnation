@@ -40,6 +40,6 @@ export const WALLET_CONNECT_POLKADOT_NAMESPACE = 'polkadot';
 
 export const WALLET_CONNECT_SUPPORT_NAMESPACES: string[] = [WALLET_CONNECT_EIP155_NAMESPACE, WALLET_CONNECT_POLKADOT_NAMESPACE];
 
-export const WC_REQUIRE_CHAIN_IDS: number[] = [1513];
+export const WC_REQUIRE_CHAIN_IDS: number[] = [1, 1513];
 export const WC_OPTIONAL_CHAIN_IDS: number[] = [];
-export const WC_DEFAULT_CHAIN_ID = 1513;
+export const WC_DEFAULT_CHAIN_ID = 1;

@@ -57,7 +57,7 @@ const handleSignature = async (type: EvmSignatureSupportType, id: string, signat
 const Component: React.FC<Props> = (props: Props) => {
   const { className, extrinsicType, id, payload, txExpirationTime, type } = props;
   const { payload: { account, canSign, hashPayload } } = payload;
-  const chainId = (payload.payload as EvmSendTransactionRequest)?.chainId || 1;
+  const chainId = (payload.payload as EvmSendTransactionRequest)?.chainId || WC_DEFAULT_CHAIN_ID;
 
   const { t } = useTranslation();
   const notify = useNotification();
@@ -212,13 +212,13 @@ const Component: React.FC<Props> = (props: Props) => {
         method: payload.payload.type,
         address: account.address,
         payload: payload.payload.payload,
-        chainId: WC_DEFAULT_CHAIN_ID
+        chainId
       });
     } else {
       promise = wcSendTransactionRequest({
         address: account.address,
         transaction: payload.payload,
-        chainId: WC_DEFAULT_CHAIN_ID
+        chainId
       });
     }
 
@@ -233,7 +233,7 @@ const Component: React.FC<Props> = (props: Props) => {
       .finally(() => {
         setLoading(false);
       });
-  }, [account.address, isMessage, onApproveSignature, payload]);
+  }, [account.address, isMessage, onApproveSignature, payload, chainId]);
 
   const onConfirm = useCallback(() => {
     removeTransactionPersist(extrinsicType);
