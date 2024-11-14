@@ -68,6 +68,7 @@ export default class WalletConnectService {
     this.#koniState = koniState;
     this.#requestService = requestService;
     option.storage = new WCStorage();
+    delete option.storage; // Focus to use local storage
     this.#option = option;
     this.#polkadotRequestHandler = new PolkadotRequestHandler(this, requestService);
     this.#eip155RequestHandler = new Eip155RequestHandler(this.#koniState, this);
