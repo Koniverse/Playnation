@@ -48,7 +48,7 @@ function Component (props: Props): React.ReactElement<Props> {
             setLoading(false);
           });
       });
-  }, [dailyRewards, loading]);
+  }, [dailyRewards, isClaimable, loading]);
 
   useEffect(() => {
     const sub1 = apiSdk.subscribeDailyRewardAchievements().subscribe((achievements: Achievement[]) => {
