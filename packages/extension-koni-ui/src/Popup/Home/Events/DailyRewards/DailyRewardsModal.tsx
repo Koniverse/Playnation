@@ -31,7 +31,7 @@ function Component (props: Props): React.ReactElement<Props> {
   const [timeRange, setTimeRange] = useState(apiSdk.getMetadata()?.timeRange);
 
   const onClaim = useCallback(() => {
-    if (loading) {
+    if (loading || !isClaimable) {
       return;
     }
 
@@ -173,6 +173,7 @@ function Component (props: Props): React.ReactElement<Props> {
             '-lock': !isClaimable,
             '-claimable': isClaimable
           })}
+          isLoading={loading}
           onClick={onClaim}
         >
           {claimButtonLabel}
