@@ -11,10 +11,11 @@ import styled from 'styled-components';
 
 type Props = ThemeProps & {
   isLinked?: boolean;
+  isLoading?: boolean;
   doLinkAccount?: VoidFunction;
 };
 
-const Component = ({ className, doLinkAccount, isLinked }: Props): React.ReactElement => {
+const Component = ({ className, doLinkAccount, isLinked, isLoading }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const { account } = useContext(AuthenticationMythContext);
   const openContactSupport = useCallback(() => {
@@ -49,6 +50,7 @@ const Component = ({ className, doLinkAccount, isLinked }: Props): React.ReactEl
         !isLinked && (
           <MythButton
             className={'__linked-account-button __button'}
+            isLoading={isLoading}
             onClick={doLinkAccount}
           >
             {t('Link mythical account')}
