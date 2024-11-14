@@ -32,9 +32,18 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
     category: [],
     position: []
   });
+  const [tmpItemsSelected] = useState<FilterOptionsSelected>(itemsSelected);
+
   const onCancel = useCallback(() => {
+    const newTmpItemsSelected = {
+      category: itemsSelected.category.filter((item) => tmpItemsSelected.category.includes(item)),
+      position: itemsSelected.position.filter((item) => tmpItemsSelected.position.includes(item))
+    };
+
+    setItemsSelected(newTmpItemsSelected);
+
     inactiveModal('filter-modal-id');
-  }, [inactiveModal]);
+  }, [inactiveModal, itemsSelected, tmpItemsSelected]);
 
   const onReset = useCallback(() => {
     setItemsSelected({
@@ -46,8 +55,8 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
       ...prev,
       filter: (prev) => prev
     }));
-    onCancel();
-  }, [onCancel, setConditionProcess, setNumberOptionsSelected]);
+    inactiveModal('filter-modal-id');
+  }, [inactiveModal, setConditionProcess, setNumberOptionsSelected]);
 
   const handleSelectItem = useCallback((typeOption: FilterOption, option: string) => {
     return () => {
@@ -98,8 +107,8 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
       filter: filterfunction
     }));
 
-    onCancel();
-  }, [itemsSelected, onCancel, setConditionProcess, setNumberOptionsSelected]);
+    inactiveModal('filter-modal-id');
+  }, [inactiveModal, itemsSelected, setConditionProcess, setNumberOptionsSelected]);
 
   const footerContent = useMemo(() => {
     return (
@@ -229,15 +238,26 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
     },
 
     '.ant-sw-modal-header.ant-sw-modal-header': {
-      paddingTop: token.paddingSM + 2,
-      paddingBottom: token.paddingSM + 2
+      paddingTop: token.padding + 2,
+      paddingBottom: token.padding + 2,
+      paddingLeft: 20,
+      paddingRight: 20
     },
 
     '& .ant-sw-header-container-center .ant-sw-header-center-part ': {
       '.ant-sw-sub-header-title': {
         justifyContent: 'flex-start',
-        paddingLeft: 8
+        display: 'flex',
+        alignItems: 'center'
       }
+    },
+
+    '.ant-sw-header-center-part, .ant-sw-sub-header-title': {
+      maxHeight: 32
+    },
+
+    '.ant-sw-header-container-center .ant-sw-header-center-part': {
+      marginLeft: 46
     },
 
     '.ant-sw-header-left-part .ant-btn': {
@@ -245,9 +265,23 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
       backgroundSize: '30px 32px',
       backgroundPosition: 'center center',
       backgroundRepeat: 'no-repeat',
+      maxHeight: 32,
+      minWidth: 30,
+      maxWidth: 30,
       span: {
         opacity: 0
       }
+    },
+
+    '.ant-sw-header-container .ant-sw-header-left-part': {
+      marginLeft: 0
+    },
+
+    '.ant-sw-header-container': {
+      minHeight: 32
+    },
+    '.ant-sw-header-right-part': {
+      display: 'none'
     },
 
     '.ant-sw-sub-header-title .ant-sw-sub-header-title-content': {
@@ -296,12 +330,17 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
       color: token.colorWhite,
       fontFamily: extendToken.fontBarlowCondensed,
       fontSize: '14px',
-      lineHeight: '18px',
+      lineHeight: '16px',
       fontStyle: 'normal',
       display: 'flex',
-      fontWeight: 700,
+      fontWeight: 500,
       width: '100%',
       letterSpacing: '0.28px'
+    },
+
+    '.ant-checkbox-wrapper-checked .__filter-item-label.__filter-item-label': {
+      fontWeight: 700,
+      lineHeight: '18px'
     },
 
     '.ant-sw-modal-footer': {

@@ -87,7 +87,7 @@ export const ToolSearch = styled(Component)<ThemeProps>(({ theme: { extendToken,
     '.__tool-search-button': {
       cursor: 'pointer',
       backgroundImage: 'url("/images/mythical/tool-search.png")',
-      minWidth: 55,
+      minWidth: 51,
       height: 42,
       backgroundSize: '51px 42px',
       backgroundRepeat: 'no-repeat',
