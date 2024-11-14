@@ -97,7 +97,7 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
       },
       label: t('Mint'),
       key: 'mint',
-      url: '/home/leaderboard'
+      url: '/home/mint'
     }
     // {
     //   icon: {
@@ -186,15 +186,6 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
 
   const onSelectTab = useCallback(
     (item: TabItemType) => () => {
-      if (item.key === 'mint') {
-        notify({
-          message: 'Coming soon!',
-          duration: 3
-        });
-
-        return;
-      }
-
       navigate(item.url);
     },
     [navigate, notify]

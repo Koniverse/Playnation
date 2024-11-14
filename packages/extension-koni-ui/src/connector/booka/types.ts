@@ -341,6 +341,45 @@ export interface AirdropCampaign {
   eligibilityIds?: number[];
 }
 
+export interface NftAirdropMint {
+  id: number;
+  name: string;
+  icon: string;
+  banner: string;
+  start_snapshot: Date;
+  end_snapshot: Date;
+  start_mint: Date;
+  end_mint: Date;
+  network: string;
+  total_badges: number;
+  symbol: string;
+  // decimal: number;
+  // method: string;
+  // raffle_count: number;
+  start: Date;
+  end: Date;
+  conditionDescription: string;
+  description: string;
+  shortDescription: string;
+  // tokenDistributions: JSON;
+  // npsDistributions: JSON;
+  // share: AirdropCampaignShare;
+  token_slug: string,
+  status: string;
+  // createdAt: Date;
+  // updatedAt: Date;
+  eligibilityList: {
+    id: number;
+    name: string;
+    type: string;
+    start: Date;
+    end: Date;
+    boxCount: number,
+    note: string
+  }[];
+  eligibilityIds?: number[];
+}
+
 export interface AirdropRewardHistoryLog {
   status: 'PENDING' | 'MISSED' | 'RECEIVED',
   type: 'TOKEN' | 'NPS',
