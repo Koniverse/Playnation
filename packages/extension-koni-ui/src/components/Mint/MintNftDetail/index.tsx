@@ -241,7 +241,7 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
 
       const signature = await fetchMintSignature();
 
-      const transaction = await odysseyMintNft({ address: wcAccount?.address || '', chain: 'storyPublic_testnet', signature });
+      const transaction = await odysseyMintNft({ address: wcAccount?.address || '', chain: 'storyOdyssey_testnet', signature });
 
       if (transaction.errors) {
         handleFailedToMintModal().then(goHome).catch(console.error);
