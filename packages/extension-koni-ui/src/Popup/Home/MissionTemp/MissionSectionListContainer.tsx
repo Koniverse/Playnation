@@ -65,6 +65,9 @@ function filterAchievements (achievements: Achievement[], taskSectionMap: Record
 
     // Skip items with CLAIMED status
     if (item.status === AchievementLogStatus.CLAIMED) {
+      if (!result[item.documentId] || item.milestoneOrdinal > result[item.documentId].milestoneOrdinal) {
+        result[item.documentId] = item;
+      }
       return;
     }
 
@@ -320,6 +323,8 @@ const Component = ({ accountInfo,
 
     const filteredAchievements = filterAchievements(achievements, taskSectionMap);
 
+    console.log('filteredAchievements', filteredAchievements);
+
     filteredAchievements.forEach((ach) => {
       taskSectionMap[ach.categoryId].items.push({
         id: `${ach.id}`,
@@ -450,6 +455,8 @@ const Component = ({ accountInfo,
   //     }
   //   ] as MissionSectionType[];
   // }, []);
+
+  console.log('missionSections', missionSections);
 
   return (
     <div className={className}>
