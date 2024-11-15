@@ -22,7 +22,8 @@ import { useSelector } from 'react-redux';
 import styled, { useTheme } from 'styled-components';
 
 type Props = ThemeProps & {
-  airdropNftInfo: IAirdropNftMinting
+  airdropNftInfo: IAirdropNftMinting,
+  onSuccess: VoidFunction;
 };
 
 const apiSDK = BookaSdk.instance;
@@ -46,7 +47,8 @@ const enum IAirdropNftMintingProcess {
 
 const telegramConnector = TelegramConnector.instance;
 
-const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
+const Component: React.FC<Props> = (props: Props) => {
+  const { airdropNftInfo, className, onSuccess } = props;
   const notify = useNotification();
   const { goHome } = useDefaultNavigate();
   const { token } = useTheme() as Theme;
@@ -197,13 +199,15 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
 
       const { signature } = await apiSDK.getSignatureMintNft(address);
 
-      const transaction = await odysseyMintNft({ address, chain: 'storyOdyssey_testnet', signature });
+      const transaction = await odysseyMintNft({ address, chain: 'storyPublic_testnet', signature });
 
       if (transaction.errors.length) {
         handleFailedToMintModal().then(goHome).catch(console.error);
         setIsLoading(false);
 
         return;
+      } else {
+        onSuccess();
       }
     } catch (e) {
       notify({
@@ -213,7 +217,7 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
     }
 
     setIsLoading(false);
-  }, [handleFailedToMintModal, handleIneligibleModal, goHome, notify]);
+  }, [handleIneligibleModal, goHome, handleFailedToMintModal, onSuccess, notify]);
 
   const onPreMint = useCallback(() => {
     const getAddress = new Promise<string>((resolve, reject) => {

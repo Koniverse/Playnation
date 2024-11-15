@@ -1,12 +1,12 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { MintNftDetail, MintNftHeader } from '@subwallet/extension-koni-ui/components/Mint';
+import { MintNftDetail, MintNftHeader, MintNftSuccess } from '@subwallet/extension-koni-ui/components/Mint';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -18,10 +18,15 @@ const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/leaderboard');
   const { id } = useParams<{ id: string }>();
   const [nftAirdropList, setNftAirdropList] = useState<IAirdropNftMinting[]>(apiSDK.airdropNftMintList);
+  const [mintSuccess, setMintSuccess] = useState(false);
 
   const currentIAirdropNftMinting = useMemo(() => {
     return nftAirdropList[0];
   }, [nftAirdropList, id]);
+
+  const onMintSuccess = useCallback(() => {
+    setMintSuccess(true);
+  }, []);
 
   useEffect(() => {
     const subscription = apiSDK.subscribeAirdropNftMint().subscribe((data) => {
@@ -40,8 +45,18 @@ const Component = ({ className }: Props): React.ReactElement => {
   return (
     <div className={className}>
       <MintNftHeader airdropNftInfo={currentIAirdropNftMinting} />
-      <MintNftDetail airdropNftInfo={currentIAirdropNftMinting} />
-      {/* <MintNftSuccess airdropNftInfo={currentIAirdropNftMinting} /> */}
+      {
+        mintSuccess
+          ? (
+            <MintNftSuccess airdropNftInfo={currentIAirdropNftMinting} />
+          )
+          : (
+            <MintNftDetail
+              airdropNftInfo={currentIAirdropNftMinting}
+              onSuccess={onMintSuccess}
+            />
+          )
+      }
     </div>
   );
 };
