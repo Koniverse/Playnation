@@ -4,16 +4,17 @@
 import { TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { MintNftDetailAbout, MintNftDetailCondition } from '@subwallet/extension-koni-ui/components/Mint/MintNftDetail/variants';
+import { AlertConnectWCModal } from '@subwallet/extension-koni-ui/components/Modal/Mint';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { NftAirdropMint } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { ALERT_CONNECT_WALLET_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useConfirmModal, useDefaultNavigate } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, Icon, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
+import { Button, Icon, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { ArrowCircleRight, ShareNetwork, XCircle } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
@@ -50,10 +51,9 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
   const { goHome } = useDefaultNavigate();
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
   const { t } = useTranslation();
-  const { activeModal } = useContext(ModalContext);
   const [selectedTab, setSelectedTab] = useState<string>(TabType.CONDITION);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
+  const { connectWC, requireWC } = useContext(WalletConnectContext);
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
       {
@@ -112,7 +112,7 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
     setSelectedTab(value);
   }, []);
 
-  const onClickShare = useCallback(async () => {
+  const onClickShare = useCallback(() => {
     if (!nftAirdropInfo) {
       return;
     }
@@ -134,7 +134,7 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
           />
         ),
         onClick: () => {
-          onClickShare().catch(console.error);
+          onClickShare();
         }
       }
     ];
@@ -167,7 +167,7 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
 
     if (!wcAccount?.address) {
       setIsLoading(false);
-      activeModal(ALERT_CONNECT_WALLET_MODAL);
+      requireWC().then(connectWC).catch(console.error);
 
       return;
     }
@@ -193,7 +193,7 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
       });
       setIsLoading(false);
     });
-  }, [wcAccount?.address, fetchEligibility, notify, t, handleIneligibleModal]);
+  }, [wcAccount?.address, fetchEligibility, requireWC, connectWC, notify, t, handleIneligibleModal, goHome]);
 
   const renderButton = () => {
     return (
@@ -278,6 +278,7 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
         {renderButton()}
 
       </div>
+      <AlertConnectWCModal />
     </div>
 
   );
