@@ -21,7 +21,7 @@ function Component (props: Props): React.ReactElement<Props> {
   const { activeModal, inactiveModal } = useContext(ModalContext);
   const [dailyRewards, setDailyRewards] = useState(apiSdk.getDailyRewardAchievements());
 
-  const remainingDailyRewards = useCallback(() => {
+  const claimableDailyRewards = useCallback(() => {
     return dailyRewards.filter((item) => item.status === 'claimable');
   }, [dailyRewards]);
   const openDailyRewardsModal = useCallback(() => {
@@ -66,7 +66,7 @@ function Component (props: Props): React.ReactElement<Props> {
             {t('Daily rewards')}
           </MythButton>
 
-          {remainingDailyRewards.length > 0 && <div className={'__notice-icon'}></div>}
+          {claimableDailyRewards.length > 0 && <div className={'__notice-icon'}></div>}
         </div>
       </div>
 

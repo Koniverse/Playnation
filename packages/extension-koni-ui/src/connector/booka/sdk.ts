@@ -445,7 +445,7 @@ export class BookaSdk {
     return this.inviteAchievementsSubject;
   }
 
-  getClaimAbleAchievements () {
+  getClaimableAchievements () {
     return this.claimAbleAchievementsSubject.value;
   }
 

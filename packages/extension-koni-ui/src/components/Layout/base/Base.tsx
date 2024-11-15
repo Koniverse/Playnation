@@ -35,7 +35,7 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const { language } = useSelector((state) => state.settings);
-  const [claimAbleAchievements, setClaimAbleAchievements] = useState(apiSdk.getClaimAbleAchievements());
+  const [claimableAchievements, setClaimableAchievements] = useState(apiSdk.getClaimableAchievements());
 
   const tabBarItems = useMemo((): Array<Omit<SwTabBarItem, 'onClick'> & { url: string }> => ([
     {
@@ -77,7 +77,7 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
                 fill='currentColor'
               />
             </svg>
-            { claimAbleAchievements.length > 0 && <div className={'__notice-icon-tabbar'}></div>}
+            { claimableAchievements.length > 0 && <div className={'__notice-icon-tabbar'}></div>}
           </>
         )
       },
@@ -153,7 +153,7 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
       key: 'my-profile',
       url: '/home/my-profile'
     }
-  ]), [claimAbleAchievements.length, t]);
+  ]), [claimableAchievements.length, t]);
 
   const selectedTab = useMemo((): string => {
     const isHomePath = pathname.includes('/home');
@@ -185,7 +185,7 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
 
   useEffect(() => {
     const sub1 = apiSdk.subscribeClaimableAchievements().subscribe((achievements: Achievement[]) => {
-      setClaimAbleAchievements(achievements);
+      setClaimableAchievements(achievements);
     });
 
     return () => {
@@ -266,8 +266,12 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
     backgroundColor: 'transparent'
   },
 
+  '&.-show-tab-bar > .ant-sw-screen-layout-body > .ant-sw-screen-layout-body-inner': {
+    paddingBottom: 90
+  },
+
   '.ant-sw-tab-bar-container': {
-    position: 'relative',
+    position: 'fixed',
     bottom: 0,
     left: 0,
     right: 0,
