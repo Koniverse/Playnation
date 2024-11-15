@@ -13,13 +13,13 @@ import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotifi
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { odysseyMintNft } from '@subwallet/extension-koni-ui/messaging/transaction/odyssey';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
-import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { ArrowCircleRight, ShareNetwork, XCircle } from 'phosphor-react';
+import { ArrowCircleRight, HouseLine, ShareNetwork, SmileySad } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 
 type Props = ThemeProps & {
   airdropNftInfo: IAirdropNftMinting
@@ -49,6 +49,7 @@ const telegramConnector = TelegramConnector.instance;
 const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
   const notify = useNotification();
   const { goHome } = useDefaultNavigate();
+  const { token } = useTheme() as Theme;
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState<string>(TabType.CONDITION);
@@ -97,13 +98,24 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
 
   const notifyIneligibleProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: 'alert-ineligible-mint',
-    className: CN('mint-detail-sup-modal', className),
+    className: CN('mint-detail-sub-modal', className),
     title: t('Ineligible to mint'),
     okText: t('Back to home'),
     content: (
-      <div>
-        <div>{t('Oops, your account is not eligible')}</div>
-        <div>{t('Your account doesn’t meet the required conditions to be eligible to mint Koni Story badge')}</div>
+      <div className={'__description-modal'}>
+        <div className={'__title-modal'}>{t('Oops, your account is not eligible')}</div>
+        <div className={'__sub-title-modal'}>{t('Your account doesn’t meet the required conditions to be eligible to mint Koni Story badge')}</div>
+      </div>
+    ),
+    icon: (
+      <div className={'__icon-modal'}>
+        <Icon
+          customSize={'60px'}
+          iconColor={token.colorIcon}
+          phosphorIcon={SmileySad}
+          size='md'
+          weight={'fill'}
+        />
       </div>
     ),
     closable: true,
@@ -112,38 +124,50 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
     okButtonProps: {
       icon: (
         <Icon
-          phosphorIcon={XCircle}
+          phosphorIcon={HouseLine}
           size='md'
+          weight={'fill'}
         />
       ),
-      schema: 'secondary'
+      shape: 'round'
     }
-  }), [className, t]);
+  }), [className, t, token.colorIcon]);
 
   const failedToMintProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: 'failed_to_mint',
-    className: CN('mint-detail-sup-modal', className),
+    className: CN('mint-detail-sub-modal', className),
     title: t('Failed to mint'),
-    okText: t('Back to home'),
+    okCancel: false,
     content: (
-      <div>
-        <div>{t('Oops, your badge can’t be minted')}</div>
-        <div>{t('Due to some issues, your Koni Story badge can’t be minted at the moment. Come back and try again later!')}</div>
+      <div className={'__description-modal'}>
+        <div className={'__title-modal'}>{t('Oops, your badge can’t be minted')}</div>
+        <div className={'__sub-title-modal'}>{t('Due to some issues, your Koni Story badge can’t be minted at the moment. Come back and try again later!')}</div>
+      </div>
+    ),
+    icon: (
+      <div className={'__icon-modal'}>
+        <Icon
+          customSize={'60px'}
+          iconColor={token.colorIconHover}
+          phosphorIcon={SmileySad}
+          size='md'
+          weight={'fill'}
+        />
       </div>
     ),
     closable: true,
     maskClosable: true,
-    okCancel: false,
     okButtonProps: {
       icon: (
         <Icon
-          phosphorIcon={XCircle}
+          phosphorIcon={HouseLine}
           size='md'
+          weight={'fill'}
         />
       ),
-      schema: 'secondary'
+      shape: 'round'
     }
-  }), [className, t]);
+  }), [className, t, token.colorIconHover]);
 
   const { handleSimpleConfirmModal: handleIneligibleModal } = useConfirmModal(notifyIneligibleProps);
   const { handleSimpleConfirmModal: handleFailedToMintModal } = useConfirmModal(failedToMintProps);
@@ -399,11 +423,50 @@ const MintNftDetail = styled(Component)<ThemeProps>(({ theme: { extendToken, tok
       }
     },
 
-    '&.mint-detail-sup-modal': {
+    '&.mint-detail-sub-modal': {
       maxHeight: '100%',
       marginBottom: 0,
       backgroundColor: 'transparent',
       justifyContent: 'flex-end',
+
+      '.ant-sw-modal-confirm-body': {
+        background: extendToken.colorBgGradient,
+        borderRadius: 24,
+        padding: `${token.paddingXL}px ${token.paddingMD}px`,
+
+        '.ant-sw-modal-confirm-content': {
+          padding: 0,
+          margin: 0
+        },
+
+        '.__icon-modal': {
+          borderRadius: '50%',
+          padding: token.paddingLG - 2,
+          display: 'flex',
+          justifyContent: 'center',
+          backgroundColor: token.colorWhite
+        },
+
+        '.__description-modal': {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: token.size
+        },
+
+        '.__title-modal': {
+          fontSize: token.fontSizeHeading5,
+          lineHeight: token.lineHeightHeading5,
+          color: token.colorText,
+          fontWeight: 600
+        },
+
+        '.__sub-title-modal': {
+          fontSize: token.fontSizeHeading6,
+          lineHeight: token.lineHeightHeading6,
+          fontWeight: 500,
+          color: token.colorTextDark2
+        }
+      },
       '.ant-sw-modal-confirm-btns': {
         flexDirection: 'row',
 
