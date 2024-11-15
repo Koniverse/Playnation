@@ -174,12 +174,12 @@ export class BookaSdk {
     return this.airdropNftMintSubject.value;
   }
 
-  private getRequestHeader () {
+  private getRequestHeader (needAuthorize = true) {
     const header: Record<string, string> = {
       'Content-Type': 'application/json'
     };
 
-    if (this.account) {
+    if (this.account && needAuthorize) {
       header.Authorization = `Bearer ${this.account.token}`;
     }
 
@@ -199,10 +199,10 @@ export class BookaSdk {
     }
   }
 
-  private async postRequest<T> (url: string, body: any) {
+  private async postRequest<T> (url: string, body: any, needAuthorize = true) {
     const response = await fetch(url, {
       method: 'POST',
-      headers: this.getRequestHeader(),
+      headers: this.getRequestHeader(needAuthorize),
       body: JSON.stringify(body)
     });
 
@@ -1006,11 +1006,11 @@ export class BookaSdk {
   }
 
   async fetchStoryBadgeEligibility (address: string) {
-    return true;
+    return await this.postRequest<boolean>(`${STORY_BADGE_HOST}/api/eligible`, { address }, false);
   }
 
-  async mintStoryBadge (address: string, eligibilityId: number) {
-    const { signature } = await this.postRequest<{ signature: string }>(`${STORY_BADGE_HOST}/api/signature'`, { address });
+  async fetchStoryBadgeMintSignature (address: string) {
+    const { signature } = await this.postRequest<{ signature: string }>(`${STORY_BADGE_HOST}/api/signature`, { address }, false);
 
     return signature;
   }

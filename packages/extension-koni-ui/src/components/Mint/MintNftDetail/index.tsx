@@ -11,6 +11,7 @@ import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/Wall
 import { useConfirmModal, useDefaultNavigate } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
+import { odysseyMintNft } from '@subwallet/extension-koni-ui/messaging/transaction/odyssey';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, SwModalFuncProps } from '@subwallet/react-ui';
@@ -80,6 +81,20 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
     return false;
   }, [wcAccount?.address]);
 
+  const fetchMintSignature = useCallback(async (): Promise<string> => {
+    try {
+      if (!wcAccount?.address) {
+        return '0x0';
+      }
+
+      return await apiSDK.fetchStoryBadgeMintSignature(wcAccount?.address);
+    } catch (error) {
+      console.error('Error fetching mint signature:', error);
+    }
+
+    return '0x0';
+  }, [wcAccount?.address]);
+
   const notifyIneligibleProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: 'alert-ineligible-mint',
     className: CN('mint-detail-sup-modal', className),
@@ -105,7 +120,33 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
     }
   }), [className, t]);
 
+  const failedToMintProps = useMemo((): Partial<SwModalFuncProps> => ({
+    id: 'failed_to_mint',
+    className: CN('mint-detail-sup-modal', className),
+    title: t('Failed to mint'),
+    okText: t('Back to home'),
+    content: (
+      <div>
+        <div>{t('Oops, your badge can’t be minted')}</div>
+        <div>{t('Due to some issues, your Koni Story badge can’t be minted at the moment. Come back and try again later!')}</div>
+      </div>
+    ),
+    closable: true,
+    maskClosable: true,
+    okCancel: false,
+    okButtonProps: {
+      icon: (
+        <Icon
+          phosphorIcon={XCircle}
+          size='md'
+        />
+      ),
+      schema: 'secondary'
+    }
+  }), [className, t]);
+
   const { handleSimpleConfirmModal: handleIneligibleModal } = useConfirmModal(notifyIneligibleProps);
+  const { handleSimpleConfirmModal: handleFailedToMintModal } = useConfirmModal(failedToMintProps);
 
   const onSelectTab = useCallback((value: string) => {
     setSelectedTab(value);
@@ -161,9 +202,40 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
     }
   })();
 
-  const onMint = useCallback(() => {
-    setIsLoading(true);
+  const onMint = useCallback(async () => {
+    try {
+      setIsLoading(true);
 
+      const isEligible = await fetchEligibility();
+
+      if (!isEligible) {
+        handleIneligibleModal().then(goHome).catch(console.error);
+        setIsLoading(false);
+
+        return;
+      }
+
+      const signature = await fetchMintSignature();
+
+      const transaction = await odysseyMintNft({ address: wcAccount?.address || '', chain: 'storyPublic_testnet', signature });
+
+      if (transaction.errors) {
+        handleFailedToMintModal().then(goHome).catch(console.error);
+        setIsLoading(false);
+
+        return;
+      }
+    } catch (e) {
+      notify({
+        message: (e as Error).message,
+        type: 'error'
+      });
+    }
+
+    setIsLoading(false);
+  }, [wcAccount?.address, handleFailedToMintModal, handleIneligibleModal, goHome, fetchMintSignature, fetchEligibility, notify]);
+
+  const onPreMint = useCallback(() => {
     if (!wcAccount?.address) {
       setIsLoading(false);
       requireWC().then(connectWC).catch(console.error);
@@ -171,28 +243,8 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
       return;
     }
 
-    fetchEligibility().then((eligibility) => {
-      if (!eligibility) {
-        handleIneligibleModal().then(goHome).catch(console.error);
-
-        return;
-      }
-
-      // TODO: Implement minting logic
-
-      notify({
-        message: t('Please check your wallet'),
-        type: 'warning'
-      });
-      setIsLoading(false);
-    }).catch((error) => {
-      notify({
-        message: (error as Error).message,
-        type: 'error'
-      });
-      setIsLoading(false);
-    });
-  }, [wcAccount?.address, fetchEligibility, requireWC, connectWC, notify, t, handleIneligibleModal, goHome]);
+    onMint().catch(console.error);
+  }, [connectWC, onMint, requireWC, wcAccount?.address]);
 
   const renderButton = () => {
     return (
@@ -233,7 +285,7 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
               />
             }
             loading={isLoading}
-            onClick={onMint}
+            onClick={onPreMint}
             shape={'round'}
           >
             {t('Mint now')}
