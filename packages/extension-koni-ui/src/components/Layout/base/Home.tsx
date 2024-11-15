@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AccountJson } from '@subwallet/extension-base/background/types';
-import { Layout } from '@subwallet/extension-koni-ui/components';
+import { Layout, WalletConnect } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useNotification, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { ButtonProps, Icon, ModalContext, Tooltip } from '@subwallet/react-ui';
-import { Export, FadersHorizontal, MagnifyingGlass, Wallet } from 'phosphor-react';
+import { Export, FadersHorizontal, MagnifyingGlass } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -143,10 +143,14 @@ const Component = (props: Props) => {
       icons.push({
         icon: (
           <Icon
+            customIcon={(
+              <WalletConnect
+                height='1em'
+                width='1em'
+              />
+            )}
             iconColor={wcAccount ? '#bf1616' : undefined}
-            phosphorIcon={Wallet}
-            size='md'
-            weight='fill'
+            type='customIcon'
           />
         ),
         onClick: wcAccount ? onDisconnectWallet(wcAccount) : onConnectWallet,

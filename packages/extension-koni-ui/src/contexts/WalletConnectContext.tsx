@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AccountJson } from '@subwallet/extension-base/background/types';
-import { ConnectWalletSuccessModal, WalletConnectWaitingSigningModal } from '@subwallet/extension-koni-ui/components';
-import { CONNECT_WALLET_SUCCESS_MODAL, WALLET_CONNECT_WAITING_SIGNING_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { ConnectWalletSuccessModal, DisconnectWalletConnectModalContent, RequireConnectWalletModalContent, WalletConnectWaitingSigningModal } from '@subwallet/extension-koni-ui/components';
+import { CONNECT_WALLET_SUCCESS_MODAL, DISCONNECT_WALLET_CONNECT_MODAL, REQUIRE_CONNECT_WALLET_MODAL, WALLET_CONNECT_WAITING_SIGNING_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { useConfirmModal } from '@subwallet/extension-koni-ui/hooks';
 import { disconnectWalletConnectConnection, wcCancelSessionPromise, wcGetSessionPromise, wcSessionCreate } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { noop } from '@subwallet/extension-koni-ui/utils';
-import { Icon, Input, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
+import { Icon, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
 import { WalletConnectModal } from '@walletconnect/modal';
 import CN from 'classnames';
-import { XCircle } from 'phosphor-react';
+import { CheckCircle, XCircle } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -48,6 +48,8 @@ export const WalletConnectContext = React.createContext<WalletConnectContextType
 
 const waitingModal = WALLET_CONNECT_WAITING_SIGNING_MODAL;
 const connectSuccessModal = CONNECT_WALLET_SUCCESS_MODAL;
+const requireModal = REQUIRE_CONNECT_WALLET_MODAL;
+const disconnectModal = DISCONNECT_WALLET_CONNECT_MODAL;
 
 export const WalletConnectContextProvider = ({ children }: Props) => {
   const { activeModal, inactiveModal } = useContext(ModalContext);
@@ -61,18 +63,14 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
   const [onSuccessCb, setOnSuccessCb] = useState<SuccessCallback>(noop);
 
   const disconnectModalProps = useMemo((): Partial<SwModalFuncProps> => ({
-    id: 'disconnect-wc',
-    className: CN('confirm-modal-rework'),
+    id: disconnectModal,
+    className: CN('confirm-modal-rework', 'modal-resize-content', 'modal-revert-header'),
     title: t('Disconnect'),
     cancelText: t('Cancel'),
     content: (
-      <div>
-        <div>{t('Are you sure to disconnect wallet?')}</div>
-        <Input
-          disabled={true}
-          value={wcAccount?.address || ''}
-        />
-      </div>
+      <DisconnectWalletConnectModalContent
+        address={wcAccount?.address || ''}
+      />
     ),
     okText: t('Disconnect'),
     closable: true,
@@ -82,24 +80,33 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
       icon: (
         <Icon
           phosphorIcon={XCircle}
-          size='md'
+          size='sm'
+          weight='fill'
         />
       ),
-      schema: 'secondary'
+      schema: 'secondary',
+      shape: 'round',
+      size: 'sm'
+    },
+    okButtonProps: {
+      icon: (
+        <Icon
+          phosphorIcon={CheckCircle}
+          size='sm'
+          weight='fill'
+        />
+      ),
+      shape: 'round',
+      size: 'sm'
     }
   }), [t, wcAccount?.address]);
 
   const requireAccountModalProps = useMemo((): Partial<SwModalFuncProps> => ({
-    id: 'require-wc',
-    className: CN('confirm-modal-rework'),
+    id: requireModal,
+    className: CN('confirm-modal-rework', 'modal-resize-content', 'modal-revert-header'),
     title: t('Connect your wallet'),
     cancelText: t('Cancel'),
-    content: (
-      <div>
-        <div>{t('Wallet connection required')}</div>
-        <div>{t('You need to connect your wallet to continue ')}</div>
-      </div>
-    ),
+    content: <RequireConnectWalletModalContent />,
     okText: t('Connect'),
     closable: true,
     maskClosable: true,
@@ -108,10 +115,24 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
       icon: (
         <Icon
           phosphorIcon={XCircle}
-          size='md'
+          size='sm'
+          weight='fill'
         />
       ),
-      schema: 'secondary'
+      schema: 'secondary',
+      shape: 'round',
+      size: 'sm'
+    },
+    okButtonProps: {
+      icon: (
+        <Icon
+          phosphorIcon={CheckCircle}
+          size='sm'
+          weight='fill'
+        />
+      ),
+      shape: 'round',
+      size: 'sm'
     }
   }), [t]);
 

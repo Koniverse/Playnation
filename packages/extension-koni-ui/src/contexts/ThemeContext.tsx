@@ -611,79 +611,102 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
           display: 'none'
         }
       }
+    },
+
+    '.modal-resize-content': {
+      '.ant-sw-modal-confirm-body': {
+        margin: '0 -8px'
+      },
+
+      '.ant-sw-modal-confirm-content': {
+        marginTop: '0 !important',
+        padding: '0 !important',
+        width: '100%'
+      }
+    },
+
+    '.modal-revert-header': {
+      '.ant-sw-header-container-center': {
+        flexDirection: 'row-reverse',
+
+        '.ant-sw-header-left-part': {
+          marginRight: token.sizeXS,
+          marginLeft: 0
+        }
+      }
     }
   });
 });
 
 function ThemeGenerator ({ children, themeConfig }: Props): React.ReactElement<Props> {
-  const { token } = useToken();
+const { token } = useToken();
 
-  // Generate theme from config
-  const theme = useMemo<Theme>(() => {
-    return generateTheme(themeConfig, token);
-  }, [themeConfig, token]);
+// Generate theme from config
+const theme = useMemo<Theme>(() => {
+return generateTheme(themeConfig, token);
+}, [themeConfig, token]);
 
-  return (
-    <StyledComponentThemeProvider theme={theme}>
-      <GlobalStyle theme={theme} />
-      {children}
-    </StyledComponentThemeProvider>
-  );
+return (
+<StyledComponentThemeProvider theme={theme}>
+  <GlobalStyle theme={theme} />
+  {children}
+</StyledComponentThemeProvider>
+);
 }
 
 export interface ThemeProviderProps {
-  children: React.ReactNode;
+children: React.ReactNode;
 }
 
 const getModalContainer = () => document.getElementById('popup-container') || document.body;
 const getPopupContainer = () => document.getElementById('tooltip-container') || document.body;
 
 const TooltipContainer = styled.div({
-  '& > div': {
-    zIndex: 10000
-  }
+'& > div': {
+zIndex: 10000
+}
 });
 
 export function ThemeProvider ({ children }: ThemeProviderProps): React.ReactElement<ThemeProviderProps> {
-  const dataContext = useContext(DataContext);
-  const logoMaps = useSelector((state: RootState) => state.settings.logoMaps);
-  const [themeReady, setThemeReady] = useState(false);
-  const themeName = useSelector((state: RootState) => state.settings.theme);
+const dataContext = useContext(DataContext);
+const logoMaps = useSelector((state: RootState) => state.settings.logoMaps);
+const [themeReady, setThemeReady] = useState(false);
+const themeName = useSelector((state: RootState) => state.settings.theme);
 
-  const themeConfig = useMemo(() => {
-    const config = SW_THEME_CONFIGS[themeName] || SW_THEME_CONFIGS[ThemeNames.DEFAULT];
+const themeConfig = useMemo(() => {
+const config = SW_THEME_CONFIGS[themeName] || SW_THEME_CONFIGS[ThemeNames.DEFAULT];
 
-    config.logoMap = getDefaultLogoMap();
+config.logoMap = getDefaultLogoMap();
 
-    Object.assign(config.logoMap.network, logoMaps.chainLogoMap);
-    Object.assign(config.logoMap.symbol, logoMaps.assetLogoMap);
+Object.assign(config.logoMap.network, logoMaps.chainLogoMap);
+Object.assign(config.logoMap.symbol, logoMaps.assetLogoMap);
 
-    config.token = config.generateTokens();
+config.token = config.generateTokens();
 
-    return config;
-  }, [logoMaps.assetLogoMap, logoMaps.chainLogoMap, themeName]);
+return config;
+}, [logoMaps.assetLogoMap, logoMaps.chainLogoMap, themeName]);
 
-  useEffect(() => {
-    dataContext.awaitStores(['settings']).then(() => {
-      setThemeReady(true);
-    }).catch(console.error);
-  }, [dataContext]);
+useEffect(() => {
+dataContext.awaitStores(['settings']).then(() => {
+  setThemeReady(true);
+}).catch(console.error);
+}, [dataContext]);
 
-  // Reduce number of re-rendering
-  if (!themeReady) {
-    return <></>;
-  }
+// Reduce number of re-rendering
+if (!themeReady) {
+return <></>;
+}
 
-  return (
-    <ConfigProvider
-      getModalContainer={getModalContainer}
-      getPopupContainer={getPopupContainer}
-      theme={themeConfig}
-    >
-      <ThemeGenerator themeConfig={themeConfig}>
-        <TooltipContainer id='tooltip-container' />
-        {children}
-      </ThemeGenerator>
-    </ConfigProvider>
-  );
+return (
+<ConfigProvider
+  getModalContainer={getModalContainer}
+  getPopupContainer={getPopupContainer}
+  theme={themeConfig}
+>
+  <ThemeGenerator themeConfig={themeConfig}>
+    <TooltipContainer id='tooltip-container' />
+    {children}
+  </ThemeGenerator>
+</ConfigProvider>
+);
 }

@@ -1,14 +1,12 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import type { ButtonProps } from '@subwallet/react-ui/es/button/button';
-
 import { CONNECT_WALLET_SUCCESS_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Field, Icon, ModalContext, PageIcon, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { ArrowCircleRight, CheckCircle, X } from 'phosphor-react';
+import { ArrowCircleRight, CheckCircle } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled, { useTheme } from 'styled-components';
@@ -33,17 +31,6 @@ function Component (props: Props): React.ReactElement<Props> {
     callback(address);
   }, [address, callback, inactiveModal]);
 
-  const rightButtonProps = useMemo((): ButtonProps => ({
-    icon: (
-      <Icon
-        phosphorIcon={X}
-        size={'small'}
-        weight={'fill'}
-      />
-    ),
-    onClick: onClose
-  }), [onClose]);
-
   const modalFooter = useMemo(() => {
     return (
       <>
@@ -66,17 +53,13 @@ function Component (props: Props): React.ReactElement<Props> {
     );
   }, [onClose, t]);
 
-  // TODO: Update UI
-
   return (
     <SwModal
-      className={CN(className, '-light-theme')}
-      closable={false}
+      className={CN(className, '-light-theme', 'modal-revert-header')}
       footer={modalFooter}
       id={modalId}
       maskClosable={true}
       onCancel={onClose}
-      rightIconProps={rightButtonProps}
       title={t('Success')}
     >
       <div className='__content-area'>
