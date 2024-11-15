@@ -342,7 +342,7 @@ export interface AirdropCampaign {
   eligibilityIds?: number[];
 }
 
-export interface NftAirdropMint {
+export interface IAirdropNftMinting {
   id: number;
   name: string;
   icon: string;

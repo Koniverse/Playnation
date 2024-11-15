@@ -3,7 +3,7 @@
 
 import { MintNftDetail, MintNftHeader } from '@subwallet/extension-koni-ui/components/Mint';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { NftAirdropMint } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -17,9 +17,9 @@ const apiSDK = BookaSdk.instance;
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/leaderboard');
   const { id } = useParams<{ id: string }>();
-  const [nftAirdropList, setNftAirdropList] = useState<NftAirdropMint[]>(apiSDK.airdropNftMintList);
+  const [nftAirdropList, setNftAirdropList] = useState<IAirdropNftMinting[]>(apiSDK.airdropNftMintList);
 
-  const currentNftAirdropMint = useMemo(() => {
+  const currentIAirdropNftMinting = useMemo(() => {
     return nftAirdropList[0];
   }, [nftAirdropList, id]);
 
@@ -33,15 +33,15 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, []);
 
-  if (!currentNftAirdropMint) {
+  if (!currentIAirdropNftMinting) {
     return <></>;
   }
 
   return (
     <div className={className}>
-      <MintNftHeader nftAirdropInfo={currentNftAirdropMint} />
-      <MintNftDetail nftAirdropInfo={currentNftAirdropMint} />
-      {/* <MintNftSuccess nftAirdropInfo={currentNftAirdropMint} /> */}
+      <MintNftHeader airdropNftInfo={currentIAirdropNftMinting} />
+      <MintNftDetail airdropNftInfo={currentIAirdropNftMinting} />
+      {/* <MintNftSuccess airdropNftInfo={currentIAirdropNftMinting} /> */}
     </div>
   );
 };

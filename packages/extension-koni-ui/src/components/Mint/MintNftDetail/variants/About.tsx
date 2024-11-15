@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { NftAirdropMint } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { DynamicContent } from '@subwallet/extension-koni-ui/Popup/Home/Airdrop/AirdropDetail/DynamicContent';
@@ -13,7 +13,7 @@ import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
-  airdropInfo: NftAirdropMint
+  airdropInfo: IAirdropNftMinting
 };
 const telegramConnector = TelegramConnector.instance;
 

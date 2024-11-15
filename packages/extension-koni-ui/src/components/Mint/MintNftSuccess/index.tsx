@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { NftAirdropMint } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Image } from '@subwallet/react-ui';
@@ -10,12 +10,12 @@ import React from 'react';
 import styled from 'styled-components';
 
 interface Props extends ThemeProps {
-  nftAirdropInfo: NftAirdropMint
+  airdropNftInfo: IAirdropNftMinting
 }
 
-const Component = ({ className, nftAirdropInfo }: Props) => {
+const Component = ({ airdropNftInfo, className }: Props) => {
   const { t } = useTranslation();
-  const { icon, name } = nftAirdropInfo;
+  const { icon, name } = airdropNftInfo;
 
   return (
     <div className={CN(className)}>

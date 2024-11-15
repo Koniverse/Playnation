@@ -4,9 +4,8 @@
 import { TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { MintNftDetailAbout, MintNftDetailCondition } from '@subwallet/extension-koni-ui/components/Mint/MintNftDetail/variants';
-import { AlertConnectWCModal } from '@subwallet/extension-koni-ui/components/Modal/Mint';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { NftAirdropMint } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useConfirmModal, useDefaultNavigate } from '@subwallet/extension-koni-ui/hooks';
@@ -22,7 +21,7 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
-  nftAirdropInfo: NftAirdropMint
+  airdropNftInfo: IAirdropNftMinting
 };
 
 const apiSDK = BookaSdk.instance;
@@ -39,14 +38,14 @@ const enum buttonTypeConst {
   END_CAMPAIGN = 3
 }
 
-const enum NftAirdropMintProcess {
+const enum IAirdropNftMintingProcess {
   END_CAMPAIGN = 'END_CAMPAIGN',
   ELIGIBLE = 'ELIGIBLE'
 }
 
 const telegramConnector = TelegramConnector.instance;
 
-const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
+const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
   const notify = useNotification();
   const { goHome } = useDefaultNavigate();
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
@@ -113,7 +112,7 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
   }, []);
 
   const onClickShare = useCallback(() => {
-    if (!nftAirdropInfo) {
+    if (!airdropNftInfo) {
       return;
     }
 
@@ -122,7 +121,7 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
     if (url) {
       telegramConnector.openLink(url);
     }
-  }, [nftAirdropInfo]);
+  }, [airdropNftInfo]);
 
   const subHeaderIcons = useMemo(() => {
     return [
@@ -142,9 +141,9 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
 
   const buttonType = (() => {
     const now = Date.now();
-    const shouldCheck = nftAirdropInfo?.start_mint && new Date(nftAirdropInfo?.start_mint).getTime() < now;
-    const endCampaign = nftAirdropInfo?.end && new Date(nftAirdropInfo?.end).getTime() < now;
-    const eligibility = { currentProcess: NftAirdropMintProcess.ELIGIBLE };
+    const shouldCheck = airdropNftInfo?.start_mint && new Date(airdropNftInfo?.start_mint).getTime() < now;
+    const endCampaign = airdropNftInfo?.end && new Date(airdropNftInfo?.end).getTime() < now;
+    const eligibility = { currentProcess: IAirdropNftMintingProcess.ELIGIBLE };
 
     if (!shouldCheck && !endCampaign) {
       return buttonTypeConst.COMING_SOON;
@@ -152,7 +151,7 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
 
     if (eligibility && eligibility.currentProcess) {
       switch (eligibility.currentProcess) {
-        case NftAirdropMintProcess.END_CAMPAIGN:
+        case IAirdropNftMintingProcess.END_CAMPAIGN:
           return buttonTypeConst.END_CAMPAIGN;
         default:
           return buttonTypeConst.MINT;
@@ -259,7 +258,7 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
         {
           selectedTab === TabType.CONDITION && (
             <MintNftDetailCondition
-              airdropInfo={nftAirdropInfo}
+              airdropInfo={airdropNftInfo}
               className={'tab-content'}
             />
           )
@@ -267,7 +266,7 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
         {
           selectedTab === TabType.ABOUT && (
             <MintNftDetailAbout
-              airdropInfo={nftAirdropInfo}
+              airdropInfo={airdropNftInfo}
               className={'tab-content'}
             />
           )
@@ -278,7 +277,6 @@ const Component: React.FC<Props> = ({ className, nftAirdropInfo }: Props) => {
         {renderButton()}
 
       </div>
-      <AlertConnectWCModal />
     </div>
 
   );

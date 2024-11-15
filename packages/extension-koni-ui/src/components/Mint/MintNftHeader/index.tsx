@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { NftAirdropMint } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { customFormatDate, formatBalance } from '@subwallet/extension-koni-ui/utils';
@@ -11,7 +11,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
-  nftAirdropInfo: NftAirdropMint
+  airdropNftInfo: IAirdropNftMinting
 };
 
 enum Timeline {
@@ -21,12 +21,12 @@ enum Timeline {
   END = 'end'
 }
 
-function Component ({ className, nftAirdropInfo }: Props) {
+function Component ({ airdropNftInfo, className }: Props) {
   const { t } = useTranslation();
 
   const { currentTimeline, pastTimelines } = (() => {
     // eslint-disable-next-line camelcase
-    const { end, end_mint, start, start_mint, start_snapshot } = nftAirdropInfo;
+    const { end, end_mint, start, start_mint, start_snapshot } = airdropNftInfo;
     const currentDate = Date.now();
     const startMs = new Date(start).getTime();
     const endMs = new Date(end).getTime();
@@ -66,19 +66,19 @@ function Component ({ className, nftAirdropInfo }: Props) {
             <Image
               height={48}
               shape={'squircle'}
-              src={nftAirdropInfo.icon}
+              src={airdropNftInfo.icon}
               width={48}
             />
           </div>
         </div>
         <div className='__airdrop-info-right-part'>
           <div className='__airdrop-name'>
-            {nftAirdropInfo.name}
+            {airdropNftInfo.name}
           </div>
 
           <div className='__airdrop-token'>
-            <span className='__airdrop-token-value'>{formatBalance(nftAirdropInfo.total_badges, 0)}</span>
-            <span className='__airdrop-token-symbol'>{nftAirdropInfo.symbol}</span>
+            <span className='__airdrop-token-value'>{formatBalance(airdropNftInfo.total_badges, 0)}</span>
+            <span className='__airdrop-token-symbol'>{airdropNftInfo.symbol}</span>
           </div>
         </div>
       </div>
@@ -99,7 +99,7 @@ function Component ({ className, nftAirdropInfo }: Props) {
             >
               <div className='__time-line-legend-item-name'>{t('Start')}</div>
               <div className='__time-line-legend-item-date'>
-                {customFormatDate(nftAirdropInfo.start, '#DD#/#MM#')}
+                {customFormatDate(airdropNftInfo.start, '#DD#/#MM#')}
               </div>
             </div>
           </div>
@@ -111,7 +111,7 @@ function Component ({ className, nftAirdropInfo }: Props) {
             >
               <div className='__time-line-legend-item-name'>{t('Snapshot')}</div>
               <div className='__time-line-legend-item-date'>
-                {customFormatDate(nftAirdropInfo.end_snapshot, '#DD#/#MM#')}
+                {customFormatDate(airdropNftInfo.end_snapshot, '#DD#/#MM#')}
               </div>
             </div>
           </div>
@@ -123,7 +123,7 @@ function Component ({ className, nftAirdropInfo }: Props) {
             >
               <div className='__time-line-legend-item-name'>{t('Claim')}</div>
               <div className='__time-line-legend-item-date'>
-                {customFormatDate(nftAirdropInfo.start_mint, '#DD#/#MM#')}
+                {customFormatDate(airdropNftInfo.start_mint, '#DD#/#MM#')}
               </div>
             </div>
           </div>
@@ -135,7 +135,7 @@ function Component ({ className, nftAirdropInfo }: Props) {
             >
               <div className='__time-line-legend-item-name'>{t('End')}</div>
               <div className='__time-line-legend-item-date'>
-                {customFormatDate(nftAirdropInfo.end, '#DD#/#MM#')}
+                {customFormatDate(airdropNftInfo.end, '#DD#/#MM#')}
               </div>
             </div>
           </div>
