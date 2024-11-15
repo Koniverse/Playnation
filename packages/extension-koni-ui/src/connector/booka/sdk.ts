@@ -79,6 +79,7 @@ export class BookaSdk {
   private serverTimeSubject = new BehaviorSubject<number>(Date.now());
   private dailyRewardAchievementsSubject = new BehaviorSubject<Achievement[]>([]);
   private inviteAchievementsSubject = new BehaviorSubject<Achievement[]>([]);
+  private claimAbleAchievementsSubject = new BehaviorSubject<Achievement[]>([]);
 
   // Special cases
   // Check if the account is banned
@@ -444,6 +445,14 @@ export class BookaSdk {
     return this.inviteAchievementsSubject;
   }
 
+  getClaimAbleAchievements () {
+    return this.claimAbleAchievementsSubject.value;
+  }
+
+  subscribeClaimableAchievements () {
+    return this.claimAbleAchievementsSubject;
+  }
+
   /**
     * Fetch achievement list
    * return Achievement[] the list of achievementList
@@ -455,6 +464,7 @@ export class BookaSdk {
     if (achievementList) {
       const dailyRewardAchievement: Achievement[] = [];
       const inviteAchievement: Achievement[] = [];
+      const claimAbleAchievement: Achievement[] = [];
       const achievementListFiltered = achievementList.filter((item) => {
         if (item.specialPurpose === 'daily_reward_mission') {
           dailyRewardAchievement.push(item);
@@ -464,11 +474,16 @@ export class BookaSdk {
           inviteAchievement.push(item);
 
           return false;
+        } else if (item.status === 'claimable') {
+          claimAbleAchievement.push(item);
+
+          return true;
         }
 
         return true;
       });
 
+      this.claimAbleAchievementsSubject.next(claimAbleAchievement);
       this.dailyRewardAchievementsSubject.next(dailyRewardAchievement);
       this.inviteAchievementsSubject.next(inviteAchievement);
       this.achievementListSubject.next(achievementListFiltered);

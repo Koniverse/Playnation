@@ -2,13 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LanguageType } from '@subwallet/extension-base/background/KoniTypes';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { Achievement } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useDefaultNavigate, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { LayoutBackgroundStyle, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Icon, SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
 import { ArrowLeft } from 'phosphor-react';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -25,6 +27,7 @@ SwScreenLayoutProps,
 }
 
 const specialLanguages: Array<LanguageType> = ['ja', 'ru'];
+const apiSdk = BookaSdk.instance;
 
 const Component = ({ backgroundStyle = 'style-1', children, className, headerIcons, onBack, onTabSelected, ...props }: LayoutBaseProps) => {
   const navigate = useNavigate();
@@ -32,6 +35,7 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const { language } = useSelector((state) => state.settings);
+  const [claimAbleAchievements, setClaimAbleAchievements] = useState(apiSdk.getClaimAbleAchievements());
 
   const tabBarItems = useMemo((): Array<Omit<SwTabBarItem, 'onClick'> & { url: string }> => ([
     {
@@ -60,18 +64,21 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
       icon: {
         type: 'customIcon',
         customIcon: (
-          <svg
-            fill='none'
-            height='1em'
-            viewBox='0 0 24 24'
-            width='1em'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <path
-              d='M19.5 3H4.5C4.10218 3 3.72064 3.15804 3.43934 3.43934C3.15804 3.72064 3 4.10218 3 4.5V19.5C3 19.8978 3.15804 20.2794 3.43934 20.5607C3.72064 20.842 4.10218 21 4.5 21H19.5C19.8978 21 20.2794 20.842 20.5607 20.5607C20.842 20.2794 21 19.8978 21 19.5V4.5C21 4.10218 20.842 3.72064 20.5607 3.43934C20.2794 3.15804 19.8978 3 19.5 3ZM11.0306 14.0306L8.03063 17.0306C7.96097 17.1004 7.87825 17.1557 7.78721 17.1934C7.69616 17.2312 7.59856 17.2506 7.5 17.2506C7.40144 17.2506 7.30384 17.2312 7.21279 17.1934C7.12175 17.1557 7.03903 17.1004 6.96937 17.0306L5.46938 15.5306C5.32864 15.3899 5.24958 15.199 5.24958 15C5.24958 14.801 5.32864 14.6101 5.46938 14.4694C5.61011 14.3286 5.80098 14.2496 6 14.2496C6.19902 14.2496 6.38989 14.3286 6.53063 14.4694L7.5 15.4397L9.96937 12.9694C10.1101 12.8286 10.301 12.7496 10.5 12.7496C10.699 12.7496 10.8899 12.8286 11.0306 12.9694C11.1714 13.1101 11.2504 13.301 11.2504 13.5C11.2504 13.699 11.1714 13.8899 11.0306 14.0306ZM11.0306 8.03063L8.03063 11.0306C7.96097 11.1004 7.87825 11.1557 7.78721 11.1934C7.69616 11.2312 7.59856 11.2506 7.5 11.2506C7.40144 11.2506 7.30384 11.2312 7.21279 11.1934C7.12175 11.1557 7.03903 11.1004 6.96937 11.0306L5.46938 9.53063C5.39969 9.46094 5.34442 9.37822 5.30671 9.28717C5.26899 9.19613 5.24958 9.09855 5.24958 9C5.24958 8.80098 5.32864 8.61011 5.46938 8.46937C5.61011 8.32864 5.80098 8.24958 6 8.24958C6.19902 8.24958 6.38989 8.32864 6.53063 8.46937L7.5 9.43969L9.96937 6.96937C10.1101 6.82864 10.301 6.74958 10.5 6.74958C10.699 6.74958 10.8899 6.82864 11.0306 6.96937C11.1714 7.11011 11.2504 7.30098 11.2504 7.5C11.2504 7.69902 11.1714 7.88989 11.0306 8.03063ZM18 15.75H13.5C13.3011 15.75 13.1103 15.671 12.9697 15.5303C12.829 15.3897 12.75 15.1989 12.75 15C12.75 14.8011 12.829 14.6103 12.9697 14.4697C13.1103 14.329 13.3011 14.25 13.5 14.25H18C18.1989 14.25 18.3897 14.329 18.5303 14.4697C18.671 14.6103 18.75 14.8011 18.75 15C18.75 15.1989 18.671 15.3897 18.5303 15.5303C18.3897 15.671 18.1989 15.75 18 15.75ZM18 9.75H13.5C13.3011 9.75 13.1103 9.67098 12.9697 9.53033C12.829 9.38968 12.75 9.19891 12.75 9C12.75 8.80109 12.829 8.61032 12.9697 8.46967C13.1103 8.32902 13.3011 8.25 13.5 8.25H18C18.1989 8.25 18.3897 8.32902 18.5303 8.46967C18.671 8.61032 18.75 8.80109 18.75 9C18.75 9.19891 18.671 9.38968 18.5303 9.53033C18.3897 9.67098 18.1989 9.75 18 9.75Z'
-              fill='currentColor'
-            />
-          </svg>
+          <>
+            <svg
+              fill='none'
+              height='1em'
+              viewBox='0 0 24 24'
+              width='1em'
+              xmlns='http://www.w3.org/2000/svg'
+            >
+              <path
+                d='M19.5 3H4.5C4.10218 3 3.72064 3.15804 3.43934 3.43934C3.15804 3.72064 3 4.10218 3 4.5V19.5C3 19.8978 3.15804 20.2794 3.43934 20.5607C3.72064 20.842 4.10218 21 4.5 21H19.5C19.8978 21 20.2794 20.842 20.5607 20.5607C20.842 20.2794 21 19.8978 21 19.5V4.5C21 4.10218 20.842 3.72064 20.5607 3.43934C20.2794 3.15804 19.8978 3 19.5 3ZM11.0306 14.0306L8.03063 17.0306C7.96097 17.1004 7.87825 17.1557 7.78721 17.1934C7.69616 17.2312 7.59856 17.2506 7.5 17.2506C7.40144 17.2506 7.30384 17.2312 7.21279 17.1934C7.12175 17.1557 7.03903 17.1004 6.96937 17.0306L5.46938 15.5306C5.32864 15.3899 5.24958 15.199 5.24958 15C5.24958 14.801 5.32864 14.6101 5.46938 14.4694C5.61011 14.3286 5.80098 14.2496 6 14.2496C6.19902 14.2496 6.38989 14.3286 6.53063 14.4694L7.5 15.4397L9.96937 12.9694C10.1101 12.8286 10.301 12.7496 10.5 12.7496C10.699 12.7496 10.8899 12.8286 11.0306 12.9694C11.1714 13.1101 11.2504 13.301 11.2504 13.5C11.2504 13.699 11.1714 13.8899 11.0306 14.0306ZM11.0306 8.03063L8.03063 11.0306C7.96097 11.1004 7.87825 11.1557 7.78721 11.1934C7.69616 11.2312 7.59856 11.2506 7.5 11.2506C7.40144 11.2506 7.30384 11.2312 7.21279 11.1934C7.12175 11.1557 7.03903 11.1004 6.96937 11.0306L5.46938 9.53063C5.39969 9.46094 5.34442 9.37822 5.30671 9.28717C5.26899 9.19613 5.24958 9.09855 5.24958 9C5.24958 8.80098 5.32864 8.61011 5.46938 8.46937C5.61011 8.32864 5.80098 8.24958 6 8.24958C6.19902 8.24958 6.38989 8.32864 6.53063 8.46937L7.5 9.43969L9.96937 6.96937C10.1101 6.82864 10.301 6.74958 10.5 6.74958C10.699 6.74958 10.8899 6.82864 11.0306 6.96937C11.1714 7.11011 11.2504 7.30098 11.2504 7.5C11.2504 7.69902 11.1714 7.88989 11.0306 8.03063ZM18 15.75H13.5C13.3011 15.75 13.1103 15.671 12.9697 15.5303C12.829 15.3897 12.75 15.1989 12.75 15C12.75 14.8011 12.829 14.6103 12.9697 14.4697C13.1103 14.329 13.3011 14.25 13.5 14.25H18C18.1989 14.25 18.3897 14.329 18.5303 14.4697C18.671 14.6103 18.75 14.8011 18.75 15C18.75 15.1989 18.671 15.3897 18.5303 15.5303C18.3897 15.671 18.1989 15.75 18 15.75ZM18 9.75H13.5C13.3011 9.75 13.1103 9.67098 12.9697 9.53033C12.829 9.38968 12.75 9.19891 12.75 9C12.75 8.80109 12.829 8.61032 12.9697 8.46967C13.1103 8.32902 13.3011 8.25 13.5 8.25H18C18.1989 8.25 18.3897 8.32902 18.5303 8.46967C18.671 8.61032 18.75 8.80109 18.75 9C18.75 9.19891 18.671 9.38968 18.5303 9.53033C18.3897 9.67098 18.1989 9.75 18 9.75Z'
+                fill='currentColor'
+              />
+            </svg>
+            { claimAbleAchievements.length > 0 && <div className={'__notice-icon-tabbar'}></div>}
+          </>
         )
       },
       label: t('Tasks'),
@@ -146,7 +153,7 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
       key: 'my-profile',
       url: '/home/my-profile'
     }
-  ]), [t]);
+  ]), [claimAbleAchievements.length, t]);
 
   const selectedTab = useMemo((): string => {
     const isHomePath = pathname.includes('/home');
@@ -175,6 +182,16 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
   useEffect(() => {
     onTabSelected?.(selectedTab);
   }, [onTabSelected, selectedTab]);
+
+  useEffect(() => {
+    const sub1 = apiSdk.subscribeClaimableAchievements().subscribe((achievements: Achievement[]) => {
+      setClaimAbleAchievements(achievements);
+    });
+
+    return () => {
+      sub1.unsubscribe();
+    };
+  }, []);
 
   return (
     <SwScreenLayout
@@ -213,6 +230,19 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
     overflow: 'hidden'
   },
 
+  '.__notice-icon-tabbar': {
+    position: 'absolute',
+    zIndex: 2,
+    minWidth: 17,
+    height: 17,
+    backgroundImage: 'url(/images/mythical/notice-icon.png)',
+    backgroundPosition: 'center center',
+    backgroundSize: '100% 100%',
+    top: 7,
+    left: '31%',
+    filter: 'drop-shadow(0px 1.405px 4.216px rgba(0, 0, 0, 0.25))'
+  },
+
   '.ant-sw-screen-layout-body-inner': {
     overflow: 'auto',
     position: 'relative',
@@ -236,12 +266,8 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
     backgroundColor: 'transparent'
   },
 
-  '&.-show-tab-bar > .ant-sw-screen-layout-body > .ant-sw-screen-layout-body-inner': {
-    paddingBottom: 90
-  },
-
   '.ant-sw-tab-bar-container': {
-    position: 'fixed',
+    position: 'relative',
     bottom: 0,
     left: 0,
     right: 0,

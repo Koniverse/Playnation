@@ -2,21 +2,28 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CalendarIcon, MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { Achievement } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 import { DAILY_REWARDS_MODAL_ID, DailyRewardsModal } from './DailyRewardsModal';
 
 type Props = ThemeProps;
+const apiSdk = BookaSdk.instance;
 
 function Component (props: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const { className = '' } = props;
   const { activeModal, inactiveModal } = useContext(ModalContext);
+  const [dailyRewards, setDailyRewards] = useState(apiSdk.getDailyRewardAchievements());
 
+  const remainingDailyRewards = useCallback(() => {
+    return dailyRewards.filter((item) => item.status === 'claimable');
+  }, [dailyRewards]);
   const openDailyRewardsModal = useCallback(() => {
     activeModal(DAILY_REWARDS_MODAL_ID);
   }, [activeModal]);
@@ -32,6 +39,16 @@ function Component (props: Props): React.ReactElement<Props> {
   const onClaimedDailyRewardsModal = useCallback(() => {
     closeDailyRewardsModal();
   }, [closeDailyRewardsModal]);
+
+  useEffect(() => {
+    const sub1 = apiSdk.subscribeDailyRewardAchievements().subscribe((achievements: Achievement[]) => {
+      setDailyRewards(achievements);
+    });
+
+    return () => {
+      sub1.unsubscribe();
+    };
+  }, []);
 
   return (
     <>
@@ -49,7 +66,7 @@ function Component (props: Props): React.ReactElement<Props> {
             {t('Daily rewards')}
           </MythButton>
 
-          <div className={'__notice-icon'}></div>
+          {remainingDailyRewards.length > 0 && <div className={'__notice-icon'}></div>}
         </div>
       </div>
 
