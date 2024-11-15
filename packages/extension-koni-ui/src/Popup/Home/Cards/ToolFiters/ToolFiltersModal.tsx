@@ -8,45 +8,38 @@ import { FilterItems, FilterOption } from '@subwallet/extension-koni-ui/Popup/Ho
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Checkbox, ModalContext, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React, { Dispatch, SetStateAction, useCallback, useContext, useMemo, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 interface Props extends ThemeProps {
   filterItems: Record<FilterOption, FilterItems[]>;
   setConditionProcess: Dispatch<SetStateAction<ConditionProcessState>>;
-  setNumberOptionsSelected: Dispatch<SetStateAction<number>>
+  setNumberOptionsSelected: Dispatch<SetStateAction<number>>;
+  tmpItemsSelected: FilterOptionsSelected;
+  setTmpItemsSelected: Dispatch<SetStateAction<FilterOptionsSelected>>;
+  onConfirm: () => void;
+  handleCancel: () => void;
 }
 
-interface FilterOptionsSelected {
+export interface FilterOptionsSelected {
   [FilterOption.CATEGORY_OPTION]: string[],
   [FilterOption.POSITION_OPTION]: string[]
 }
 
 const modalId = 'filter-modal-id';
 
-const Component = ({ className, filterItems, setConditionProcess, setNumberOptionsSelected }: Props): React.ReactElement => {
+const Component = ({ className, filterItems, handleCancel, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected, tmpItemsSelected }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const { inactiveModal } = useContext(ModalContext);
-  const [itemsSelected, setItemsSelected] = useState<FilterOptionsSelected>({
-    category: [],
-    position: []
-  });
-  const [tmpItemsSelected] = useState<FilterOptionsSelected>(itemsSelected);
 
   const onCancel = useCallback(() => {
-    const newTmpItemsSelected = {
-      category: itemsSelected.category.filter((item) => tmpItemsSelected.category.includes(item)),
-      position: itemsSelected.position.filter((item) => tmpItemsSelected.position.includes(item))
-    };
-
-    setItemsSelected(newTmpItemsSelected);
-
+    handleCancel();
     inactiveModal('filter-modal-id');
-  }, [inactiveModal, itemsSelected, tmpItemsSelected]);
+  }, [handleCancel, inactiveModal]);
 
   const onReset = useCallback(() => {
-    setItemsSelected({
+    setTmpItemsSelected({
       category: [],
       position: []
     });
@@ -55,12 +48,13 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
       ...prev,
       filter: (prev) => prev
     }));
+    onConfirm();
     inactiveModal('filter-modal-id');
-  }, [inactiveModal, setConditionProcess, setNumberOptionsSelected]);
+  }, [inactiveModal, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected]);
 
   const handleSelectItem = useCallback((typeOption: FilterOption, option: string) => {
     return () => {
-      setItemsSelected((prev) => {
+      setTmpItemsSelected((prev) => {
         const indexExistedOption = prev[typeOption].indexOf(option);
 
         if (indexExistedOption > -1) {
@@ -72,10 +66,10 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
         return ({ ...prev });
       });
     };
-  }, []);
+  }, [setTmpItemsSelected]);
 
   const onApply = useCallback(() => {
-    const numberOptionsSelected = Object.values(itemsSelected).flat().length;
+    const numberOptionsSelected = Object.values(setTmpItemsSelected).flat().length;
 
     setNumberOptionsSelected(numberOptionsSelected);
 
@@ -84,13 +78,13 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
         return [...prev];
       } else {
         return [...prev].filter((card) => {
-          let isCardPositionPasses = itemsSelected[FilterOption.POSITION_OPTION].length === 0;
-          let isCardCategoryPasses = itemsSelected[FilterOption.CATEGORY_OPTION].length === 0;
+          let isCardPositionPasses = tmpItemsSelected[FilterOption.POSITION_OPTION].length === 0;
+          let isCardCategoryPasses = tmpItemsSelected[FilterOption.CATEGORY_OPTION].length === 0;
 
           console.log(isCardPositionPasses, isCardPositionPasses, card.position);
 
           if (!isCardPositionPasses) {
-            isCardPositionPasses = itemsSelected[FilterOption.POSITION_OPTION].includes(card.position);
+            isCardPositionPasses = tmpItemsSelected[FilterOption.POSITION_OPTION].includes(card.position);
           }
 
           if (!isCardCategoryPasses) {
@@ -107,8 +101,10 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
       filter: filterfunction
     }));
 
+    onConfirm();
+
     inactiveModal('filter-modal-id');
-  }, [inactiveModal, itemsSelected, setConditionProcess, setNumberOptionsSelected]);
+  }, [inactiveModal, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected, tmpItemsSelected]);
 
   const footerContent = useMemo(() => {
     return (
@@ -149,7 +145,7 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
                 {
                   options.map(({ label, subLabel, type }, index) => (
                     <Checkbox
-                      checked={itemsSelected[optionLabel as FilterOption].includes(type)}
+                      checked={tmpItemsSelected[optionLabel as FilterOption].includes(type)}
                       className='__filter-item'
                       key={index}
                       onClick={handleSelectItem(optionLabel as FilterOption, type)}

@@ -3,7 +3,7 @@
 
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ConditionProcessState } from '@subwallet/extension-koni-ui/Popup/Home/Cards';
-import { ToolFiltersModal } from '@subwallet/extension-koni-ui/Popup/Home/Cards/ToolFiters/ToolFiltersModal';
+import { FilterOptionsSelected, ToolFiltersModal } from '@subwallet/extension-koni-ui/Popup/Home/Cards/ToolFiters/ToolFiltersModal';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useState } from 'react';
@@ -94,6 +94,31 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
   const [numberOptionsSelected, setNumberOptionsSelected] = useState<number>(0);
+  const [tmpItemsSelected, setTmpItemsSelected] = useState<FilterOptionsSelected>({
+    category: [],
+    position: []
+  });
+
+  const [itemsSelected, setItemsSelected] = useState<FilterOptionsSelected>({
+    category: [],
+    position: []
+  });
+
+  const handleConfirmSelection = useCallback(() => {
+    setItemsSelected((prev) => ({
+      ...prev,
+      category: [...tmpItemsSelected.category],
+      position: [...tmpItemsSelected.position]
+    }));
+  }, [tmpItemsSelected, setItemsSelected]);
+
+  const handleCancel = useCallback(() => {
+    setTmpItemsSelected((prev) => ({
+      ...prev,
+      category: [...itemsSelected.category],
+      position: [...itemsSelected.position]
+    }));
+  }, [itemsSelected.category, itemsSelected.position]);
 
   const onClick = useCallback(() => {
     activeModal(modalId);
@@ -121,8 +146,12 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
 
       <ToolFiltersModal
         filterItems={FilterOptions}
+        handleCancel={handleCancel}
+        onConfirm={handleConfirmSelection}
         setConditionProcess={setConditionProcess}
         setNumberOptionsSelected={setNumberOptionsSelected}
+        setTmpItemsSelected={setTmpItemsSelected}
+        tmpItemsSelected={tmpItemsSelected}
       />
     </>
 
