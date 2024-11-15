@@ -24,10 +24,8 @@ function Component (props: Props): React.ReactElement<Props> {
 
   useEffect(() => {
     preloadImages([
-      '/images/mythical/daily-rewards/modal-background.png',
-      '/images/mythical/daily-rewards/claimed.png',
-      '/images/mythical/daily-rewards/unclaimed.png',
-      '/images/mythical/daily-rewards/cancel-button-mask.png',
+      '/images/mythical/leaderboard-terms-conditions-bg.png',
+      '/images/mythical/close-button.png',
       '/images/mythical/okay-button-background.png'
     ]);
   }, []);
@@ -35,16 +33,25 @@ function Component (props: Props): React.ReactElement<Props> {
   return (
     <SwModal
       className={CN(className)}
+      closable={true}
       id={modalId}
       onCancel={onCancel}
-      // cancelButtonProps={}
     >
+      <div className={'__cancel-button-header'} onClick={onCancel}></div>
       <div className={'__modal-title'}>{t('Lorem ipsum')}</div>
 
       <div className={'__modal-description'}>
         {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ' +
           'sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, ' +
-          'quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.')}</div>
+          'quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. \n' +
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ' +
+          'dolore magna tempor incididunt ut labore et dolore magna tempor incididunt')}</div>
+      <div className={'__modal-description'}>
+        {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ' +
+          'sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, ' +
+          'quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. \n' +
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ' +
+          'dolore magna tempor incididunt ut labore et dolore magna tempor incididunt')}</div>
 
       <div className='__buttons-container'>
         <MythButton
@@ -79,16 +86,27 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       borderRadius: 0,
       maxWidth: 370,
       paddingTop: 24,
-      backgroundImage: 'url(/images/mythical/daily-rewards/modal-background.png)',
+      backgroundImage: 'url(/images/mythical/leaderboard-terms-conditions-bg.png)',
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat',
       filter: 'drop-shadow(4px 6px 0px #000)',
       backgroundColor: 'transparent',
-      boxShadow: 'none'
+      boxShadow: 'none',
+      position: 'relative'
+    },
+
+    '.__cancel-button-header': {
+      backgroundImage: 'url(/images/mythical/close-button.png)',
+      backgroundSize: '30px 32px',
+      height: 32,
+      width: 30,
+      position: 'absolute',
+      top: '-44px',
+      right: 0
     },
 
     '.ant-sw-modal-body': {
-      paddingBottom: 35
+      paddingBottom: 54
     },
 
     '.ant-sw-modal-header': {
@@ -117,17 +135,6 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       lineHeight: '18px',
       letterSpacing: '0.32px',
       marginBottom: 20
-    },
-
-    '.__checkin-item-list-container': {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(4, 1fr)',
-      gap: 12,
-      marginBottom: 20
-    },
-
-    '.__checkin-item': {
-      // flex: '1 1 20.1%'
     },
 
     '.__buttons-container': {
@@ -173,30 +180,6 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
         backgroundColor: token.colorWhite,
         maskImage: 'url(/images/mythical/okay-button-background.png)',
         filter: 'drop-shadow(1.444px 2.167px 0px #000)'
-      }
-    },
-
-    '.__time-remaining': {
-      color: extendToken.mythColorGray4
-    },
-
-    '.__claim-button': {
-      flex: '1 0 auto',
-
-      '.__button-background:before': {
-        maskImage: 'url(/images/mythical/daily-rewards/claim-button-mask.png)'
-      },
-
-      '&.-lock': {
-        '.__button-background:before': {
-          backgroundColor: extendToken.mythColorGray2
-        }
-      },
-
-      '&.-claimable': {
-        '.__button-background:before': {
-          backgroundColor: token.colorPrimary
-        }
       }
     }
   });

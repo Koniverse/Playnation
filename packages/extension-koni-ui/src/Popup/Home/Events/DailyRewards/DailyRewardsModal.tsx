@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MythButton, XIcon } from '@subwallet/extension-koni-ui/components/Mythical';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { Achievement } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { CheckInItem, CheckInItemType } from '@subwallet/extension-koni-ui/Popup/Home/Events/DailyRewards/CheckInItem';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { getTimeRemaining, preloadImages } from '@subwallet/extension-koni-ui/utils';
 import { SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -18,15 +20,49 @@ interface Props extends ThemeProps {
 
 export const DAILY_REWARDS_MODAL_ID = 'DAILY_REWARDS_MODAL_ID';
 const modalId = DAILY_REWARDS_MODAL_ID;
+const apiSdk = BookaSdk.instance;
 
 function Component (props: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const { className = '', onCancel, onClaimed } = props;
-  const isClaimable = false;
+  const { className = '', onCancel } = props;
+  const [loading, setLoading] = useState(false);
+  const [isClaimable, setIsClaimable] = useState(false);
+  const [dailyRewards, setDailyRewards] = useState(apiSdk.getDailyRewardAchievements());
+  const [timeRange, setTimeRange] = useState(apiSdk.getMetadata()?.timeRange);
 
   const onClaim = useCallback(() => {
-    onClaimed();
-  }, [onClaimed]);
+    if (loading || !isClaimable) {
+      return;
+    }
+
+    const remainingDailyRewards = dailyRewards.filter((item) => item.status === 'claimable');
+
+    setLoading(true);
+
+    Promise.all(remainingDailyRewards.map((item) => apiSdk.claimAchievement(item.milestoneId)))
+      .catch(console.error)
+      .finally(() => {
+        apiSdk.fetchAchievementList()
+          .catch(console.error)
+          .finally(() => {
+            setLoading(false);
+          });
+      });
+  }, [dailyRewards, isClaimable, loading]);
+
+  useEffect(() => {
+    const sub1 = apiSdk.subscribeDailyRewardAchievements().subscribe((achievements: Achievement[]) => {
+      setDailyRewards(achievements);
+    });
+    const sub2 = apiSdk.subscribeMetadata().subscribe((metadata) => {
+      metadata && setTimeRange(metadata.timeRange);
+    });
+
+    return () => {
+      sub1.unsubscribe();
+      sub2.unsubscribe();
+    };
+  }, []);
 
   const claimButtonLabel = useMemo(() => {
     const claimLabel = t('Claim');
@@ -35,46 +71,59 @@ function Component (props: Props): React.ReactElement<Props> {
       return claimLabel;
     }
 
-    const endTime = Date.now() + 20 * 60 * 60 * 1000 + 30 * 60 * 1000;
+    const now = timeRange?.now;
+    const endTime = timeRange?.daily?.end;
+
+    if (!now || !endTime) {
+      return t('Unavailable');
+    }
 
     return (
       <>
         <span className={'__claim-text'}>{claimLabel}</span>
         <span>&nbsp;</span>
         <span className={'__time-remaining'}>
-          ({getTimeRemaining(Date.now(), new Date(endTime).toString())})
+          ({getTimeRemaining(now, new Date(endTime).toString())})
         </span>
       </>
     );
-  }, [isClaimable, t]);
+  }, [isClaimable, t, timeRange?.daily?.end, timeRange?.now]);
 
   const checkinItems = useMemo<CheckInItemType[]>(() => {
     const result: CheckInItemType[] = [];
 
-    for (let i = 1; i <= 8; i++) {
-      let state: CheckInItemType['state'] = 'LOCKED';
-      let label = `Day ${i}`;
-      let point = 100 * i;
+    let claimable = false;
+    let getChecked = false;
 
-      if (i === 1) {
+    for (const item of dailyRewards) {
+      let state: CheckInItemType['state'] = 'LOCKED';
+
+      console.log(item.milestoneName, item.status);
+
+      if (item.status === 'claimed') {
         state = 'CHECKED';
-      } else if (i === 2) {
+        getChecked = true;
+      } else if (item.status === 'claimable') {
         state = 'AVAILABLE';
-      } else if (i === 8) {
-        label = 'Day 7+';
-        point = 1000;
+        claimable = true;
+      } else if (claimable || getChecked) {
+        state = 'LOCKED';
+      } else {
+        state = 'CHECKED';
       }
 
       result.push({
-        id: `${i}`,
-        label,
-        point,
+        id: item.id,
+        label: item.milestoneName,
+        point: item.pointReward,
         state
       });
     }
 
+    setIsClaimable(claimable);
+
     return result;
-  }, []);
+  }, [dailyRewards]);
 
   useEffect(() => {
     preloadImages([
@@ -124,6 +173,7 @@ function Component (props: Props): React.ReactElement<Props> {
             '-lock': !isClaimable,
             '-claimable': isClaimable
           })}
+          isLoading={loading}
           onClick={onClaim}
         >
           {claimButtonLabel}

@@ -6,9 +6,10 @@ import { StatItem } from '@subwallet/extension-koni-ui/components/Mythical/Modal
 import { NFLRivalCard } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { eventStat } from '@subwallet/extension-koni-ui/constants';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
 import { SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -17,9 +18,14 @@ type Props = ThemeProps & {
   card: NFLRivalCard;
   onCancel?: () => void,
 }
+const NFL_RIVALS_MARKET_LINK = 'https://mythical.market/game/nfl-rivals';
 
 function Component ({ card, className = '', id, onCancel }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
+
+  const handleOpenMarket = useCallback(() => {
+    openInNewTab(NFL_RIVALS_MARKET_LINK)();
+  }, []);
 
   return (
     <SwModal
@@ -51,6 +57,7 @@ function Component ({ card, className = '', id, onCancel }: Props): React.ReactE
         <CallToAction
           buttonLabel={t('Get more players')}
           className={'__call-to-action'}
+          onAction={handleOpenMarket}
           subtitle={t('Visit the NFL Rivals marketplace')}
           title={t('Want to get more cards?')}
         />

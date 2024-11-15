@@ -9,7 +9,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 export type CheckInItemType = {
-  id: string;
+  id: number;
   label: string;
   point: number;
   state: 'AVAILABLE' | 'LOCKED' | 'CHECKED'

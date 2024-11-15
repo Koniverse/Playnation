@@ -22,7 +22,6 @@ export interface AuthenticationMythContextProps {
   linkMythAccount: (address: string) => Promise<void>;
   onLogin: VoidFunction;
   onLogout: () => Promise<void>;
-  checkIsExistedLinking: () => Promise<boolean>;
 }
 
 export const AuthenticationMythContext = createContext<AuthenticationMythContextProps>({
@@ -30,8 +29,7 @@ export const AuthenticationMythContext = createContext<AuthenticationMythContext
   linkMythAccount: () => Promise.resolve(),
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   onLogin: () => {},
-  onLogout: () => Promise.resolve(),
-  checkIsExistedLinking: () => Promise.resolve(false)
+  onLogout: () => Promise.resolve()
 });
 
 const config = {
@@ -54,6 +52,10 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
   const [isLinked, setIsLinked] = useState<boolean>(false);
   const authContext = useContext(AuthContext);
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
+
+  useEffect(() => {
+    bookaSDK.fetchNFLRivalCardList(authContext.token).catch(console.error);
+  }, [authContext.token]);
 
   const onLoginWithMythAccount = useCallback(() => {
     authContext.logIn();
@@ -97,29 +99,6 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     await onSubmitMythAccount(address);
   }, [authContext.token, onLoginWithMythAccount, onSubmitMythAccount, tokenData?.email]);
 
-  const checkIsExistedLinking = useCallback(async (): Promise<boolean> => {
-    if (isLinked) {
-      return true;
-    }
-
-    if (startData?.user?.id) {
-      return await linkSDK.findLink({
-        telegram_id: startData.user.id
-      }).then((rs) => {
-        if (rs.success) {
-          setIsLinked(rs.success);
-          setLinkData(rs.data);
-
-          return true;
-        }
-
-        return false;
-      }).catch(() => false);
-    }
-
-    return false;
-  }, [isLinked]);
-
   const onLogin = useCallback(() => {
     onLoginWithMythAccount();
   }, [onLoginWithMythAccount]);
@@ -158,7 +137,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
       linkSDK.findLink({
         telegram_id: startData.user.id
       }).then((rs) => {
-        if (rs.success) {
+        if (rs.success && tokenData?.email && authContext.token) {
           setIsLinked(rs.success);
           setLinkData(rs.data);
         } else {
@@ -166,15 +145,14 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
         }
       }).catch(console.error);
     }
-  }, [currentAccount?.address, onSubmitMythAccount]);
+  }, [authContext.token, currentAccount?.address, onSubmitMythAccount, tokenData?.email]);
 
   const authenticationValue: AuthenticationMythContextProps = {
     account,
     isLinkedMyth: isLinked,
     linkMythAccount,
     onLogin,
-    onLogout,
-    checkIsExistedLinking
+    onLogout
   };
 
   return (

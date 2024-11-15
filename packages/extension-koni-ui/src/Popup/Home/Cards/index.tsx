@@ -6,6 +6,7 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { NFLRivalCard } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -29,6 +30,7 @@ const ConditionProcessDefault: ConditionProcessState = {
 
 const cardDetailModalId = 'cardDetailModalId';
 const bookaSDK = BookaSdk.instance;
+const NFL_RIVALS_MARKET_LINK = 'https://mythical.market/game/nfl-rivals';
 
 const Component = ({ className }: Props): React.ReactElement => {
   const { setContainerClass } = useContext(HomeContext);
@@ -88,6 +90,10 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [setContainerClass]);
 
+  const handleOpenMarket = useCallback(() => {
+    openInNewTab(NFL_RIVALS_MARKET_LINK)();
+  }, []);
+
   return (
     <>
       <div className={className}>
@@ -99,6 +105,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         <CallToAction
           buttonLabel={t('Get more players')}
           className={'__call-to-action'}
+          onAction={handleOpenMarket}
           subtitle={t('Visit the NFL Rivals marketplace')}
           title={t('Want to get more cards?')}
         />

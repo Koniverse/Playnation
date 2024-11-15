@@ -28,7 +28,7 @@ const telegramConnector = TelegramConnector.instance;
 const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
   const { extendToken, token } = theme as Theme;
 
-  telegramConnector.syncTheme(token.colorBgBase, token.colorBgBase);
+  telegramConnector.syncTheme('#000', '#fff');
   applyPreloadStyle(extendToken.bodyBackgroundColor);
 
   return ({

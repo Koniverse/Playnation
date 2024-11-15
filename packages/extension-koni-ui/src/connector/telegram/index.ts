@@ -117,6 +117,20 @@ export class TelegramConnector {
     }
   }
 
+  enableBackButton () {
+    TelegramWebApp.BackButton?.onClick(() => {
+      history.back();
+    });
+
+    if (!TelegramWebApp.BackButton?.isVisible) {
+      TelegramWebApp.BackButton.show();
+    }
+  }
+
+  disableBackButton (callback: () => void) {
+    TelegramWebApp.BackButton.hide();
+  }
+
   // Singleton
   static _instance: TelegramConnector;
   static get instance () {

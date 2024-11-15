@@ -20,6 +20,7 @@ type Props = ThemeProps & {
   achievements: Achievement[];
   selectedTab: TaskCategoryType;
   accountInfo: BookaAccount | undefined;
+  endTime?: number;
 };
 
 type MissionSectionType = {
@@ -85,6 +86,7 @@ const telegramConnector = TelegramConnector.instance;
 const Component = ({ accountInfo,
   achievements,
   className,
+  endTime,
   selectedTab,
   taskCategories,
   tasks }: Props): React.ReactElement => {
@@ -295,14 +297,12 @@ const Component = ({ accountInfo,
       };
     });
 
-    const dateNow = Date.now();
-
     tasks.forEach((tk) => {
       if (!tk.categoryId || !taskSectionMap[tk.categoryId]) {
         return;
       }
 
-      if (tk.endTime && (new Date(tk.endTime).getTime() <= dateNow)) {
+      if (tk.endTime && endTime && (new Date(tk.endTime).getTime() <= endTime)) {
         return;
       }
 
@@ -334,7 +334,7 @@ const Component = ({ accountInfo,
     });
 
     return Object.values(taskSectionMap).filter((ts) => !!ts.items.length);
-  }, [taskCategories, tasks, achievements, selectedTab, getTaskStatusText, getTaskActionContent, doTaskAction, getAchievementStatusText, getAchievementActionContent, doAchievementAction]);
+  }, [taskCategories, endTime, tasks, achievements, selectedTab, getTaskStatusText, getTaskActionContent, doTaskAction, getAchievementStatusText, getAchievementActionContent, doAchievementAction]);
 
   // const mockItems: MissionSectionType[] = useMemo(() => {
   //   return [

@@ -4,7 +4,8 @@
 import { RequestChangeMasterPassword } from '@subwallet/extension-base/background/KoniTypes';
 import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { DEFAULT_HOMEPAGE, DEFAULT_PASSWORD, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-koni-ui/constants';
+import { DEFAULT_HOMEPAGE, DEFAULT_PASSWORD, SUBSTRATE_ACCOUNT_TYPE, VISIT_LOGIN_CTA_FLAG } from '@subwallet/extension-koni-ui/constants';
+import { VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE } from '@subwallet/extension-koni-ui/constants/localStorageDefaultValue';
 import { useDefaultNavigate, useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { useBiometric } from '@subwallet/extension-koni-ui/hooks/biometric';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
@@ -22,6 +23,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { useLocalStorage } from 'usehooks-ts';
 
 type Props = ThemeProps
 
@@ -47,6 +49,7 @@ const FooterIcon = (
 
 const formName = 'create-password-form';
 const telegramConnector = TelegramConnector.instance;
+const loginUrl = '/login';
 
 const Component: React.FC<Props> = ({ className }: Props) => {
   const { t } = useTranslation();
@@ -54,7 +57,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   const { goBack } = useDefaultNavigate();
 
   const notification = useNotification();
-
+  const [isVisitedLoginCTA] = useLocalStorage(VISIT_LOGIN_CTA_FLAG, VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE);
   const { accounts, hasMasterPassword, useCustomPassword } = useSelector((state: RootState) => state.accountState);
   const passwordRules = useMemo(() => renderBasePasswordRules(t('Password'), t), [t]);
   const confirmPasswordRules = useMemo(() => renderBaseConfirmPasswordRules(FormFieldName.PASSWORD, t), [t]);
@@ -85,9 +88,9 @@ const Component: React.FC<Props> = ({ className }: Props) => {
         isAllowed: true
       });
 
-      navigate(DEFAULT_HOMEPAGE);
+      navigate(!isVisitedLoginCTA ? loginUrl : DEFAULT_HOMEPAGE);
     })().catch(console.error);
-  }, [accounts.length, navigate]);
+  }, [accounts.length, isVisitedLoginCTA, navigate]);
 
   useEffect(() => {
     form.setFieldsValue({

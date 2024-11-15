@@ -6142,7 +6142,7 @@ __metadata:
     "@subwallet/extension-mocks": ^1.2.10-0
     "@subwallet/keyring": ^0.1.5
     "@subwallet/ui-keyring": ^0.1.5
-    "@types/telegram-web-app": ^7.3.1
+    "@types/telegram-web-app": ^7.10.1
     "@types/uuid": ^9.0.1
     "@walletconnect/keyvaluestorage": ^1.1.1
     "@walletconnect/sign-client": ^2.13.1
@@ -6291,7 +6291,7 @@ __metadata:
     "@types/sinon-chrome": ^2.2.11
     "@types/store": ^2.0.2
     "@types/styled-components": ^5.1.26
-    "@types/telegram-web-app": ^7.3.1
+    "@types/telegram-web-app": ^7.10.1
     "@types/url-parse": ^1.4.11
     "@walletconnect/types": ^2.13.1
     "@wojtekmaj/enzyme-adapter-react-17": ^0.8.0
@@ -7677,10 +7677,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/telegram-web-app@npm:^7.3.1":
-  version: 7.3.1
-  resolution: "@types/telegram-web-app@npm:7.3.1"
-  checksum: feb050ddeb44a91d4c46b78d3f906c00c6298bb0ea7c6fce9e87252400ddb4c4f5678428ba053d15217c2eff3db2724dcb62611846ab9defb9c479e4fe89cf37
+"@types/telegram-web-app@npm:^7.10.1":
+  version: 7.10.1
+  resolution: "@types/telegram-web-app@npm:7.10.1"
+  checksum: 2f9d11aa9db84ab98095a38d9aaeae0b497a8802aea76ed42e239a94f45d9329d2fbbb32013d49b8fd51cfac19dec48379f9c145ac0adb8b6f239c1b21ec0d79
   languageName: node
   linkType: hard
 

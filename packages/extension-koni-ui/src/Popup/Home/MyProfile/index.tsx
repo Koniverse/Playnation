@@ -7,10 +7,9 @@ import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { AccountEditorArea } from './AccountEditorArea';
@@ -23,24 +22,27 @@ type Props = ThemeProps;
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/my-profile');
   const { t } = useTranslation();
-  const navigate = useNavigate();
-
-  const { isLinkedMyth, linkMythAccount, onLogout } = useContext(AuthenticationMythContext);
+  const { isLinkedMyth, linkMythAccount, onLogin, onLogout } = useContext(AuthenticationMythContext);
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
+  const [loading, setLoading] = useState(false);
 
   const doLinkAccount = useCallback(() => {
     currentAccount?.address && linkMythAccount(currentAccount?.address).catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
 
   const logIn = useCallback(() => {
-    navigate('/login');
-  }, [navigate]);
+    setLoading(true);
+    onLogin();
+  }, [onLogin]);
 
   const logOut = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    setLoading(true);
     onLogout().then(() => {
-
-    }).catch(console.error);
+      console.log('Logout success');
+    }).catch(console.error)
+      .finally(() => {
+        setLoading(false);
+      });
   }, [onLogout]);
 
   return (
@@ -50,19 +52,21 @@ const Component = ({ className }: Props): React.ReactElement => {
           (
             <MythButton
               className={CN('login-button')}
+              isLoading={loading}
               onClick={!isLinkedMyth ? logIn : logOut}
             >
               {!isLinkedMyth ? t('Log in') : t('Log out')}
             </MythButton>
           )
         }
-        title={'My profile'}
+        title={t('My profile')}
       />
       <AccountEditorArea className={'account-editor-area'} />
       <LinkAccountArea
         className={'link-account-area'}
         doLinkAccount={doLinkAccount}
         isLinked={isLinkedMyth}
+        isLoading={loading}
       />
       <WalletInfoArea className={'wallet-info-area'} />
       <RewardHistoryArea className={'reward-history-area'} />

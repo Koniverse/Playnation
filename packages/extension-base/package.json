@@ -97,7 +97,7 @@
   },
   "devDependencies": {
     "@subwallet/extension-mocks": "^1.2.10-0",
-    "@types/telegram-web-app": "^7.3.1",
+    "@types/telegram-web-app": "^7.10.1",
     "@types/uuid": "^9.0.1"
   }
 }
