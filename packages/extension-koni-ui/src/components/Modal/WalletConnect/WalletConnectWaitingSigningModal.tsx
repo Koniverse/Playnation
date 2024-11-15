@@ -24,6 +24,7 @@ function Component (props: Props): React.ReactElement<Props> {
     <SwModal
       className={CN(className, '-light-theme')}
       closable={false}
+      destroyOnClose={true}
       id={modalId}
       maskClosable={false}
       title={t('Success')}

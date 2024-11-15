@@ -276,11 +276,9 @@ export function Root (): React.ReactElement {
   return (
     <SecurityContextProvider>
       <WalletModalContextProvider>
-        <WalletConnectContextProvider>
-          <DefaultRoute>
-            <Outlet />
-          </DefaultRoute>
-        </WalletConnectContextProvider>
+        <DefaultRoute>
+          <Outlet />
+        </DefaultRoute>
       </WalletModalContextProvider>
     </SecurityContextProvider>
   );

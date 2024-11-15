@@ -5,6 +5,7 @@ import { ConfirmationDefinitions, ConfirmationResult, EvmSendTransactionRequest,
 import { WC_DEFAULT_CHAIN_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { CONFIRMATION_QR_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { InjectContext } from '@subwallet/extension-koni-ui/contexts/InjectContext';
+import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useGetChainInfoByChainId, useLedger, useNotification } from '@subwallet/extension-koni-ui/hooks';
 import useUnlockChecker from '@subwallet/extension-koni-ui/hooks/common/useUnlockChecker';
 import { completeConfirmation, wcSendTransactionRequest, wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
@@ -63,6 +64,7 @@ const Component: React.FC<Props> = (props: Props) => {
   const notify = useNotification();
 
   const { activeModal } = useContext(ModalContext);
+  const { waitingSigningModal: { close: closeWaiting, open: openWaiting } } = useContext(WalletConnectContext);
   const { evmWallet } = useContext(InjectContext);
 
   const chain = useGetChainInfoByChainId(chainId);
@@ -223,17 +225,25 @@ const Component: React.FC<Props> = (props: Props) => {
     }
 
     setLoading(true);
+    openWaiting();
     promise
       .then(({ signature }) => {
+        closeWaiting();
         onApproveSignature({ signature: signature as `0x${string}` });
       })
       .catch((e) => {
-        console.error(e);
+        const error = e as Error;
+
+        closeWaiting();
+        notify({
+          message: error.message,
+          type: 'error'
+        });
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [account.address, isMessage, onApproveSignature, payload, chainId]);
+  }, [isMessage, openWaiting, payload.payload, account.address, chainId, closeWaiting, onApproveSignature, notify]);
 
   const onConfirm = useCallback(() => {
     removeTransactionPersist(extrinsicType);
