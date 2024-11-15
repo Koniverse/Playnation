@@ -7,6 +7,6 @@ export default class EnableStoryProtocolTestnet extends BaseMigrationJob {
   public override async run (): Promise<void> {
     const state = this.state;
 
-    await state.chainService.updateAssetSetting('storyPublic_testnet-NATIVE-IP', { visible: true });
+    await state.chainService.updateAssetSetting('storyOdyssey_testnet-NATIVE-IP', { visible: true });
   }
 }
