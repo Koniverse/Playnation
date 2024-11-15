@@ -8,36 +8,38 @@ import { FilterItems, FilterOption } from '@subwallet/extension-koni-ui/Popup/Ho
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Checkbox, ModalContext, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React, { Dispatch, SetStateAction, useCallback, useContext, useMemo, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 interface Props extends ThemeProps {
   filterItems: Record<FilterOption, FilterItems[]>;
   setConditionProcess: Dispatch<SetStateAction<ConditionProcessState>>;
-  setNumberOptionsSelected: Dispatch<SetStateAction<number>>
+  setNumberOptionsSelected: Dispatch<SetStateAction<number>>;
+  tmpItemsSelected: FilterOptionsSelected;
+  setTmpItemsSelected: Dispatch<SetStateAction<FilterOptionsSelected>>;
+  onConfirm: () => void;
+  handleCancel: () => void;
 }
 
-interface FilterOptionsSelected {
+export interface FilterOptionsSelected {
   [FilterOption.CATEGORY_OPTION]: string[],
   [FilterOption.POSITION_OPTION]: string[]
 }
 
 const modalId = 'filter-modal-id';
 
-const Component = ({ className, filterItems, setConditionProcess, setNumberOptionsSelected }: Props): React.ReactElement => {
+const Component = ({ className, filterItems, handleCancel, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected, tmpItemsSelected }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const { inactiveModal } = useContext(ModalContext);
-  const [itemsSelected, setItemsSelected] = useState<FilterOptionsSelected>({
-    category: [],
-    position: []
-  });
+
   const onCancel = useCallback(() => {
+    handleCancel();
     inactiveModal('filter-modal-id');
-  }, [inactiveModal]);
+  }, [handleCancel, inactiveModal]);
 
   const onReset = useCallback(() => {
-    setItemsSelected({
+    setTmpItemsSelected({
       category: [],
       position: []
     });
@@ -46,12 +48,13 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
       ...prev,
       filter: (prev) => prev
     }));
-    onCancel();
-  }, [onCancel, setConditionProcess, setNumberOptionsSelected]);
+    onConfirm();
+    inactiveModal('filter-modal-id');
+  }, [inactiveModal, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected]);
 
   const handleSelectItem = useCallback((typeOption: FilterOption, option: string) => {
     return () => {
-      setItemsSelected((prev) => {
+      setTmpItemsSelected((prev) => {
         const indexExistedOption = prev[typeOption].indexOf(option);
 
         if (indexExistedOption > -1) {
@@ -63,10 +66,10 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
         return ({ ...prev });
       });
     };
-  }, []);
+  }, [setTmpItemsSelected]);
 
   const onApply = useCallback(() => {
-    const numberOptionsSelected = Object.values(itemsSelected).flat().length;
+    const numberOptionsSelected = Object.values(setTmpItemsSelected).flat().length;
 
     setNumberOptionsSelected(numberOptionsSelected);
 
@@ -75,13 +78,13 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
         return [...prev];
       } else {
         return [...prev].filter((card) => {
-          let isCardPositionPasses = itemsSelected[FilterOption.POSITION_OPTION].length === 0;
-          let isCardCategoryPasses = itemsSelected[FilterOption.CATEGORY_OPTION].length === 0;
+          let isCardPositionPasses = tmpItemsSelected[FilterOption.POSITION_OPTION].length === 0;
+          let isCardCategoryPasses = tmpItemsSelected[FilterOption.CATEGORY_OPTION].length === 0;
 
           console.log(isCardPositionPasses, isCardPositionPasses, card.position);
 
           if (!isCardPositionPasses) {
-            isCardPositionPasses = itemsSelected[FilterOption.POSITION_OPTION].includes(card.position);
+            isCardPositionPasses = tmpItemsSelected[FilterOption.POSITION_OPTION].includes(card.position);
           }
 
           if (!isCardCategoryPasses) {
@@ -98,8 +101,10 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
       filter: filterfunction
     }));
 
-    onCancel();
-  }, [itemsSelected, onCancel, setConditionProcess, setNumberOptionsSelected]);
+    onConfirm();
+
+    inactiveModal('filter-modal-id');
+  }, [inactiveModal, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected, tmpItemsSelected]);
 
   const footerContent = useMemo(() => {
     return (
@@ -140,7 +145,7 @@ const Component = ({ className, filterItems, setConditionProcess, setNumberOptio
                 {
                   options.map(({ label, subLabel, type }, index) => (
                     <Checkbox
-                      checked={itemsSelected[optionLabel as FilterOption].includes(type)}
+                      checked={tmpItemsSelected[optionLabel as FilterOption].includes(type)}
                       className='__filter-item'
                       key={index}
                       onClick={handleSelectItem(optionLabel as FilterOption, type)}
@@ -229,15 +234,26 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
     },
 
     '.ant-sw-modal-header.ant-sw-modal-header': {
-      paddingTop: token.paddingSM + 2,
-      paddingBottom: token.paddingSM + 2
+      paddingTop: token.padding + 2,
+      paddingBottom: token.padding + 2,
+      paddingLeft: 20,
+      paddingRight: 20
     },
 
     '& .ant-sw-header-container-center .ant-sw-header-center-part ': {
       '.ant-sw-sub-header-title': {
         justifyContent: 'flex-start',
-        paddingLeft: 8
+        display: 'flex',
+        alignItems: 'center'
       }
+    },
+
+    '.ant-sw-header-center-part, .ant-sw-sub-header-title': {
+      maxHeight: 32
+    },
+
+    '.ant-sw-header-container-center .ant-sw-header-center-part': {
+      marginLeft: 46
     },
 
     '.ant-sw-header-left-part .ant-btn': {
@@ -245,9 +261,23 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
       backgroundSize: '30px 32px',
       backgroundPosition: 'center center',
       backgroundRepeat: 'no-repeat',
+      maxHeight: 32,
+      minWidth: 30,
+      maxWidth: 30,
       span: {
         opacity: 0
       }
+    },
+
+    '.ant-sw-header-container .ant-sw-header-left-part': {
+      marginLeft: 0
+    },
+
+    '.ant-sw-header-container': {
+      minHeight: 32
+    },
+    '.ant-sw-header-right-part': {
+      display: 'none'
     },
 
     '.ant-sw-sub-header-title .ant-sw-sub-header-title-content': {
@@ -296,12 +326,17 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
       color: token.colorWhite,
       fontFamily: extendToken.fontBarlowCondensed,
       fontSize: '14px',
-      lineHeight: '18px',
+      lineHeight: '16px',
       fontStyle: 'normal',
       display: 'flex',
-      fontWeight: 700,
+      fontWeight: 500,
       width: '100%',
       letterSpacing: '0.28px'
+    },
+
+    '.ant-checkbox-wrapper-checked .__filter-item-label.__filter-item-label': {
+      fontWeight: 700,
+      lineHeight: '18px'
     },
 
     '.ant-sw-modal-footer': {

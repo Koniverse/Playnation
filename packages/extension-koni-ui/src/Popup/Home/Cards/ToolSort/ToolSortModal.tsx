@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { ModalContext, Radio, SwModal} from '@subwallet/react-ui';
+import { ModalContext, Radio, SwModal } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -79,6 +79,11 @@ export const ToolSortModal = styled(Component)<ThemeProps>(({ theme: { extendTok
       backgroundRepeat: 'no-repeat'
     },
 
+    '.ant-radio-wrapper-checked .__sort-item-label.__sort-item-label': {
+      fontWeight: 700,
+      lineHeight: '18px'
+    },
+
     '.ant-sw-modal-title': {
       paddingRight: 16,
       maxHeight: 32,
@@ -119,7 +124,6 @@ export const ToolSortModal = styled(Component)<ThemeProps>(({ theme: { extendTok
       paddingTop: 32,
       paddingBottom: 12
     },
-
 
     '.ant-radio-inner.ant-radio-inner': {
       backgroundSize: '100% 100%',
@@ -180,7 +184,7 @@ export const ToolSortModal = styled(Component)<ThemeProps>(({ theme: { extendTok
       '.ant-sw-sub-header-title': {
         justifyContent: 'flex-start'
       },
-      marginLeft: token.paddingXL
+      marginLeft: token.padding
     },
 
     '.ant-sw-header-left-part .ant-btn': {
@@ -231,7 +235,7 @@ export const ToolSortModal = styled(Component)<ThemeProps>(({ theme: { extendTok
     },
 
     '.__sort-list': {
-      marginLeft: '32px',
+      marginLeft: '16px',
       display: 'flex',
       gap: token.sizeSM,
       flexDirection: 'column',

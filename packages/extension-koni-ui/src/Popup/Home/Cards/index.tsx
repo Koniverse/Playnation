@@ -106,7 +106,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           buttonLabel={t('Get more players')}
           className={'__call-to-action'}
           onAction={handleOpenMarket}
-          subtitle={t('Visit the Football Rivals marketplace')}
+          subtitle={t('Visit the NFL Rivals marketplace')}
           title={t('Want to get more cards?')}
         />
 
@@ -169,7 +169,8 @@ const Cards = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
     '.__card-list-container': {
       display: 'grid',
       gridTemplateColumns: 'repeat(2, 1fr)',
-      marginBottom: 20
+      marginBottom: 20,
+      paddingTop: 16
     },
     '.__card-list-wrapper': {
       flex: 1,

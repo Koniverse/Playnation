@@ -94,11 +94,11 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   const openTermAndConditionModal = useCallback(() => {
     activeModal(TERM_AND_CONDITION_MODAL_ID);
-  }, []);
+  }, [activeModal]);
 
   const closeTermAndConditionModal = useCallback(() => {
     inactiveModal(TERM_AND_CONDITION_MODAL_ID);
-  }, []);
+  }, [inactiveModal]);
 
   return (
     <div className={className}>
@@ -131,7 +131,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         <CallToAction
           buttonLabel={'Play now'}
           className={'call-to-action'}
-          subtitle={'Download Football Rivals App'}
+          subtitle={'Download NFL Rivals App'}
           title={'Want to get to the big league?'}
         />
 
