@@ -95,12 +95,26 @@ export const LinkAccountArea = styled(Component)<ThemeProps>(({ theme: { extendT
     '.__linked-account-button': {
       '.__button-background:before': {
         backgroundColor: extendToken.mythColorPurple
+      },
+      '.__button-content': {
+        fontSize: 22,
+        lineHeight: '24px',
+        letterSpacing: '-0.88px',
+        fontWeight: 500,
+        paddingBottom: 0
       }
     },
 
     '.__contact-support-button': {
       '.__button-background:before': {
         backgroundColor: extendToken.mythColorGray4
+      },
+      '.__button-content': {
+        fontSize: 22,
+        lineHeight: '24px',
+        letterSpacing: '-0.88px',
+        fontWeight: 500,
+        paddingBottom: 0
       }
     },
 

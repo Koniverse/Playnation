@@ -74,7 +74,8 @@ export const AccountEditorArea = styled(Component)<ThemeProps>(({ theme: { exten
       justifyContent: 'center',
       gap: 8,
       alignItems: 'center',
-      marginBottom: 6
+      marginBottom: 6,
+      height: 28
     },
 
     '.__account-name': {

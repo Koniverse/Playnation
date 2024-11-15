@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { MainScreenHeader, MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
+import { CallToAction, MainScreenHeader, MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
@@ -48,6 +48,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   return (
     <div className={className}>
       <MainScreenHeader
+        className={'profile-header'}
         rightPartNode={
           (
             <MythButton
@@ -70,6 +71,13 @@ const Component = ({ className }: Props): React.ReactElement => {
       />
       <WalletInfoArea className={'wallet-info-area'} />
       <RewardHistoryArea className={'reward-history-area'} />
+      <CallToAction
+        buttonLabel={'Play now'}
+        className={'call-to-action'}
+        subtitle={'Download Football Rivals App'}
+        title={'Want to get to the big league?'}
+      />
+      <div className={'__padding-area'}></div>
     </div>
   );
 };
@@ -77,7 +85,26 @@ const Component = ({ className }: Props): React.ReactElement => {
 const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     backgroundColor: '#000',
-
+    '.profile-header': {
+      position: 'fixed',
+      zIndex: 10,
+      backgroundColor: '#000000',
+      width: '100%'
+    },
+    '.call-to-action': {
+      position: 'fixed',
+      zIndex: 10,
+      width: '100%',
+      bottom: 102
+    },
+    '.__padding-area': {
+      position: 'fixed',
+      zIndex: 5,
+      height: 21,
+      width: '100%',
+      bottom: 85,
+      backgroundColor: '#000'
+    },
     '.login-button': {
       paddingLeft: 16,
       paddingRight: 16,
@@ -89,7 +116,8 @@ const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token }
     },
 
     '.account-editor-area': {
-      marginBottom: 20
+      marginBottom: 20,
+      paddingTop: 80
     },
 
     '.link-account-area': {

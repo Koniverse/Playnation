@@ -48,7 +48,9 @@ export const RewardHistoryItem = styled(Component)<ThemeProps>(({ theme: { exten
       display: 'flex',
       alignItems: 'center',
       position: 'relative',
-      zIndex: 2
+      zIndex: 2,
+      paddingTop: 6,
+      paddingBottom: 10
     },
 
     '.__ordinal': {
@@ -114,11 +116,12 @@ export const RewardHistoryItem = styled(Component)<ThemeProps>(({ theme: { exten
 
     '.__token-symbol': {
       fontFamily: extendToken.fontBarlowCondensed,
-      fontSize: '14px',
+      fontSize: '16px',
       fontStyle: 'italic',
       fontWeight: 500,
-      lineHeight: '20px',
-      color: extendToken.mythColorGray2
+      lineHeight: '18px',
+      color: extendToken.mythColorGray2,
+      letterSpacing: '-0.16px'
     },
 
     '.__item-background': {

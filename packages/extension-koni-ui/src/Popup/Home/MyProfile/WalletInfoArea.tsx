@@ -65,7 +65,8 @@ export const WalletInfoArea = styled(Component)<ThemeProps>(({ theme: { extendTo
       fontWeight: 400,
       lineHeight: '16px',
       letterSpacing: '0.28px',
-      color: extendToken.mythColorGray1
+      color: extendToken.mythColorGray1,
+      marginBottom: 6
     },
 
     '.__info-value': {
@@ -82,7 +83,8 @@ export const WalletInfoArea = styled(Component)<ThemeProps>(({ theme: { extendTo
       display: 'flex',
       alignItems: 'center',
       marginTop: 1,
-      marginBottom: 6
+      marginBottom: 8,
+      paddingRight: 6
     },
 
     '.__wallet-address': {
@@ -96,16 +98,14 @@ export const WalletInfoArea = styled(Component)<ThemeProps>(({ theme: { extendTo
     '.__copy-button': {
       cursor: 'pointer',
       display: 'flex',
-      width: 32,
-      height: 32,
+      width: 24,
+      height: 24,
       alignItems: 'center',
       justifyContent: 'center',
       border: 'none',
-      backgroundColor: 'transparent'
-    },
-
-    '.__token-value-wrapper': {
-      marginTop: 3
+      backgroundColor: 'transparent',
+      paddingRight: 0,
+      paddingLeft: 0
     },
 
     '.__token-value': {
