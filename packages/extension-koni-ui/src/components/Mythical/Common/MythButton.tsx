@@ -40,9 +40,7 @@ const Component = ({ children,
         {
           isLoading && (
             <>
-              <span className='__button-content'>
-                ...
-              </span>
+              <div className='__loading-spinner'></div>
             </>
           )
         }
@@ -82,6 +80,24 @@ const MythButton = styled(Component)<ThemeProps>(({ theme: { extendToken, token 
       lineHeight: '22px',
       textTransform: 'uppercase',
       paddingBottom: 2
+    },
+
+    '.__loading-spinner': {
+      width: '20px',
+      height: '20px',
+      border: '3px solid transparent',
+      borderTop: `3px solid ${token.colorTextDark1}`,
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite',
+      zIndex: 10
+    },
+    '@keyframes spin': {
+      '0%': {
+        transform: 'rotate(0deg)'
+      },
+      '100%': {
+        transform: 'rotate(360deg)'
+      }
     },
 
     '.__button-background': {
