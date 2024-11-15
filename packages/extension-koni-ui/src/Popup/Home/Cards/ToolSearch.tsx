@@ -131,7 +131,10 @@ export const ToolSearch = styled(Component)<ThemeProps>(({ theme: { extendToken,
       maxHeight: 42,
       '::placeholder': {
         color: token.colorTextLight1,
-        opacity: 1
+        opacity: 1,
+        fontWeight: 400,
+        fontSize: 14,
+        lineHeight: '16px'
       }
     },
 
