@@ -199,7 +199,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
       const { signature } = await apiSDK.getSignatureMintNft(address);
 
-      const transaction = await odysseyMintNft({ address, chain: 'storyPublic_testnet', signature });
+      const transaction = await odysseyMintNft({ address, chain: 'storyOdyssey_testnet', signature });
 
       if (transaction.errors.length) {
         handleFailedToMintModal().then(goHome).catch(console.error);
