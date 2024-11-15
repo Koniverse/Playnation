@@ -14,9 +14,10 @@ import SignClient from '@walletconnect/sign-client';
 import { EngineTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import { getInternalError, getSdkError } from '@walletconnect/utils';
 import { BehaviorSubject } from 'rxjs';
+import { TransactionConfig } from 'web3-core';
 
 import PolkadotRequestHandler from './handler/PolkadotRequestHandler';
-import { ALL_WALLET_CONNECT_EVENT, DEFAULT_WALLET_CONNECT_OPTIONS, WALLET_CONNECT_EIP155_NAMESPACE, WALLET_CONNECT_SUPPORTED_METHODS } from './constants';
+import { ALL_WALLET_CONNECT_EVENT, DEFAULT_WALLET_CONNECT_OPTIONS, WALLET_CONNECT_EIP155_NAMESPACE, WALLET_CONNECT_SUPPORTED_METHODS, WC_OPTIONAL_CHAIN_IDS, WC_REQUIRE_CHAIN_IDS } from './constants';
 import { convertConnectRequest, convertNotSupportRequest, isSupportWalletConnectChain } from './helpers';
 import { EIP155_SIGNING_METHODS, POLKADOT_SIGNING_METHODS, ResultApproveWalletConnectSession, WalletConnectSigningMethod } from './types';
 
@@ -68,6 +69,7 @@ export default class WalletConnectService {
     this.#koniState = koniState;
     this.#requestService = requestService;
     option.storage = new WCStorage();
+    delete option.storage; // Focus to use local storage
     this.#option = option;
     this.#polkadotRequestHandler = new PolkadotRequestHandler(this, requestService);
     this.#eip155RequestHandler = new Eip155RequestHandler(this.#koniState, this);
@@ -301,9 +303,23 @@ export default class WalletConnectService {
         [WALLET_CONNECT_EIP155_NAMESPACE]: {
           methods: methodEVMRequire,
           events: ['chainChanged', 'accountsChanged'],
-          chains: ['eip155:1']
+          chains: WC_REQUIRE_CHAIN_IDS.map((chainId) => `${WALLET_CONNECT_EIP155_NAMESPACE}:${chainId}`)
         }
-      }
+      },
+      ...(
+        WC_OPTIONAL_CHAIN_IDS.length
+          ? {
+            optionalNamespaces: {
+              // TODO: UPGRADE IF SCALE
+              [WALLET_CONNECT_EIP155_NAMESPACE]: {
+                methods: methodEVMRequire,
+                events: ['chainChanged', 'accountsChanged'],
+                chains: WC_OPTIONAL_CHAIN_IDS.map((chainId) => `${WALLET_CONNECT_EIP155_NAMESPACE}:${chainId}`)
+              }
+            }
+          }
+          : {}
+      )
     });
 
     const generatedId = getId();
@@ -397,6 +413,13 @@ export default class WalletConnectService {
     await this.#client?.respond(response);
   }
 
+  public async sendRequest<T> (request: EngineTypes.RequestParams) {
+    this.#checkClient();
+    const client = this.#client as SignClient;
+
+    return await client.request<T>(request);
+  }
+
   public async resetWallet (resetAll: boolean) {
     this.#removeListener();
 
@@ -462,5 +485,13 @@ export default class WalletConnectService {
 
       return methods;
     }, [] as string[]);
+  }
+
+  public evmSignMessage (topic: string, chainId: number, address: string, method: string, message: unknown) {
+    return this.#eip155RequestHandler.requestSignMessage(topic, chainId, address, method, message);
+  }
+
+  public evmSendTransaction (topic: string, chainId: number, address: string, transaction: TransactionConfig) {
+    return this.#eip155RequestHandler.requestSendTransaction(topic, chainId, address, transaction);
   }
 }

@@ -5,8 +5,8 @@ import { EIP155_SIGNING_METHODS, POLKADOT_SIGNING_METHODS, WalletConnectSigningM
 import { targetIsMobile } from '@subwallet/extension-base/utils';
 import { SignClientTypes } from '@walletconnect/types';
 
-export const PROJECT_ID_EXTENSION = '274dcf5a96154928fe72c0e792c0e954';
-export const PROJECT_ID_MOBILE = '274dcf5a96154928fe72c0e792c0e954';
+export const PROJECT_ID_EXTENSION = '34a107037c2b8381bb2477e7f04569c0';
+export const PROJECT_ID_MOBILE = '34a107037c2b8381bb2477e7f04569c0';
 export const RELAY_URL = 'wss://relay.walletconnect.com';
 
 export const DEFAULT_WALLET_CONNECT_OPTIONS: SignClientTypes.Options = {
@@ -39,3 +39,7 @@ export const WALLET_CONNECT_EIP155_NAMESPACE = 'eip155';
 export const WALLET_CONNECT_POLKADOT_NAMESPACE = 'polkadot';
 
 export const WALLET_CONNECT_SUPPORT_NAMESPACES: string[] = [WALLET_CONNECT_EIP155_NAMESPACE, WALLET_CONNECT_POLKADOT_NAMESPACE];
+
+export const WC_REQUIRE_CHAIN_IDS: number[] = [1, 1513];
+export const WC_OPTIONAL_CHAIN_IDS: number[] = [];
+export const WC_DEFAULT_CHAIN_ID = 1;

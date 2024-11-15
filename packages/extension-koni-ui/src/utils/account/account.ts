@@ -64,6 +64,10 @@ export const getSignMode = (account: AccountJson | null | undefined): AccountSig
       return AccountSignMode.ALL_ACCOUNT;
     } else {
       if (account.isInjected) {
+        if (account.wcTopic) {
+          return AccountSignMode.WALLET_CONNECT;
+        }
+
         return AccountSignMode.INJECTED;
       }
 

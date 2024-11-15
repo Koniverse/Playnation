@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { RequestApproveConnectWalletSession, RequestApproveWalletConnectNotSupport, RequestConnectWalletConnect, RequestRejectConnectWalletSession, RequestRejectWalletConnectNotSupport } from '@subwallet/extension-base/background/KoniTypes';
-import { RequestWalletConnectCancelSessionPromise, RequestWalletConnectGetSessionPromise, ResponseWalletConnectCancelSessionPromise, ResponseWalletConnectCreateSession, ResponseWalletConnectGetSessionPromise } from '@subwallet/extension-base/types';
+import { RequestWalletConnectCancelSessionPromise, RequestWalletConnectGetSessionPromise, RequestWCSendTransactionRequest, RequestWCSignMessageRequest, ResponseWalletConnectCancelSessionPromise, ResponseWalletConnectCreateSession, ResponseWalletConnectGetSessionPromise, ResponseWCSendTransactionRequest, ResponseWCSignMessageRequest } from '@subwallet/extension-base/types';
 import { sendMessage } from '@subwallet/extension-koni-ui/messaging';
 
 export async function addConnection (request: RequestConnectWalletConnect): Promise<boolean> {
@@ -39,4 +39,12 @@ export async function wcGetSessionPromise (req: RequestWalletConnectGetSessionPr
 
 export async function wcCancelSessionPromise (req: RequestWalletConnectCancelSessionPromise): Promise<ResponseWalletConnectCancelSessionPromise> {
   return sendMessage('pri(walletConnect.session.cancel)', req);
+}
+
+export async function wcSignMessageRequest (req: RequestWCSignMessageRequest): Promise<ResponseWCSignMessageRequest> {
+  return sendMessage('pri(walletConnect.requests.evm.sign.message)', req);
+}
+
+export async function wcSendTransactionRequest (req: RequestWCSendTransactionRequest): Promise<ResponseWCSendTransactionRequest> {
+  return sendMessage('pri(walletConnect.requests.evm.send.transaction)', req);
 }

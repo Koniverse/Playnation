@@ -16,7 +16,7 @@ export * from './AddressBook';
 export * from './Announcement';
 export * from './Campaign';
 export * from './Common';
-export * from './ConnectWalletSuccessModal';
+export * from './WalletConnect';
 export * from './Customize/CustomizeModal';
 export * from './FilterModal';
 export * from './GlobalSearchTokenModal';

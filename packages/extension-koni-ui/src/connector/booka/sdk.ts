@@ -356,8 +356,8 @@ export class BookaSdk {
     return taskHistoryCheck;
   }
 
-  async finishTask (taskId: number, extrinsicHash: string, network: string) {
-    const data = await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId, extrinsicHash, network });
+  async finishTask (taskId: number, payload: Record<string, unknown>) {
+    const data = await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId, ...payload });
 
     await this.fetchTaskCategoryList();
 
@@ -449,6 +449,12 @@ export class BookaSdk {
     const linkShare = `${url}?startApp=${this.account?.info.inviteCode || 'booka'}`;
 
     return `http://x.com/share?${contentShare}url=${linkShare}`;
+  }
+
+  async getSignatureMintNft (address: string) {
+    const data = await this.postRequest(`${GAME_API_HOST}/api/mint-nft/create-signature`, { address });
+
+    return data as { signature: string, validate: boolean };
   }
 
   async fetchReferalList () {

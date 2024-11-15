@@ -20,6 +20,7 @@ import { getERC20SpendingApprovalTx } from '@subwallet/extension-base/koni/api/c
 import { isSnowBridgeGatewayContract } from '@subwallet/extension-base/koni/api/contract-handler/utils';
 import { resolveAzeroAddressToDomain, resolveAzeroDomainToAddress } from '@subwallet/extension-base/koni/api/dotsama/domain';
 import { parseSubstrateTransaction } from '@subwallet/extension-base/koni/api/dotsama/parseTransaction';
+import { createMintOdysseyNft } from '@subwallet/extension-base/koni/api/mint/odyssey';
 import { getNftTransferExtrinsic, isRecipientSelf } from '@subwallet/extension-base/koni/api/nft/transfer';
 import { getBondingExtrinsic, getNominationPoolsInfo, getUnbondingExtrinsic, getValidatorsInfo, validateBondingCondition, validateUnbondingCondition } from '@subwallet/extension-base/koni/api/staking/bonding';
 import { getTuringCancelCompoundingExtrinsic, getTuringCompoundExtrinsic } from '@subwallet/extension-base/koni/api/staking/bonding/paraChain';
@@ -41,7 +42,7 @@ import { isProposalExpired, isSupportWalletConnectChain, isSupportWalletConnectN
 import { ResultApproveWalletConnectSession, WalletConnectNotSupportRequest, WalletConnectSessionRequest } from '@subwallet/extension-base/services/wallet-connect-service/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { AccountsStore } from '@subwallet/extension-base/stores';
-import { BalanceJson, BuyServiceInfo, BuyTokenInfo, NominationPoolInfo, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestWalletConnectCancelSessionPromise, RequestWalletConnectGetSessionPromise, StorageDataInterface, TokenSpendingApprovalParams } from '@subwallet/extension-base/types';
+import { BalanceJson, BuyServiceInfo, BuyTokenInfo, NominationPoolInfo, RequestMintNft, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestWalletConnectCancelSessionPromise, RequestWalletConnectGetSessionPromise, RequestWCSendTransactionRequest, RequestWCSignMessageRequest, ResponseWCSendTransactionRequest, ResponseWCSignMessageRequest, StorageDataInterface, TokenSpendingApprovalParams } from '@subwallet/extension-base/types';
 import { CommonOptimalPath } from '@subwallet/extension-base/types/service-base';
 import { SwapPair, SwapQuoteResponse, SwapRequest, SwapRequestResult, SwapSubmitParams, ValidateSwapProcessParams } from '@subwallet/extension-base/types/swap';
 import { BN_ZERO, convertSubjectInfoToAddresses, createTransactionFromRLP, isSameAddress, MODULE_SUPPORT, reformatAddress, signatureToHex, Transaction as QrTransaction, uniqueStringArray } from '@subwallet/extension-base/utils';
@@ -3720,6 +3721,34 @@ export default class KoniExtension {
     return this.#koniState.walletConnectService.cancelConnectPromise(id);
   }
 
+  // Send request
+
+  private async wcSignMessageRequest (request: RequestWCSignMessageRequest): Promise<ResponseWCSignMessageRequest> {
+    const { address, chainId, method, payload } = request;
+
+    const pair = keyring.getPair(address);
+    const topic = pair.meta.wcTopic as string || '';
+
+    const signature = await this.#koniState.walletConnectService.evmSignMessage(topic, chainId, address, method, payload);
+
+    return {
+      signature
+    };
+  }
+
+  private async wcSendTransactionRequest (request: RequestWCSendTransactionRequest): Promise<ResponseWCSendTransactionRequest> {
+    const { address, chainId, transaction } = request;
+
+    const pair = keyring.getPair(address);
+    const topic = pair.meta.wcTopic as string || '';
+
+    const signature = await this.#koniState.walletConnectService.evmSendTransaction(topic, chainId, address, transaction);
+
+    return {
+      signature
+    };
+  }
+
   /// Manta
 
   private async enableMantaPay ({ address, password }: MantaPayEnableParams): Promise<MantaPayEnableResponse> { // always takes the current account
@@ -4192,6 +4221,27 @@ export default class KoniExtension {
   }
   /* Swap service */
 
+  /* Mint NFT */
+
+  private async odysseyMintNft (request: RequestMintNft) {
+    const { address, chain, signature } = request;
+    const api = this.#koniState.getEvmApi(chain);
+
+    const transaction = await createMintOdysseyNft(api, address, signature);
+
+    return this.#koniState.transactionService.handleTransaction({
+      address,
+      chain,
+      data: request,
+      chainType: ChainType.EVM,
+      extrinsicType: ExtrinsicType.MINT_NFT,
+      transaction: transaction,
+      transferNativeAmount: '0'
+    });
+  }
+
+  /* Mint NFT */
+
   // --------------------------------------------------------------
   // eslint-disable-next-line @typescript-eslint/require-await
   public async handle<TMessageType extends MessageTypes> (id: string, type: TMessageType, request: RequestTypes[TMessageType], port: chrome.runtime.Port): Promise<ResponseType<TMessageType>> {
@@ -4629,22 +4679,30 @@ export default class KoniExtension {
       case 'pri(walletConnect.subscribe.projectId)':
         return this.subscribeWalletConnectProjectId(id, port);
 
-      case 'pri(walletConnect.session.connect)':
-        return this.connectWalletConnect(request as RequestConnectWalletConnect);
       case 'pri(walletConnect.requests.connect.subscribe)':
         return this.connectWCSubscribe(id, port);
+
+      case 'pri(walletConnect.session.connect)':
+        return this.connectWalletConnect(request as RequestConnectWalletConnect);
+      case 'pri(walletConnect.session.disconnect)':
+        return this.disconnectWalletConnectSession(request as RequestDisconnectWalletConnectSession);
+
       case 'pri(walletConnect.session.approve)':
         return this.approveWalletConnectSession(request as RequestApproveConnectWalletSession);
       case 'pri(walletConnect.session.reject)':
         return this.rejectWalletConnectSession(request as RequestRejectConnectWalletSession);
-      case 'pri(walletConnect.session.disconnect)':
-        return this.disconnectWalletConnectSession(request as RequestDisconnectWalletConnectSession);
+
       case 'pri(walletConnect.session.create)':
         return this.createWalletConnectSession();
       case 'pri(walletConnect.session.promise)':
         return this.getWCConnectPromise(request as RequestWalletConnectGetSessionPromise);
       case 'pri(walletConnect.session.cancel)':
         return this.cancelWCSessionPromise(request as RequestWalletConnectCancelSessionPromise);
+
+      case 'pri(walletConnect.requests.evm.sign.message)':
+        return this.wcSignMessageRequest(request as RequestWCSignMessageRequest);
+      case 'pri(walletConnect.requests.evm.send.transaction)':
+        return this.wcSendTransactionRequest(request as RequestWCSendTransactionRequest);
 
       // Not support
       case 'pri(walletConnect.requests.notSupport.subscribe)':
@@ -4722,6 +4780,14 @@ export default class KoniExtension {
       case 'pri(extrinsic.sign)':
         return this.extrinsicSign(request as InternalSignRequest<SignerPayloadJSON>);
         /* Internal Signing */
+
+        /* Mint NFT */
+
+      case 'pri(odyssey.nft.mint)':
+        return this.odysseyMintNft(request as RequestMintNft);
+
+        /* Mint NFT */
+
       // Default
       default:
         throw new Error(`Unable to handle message of type ${type}`);

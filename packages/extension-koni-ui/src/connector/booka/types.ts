@@ -125,6 +125,7 @@ export interface Task {
   onChainType?: string | null;
   network?: string | null;
   interval?: number | null;
+  metadata?: Record<string, unknown>;
 
   status: TaskHistoryStatus;
   completedAt?: string;

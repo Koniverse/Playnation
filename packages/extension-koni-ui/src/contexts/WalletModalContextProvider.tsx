@@ -8,12 +8,9 @@ import { EARNING_INSTRUCTION_MODAL, LEADERBOARD_MODAL } from '@subwallet/extensi
 import { useGetConfig, useSetSessionLatest } from '@subwallet/extension-koni-ui/hooks';
 import Confirmations from '@subwallet/extension-koni-ui/Popup/Confirmations';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
-import { noop } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext, SwModal, useExcludeModal } from '@subwallet/react-ui';
-import { WalletConnectModal } from '@walletconnect/modal';
-import { ModalCtrlState } from '@walletconnect/modal-core/dist/_types/src/types/controllerTypes';
 import CN from 'classnames';
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 
@@ -29,19 +26,13 @@ type PredefinedModalName = typeof PREDEFINED_MODAL_NAMES[number];
 export interface WalletModalContextType {
   openLeaderboardModal: (props: LeaderboardModalProps) => void;
   closeLeaderboardModal: VoidFunction;
-  openWCConnectModal: (uri: string, id: string) => Promise<void>;
-  closeWCConnectModal: VoidFunction;
-  subscribeWCConnectModal: (callback: (newState: ModalCtrlState) => void) => VoidFunction
 }
 
 export const WalletModalContext = React.createContext<WalletModalContextType>({
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   openLeaderboardModal: () => {},
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  closeLeaderboardModal: () => {},
-  openWCConnectModal: () => Promise.resolve(),
-  closeWCConnectModal: noop,
-  subscribeWCConnectModal: () => noop
+  closeLeaderboardModal: () => {}
 });
 
 export const usePredefinedModal = () => {
@@ -79,13 +70,9 @@ export const WalletModalContextProvider = ({ children }: Props) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { hasConfirmations } = useSelector((state: RootState) => state.requestState);
   const { hasMasterPassword, isLocked } = useSelector((state: RootState) => state.accountState);
-  const { projectId } = useSelector((state: RootState) => state.walletConnect);
   const { getConfig } = useGetConfig();
   const { onHandleSessionLatest, setTimeBackUp } = useSetSessionLatest();
   const [leaderboardModalProps, setLeaderboardModalProps] = useState<LeaderboardModalProps | undefined>();
-  const [wcModal, setWcModal] = useState<WalletConnectModal>();
-
-  const currentConnectPromiseIdRef = useRef('');
 
   useExcludeModal('confirmations');
   useExcludeModal(EARNING_INSTRUCTION_MODAL);
@@ -97,31 +84,6 @@ export const WalletModalContextProvider = ({ children }: Props) => {
       return prev;
     });
   }, [setSearchParams]);
-
-  const openWCConnectModal = useCallback(async (uri: string, id: string) => {
-    if (wcModal) {
-      currentConnectPromiseIdRef.current = id;
-
-      return wcModal.openModal({ uri });
-    }
-  }, [wcModal]);
-
-  const closeWCConnectModal = useCallback(() => {
-    if (wcModal) {
-      currentConnectPromiseIdRef.current = '';
-      wcModal.closeModal();
-    }
-  }, [wcModal]);
-
-  const subscribeWCConnectModal = useCallback((callback: (newState: ModalCtrlState) => void) => {
-    if (wcModal) {
-      const { subscribeModal } = wcModal;
-
-      return subscribeModal(callback);
-    } else {
-      return () => noop;
-    }
-  }, [wcModal]);
 
   const openLeaderboardModal = useCallback((props: LeaderboardModalProps) => {
     setLeaderboardModalProps(props);
@@ -135,11 +97,8 @@ export const WalletModalContextProvider = ({ children }: Props) => {
 
   const contextValue = useMemo(() => ({
     openLeaderboardModal,
-    closeLeaderboardModal,
-    openWCConnectModal,
-    closeWCConnectModal,
-    subscribeWCConnectModal
-  }), [closeLeaderboardModal, openLeaderboardModal, openWCConnectModal, closeWCConnectModal, subscribeWCConnectModal]);
+    closeLeaderboardModal
+  }), [closeLeaderboardModal, openLeaderboardModal]);
 
   useEffect(() => {
     if (hasMasterPassword && isLocked) {
@@ -165,35 +124,6 @@ export const WalletModalContextProvider = ({ children }: Props) => {
   useEffect(() => {
     onHandleSessionLatest();
   }, [onHandleSessionLatest]);
-
-  useEffect(() => {
-    if (projectId) {
-      const wcModal = new WalletConnectModal({
-        themeVariables: {
-          '--wcm-z-index': '600'
-        },
-        themeMode: 'light',
-        projectId
-      });
-
-      setWcModal(wcModal);
-
-      const unsub = wcModal.subscribeModal((newState: ModalCtrlState) => {
-        if (!newState.open && currentConnectPromiseIdRef.current) {
-          currentConnectPromiseIdRef.current = '';
-          console.log('WalletConnectModal closed');
-        }
-      });
-
-      return () => {
-        unsub();
-      };
-    } else {
-      return () => {
-        // Empty
-      };
-    }
-  }, [projectId]);
 
   // todo: will remove ClaimDappStakingRewardsModal after Astar upgrade to v3
 

@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ConfirmationDefinitions, ConfirmationResult, EvmSendTransactionRequest, ExtrinsicType } from '@subwallet/extension-base/background/KoniTypes';
+import { WC_DEFAULT_CHAIN_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { CONFIRMATION_QR_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { InjectContext } from '@subwallet/extension-koni-ui/contexts/InjectContext';
 import { useGetChainInfoByChainId, useLedger, useNotification } from '@subwallet/extension-koni-ui/hooks';
 import useUnlockChecker from '@subwallet/extension-koni-ui/hooks/common/useUnlockChecker';
-import { completeConfirmation } from '@subwallet/extension-koni-ui/messaging';
+import { completeConfirmation, wcSendTransactionRequest, wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { PhosphorIcon, SigData, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { AccountSignMode } from '@subwallet/extension-koni-ui/types/account';
 import { EvmSignatureSupportType } from '@subwallet/extension-koni-ui/types/confirmation';
@@ -56,7 +57,7 @@ const handleSignature = async (type: EvmSignatureSupportType, id: string, signat
 const Component: React.FC<Props> = (props: Props) => {
   const { className, extrinsicType, id, payload, txExpirationTime, type } = props;
   const { payload: { account, canSign, hashPayload } } = payload;
-  const chainId = (payload.payload as EvmSendTransactionRequest)?.chainId || 1;
+  const chainId = (payload.payload as EvmSendTransactionRequest)?.chainId || WC_DEFAULT_CHAIN_ID;
 
   const { t } = useTranslation();
   const notify = useNotification();
@@ -203,6 +204,37 @@ const Component: React.FC<Props> = (props: Props) => {
     }
   }, [account.address, chainId, evmWallet, isMessage, onApproveSignature, payload.payload]);
 
+  const onConfirmWalletConnect = useCallback(() => {
+    let promise: Promise<{ signature: string }>;
+
+    if (isMessage) {
+      promise = wcSignMessageRequest({
+        method: payload.payload.type,
+        address: account.address,
+        payload: payload.payload.payload,
+        chainId
+      });
+    } else {
+      promise = wcSendTransactionRequest({
+        address: account.address,
+        transaction: payload.payload,
+        chainId
+      });
+    }
+
+    setLoading(true);
+    promise
+      .then(({ signature }) => {
+        onApproveSignature({ signature: signature as `0x${string}` });
+      })
+      .catch((e) => {
+        console.error(e);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [account.address, isMessage, onApproveSignature, payload, chainId]);
+
   const onConfirm = useCallback(() => {
     removeTransactionPersist(extrinsicType);
 
@@ -228,6 +260,9 @@ const Component: React.FC<Props> = (props: Props) => {
       case AccountSignMode.INJECTED:
         onConfirmInject();
         break;
+      case AccountSignMode.WALLET_CONNECT:
+        onConfirmWalletConnect();
+        break;
       default:
         checkUnlock().then(() => {
           onApprovePassword();
@@ -235,7 +270,7 @@ const Component: React.FC<Props> = (props: Props) => {
           // Unlock is cancelled
         });
     }
-  }, [extrinsicType, txExpirationTime, signMode, notify, t, onCancel, onConfirmQr, onConfirmLedger, onConfirmInject, checkUnlock, onApprovePassword]);
+  }, [extrinsicType, txExpirationTime, signMode, notify, t, onCancel, onConfirmQr, onConfirmLedger, onConfirmInject, onConfirmWalletConnect, checkUnlock, onApprovePassword]);
 
   useEffect(() => {
     !!ledgerError && notify({

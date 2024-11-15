@@ -11,7 +11,7 @@ import { AuthUrls } from '@subwallet/extension-base/services/request-service/typ
 import { CrowdloanContributionsResponse } from '@subwallet/extension-base/services/subscan-service/types';
 import { SWTransactionResponse, SWTransactionResult } from '@subwallet/extension-base/services/transaction-service/types';
 import { WalletConnectNotSupportRequest, WalletConnectSessionRequest } from '@subwallet/extension-base/services/wallet-connect-service/types';
-import { BalanceJson, BuyServiceInfo, BuyTokenInfo, EarningRewardHistoryItem, EarningRewardJson, EarningStatus, HandleYieldStepParams, LeavePoolAdditionalData, NominationPoolInfo, OptimalYieldPath, OptimalYieldPathParams, RequestEarlyValidateYield, RequestGetYieldPoolTargets, RequestStakeCancelWithdrawal, RequestStakeClaimReward, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestWalletConnectCancelSessionPromise, RequestWalletConnectCreateSession, RequestWalletConnectGetSessionPromise, RequestYieldLeave, RequestYieldStepSubmit, RequestYieldWithdrawal, ResponseEarlyValidateYield, ResponseGetYieldPoolTargets, ResponseWalletConnectCancelSessionPromise, ResponseWalletConnectCreateSession, ResponseWalletConnectGetSessionPromise, StorageDataInterface, SubmitYieldStepData, TokenSpendingApprovalParams, UnlockDotTransactionNft, UnstakingStatus, ValidateYieldProcessParams, YieldPoolInfo, YieldPositionInfo, YieldValidationStatus } from '@subwallet/extension-base/types';
+import { BalanceJson, BuyServiceInfo, BuyTokenInfo, EarningRewardHistoryItem, EarningRewardJson, EarningStatus, HandleYieldStepParams, LeavePoolAdditionalData, NominationPoolInfo, OptimalYieldPath, OptimalYieldPathParams, RequestEarlyValidateYield, RequestGetYieldPoolTargets, RequestMintNft, RequestStakeCancelWithdrawal, RequestStakeClaimReward, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestWalletConnectCancelSessionPromise, RequestWalletConnectCreateSession, RequestWalletConnectGetSessionPromise, RequestWCSendTransactionRequest, RequestWCSignMessageRequest, RequestYieldLeave, RequestYieldStepSubmit, RequestYieldWithdrawal, ResponseEarlyValidateYield, ResponseGetYieldPoolTargets, ResponseWalletConnectCancelSessionPromise, ResponseWalletConnectCreateSession, ResponseWalletConnectGetSessionPromise, ResponseWCSendTransactionRequest, ResponseWCSignMessageRequest, StorageDataInterface, SubmitYieldStepData, TokenSpendingApprovalParams, UnlockDotTransactionNft, UnstakingStatus, ValidateYieldProcessParams, YieldPoolInfo, YieldPositionInfo, YieldValidationStatus } from '@subwallet/extension-base/types';
 import { CommonOptimalPath } from '@subwallet/extension-base/types/service-base';
 import { SwapErrorType, SwapPair, SwapQuoteResponse, SwapRequest, SwapRequestResult, SwapSubmitParams, SwapTxData, ValidateSwapProcessParams } from '@subwallet/extension-base/types/swap';
 import { InjectedAccount, InjectedAccountWithMeta, MetadataDefBase } from '@subwallet/extension-inject/types';
@@ -523,6 +523,8 @@ export enum ExtrinsicType {
 
   SWAP = 'swap',
 
+  MINT_NFT = 'mint_nft',
+
   // SET_FEE_TOKEN = 'set_fee-token',
 
   EVM_EXECUTE = 'evm.execute',
@@ -576,6 +578,8 @@ export interface ExtrinsicDataTypeMap {
   [ExtrinsicType.REDEEM_VMANTA]: RequestYieldLeave,
 
   [ExtrinsicType.TOKEN_SPENDING_APPROVAL]: TokenSpendingApprovalParams,
+
+  [ExtrinsicType.MINT_NFT]: RequestMintNft,
 
   [ExtrinsicType.EVM_EXECUTE]: TransactionConfig,
   [ExtrinsicType.CROWDLOAN]: any,
@@ -2392,6 +2396,9 @@ export interface KoniRequestSignatures {
   'pri(walletConnect.requests.connect.subscribe)': [null, WalletConnectSessionRequest[], WalletConnectSessionRequest[]];
   'pri(walletConnect.requests.notSupport.subscribe)': [null, WalletConnectNotSupportRequest[], WalletConnectNotSupportRequest[]];
 
+  'pri(walletConnect.requests.evm.sign.message)': [RequestWCSignMessageRequest, ResponseWCSignMessageRequest];
+  'pri(walletConnect.requests.evm.send.transaction)': [RequestWCSendTransactionRequest, ResponseWCSendTransactionRequest];
+
   'pri(walletConnect.notSupport.approve)': [RequestApproveWalletConnectNotSupport, boolean];
   'pri(walletConnect.notSupport.reject)': [RequestRejectWalletConnectNotSupport, boolean];
 
@@ -2437,6 +2444,9 @@ export interface KoniRequestSignatures {
   'pri(swapService.getLatestQuote)': [SwapRequest, SwapQuoteResponse];
   'pri(swapService.validateSwapProcess)': [ValidateSwapProcessParams, TransactionError[]];
   /* Swap */
+
+  /* Mint NFT */
+  'pri(odyssey.nft.mint)': [RequestMintNft, SWTransactionResponse];
 }
 
 export interface ApplicationMetadataType {

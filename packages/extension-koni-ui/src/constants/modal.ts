@@ -68,4 +68,5 @@ export const ACCOUNT_ADD_POINT_MODAL = 'account-add-point-modal';
 
 /* Wallet */
 export const CONNECT_WALLET_SUCCESS_MODAL = 'connect-wallet-success-modal';
+export const WALLET_CONNECT_WAITING_SIGNING_MODAL = 'wallet-connect-waiting-signing-modal';
 export const ALERT_CONNECT_WALLET_MODAL = 'alert-connect-wallet-modal';
