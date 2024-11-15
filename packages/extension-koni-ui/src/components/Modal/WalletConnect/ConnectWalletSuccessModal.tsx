@@ -1,15 +1,17 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
+import type { ButtonProps } from '@subwallet/react-ui/es/button/button';
+
 import { CONNECT_WALLET_SUCCESS_MODAL } from '@subwallet/extension-koni-ui/constants';
-import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, Icon, Input, ModalContext, SwModal } from '@subwallet/react-ui';
+import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { toShort } from '@subwallet/extension-koni-ui/utils';
+import { Button, Field, Icon, ModalContext, PageIcon, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CheckCircle } from 'phosphor-react';
-import React, { useCallback, useContext } from 'react';
+import { ArrowCircleRight, CheckCircle, X } from 'phosphor-react';
+import React, { useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 
 interface Props extends ThemeProps {
   address: string;
@@ -22,6 +24,7 @@ function Component (props: Props): React.ReactElement<Props> {
   const { address, callback, className = '' } = props;
 
   const { t } = useTranslation();
+  const { token } = useTheme() as Theme;
 
   const { inactiveModal } = useContext(ModalContext);
 
@@ -30,16 +33,27 @@ function Component (props: Props): React.ReactElement<Props> {
     callback(address);
   }, [address, callback, inactiveModal]);
 
-  const modalFooter = (() => {
+  const rightButtonProps = useMemo((): ButtonProps => ({
+    icon: (
+      <Icon
+        phosphorIcon={X}
+        size={'small'}
+        weight={'fill'}
+      />
+    ),
+    onClick: onClose
+  }), [onClose]);
+
+  const modalFooter = useMemo(() => {
     return (
       <>
         <Button
           block={true}
           icon={
             <Icon
-              phosphorIcon={CheckCircle}
-              size={'small'}
-              weight={'fill'}
+              phosphorIcon={ArrowCircleRight}
+              size='sm'
+              weight='fill'
             />
           }
           onClick={onClose}
@@ -50,30 +64,45 @@ function Component (props: Props): React.ReactElement<Props> {
         </Button>
       </>
     );
-  })();
+  }, [onClose, t]);
 
   // TODO: Update UI
 
   return (
     <SwModal
       className={CN(className, '-light-theme')}
+      closable={false}
       footer={modalFooter}
       id={modalId}
+      maskClosable={true}
       onCancel={onClose}
+      rightIconProps={rightButtonProps}
       title={t('Success')}
     >
       <div className='__content-area'>
-        <img
-          alt='Gift Box'
-          className={'__zoomable-image'}
-          src={DefaultLogosMap.boxGift}
-        />
-        <div className='__congratulation-text'>
-          {t("You've successfully connected your wallet to Koni Story")}:
+        <div className='page-icon-overide'>
+          <PageIcon
+            color='#000'
+            iconProps={{
+              phosphorIcon: CheckCircle,
+              weight: 'fill'
+            }}
+          />
         </div>
-        <Input
-          disabled={true}
-          value={address}
+        <div className='__congratulation-text'>
+          {t("You've successfully connected your wallet to Koni Story")}
+        </div>
+        <Field
+          className={'address-field'}
+          content={toShort(address, 10, 16)}
+          suffix={(
+            <Icon
+              iconColor={token.colorSuccess}
+              phosphorIcon={CheckCircle}
+              size='sm'
+              weight='fill'
+            />
+          )}
         />
       </div>
     </SwModal>
@@ -94,7 +123,7 @@ export const ConnectWalletSuccessModal = styled(Component)<Props>(({ theme: { ex
     },
 
     '.__content-area': {
-      backgroundColor: token.colorPrimary,
+      background: 'linear-gradient(117deg, #FFD8E6 9.05%, #BCEBFF 91.43%)',
       borderRadius: 24,
       display: 'flex',
       gap: token.size,
@@ -105,38 +134,16 @@ export const ConnectWalletSuccessModal = styled(Component)<Props>(({ theme: { ex
     },
 
     '.__congratulation-text': {
-      fontSize: token.fontSizeLG,
-      fontWeight: token.headingFontWeight,
-      lineHeight: token.lineHeightLG,
+      fontSize: token.fontSizeSM,
+      fontWeight: token.bodyFontWeight,
+      lineHeight: token.lineHeightSM,
       color: token.colorTextDark1
     },
 
-    '.__reward-info': {
-      height: 48,
-      paddingLeft: 20,
-      paddingRight: 20,
-      display: 'flex',
-      alignItems: 'center',
-      fontSize: token.fontSizeHeading4,
-      lineHeight: token.lineHeightHeading4,
-      fontWeight: token.headingFontWeight,
-      backgroundColor: extendToken.colorBgSecondary1,
-      borderRadius: 58
-    },
-
-    '.__reward-icon': {
-      width: 28,
-      height: 28
-    },
-
-    '.__reward-value': {
-      marginLeft: token.marginXS
-    },
-
-    '.__reward-symbol': {
-      marginLeft: token.marginXXS,
-      color: token.colorTextDark4
+    '.address-field': {
+      '.ant-field-content': {
+        color: `${token.colorTextTertiary} !important`
+      }
     }
-
   });
 });

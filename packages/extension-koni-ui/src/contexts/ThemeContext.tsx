@@ -601,6 +601,16 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
           flex: 1
         }
       }
+    },
+
+    '.page-icon-overide': {
+      '.ant-page-icon': {
+        backgroundColor: '#fff',
+
+        ':before': {
+          display: 'none'
+        }
+      }
     }
   });
 });

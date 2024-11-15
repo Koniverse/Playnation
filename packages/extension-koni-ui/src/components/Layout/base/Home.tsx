@@ -71,7 +71,6 @@ const Component = (props: Props) => {
         });
       })
       .finally(() => {
-        console.debug('connectWC finally');
         setConnectLoading(false);
       });
   }, [connectWC, notify]);
