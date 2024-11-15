@@ -142,7 +142,7 @@ export const ToolSearch = styled(Component)<ThemeProps>(({ theme: { extendToken,
       color: extendToken.mythColorGray1
     },
     '.ant-input-wrapper .ant-input-suffix .__input-action': {
-      color: extendToken.mythColorGray1
+      display: 'none'
     },
 
     '.__tool-search-input .ant-input-suffix': {

@@ -77,7 +77,7 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
       }
     },
     {
-      label: 'First name',
+      label: 'Rarity',
       subLabel: 'descending',
       onClick: () => {
         setConditionProcess((pre) => {
@@ -90,7 +90,7 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
       }
     },
     {
-      label: 'First name',
+      label: 'Rarity',
       subLabel: 'ascending',
       onClick: () => {
         setConditionProcess((pre) => {

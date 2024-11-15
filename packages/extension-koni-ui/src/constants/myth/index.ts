@@ -3,13 +3,13 @@
 
 export const eventStat = {
   PWR: 'power',
-  STR: 'strength',
   QUI: 'quickness',
-  ACC: 'acceleration',
-  PRE: 'presence',
   END: 'endurance',
+  ACC: 'acceleration',
+  STR: 'strength',
+  CAR: 'carry',
+  PRE: 'presence',
   JMP: 'jump',
-  CAR: 'carry'
 };
 
 export * from './authentication';

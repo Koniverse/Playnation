@@ -120,6 +120,13 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
     }));
   }, [itemsSelected.category, itemsSelected.position]);
 
+  const handleReset = useCallback(() => {
+    setItemsSelected({
+      category: [],
+      position: [],
+    });
+  }, [setItemsSelected]);
+
   const onClick = useCallback(() => {
     activeModal(modalId);
   }, [activeModal]);
@@ -148,6 +155,7 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
         filterItems={FilterOptions}
         handleCancel={handleCancel}
         onConfirm={handleConfirmSelection}
+        handleReset={handleReset}
         setConditionProcess={setConditionProcess}
         setNumberOptionsSelected={setNumberOptionsSelected}
         setTmpItemsSelected={setTmpItemsSelected}

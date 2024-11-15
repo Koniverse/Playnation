@@ -20,6 +20,7 @@ interface Props extends ThemeProps {
   setTmpItemsSelected: Dispatch<SetStateAction<FilterOptionsSelected>>;
   onConfirm: () => void;
   handleCancel: () => void;
+  handleReset: () => void;
 }
 
 export interface FilterOptionsSelected {
@@ -29,7 +30,7 @@ export interface FilterOptionsSelected {
 
 const modalId = 'filter-modal-id';
 
-const Component = ({ className, filterItems, handleCancel, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected, tmpItemsSelected }: Props): React.ReactElement => {
+const Component = ({ className, filterItems, handleCancel, handleReset, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected, tmpItemsSelected }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const { inactiveModal } = useContext(ModalContext);
 
@@ -48,7 +49,7 @@ const Component = ({ className, filterItems, handleCancel, onConfirm, setConditi
       ...prev,
       filter: (prev) => prev
     }));
-    onConfirm();
+    handleReset();
     inactiveModal('filter-modal-id');
   }, [inactiveModal, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected]);
 
