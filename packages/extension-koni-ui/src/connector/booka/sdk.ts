@@ -1006,13 +1006,12 @@ export class BookaSdk {
   }
 
   async fetchStoryBadgeEligibility (address: string) {
-    return await this.postRequest<boolean>(`${STORY_BADGE_HOST}/api/eligible`, { address }, false);
-  }
+    const data = await this.postRequest<boolean>(`${GAME_API_HOST}/api/mint-nft/eligible`, { address }, false);
 
-  async fetchStoryBadgeMintSignature (address: string) {
-    const { signature } = await this.postRequest<{ signature: string }>(`${STORY_BADGE_HOST}/api/signature`, { address }, false);
+    console.log(data);
 
-    return signature;
+    // TODO: Implement later
+    return true;
   }
 
   // Singleton

@@ -68,34 +68,6 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
     ];
   }, [t]);
 
-  const fetchEligibility = useCallback(async () => {
-    try {
-      if (!wcAccount?.address) {
-        return;
-      }
-
-      return await apiSDK.fetchStoryBadgeEligibility(wcAccount?.address);
-    } catch (error) {
-      console.error('Error fetching eligibility:', error);
-    }
-
-    return false;
-  }, [wcAccount?.address]);
-
-  const fetchMintSignature = useCallback(async (): Promise<string> => {
-    try {
-      if (!wcAccount?.address) {
-        return '0x0';
-      }
-
-      return await apiSDK.fetchStoryBadgeMintSignature(wcAccount?.address);
-    } catch (error) {
-      console.error('Error fetching mint signature:', error);
-    }
-
-    return '0x0';
-  }, [wcAccount?.address]);
-
   const notifyIneligibleProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: 'alert-ineligible-mint',
     className: CN('mint-detail-sub-modal', className),
@@ -176,34 +148,6 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
     setSelectedTab(value);
   }, []);
 
-  const onClickShare = useCallback(() => {
-    if (!airdropNftInfo) {
-      return;
-    }
-
-    const url = '';
-
-    if (url) {
-      telegramConnector.openLink(url);
-    }
-  }, [airdropNftInfo]);
-
-  const subHeaderIcons = useMemo(() => {
-    return [
-      {
-        icon: (
-          <Icon
-            phosphorIcon={ShareNetwork}
-            size='md'
-          />
-        ),
-        onClick: () => {
-          onClickShare();
-        }
-      }
-    ];
-  }, [onClickShare]);
-
   const buttonType = (() => {
     const now = Date.now();
     const shouldCheck = airdropNftInfo?.start_mint && new Date(airdropNftInfo?.start_mint).getTime() < now;
@@ -226,11 +170,23 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
     }
   })();
 
-  const onMint = useCallback(async () => {
+  const onMint = useCallback(async (address: string) => {
     try {
       setIsLoading(true);
 
-      const isEligible = await fetchEligibility();
+      const isEligible = await new Promise<boolean>((resolve) => {
+        if (!address) {
+          resolve(false);
+        }
+
+        apiSDK
+          .fetchStoryBadgeEligibility(address)
+          .then(resolve)
+          .catch((error: Error) => {
+            console.error('Error fetching eligibility:', error);
+            resolve(false);
+          });
+      });
 
       if (!isEligible) {
         handleIneligibleModal().then(goHome).catch(console.error);
@@ -239,11 +195,11 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
         return;
       }
 
-      const signature = await fetchMintSignature();
+      const { signature } = await apiSDK.getSignatureMintNft(address);
 
-      const transaction = await odysseyMintNft({ address: wcAccount?.address || '', chain: 'storyOdyssey_testnet', signature });
+      const transaction = await odysseyMintNft({ address, chain: 'storyOdyssey_testnet', signature });
 
-      if (transaction.errors) {
+      if (transaction.errors.length) {
         handleFailedToMintModal().then(goHome).catch(console.error);
         setIsLoading(false);
 
@@ -257,18 +213,32 @@ const Component: React.FC<Props> = ({ airdropNftInfo, className }: Props) => {
     }
 
     setIsLoading(false);
-  }, [wcAccount?.address, handleFailedToMintModal, handleIneligibleModal, goHome, fetchMintSignature, fetchEligibility, notify]);
+  }, [handleFailedToMintModal, handleIneligibleModal, goHome, notify]);
 
   const onPreMint = useCallback(() => {
-    if (!wcAccount?.address) {
-      setIsLoading(false);
-      requireWC().then(connectWC).catch(console.error);
+    const getAddress = new Promise<string>((resolve, reject) => {
+      if (wcAccount) {
+        resolve(wcAccount.address);
+      } else {
+        requireWC()
+          .then(connectWC)
+          .then((address) => {
+            if (address) {
+              resolve(address);
+            } else {
+              reject(new Error('Failed to get address'));
+            }
+          })
+          .catch(reject);
+      }
+    });
 
-      return;
-    }
-
-    onMint().catch(console.error);
-  }, [connectWC, onMint, requireWC, wcAccount?.address]);
+    getAddress
+      .then((address) => {
+        return onMint(address);
+      })
+      .catch(console.error);
+  }, [connectWC, onMint, requireWC, wcAccount]);
 
   const renderButton = () => {
     return (
