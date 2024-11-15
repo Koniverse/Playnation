@@ -123,7 +123,7 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
   const handleReset = useCallback(() => {
     setItemsSelected({
       category: [],
-      position: [],
+      position: []
     });
   }, [setItemsSelected]);
 

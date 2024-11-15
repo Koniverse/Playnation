@@ -9,7 +9,7 @@ export const eventStat = {
   STR: 'strength',
   CAR: 'carry',
   PRE: 'presence',
-  JMP: 'jump',
+  JMP: 'jump'
 };
 
 export * from './authentication';
