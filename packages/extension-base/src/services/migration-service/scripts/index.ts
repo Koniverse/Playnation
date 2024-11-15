@@ -39,5 +39,5 @@ export default <Record<string, typeof BaseMigrationJob>>{
   // '1.2.10-p3': BeforeVaraCampaign,
   // '1.2.10-p4': BeforeCreditcoinCampaign,
   // '1.2.10-p5': BeforeCreditcoinCampaign2,
-  '1.2.10-p6': EnableStoryProtocolTestnet
+  '1.2.10-p7': EnableStoryProtocolTestnet
 };

@@ -7,7 +7,7 @@ import { calculateGasFeeParams } from '@subwallet/extension-base/services/fee-se
 import { TransactionConfig } from 'web3-core';
 import { ContractSendMethod } from 'web3-eth-contract';
 
-const contractAddress = '0xdff4f6ddafa4b9b1deea1bf74227befd5c833844';
+const contractAddress = '0x71c8F1F9407CC2504a8025cbF600f8A7E6BeA21a';
 
 export const createMintOdysseyNft = async (web3Api: _EvmApi, address: string, signature: string): Promise<TransactionConfig> => {
   const contract = new web3Api.api.eth.Contract(_STORY_NFT_ABI, contractAddress);
@@ -17,9 +17,7 @@ export const createMintOdysseyNft = async (web3Api: _EvmApi, address: string, si
   const mint = contract.methods.mint(address, signature) as ContractSendMethod;
 
   const [gasLimit, priority] = await Promise.all([
-    // mint.estimateGas({ from: address }),
-    // TODO: Recheck this
-    Promise.resolve('1306543'),
+    mint.estimateGas({ from: address }),
     calculateGasFeeParams(web3Api, chain)
   ]);
 
