@@ -28,6 +28,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [achievements, setAchievements] = useState<Achievement[]>(apiSDK.achievementList);
   const [selectedFilterTab, setSelectedFilterTab] = useState<string>(TaskCategoryType.DAILY);
   const [metadata, setMetadata] = useState(apiSDK.getMetadata());
+  const [serverTime, setServerTime] = useState<number>(apiSDK.serverTime);
 
   const filterTabItems = useMemo<FilterTabItemType[]>(() => {
     return [
@@ -59,6 +60,16 @@ const Component = ({ className }: Props): React.ReactElement => {
       return undefined;
     }
   }, [metadata?.timeRange, selectedFilterTab]);
+
+  useEffect(() => {
+    const timeSub = apiSDK.subscribeServerTime().subscribe((time) => {
+      setServerTime(time);
+    });
+
+    return () => {
+      timeSub.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     setBackgroundStyle('style-2');
@@ -125,6 +136,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         accountInfo={accountInfo}
         achievements={achievements}
         className={'task-section-list-container'}
+        endTime={serverTime}
         selectedTab={selectedFilterTab as TaskCategoryType}
         taskCategories={taskCategories}
         tasks={tasks}
