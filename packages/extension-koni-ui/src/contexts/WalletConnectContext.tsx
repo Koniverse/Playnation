@@ -100,7 +100,6 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
       size: 'sm'
     }
   }), [t, wcAccount?.address]);
-
   const requireAccountModalProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: requireModal,
     className: CN('confirm-modal-rework', 'modal-resize-content', 'modal-revert-header'),
@@ -276,7 +275,9 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
         address={wcAccount?.address || ''}
         callback={onSuccessCb}
       />
-      <WalletConnectWaitingSigningModal />
+      <WalletConnectWaitingSigningModal
+        address={wcAccount?.address || ''}
+      />
     </WalletConnectContext.Provider>
   );
 };

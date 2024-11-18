@@ -7,7 +7,7 @@ import RequestService from '@subwallet/extension-base/services/request-service';
 import Eip155RequestHandler from '@subwallet/extension-base/services/wallet-connect-service/handler/Eip155RequestHandler';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { ResponseWalletConnectCreateSession, SessionConnectStatus } from '@subwallet/extension-base/types';
-import { createPromiseHandler, PromiseHandler } from '@subwallet/extension-base/utils';
+import { createPromiseHandler, PromiseHandler, wait } from '@subwallet/extension-base/utils';
 import { getId } from '@subwallet/extension-base/utils/getId';
 import { IKeyValueStorage } from '@walletconnect/keyvaluestorage';
 import SignClient from '@walletconnect/sign-client';
@@ -468,12 +468,19 @@ export default class WalletConnectService {
   }
 
   public async disconnect (topic: string) {
-    await this.#client?.disconnect({
-      topic: topic,
-      reason: getSdkError('USER_DISCONNECTED')
-    });
+    try {
+      await this.#client?.disconnect({
+        topic: topic,
+        reason: getSdkError('USER_DISCONNECTED')
+      });
+      await wait(300);
+      this.#updateSessions();
+    } catch (e) {
+      await wait(300);
+      this.#updateSessions();
 
-    this.#updateSessions();
+      throw e;
+    }
   }
 
   private findMethodsMissing (methodRequire: (POLKADOT_SIGNING_METHODS | EIP155_SIGNING_METHODS) [], methods: string[]) {
