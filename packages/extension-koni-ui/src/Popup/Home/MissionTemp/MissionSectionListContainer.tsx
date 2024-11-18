@@ -55,59 +55,35 @@ function getMetricCounterpart (metricId: string, achievement: Achievement): stri
   return metric ? (metric.unit || '') : '';
 }
 
-function filterAchievements (achievements: Achievement[], taskSectionMap: Record<number, MissionSectionType>): Achievement[] {
+function filterAchievements (
+  achievements: Achievement[],
+  taskSectionMap: Record<number, MissionSectionType>
+): Achievement[] {
   const result: Record<string, Achievement> = {};
 
-  const groupedByDocumentId = achievements.reduce<Record<string, Achievement[]>>(
-    (groups, item) => {
-      if (!item.categoryId || !taskSectionMap[item.categoryId]) {
-        return groups;
-      }
+  achievements.forEach((item) => {
+    if (!item.categoryId || !taskSectionMap[item.categoryId]) {
+      return;
+    }
 
-      if (!groups[item.documentId]) {
-        groups[item.documentId] = [];
-      }
+    const current = result[item.documentId];
 
-      groups[item.documentId].push(item);
-
-      return groups;
-    },
-    {}
-  );
-
-  Object.keys(groupedByDocumentId).forEach((documentId) => {
-    const items = groupedByDocumentId[documentId];
-
-    const allClaimed = items.every(
-      (item) => item.status === AchievementLogStatus.CLAIMED
-    );
-
-    if (allClaimed) {
-      const claimedItem = items.reduce((maxItem, item) =>
-        !maxItem || item.milestoneOrdinal > maxItem.milestoneOrdinal
-          ? item
-          : maxItem,
-      null as Achievement | null
-      );
-
-      if (claimedItem) {
-        result[documentId] = claimedItem;
+    // If all items are CLAIMED, track the highest milestoneOrdinal
+    if (item.status === AchievementLogStatus.CLAIMED) {
+      if (!current || current.milestoneOrdinal < item.milestoneOrdinal) {
+        result[item.documentId] = item;
       }
 
       return;
     }
 
-    const activeItem = items
-      .filter((item) => item.status !== AchievementLogStatus.CLAIMED)
-      .reduce((minItem, item) =>
-        !minItem || item.milestoneOrdinal < minItem.milestoneOrdinal
-          ? item
-          : minItem,
-      null as Achievement | null
-      );
-
-    if (activeItem) {
-      result[documentId] = activeItem;
+    // For non-CLAIMED items, track the lowest milestoneOrdinal
+    if (
+      !current ||
+      current.status === AchievementLogStatus.CLAIMED ||
+      item.milestoneOrdinal < current.milestoneOrdinal
+    ) {
+      result[item.documentId] = item;
     }
   });
 
@@ -353,8 +329,6 @@ const Component = ({ accountInfo,
     });
 
     const filteredAchievements = filterAchievements(achievements, taskSectionMap);
-
-    console.log('filteredAchievements', filteredAchievements);
 
     filteredAchievements.forEach((ach) => {
       taskSectionMap[ach.categoryId].items.push({
