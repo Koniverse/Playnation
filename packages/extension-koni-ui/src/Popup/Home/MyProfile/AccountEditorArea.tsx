@@ -1,34 +1,38 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components/Mythical';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
-type Props = ThemeProps;
+type Props = ThemeProps & {
+  avatarSrc?: string;
+  telegramUsername?: string
+  createAt?: string
+};
 
-const Component = ({ className }: Props): React.ReactElement => {
+const Component = ({ avatarSrc, className, telegramUsername }: Props): React.ReactElement => {
   const { t } = useTranslation();
 
   return (
     <div className={className}>
       <div className='__avatar-wrapper'>
-        <img
-          alt='account'
-          className={'__avatar'}
-          src={'/images/mythical/user-image.png'}
+        <GameAccountAvatar
+          avatarSrc={avatarSrc}
+          className={'__avatar-wrapper'}
         />
       </div>
 
       <div className='__account-name-wrapper'>
         <div className='__account-name'>
-          @john_doe01
+          {telegramUsername}
         </div>
       </div>
 
       <div className='__joined-time'>
-        {t('Joined 2 days ago')}
+        {t('')}
       </div>
     </div>
   );

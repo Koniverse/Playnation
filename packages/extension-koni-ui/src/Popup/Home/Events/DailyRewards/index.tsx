@@ -66,7 +66,7 @@ function Component (props: Props): React.ReactElement<Props> {
             {t('Daily rewards')}
           </MythButton>
 
-          {claimableDailyRewards.length > 0 && <div className={'__notice-icon'}></div>}
+          {claimableDailyRewards().length > 0 && <div className={'__notice-icon'}></div>}
         </div>
       </div>
 

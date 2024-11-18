@@ -209,7 +209,8 @@ export const DailyRewardsModal = styled(Component)<Props>(({ theme: { extendToke
       backgroundRepeat: 'no-repeat',
       filter: 'drop-shadow(4px 6px 0px #000)',
       backgroundColor: 'transparent',
-      boxShadow: 'none'
+      boxShadow: 'none',
+      width: '100%'
     },
 
     '.ant-sw-modal-body': {

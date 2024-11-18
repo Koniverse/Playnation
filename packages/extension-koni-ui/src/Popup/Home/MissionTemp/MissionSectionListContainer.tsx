@@ -55,7 +55,10 @@ function getMetricCounterpart (metricId: string, achievement: Achievement): stri
   return metric ? (metric.unit || '') : '';
 }
 
-function filterAchievements (achievements: Achievement[], taskSectionMap: Record<number, MissionSectionType>): Achievement[] {
+function filterAchievements (
+  achievements: Achievement[],
+  taskSectionMap: Record<number, MissionSectionType>
+): Achievement[] {
   const result: Record<string, Achievement> = {};
 
   achievements.forEach((item) => {
@@ -63,15 +66,22 @@ function filterAchievements (achievements: Achievement[], taskSectionMap: Record
       return;
     }
 
-    // Skip items with CLAIMED status
+    const current = result[item.documentId];
+
+    // If all items are CLAIMED, track the highest milestoneOrdinal
     if (item.status === AchievementLogStatus.CLAIMED) {
+      if (!current || current.milestoneOrdinal < item.milestoneOrdinal) {
+        result[item.documentId] = item;
+      }
+
       return;
     }
 
-    // If there's no existing item in the result for this slug, or if the new item has a lower milestoneOrdinal, update it
+    // For non-CLAIMED items, track the lowest milestoneOrdinal
     if (
-      !result[item.documentId] ||
-      item.milestoneOrdinal < result[item.documentId].milestoneOrdinal
+      !current ||
+      current.status === AchievementLogStatus.CLAIMED ||
+      item.milestoneOrdinal < current.milestoneOrdinal
     ) {
       result[item.documentId] = item;
     }
@@ -450,6 +460,8 @@ const Component = ({ accountInfo,
   //     }
   //   ] as MissionSectionType[];
   // }, []);
+
+  console.log('missionSections', missionSections);
 
   return (
     <div className={className}>
