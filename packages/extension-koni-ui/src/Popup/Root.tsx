@@ -8,7 +8,7 @@ import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
-import { AuthenticationMythProvider } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
+import { AuthenticationMythProvider, LOCAL_LOGGED_IN_PROMISE_KEY } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { SecurityContextProvider } from '@subwallet/extension-koni-ui/contexts/SecurityContext';
 import { usePredefinedModal, WalletModalContextProvider } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
@@ -40,7 +40,6 @@ const welcomeUrl = '/welcome';
 const eventsUrl = '/home/events';
 // const tokenUrl = '/home/token';
 const loginUrl = '/keyring/login';
-const loginSuccessUrl = '/login-success';
 const myProfileUrl = '/home/my-profile';
 const phishingUrl = '/phishing-page-detected';
 const createPasswordUrl = '/keyring/create-password';
@@ -49,7 +48,6 @@ const securityUrl = '/settings/security';
 const createDoneUrl = '/create-done';
 const baseAccountPath = '/accounts';
 const allowImportAccountPaths = ['new-seed-phrase', 'import-seed-phrase', 'import-private-key', 'restore-json', 'import-by-qr', 'attach-read-only', 'connect-polkadot-vault', 'connect-keystone', 'connect-ledger'];
-
 const allowImportAccountUrls = allowImportAccountPaths.map((path) => `${baseAccountPath}/${path}`);
 
 export const MainWrapper = styled('div')<ThemeProps>(({ theme: { token } }: ThemeProps) => ({
@@ -217,8 +215,6 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       if (![...allowImportAccountUrls, welcomeUrl, createPasswordUrl, securityUrl].includes(pathName)) {
         redirectTarget = welcomeUrl;
       }
-    } else if (pathName === loginSuccessUrl) {
-      redirectTarget = myProfileUrl;
     } else if (pathName === DEFAULT_ROUTER_PATH) {
       // if (hasConfirmations) {
       //   openPModal('confirmations');
@@ -243,6 +239,16 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       openPModal('confirmations');
     } else if (!(hasInternalConfirmations || hasConfirmations) && isOpenPModal('confirmations')) {
       openPModal(null);
+    }
+
+    const loginPromise = localStorage.getItem(LOCAL_LOGGED_IN_PROMISE_KEY) || '';
+
+    if (loginPromise === 'login') {
+      redirectTarget = myProfileUrl;
+      localStorage.setItem(LOCAL_LOGGED_IN_PROMISE_KEY, 'logged');
+    } else if (loginPromise === 'logout') {
+      localStorage.removeItem(LOCAL_LOGGED_IN_PROMISE_KEY);
+      redirectTarget = myProfileUrl;
     }
 
     // Remove loading on finished first compute
@@ -290,6 +296,9 @@ const authConfig: TAuthConfig = {
   redirectUri: AUTHENTICATE_REDIRECT_URI,
   logoutEndpoint: LOGOUT_ENDPOINT,
   logoutRedirect: AUTHENTICATE_LOGOUT_REDIRECT,
+  postLogin: () => {
+    localStorage.setItem(LOCAL_LOGGED_IN_PROMISE_KEY, 'login');
+  },
   autoLogin: false,
   onRefreshTokenExpire: (event: TRefreshTokenExpiredEvent) => event.logIn(undefined, undefined, 'popup')
 };

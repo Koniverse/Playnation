@@ -5,11 +5,11 @@ import TelegramBotLink, { LinkConfig, LinkResult } from '@koniverse/telegram-bot
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AccountPublicInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { AUTHENTICATE_LINKING_BOT, AUTHENTICATE_LINKING_SERVICE, AUTHENTICATE_LINKING_TOKEN, AUTHENTICATE_LINKING_URL } from '@subwallet/extension-koni-ui/constants';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import React, { createContext, ReactElement, useCallback, useContext, useEffect, useState } from 'react';
 import { AuthContext } from 'react-oauth2-code-pkce';
-import { TTokenData } from 'react-oauth2-code-pkce/dist/types';
 import { useSelector } from 'react-redux';
 
 interface AuthenticationMythProviderProps {
@@ -23,6 +23,8 @@ export interface AuthenticationMythContextProps {
   onLogin: VoidFunction;
   onLogout: () => Promise<void>;
 }
+
+export const LOCAL_LOGGED_IN_PROMISE_KEY = 'mythical_logged_in_promise';
 
 export const AuthenticationMythContext = createContext<AuthenticationMythContextProps>({
   isLinkedMyth: false,
@@ -42,20 +44,24 @@ const config = {
 const bookaSDK = BookaSdk.instance;
 const initData = Telegram.WebApp.initData || process.env.DEFAULT_INIT_DATA || '0x0';
 const startData = Telegram.WebApp.initDataUnsafe;
-
 const linkSDK = new TelegramBotLink(config as LinkConfig);
+const telegramConnector = TelegramConnector.instance;
 
 export const AuthenticationMythProvider = ({ children }: AuthenticationMythProviderProps) => {
   const [account, setAccount] = useState<AccountPublicInfo>({} as AccountPublicInfo);
-  const [tokenData, setTokenData] = useState<TTokenData>();
   const [linkData, setLinkData] = useState<LinkResult>();
   const [isLinked, setIsLinked] = useState<boolean>(false);
   const authContext = useContext(AuthContext);
+  const tokenData = authContext.tokenData;
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
 
   useEffect(() => {
+    if (localStorage.getItem(LOCAL_LOGGED_IN_PROMISE_KEY) === 'logged' && !authContext.token) {
+      authContext.logIn();
+    }
+
     bookaSDK.fetchNFLRivalCardList(authContext.token).catch(console.error);
-  }, [authContext.token]);
+  }, [authContext, authContext.token]);
 
   const onLoginWithMythAccount = useCallback(() => {
     authContext.logIn();
@@ -67,6 +73,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
 
   const onLogoutMythAccount = useCallback(() => {
     authContext.logOut();
+    localStorage.setItem(LOCAL_LOGGED_IN_PROMISE_KEY, 'logout');
   }, [authContext]);
 
   const onSubmitMythAccount = useCallback(async (address: string) => {
@@ -110,10 +117,6 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
   }, [onLogoutMythAccount]);
 
   useEffect(() => {
-    setTokenData(authContext.tokenData);
-  }, [authContext.tokenData]);
-
-  useEffect(() => {
     if (linkData) {
       setAccount((prev) => {
         return {
@@ -138,14 +141,21 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
         telegram_id: startData.user.id
       }).then((rs) => {
         if (rs.success && tokenData?.email && authContext.token) {
-          setIsLinked(rs.success);
-          setLinkData(rs.data);
+          // Login is ok
+          if (rs.data?.link_email === tokenData.email) {
+            setIsLinked(rs.success);
+            setLinkData(rs.data);
+            // Login with different email
+          } else {
+            telegramConnector.showAlert(`Please login again with email "${rs.data?.link_email || ''}"`);
+          }
         } else {
+          console.log('tokenData', tokenData);
           onSubmitMythAccount(currentAccount?.address || '0x0').catch(console.error);
         }
       }).catch(console.error);
     }
-  }, [authContext.token, currentAccount?.address, onSubmitMythAccount, tokenData?.email]);
+  }, [authContext.token, currentAccount?.address, onSubmitMythAccount, tokenData]);
 
   const authenticationValue: AuthenticationMythContextProps = {
     account,
