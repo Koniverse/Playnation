@@ -75,19 +75,21 @@ const Component = ({ className }: Props): React.ReactElement => {
         }
         title={t('My profile')}
       />
-      <AccountEditorArea
-        avatarSrc={mineAccount?.info.photoUrl}
-        className={'account-editor-area'}
-        telegramUsername={mineAccount?.info.telegramUsername}
-      />
-      <LinkAccountArea
-        className={'link-account-area'}
-        doLinkAccount={doLinkAccount}
-        isLinked={isLinkedMyth}
-        isLoading={loading}
-      />
-      <WalletInfoArea className={'wallet-info-area'} />
-      <RewardHistoryArea className={'reward-history-area'} />
+      <div className={'__profile-container'}>
+        <AccountEditorArea
+          avatarSrc={mineAccount?.info.photoUrl}
+          className={'account-editor-area'}
+          telegramUsername={mineAccount?.info.telegramUsername}
+        />
+        <LinkAccountArea
+          className={'link-account-area'}
+          doLinkAccount={doLinkAccount}
+          isLinked={isLinkedMyth}
+          isLoading={loading}
+        />
+        <WalletInfoArea className={'wallet-info-area'} />
+        <RewardHistoryArea className={'reward-history-area'} />
+      </div>
       <CallToAction
         buttonLabel={'Play now'}
         className={'call-to-action'}
@@ -102,18 +104,12 @@ const Component = ({ className }: Props): React.ReactElement => {
 const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     backgroundColor: '#000',
+    display: 'flex',
+    flexDirection: 'column',
     height: '100%',
-    '.profile-header': {
-      position: 'fixed',
-      zIndex: 10,
-      backgroundColor: '#000000',
-      width: '100%'
-    },
-    '.call-to-action': {
-      position: 'fixed',
-      zIndex: 10,
-      width: '100%',
-      bottom: 102
+    '.__profile-container': {
+      flex: 1,
+      overflow: 'auto',
     },
     '.__padding-area': {
       position: 'fixed',

@@ -54,7 +54,6 @@ const Component = ({ className }: Props): React.ReactElement => {
 
 export const RewardHistoryArea = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    paddingBottom: 98,
     '.__area-label': {
       fontFamily: extendToken.fontDruk,
       fontSize: '20px',
@@ -70,8 +69,8 @@ export const RewardHistoryArea = styled(Component)<ThemeProps>(({ theme: { exten
     },
 
     '.empty-list-content': {
-      paddingBottom: 32,
-      paddingTop: 16
+      paddingBottom: 103,
+      paddingTop: 56
     },
 
     '.reward-history-item + .reward-history-item': {
