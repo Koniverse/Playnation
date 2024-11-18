@@ -109,7 +109,7 @@ const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token }
     height: '100%',
     '.__profile-container': {
       flex: 1,
-      overflow: 'auto',
+      overflow: 'auto'
     },
     '.__padding-area': {
       position: 'fixed',

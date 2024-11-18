@@ -296,7 +296,7 @@ const authConfig: TAuthConfig = {
   redirectUri: AUTHENTICATE_REDIRECT_URI,
   logoutEndpoint: LOGOUT_ENDPOINT,
   logoutRedirect: AUTHENTICATE_LOGOUT_REDIRECT,
-  postLogin: () => {
+  preLogin: () => {
     localStorage.setItem(LOCAL_LOGGED_IN_PROMISE_KEY, 'login');
   },
   autoLogin: false,
