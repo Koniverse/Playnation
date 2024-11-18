@@ -58,25 +58,56 @@ function getMetricCounterpart (metricId: string, achievement: Achievement): stri
 function filterAchievements (achievements: Achievement[], taskSectionMap: Record<number, MissionSectionType>): Achievement[] {
   const result: Record<string, Achievement> = {};
 
-  achievements.forEach((item) => {
-    if (!item.categoryId || !taskSectionMap[item.categoryId]) {
-      return;
-    }
-
-    // Skip items with CLAIMED status
-    if (item.status === AchievementLogStatus.CLAIMED) {
-      if (!result[item.documentId] || item.milestoneOrdinal > result[item.documentId].milestoneOrdinal) {
-        result[item.documentId] = item;
+  const groupedByDocumentId = achievements.reduce<Record<string, Achievement[]>>(
+    (groups, item) => {
+      if (!item.categoryId || !taskSectionMap[item.categoryId]) {
+        return groups;
       }
+
+      if (!groups[item.documentId]) {
+        groups[item.documentId] = [];
+      }
+
+      groups[item.documentId].push(item);
+
+      return groups;
+    },
+    {}
+  );
+
+  Object.keys(groupedByDocumentId).forEach((documentId) => {
+    const items = groupedByDocumentId[documentId];
+
+    const allClaimed = items.every(
+      (item) => item.status === AchievementLogStatus.CLAIMED
+    );
+
+    if (allClaimed) {
+      const claimedItem = items.reduce((maxItem, item) =>
+        !maxItem || item.milestoneOrdinal > maxItem.milestoneOrdinal
+          ? item
+          : maxItem,
+      null as Achievement | null
+      );
+
+      if (claimedItem) {
+        result[documentId] = claimedItem;
+      }
+
       return;
     }
 
-    // If there's no existing item in the result for this slug, or if the new item has a lower milestoneOrdinal, update it
-    if (
-      !result[item.documentId] ||
-      item.milestoneOrdinal < result[item.documentId].milestoneOrdinal
-    ) {
-      result[item.documentId] = item;
+    const activeItem = items
+      .filter((item) => item.status !== AchievementLogStatus.CLAIMED)
+      .reduce((minItem, item) =>
+        !minItem || item.milestoneOrdinal < minItem.milestoneOrdinal
+          ? item
+          : minItem,
+      null as Achievement | null
+      );
+
+    if (activeItem) {
+      result[documentId] = activeItem;
     }
   });
 
