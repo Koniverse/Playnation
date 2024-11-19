@@ -4,10 +4,12 @@
 import { AccountJson } from '@subwallet/extension-base/background/types';
 import { Layout, WalletConnect } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useNotification, useSelector } from '@subwallet/extension-koni-ui/hooks';
+import { noop } from '@subwallet/extension-koni-ui/utils';
 import { ButtonProps, Icon, ModalContext, Tooltip } from '@subwallet/react-ui';
 import { Export, FadersHorizontal, MagnifyingGlass } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
@@ -30,6 +32,8 @@ type Props = {
   onTabSelected?: LayoutBaseProps['onTabSelected'];
   className?: string;
 };
+
+const telegramConnector = TelegramConnector.instance;
 
 const Component = (props: Props) => {
   const { backgroundImages, backgroundStyle, children, className, onClickFilterIcon, onClickSearchIcon, onTabSelected, showConnectIcon = true, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar } = props;
@@ -65,6 +69,18 @@ const Component = (props: Props) => {
         console.debug('connectWC result', address);
       })
       .catch((e: Error) => {
+        if (e.message?.toLowerCase().includes('Unsupported chains'.toLowerCase())) {
+          telegramConnector.showPopup({
+            message: t('Your chosen wallet hasn’t supported Story Odyssey Testnet. Add network to your wallet or change to another wallet'),
+            buttons: [{
+              type: 'ok',
+              text: t('Got it')
+            }]
+          }, noop);
+
+          return;
+        }
+
         notify({
           type: 'error',
           message: e.message
@@ -73,7 +89,7 @@ const Component = (props: Props) => {
       .finally(() => {
         setConnectLoading(false);
       });
-  }, [connectWC, notify]);
+  }, [connectWC, notify, t]);
 
   const onDisconnectWallet = useCallback((wcAccount: AccountJson) => {
     return () => {

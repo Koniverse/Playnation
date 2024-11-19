@@ -6,6 +6,7 @@ import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common
 import { MintNftDetailAbout, MintNftDetailCondition } from '@subwallet/extension-koni-ui/components/Mint/MintNftDetail/variants';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useConfirmModal, useDefaultNavigate } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
@@ -13,6 +14,7 @@ import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTransla
 import { odysseyMintNft } from '@subwallet/extension-koni-ui/messaging/transaction/odyssey';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { noop } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { ArrowCircleRight, HouseLine, SmileySad } from 'phosphor-react';
@@ -43,6 +45,8 @@ const enum IAirdropNftMintingProcess {
   END_CAMPAIGN = 'END_CAMPAIGN',
   ELIGIBLE = 'ELIGIBLE'
 }
+
+const telegramConnector = TelegramConnector.instance;
 
 const Component: React.FC<Props> = (props: Props) => {
   const { airdropNftInfo, className, onSuccess } = props;
@@ -238,8 +242,20 @@ const Component: React.FC<Props> = (props: Props) => {
       .then((address) => {
         return onMint(address);
       })
-      .catch(console.error);
-  }, [connectWC, onMint, requireWC, wcAccount]);
+      .catch((e: Error) => {
+        console.error(e);
+
+        if (e.message?.toLowerCase().includes('Unsupported chains'.toLowerCase())) {
+          telegramConnector.showPopup({
+            message: t('Your chosen wallet hasn’t supported Story Odyssey Testnet. Add network to your wallet or change to another wallet'),
+            buttons: [{
+              type: 'ok',
+              text: t('Got it')
+            }]
+          }, noop);
+        }
+      });
+  }, [connectWC, onMint, requireWC, t, wcAccount]);
 
   const renderButton = () => {
     return (
@@ -392,7 +408,7 @@ const MintNftDetail = styled(Component)<ThemeProps>(({ theme: { extendToken, tok
         lineHeight: token.lineHeightHeading6,
         weight: 500
       }
-    },
+    }
   });
 });
 
