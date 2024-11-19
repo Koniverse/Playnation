@@ -8,16 +8,16 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { ShareLeaderboard, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
-import { useNotification, useSelector, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useConfirmModal, useNotification, useSelector, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
-import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { customFormatDate, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
-import { Button, Icon, Image } from '@subwallet/react-ui';
+import { Button, Icon, Image, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CheckCircle } from 'phosphor-react';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import styled from 'styled-components';
+import { CheckCircle, SmileySad } from 'phosphor-react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import styled, { useTheme } from 'styled-components';
 
 type Props = {
   task: Task,
@@ -41,6 +41,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
   const [completed, setCompleted] = useState(!!task.completedAt);
+  const { token } = useTheme() as Theme;
 
   const [checking, setChecking] = useState(task && task.airlyftType && !completed);
 
@@ -58,9 +59,9 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
     }
 
     return () => {
-
+      //
     };
-  }, [checking, reloadTask]);
+  }, [actionReloadPoint, checking, reloadTask, task.id]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
@@ -71,6 +72,45 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
       accountSub.unsubscribe();
     };
   }, []);
+
+  const noNftFoundModalProps = useMemo((): Partial<SwModalFuncProps> => ({
+    id: 'no_nft_found',
+    className: CN('general-confirmation-modal', className),
+    title: t('Your NFT'),
+    okCancel: false,
+    okText: t('Got it'),
+    content: (
+      <div className={'__description-modal'}>
+        <div className={'__title-modal'}>{t('Uh oh, no NFT found')}</div>
+        <div className={'__sub-title-modal'}>{t('We couldn’t find the NFT in your account. Connect to another account and try again')}</div>
+      </div>
+    ),
+    icon: (
+      <div className={'__icon-modal'}>
+        <Icon
+          customSize={'60px'}
+          iconColor={token.colorIconHover}
+          phosphorIcon={SmileySad}
+          size='md'
+          weight={'fill'}
+        />
+      </div>
+    ),
+    closable: true,
+    maskClosable: true,
+    okButtonProps: {
+      icon: (
+        <Icon
+          phosphorIcon={CheckCircle}
+          size='md'
+          weight={'fill'}
+        />
+      ),
+      shape: 'round'
+    }
+  }), [className, t, token.colorIconHover]);
+
+  const { handleSimpleConfirmModal: handleNoNftFoundModalProps } = useConfirmModal(noNftFoundModalProps);
 
   const finishTask = useCallback(() => {
     (async () => {
@@ -197,6 +237,14 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
           const error = e as Error;
 
           console.error('Fail to get signature', error);
+
+          if (error.message.toLowerCase().includes('user rejected'.toLowerCase())) {
+            notify({
+              message: t('You’ve rejected this request'),
+              type: 'error'
+            });
+          }
+
           setTaskLoading(false);
 
           return;
@@ -219,8 +267,13 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         .catch((e) => {
           const error = e as Error;
 
-          console.error('finishTask', e);
           setTaskLoading(false);
+
+          if (error.message?.toLowerCase().includes('not the owner of NFT'.toLowerCase())) {
+            handleNoNftFoundModalProps().catch(console.error);
+
+            return;
+          }
 
           notify({
             message: error.message,
@@ -245,7 +298,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         }, 100);
       }
     })().catch(console.error);
-  }, [account, actionReloadPoint, connectWC, notify, openWidget, t, task, wcAccount, requireWC, openWaiting, closeWaiting]);
+  }, [task.id, task.onChainType, task.network, task.metadata?.contractAddress, task.share_leaderboard, task.airlyftId, task.airlyftWidgetId, task.url, task.gameId, account?.info, notify, t, wcAccount, openWaiting, requireWC, connectWC, closeWaiting, openWidget, actionReloadPoint, handleNoNftFoundModalProps]);
 
   const { endTime,
     isDisabled,

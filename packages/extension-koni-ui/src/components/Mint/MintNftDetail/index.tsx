@@ -6,7 +6,6 @@ import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common
 import { MintNftDetailAbout, MintNftDetailCondition } from '@subwallet/extension-koni-ui/components/Mint/MintNftDetail/variants';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useConfirmModal, useDefaultNavigate } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
@@ -16,7 +15,7 @@ import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { ArrowCircleRight, HouseLine, ShareNetwork, SmileySad } from 'phosphor-react';
+import { ArrowCircleRight, HouseLine, SmileySad } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled, { useTheme } from 'styled-components';
@@ -45,8 +44,6 @@ const enum IAirdropNftMintingProcess {
   ELIGIBLE = 'ELIGIBLE'
 }
 
-const telegramConnector = TelegramConnector.instance;
-
 const Component: React.FC<Props> = (props: Props) => {
   const { airdropNftInfo, className, onSuccess } = props;
   const notify = useNotification();
@@ -72,7 +69,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
   const notifyIneligibleProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: 'alert-ineligible-mint',
-    className: CN('mint-detail-sub-modal', className),
+    className: CN('general-confirmation-modal', className),
     title: t('Ineligible to mint'),
     okText: t('Back to home'),
     content: (
@@ -109,7 +106,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
   const failedToMintProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: 'failed_to_mint',
-    className: CN('mint-detail-sub-modal', className),
+    className: CN('general-confirmation-modal', className),
     title: t('Failed to mint'),
     okCancel: false,
     content: (
@@ -396,59 +393,6 @@ const MintNftDetail = styled(Component)<ThemeProps>(({ theme: { extendToken, tok
         weight: 500
       }
     },
-
-    '&.mint-detail-sub-modal': {
-      maxHeight: '100%',
-      marginBottom: 0,
-      backgroundColor: 'transparent',
-      justifyContent: 'flex-end',
-
-      '.ant-sw-modal-confirm-body': {
-        background: extendToken.colorBgGradient,
-        borderRadius: 24,
-        padding: `${token.paddingXL}px ${token.paddingMD}px`,
-
-        '.ant-sw-modal-confirm-content': {
-          padding: 0,
-          margin: 0
-        },
-
-        '.__icon-modal': {
-          borderRadius: '50%',
-          padding: token.paddingLG - 2,
-          display: 'flex',
-          justifyContent: 'center',
-          backgroundColor: token.colorWhite
-        },
-
-        '.__description-modal': {
-          display: 'flex',
-          flexDirection: 'column',
-          gap: token.size
-        },
-
-        '.__title-modal': {
-          fontSize: token.fontSizeHeading5,
-          lineHeight: token.lineHeightHeading5,
-          color: token.colorText,
-          fontWeight: 600
-        },
-
-        '.__sub-title-modal': {
-          fontSize: token.fontSizeHeading6,
-          lineHeight: token.lineHeightHeading6,
-          fontWeight: 500,
-          color: token.colorTextDark2
-        }
-      },
-      '.ant-sw-modal-confirm-btns': {
-        flexDirection: 'row',
-
-        '.ant-btn': {
-          flex: 1
-        }
-      }
-    }
   });
 });
 

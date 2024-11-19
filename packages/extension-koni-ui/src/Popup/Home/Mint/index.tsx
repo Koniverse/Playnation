@@ -7,7 +7,6 @@ import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
@@ -16,13 +15,12 @@ const apiSDK = BookaSdk.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/leaderboard');
-  const { id } = useParams<{ id: string }>();
   const [nftAirdropList, setNftAirdropList] = useState<IAirdropNftMinting[]>(apiSDK.airdropNftMintList);
   const [mintSuccess, setMintSuccess] = useState(false);
 
   const currentIAirdropNftMinting = useMemo(() => {
     return nftAirdropList[0];
-  }, [nftAirdropList, id]);
+  }, [nftAirdropList]);
 
   const onMintSuccess = useCallback(() => {
     setMintSuccess(true);

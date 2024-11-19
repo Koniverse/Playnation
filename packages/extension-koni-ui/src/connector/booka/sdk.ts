@@ -1006,7 +1006,7 @@ export class BookaSdk {
   }
 
   async fetchStoryBadgeEligibility (address: string) {
-    const data = await this.postRequest<boolean>(`${GAME_API_HOST}/api/mint-nft/eligible`, { address }, false);
+    const data = await this.postRequest<boolean>(`${GAME_API_HOST}/api/mint-nft/eligible`, { address });
 
     console.log(data);
 

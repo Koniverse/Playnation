@@ -1,12 +1,17 @@
 // Copyright 2019-2022 @polkadot/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { detectTranslate } from '@subwallet/extension-base/utils';
 import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { toShort } from '@subwallet/extension-koni-ui/utils';
 import { Image } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React from 'react';
+import { Trans } from 'react-i18next';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 interface Props extends ThemeProps {
@@ -16,6 +21,7 @@ interface Props extends ThemeProps {
 const Component = ({ airdropNftInfo, className }: Props) => {
   const { t } = useTranslation();
   const { icon, name } = airdropNftInfo;
+  const wcAccount = useSelector((state: RootState) => state.accountState.wcAccount);
 
   return (
     <div className={CN(className)}>
@@ -26,11 +32,20 @@ const Component = ({ airdropNftInfo, className }: Props) => {
         <Image src={icon} />
       </div>
       <div className={'__mint-nft-success-footer'}>
-        {t('Congratulations on minting a soul-bound NFT that confirms your OG status in the Story ecosystem! Check out other quests here')}
-        <a href={'/'}>{t('here')}</a>
+        <Trans
+          components={{
+            highlight: (
+              <a
+                className='__link'
+                href={'/'}
+              />
+            )
+          }}
+          i18nKey={detectTranslate('Congratulations! Your badge is minted with account {{address}}. Check out other badges <highlight>here</highlight>')}
+          values={{ address: toShort(wcAccount?.address || '', 10, 16) }}
+        />
       </div>
     </div>
-
   );
 };
 
@@ -68,6 +83,11 @@ const MintNftSuccessItem = styled(Component)<Props>(({ theme: { extendToken, tok
     fontWeight: 500,
     lineHeight: token.lineHeightHeading6,
     fontFamily: token.fontFamily
+  },
+
+  '.__link': {
+    color: token.colorSuccess,
+    textDecoration: 'underline'
   }
 }));
 

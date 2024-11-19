@@ -634,79 +634,133 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
           marginLeft: 0
         }
       }
+    },
+
+    '.ant-sw-modal.general-confirmation-modal': {
+      padding: 0,
+      maxHeight: '100%',
+      marginBottom: 0,
+      backgroundColor: 'transparent',
+      justifyContent: 'flex-end',
+
+      '.ant-sw-modal-confirm-body': {
+        background: extendToken.colorBgGradient,
+        borderRadius: 24,
+        padding: `${token.paddingXL}px ${token.paddingMD}px`,
+
+        '.ant-sw-modal-confirm-content': {
+          padding: 0,
+          margin: 0
+        },
+
+        '.__icon-modal': {
+          borderRadius: '50%',
+          padding: token.paddingLG - 2,
+          display: 'flex',
+          justifyContent: 'center',
+          backgroundColor: token.colorWhite
+        },
+
+        '.__description-modal': {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: token.size
+        },
+
+        '.__title-modal': {
+          fontSize: token.fontSizeHeading5,
+          lineHeight: token.lineHeightHeading5,
+          color: token.colorText,
+          fontWeight: 600
+        },
+
+        '.__sub-title-modal': {
+          fontSize: token.fontSizeHeading6,
+          lineHeight: token.lineHeightHeading6,
+          fontWeight: 500,
+          color: token.colorTextDark2
+        }
+      },
+      '.ant-sw-modal-confirm-btns': {
+        flexDirection: 'row',
+
+        '.ant-btn': {
+          flex: 1
+        }
+      }
     }
   });
 });
 
 function ThemeGenerator ({ children, themeConfig }: Props): React.ReactElement<Props> {
-const { token } = useToken();
+  const { token } = useToken();
 
-// Generate theme from config
-const theme = useMemo<Theme>(() => {
-return generateTheme(themeConfig, token);
-}, [themeConfig, token]);
+  // Generate theme from config
+  const theme = useMemo<Theme>(() => {
+    return generateTheme(themeConfig, token);
+  }, [themeConfig, token]);
 
-return (
-<StyledComponentThemeProvider theme={theme}>
-  <GlobalStyle theme={theme} />
-  {children}
-</StyledComponentThemeProvider>
-);
+  return (
+    <StyledComponentThemeProvider theme={theme}>
+      <GlobalStyle theme={theme} />
+      {children}
+    </StyledComponentThemeProvider>
+  );
 }
 
 export interface ThemeProviderProps {
-children: React.ReactNode;
+  children: React.ReactNode;
 }
 
 const getModalContainer = () => document.getElementById('popup-container') || document.body;
 const getPopupContainer = () => document.getElementById('tooltip-container') || document.body;
 
 const TooltipContainer = styled.div({
-'& > div': {
-zIndex: 10000
-}
+  '& > div': {
+    zIndex: 10000
+  }
 });
 
 export function ThemeProvider ({ children }: ThemeProviderProps): React.ReactElement<ThemeProviderProps> {
-const dataContext = useContext(DataContext);
-const logoMaps = useSelector((state: RootState) => state.settings.logoMaps);
-const [themeReady, setThemeReady] = useState(false);
-const themeName = useSelector((state: RootState) => state.settings.theme);
+  const dataContext = useContext(DataContext);
+  const logoMaps = useSelector((state: RootState) => state.settings.logoMaps);
+  const [themeReady, setThemeReady] = useState(false);
+  const themeName = useSelector((state: RootState) => state.settings.theme);
 
-const themeConfig = useMemo(() => {
-const config = SW_THEME_CONFIGS[themeName] || SW_THEME_CONFIGS[ThemeNames.DEFAULT];
+  const themeConfig = useMemo(() => {
+    const config = SW_THEME_CONFIGS[themeName] || SW_THEME_CONFIGS[ThemeNames.DEFAULT];
 
-config.logoMap = getDefaultLogoMap();
+    config.logoMap = getDefaultLogoMap();
 
-Object.assign(config.logoMap.network, logoMaps.chainLogoMap);
-Object.assign(config.logoMap.symbol, logoMaps.assetLogoMap);
+    Object.assign(config.logoMap.network, logoMaps.chainLogoMap);
+    Object.assign(config.logoMap.symbol, logoMaps.assetLogoMap);
 
-config.token = config.generateTokens();
+    config.token = config.generateTokens();
 
-return config;
-}, [logoMaps.assetLogoMap, logoMaps.chainLogoMap, themeName]);
+    return config;
+  }, [logoMaps.assetLogoMap, logoMaps.chainLogoMap, themeName]);
 
-useEffect(() => {
-dataContext.awaitStores(['settings']).then(() => {
-  setThemeReady(true);
-}).catch(console.error);
-}, [dataContext]);
+  useEffect(() => {
+    dataContext.awaitStores(['settings']).then(() => {
+      setThemeReady(true);
+    }).catch(console.error);
+  }, [dataContext]);
 
-// Reduce number of re-rendering
-if (!themeReady) {
-return <></>;
-}
+  // Reduce number of re-rendering
+  if (!themeReady) {
+    return <></>;
+  }
 
-return (
-<ConfigProvider
-  getModalContainer={getModalContainer}
-  getPopupContainer={getPopupContainer}
-  theme={themeConfig}
->
-  <ThemeGenerator themeConfig={themeConfig}>
-    <TooltipContainer id='tooltip-container' />
-    {children}
-  </ThemeGenerator>
-</ConfigProvider>
-);
+  return (
+    <ConfigProvider
+      getModalContainer={getModalContainer}
+      getPopupContainer={getPopupContainer}
+      theme={themeConfig}
+    >
+      <ThemeGenerator themeConfig={themeConfig}>
+        <TooltipContainer id='tooltip-container' />
+        {children}
+      </ThemeGenerator>
+    </ConfigProvider>
+  );
 }
