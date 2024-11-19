@@ -4,6 +4,7 @@
 import { EIP155_SIGNING_METHODS, POLKADOT_SIGNING_METHODS, WalletConnectSigningMethod } from '@subwallet/extension-base/services/wallet-connect-service/types';
 import { targetIsMobile } from '@subwallet/extension-base/utils';
 import { SignClientTypes } from '@walletconnect/types';
+import { getSdkError } from '@walletconnect/utils';
 
 export const PROJECT_ID_EXTENSION = '34a107037c2b8381bb2477e7f04569c0';
 export const PROJECT_ID_MOBILE = '34a107037c2b8381bb2477e7f04569c0';
@@ -43,3 +44,6 @@ export const WALLET_CONNECT_SUPPORT_NAMESPACES: string[] = [WALLET_CONNECT_EIP15
 export const WC_REQUIRE_CHAIN_IDS: number[] = [1516];
 export const WC_OPTIONAL_CHAIN_IDS: number[] = [];
 export const WC_DEFAULT_CHAIN_ID = 1516;
+
+export const WC_USER_REJECT_CODE = getSdkError('USER_REJECTED').code;
+export const WC_USER_REJECT_MESSAGE = getSdkError('USER_REJECTED').message;

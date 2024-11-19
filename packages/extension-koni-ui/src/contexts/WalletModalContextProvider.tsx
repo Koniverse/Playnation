@@ -137,7 +137,7 @@ export const WalletModalContextProvider = ({ children }: Props) => {
         />
         {children}
         <SwModal
-          className={'modal-full'}
+          className={CN('modal-full', '-light-theme')}
           closable={false}
           destroyOnClose={true}
           id={'confirmations'}

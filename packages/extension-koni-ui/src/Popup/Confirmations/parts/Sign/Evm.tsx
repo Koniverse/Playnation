@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ConfirmationDefinitions, ConfirmationResult, EvmSendTransactionRequest, ExtrinsicType } from '@subwallet/extension-base/background/KoniTypes';
-import { WC_DEFAULT_CHAIN_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { WC_DEFAULT_CHAIN_ID, WC_USER_REJECT_MESSAGE } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { CONFIRMATION_QR_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { InjectContext } from '@subwallet/extension-koni-ui/contexts/InjectContext';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
@@ -234,16 +234,27 @@ const Component: React.FC<Props> = (props: Props) => {
       .catch((e) => {
         const error = e as Error;
 
+        if (error.message.toLowerCase().includes(WC_USER_REJECT_MESSAGE.toLowerCase())) {
+          notify({
+            message: t('You’ve rejected this request'),
+            type: 'error',
+            duration: null
+          });
+        } else {
+          notify({
+            message: error.message,
+            type: 'error',
+            duration: null
+          });
+        }
+
         closeWaiting();
-        notify({
-          message: error.message,
-          type: 'error'
-        });
+        onCancel();
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [isMessage, openWaiting, payload.payload, account.address, chainId, closeWaiting, onApproveSignature, notify]);
+  }, [isMessage, openWaiting, payload.payload, account.address, chainId, closeWaiting, onApproveSignature, notify, t, onCancel]);
 
   const onConfirm = useCallback(() => {
     removeTransactionPersist(extrinsicType);

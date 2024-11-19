@@ -259,6 +259,8 @@ const Component: React.FC<Props> = (props: Props) => {
       // account has insufficient balance
       if (transaction.errors.some((e) => e.message.toLowerCase().includes('Insufficient balance'.toLowerCase()))) {
         handleInSufficientBalanceModal().then(noop).catch(console.error);
+      } else if (transaction.errors.some((e) => e.message.toLowerCase().includes('Rejected by user'.toLowerCase()))) {
+        // do nothing
       } else if (transaction.errors.length) {
         handleFailedToMintModal().then(goHome).catch(console.error);
       } else {

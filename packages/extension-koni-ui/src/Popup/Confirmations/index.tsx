@@ -11,6 +11,7 @@ import { useAlert, useConfirmationsInfo, useSelector } from '@subwallet/extensio
 import { ConfirmationType } from '@subwallet/extension-koni-ui/stores/base/RequestState';
 import { AccountSignMode, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { getSignMode, isRawPayload } from '@subwallet/extension-koni-ui/utils';
+import CN from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -241,7 +242,7 @@ const Component = function ({ className }: Props) {
         case ExtrinsicType.SWAP:
           return t('Swap confirmation');
         case ExtrinsicType.MINT_NFT:
-          return t('Mint NFT confirmation');
+          return t('Confirm your mint');
         case ExtrinsicType.CROWDLOAN:
         case ExtrinsicType.EVM_EXECUTE:
         case ExtrinsicType.UNKNOWN:
@@ -255,6 +256,12 @@ const Component = function ({ className }: Props) {
     }
   }, [confirmation, t, transactionRequest]);
 
+  const confirmationClassName = useMemo(() => {
+    return CN(className, {
+      'confirm-your-mint': !!confirmation && transactionRequest[confirmation.item.id]?.extrinsicType === ExtrinsicType.MINT_NFT
+    });
+  }, [className, confirmation, transactionRequest]);
+
   useEffect(() => {
     if (numberOfConfirmations) {
       if (index >= numberOfConfirmations) {
@@ -265,7 +272,7 @@ const Component = function ({ className }: Props) {
 
   return (
     <>
-      <div className={className}>
+      <div className={confirmationClassName}>
         <ConfirmationHeader
           index={index}
           numberOfConfirmations={numberOfConfirmations}
