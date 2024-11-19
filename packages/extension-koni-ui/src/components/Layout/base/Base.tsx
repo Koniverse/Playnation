@@ -186,6 +186,14 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
 
   const onSelectTab = useCallback(
     (item: TabItemType) => () => {
+      if (item.key === 'mint') {
+        notify({
+          message: 'Coming soon!'
+        });
+
+        return;
+      }
+
       navigate(item.url);
     },
     [navigate, notify]
