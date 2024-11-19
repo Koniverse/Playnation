@@ -6,7 +6,7 @@ import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Field, Icon, PageIcon, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CheckCircle } from 'phosphor-react';
+import { CheckCircle, Wallet } from 'phosphor-react';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled, { useTheme } from 'styled-components';
@@ -53,7 +53,7 @@ function Component (props: Props): React.ReactElement<Props> {
           <PageIcon
             color='#000'
             iconProps={{
-              phosphorIcon: CheckCircle,
+              phosphorIcon: Wallet,
               weight: 'fill'
             }}
           />

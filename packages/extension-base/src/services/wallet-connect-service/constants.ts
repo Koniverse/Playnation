@@ -16,7 +16,7 @@ export const DEFAULT_WALLET_CONNECT_OPTIONS: SignClientTypes.Options = {
   metadata: {
     name: 'Koni Story',
     description: 'A unified Telegram mini app that allows users to play with their IPs',
-    url: 'https://koni-story.playnation.app/',
+    url: 'https://koni-story.koni.studio/',
     icons: ['https://raw.githubusercontent.com/Koniverse/Playnation/story-protocol-od-prod/packages/webapp/public/images/favicon/android-chrome-512x512.png']
   }
 };
