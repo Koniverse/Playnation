@@ -19,6 +19,8 @@ import { CheckCircle, SmileySad } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 
+import { stringToHex } from '@polkadot/util';
+
 type Props = {
   task: Task,
   actionReloadPoint: VoidFunction;
@@ -236,7 +238,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
           const rs = await wcSignMessageRequest({
             address,
             chainId: WC_DEFAULT_CHAIN_ID,
-            payload: message,
+            payload: stringToHex(message),
             method: 'personal_sign'
           });
 

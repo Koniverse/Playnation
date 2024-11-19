@@ -123,7 +123,7 @@ export default class Eip155RequestHandler {
       topic,
       request: {
         method,
-        params: [address, message]
+        params: [message, address]
       },
       chainId: `${WALLET_CONNECT_EIP155_NAMESPACE}:${chainId}`
     });
