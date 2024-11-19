@@ -155,7 +155,7 @@ export const LinkAccountArea = styled(Component)<ThemeProps>(({ theme: { extendT
       fontFamily: extendToken.fontBarlowCondensed,
       fontSize: '14px',
       fontStyle: 'normal',
-      fontWeight: 400,
+      fontWeight: 500,
       lineHeight: '16px',
       letterSpacing: '0.28px',
       flex: 1,

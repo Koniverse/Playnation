@@ -42,7 +42,9 @@ export const GameAccountAvatar = styled(Component)<Props>(({ theme: { extendToke
     '.__avatar-image': {
       display: 'block',
       borderRadius: '100%',
-      objectFit: 'cover'
+      objectFit: 'cover',
+      width: '100%',
+      height: '100%'
     }
 
     // '.__avatar-image.-placeholder': {

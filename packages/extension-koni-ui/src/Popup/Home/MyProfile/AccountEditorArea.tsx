@@ -44,9 +44,9 @@ export const AccountEditorArea = styled(Component)<ThemeProps>(({ theme: { exten
       marginLeft: 'auto',
       marginRight: 'auto',
       position: 'relative',
-      width: 'fit-content',
-      paddingTop: 1,
-      marginBottom: 8
+      marginBottom: 8,
+      width: 96,
+      height: 96
     },
 
     '.__avatar': {

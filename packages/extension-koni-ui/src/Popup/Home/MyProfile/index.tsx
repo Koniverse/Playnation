@@ -116,7 +116,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       <CallToAction
         buttonLabel={'Play now'}
         className={'call-to-action'}
-        subtitle={'Download Football Rivals App'}
+        subtitle={'Download NFL Rivals App'}
         title={'Want to take your profile to the next level?'}
       />
       <div className={'__padding-area'}></div>
@@ -166,7 +166,11 @@ const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token }
 
     '.empty-list-wrapper': {
       paddingTop: 121,
-      paddingBottom: 175,
+      paddingBottom: 175
+    },
+
+    '.call-to-action': {
+      marginBottom: 12
     },
 
     '.__link-now-button': {
