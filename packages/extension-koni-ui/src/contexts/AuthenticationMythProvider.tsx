@@ -56,9 +56,9 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
 
   useEffect(() => {
-    if (localStorage.getItem(LOCAL_LOGGED_IN_PROMISE_KEY) === 'logged' && !authContext.token) {
-      authContext.logIn();
-    }
+    // if (localStorage.getItem(LOCAL_LOGGED_IN_PROMISE_KEY) === 'logged' && !authContext.token) {
+    //   authContext.logIn();
+    // }
 
     bookaSDK.fetchNFLRivalCardList(authContext.token).catch(console.error);
   }, [authContext, authContext.token]);
