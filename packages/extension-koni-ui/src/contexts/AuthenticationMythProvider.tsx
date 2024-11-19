@@ -64,6 +64,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
   }, [authContext, authContext.token]);
 
   const onLoginWithMythAccount = useCallback(() => {
+    localStorage.setItem(LOCAL_LOGGED_IN_PROMISE_KEY, 'login');
     authContext.logIn();
   }, [authContext]);
 
