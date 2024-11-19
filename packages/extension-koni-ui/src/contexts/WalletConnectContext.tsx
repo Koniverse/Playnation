@@ -259,7 +259,7 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
         },
         themeMode: 'light',
         projectId,
-        explorerRecommendedWalletIds: ['9ce87712b99b3eb57396cc8621db8900ac983c712236f48fb70ad28760be3f6a', 'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', '9a4cddbdbc19005be790f37cc9176dd24eae51aa2a49fa3edeb3b6a8b089b7be']
+        explorerRecommendedWalletIds: ['9ce87712b99b3eb57396cc8621db8900ac983c712236f48fb70ad28760be3f6a', 'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96']
       });
 
       setWcModal(wcModal);
