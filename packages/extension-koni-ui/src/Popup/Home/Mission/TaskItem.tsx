@@ -11,7 +11,7 @@ import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/Wall
 import { useConfirmModal, useNotification, useSelector, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { customFormatDate, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
+import { customFormatDate, noop, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
 import { Button, Icon, Image, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
@@ -204,7 +204,19 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
             await requireWC();
             address = await connectWC();
           } catch (e) {
+            const error = e as Error;
+
             setTaskLoading(false);
+
+            if (error.message?.toLowerCase().includes('Unsupported chains'.toLowerCase())) {
+              telegramConnector.showPopup({
+                message: t('Your chosen wallet hasn’t supported Story Odyssey Testnet. Add network to your wallet or change to another wallet'),
+                buttons: [{
+                  type: 'ok',
+                  text: t('Got it')
+                }]
+              }, noop);
+            }
 
             return;
           }
