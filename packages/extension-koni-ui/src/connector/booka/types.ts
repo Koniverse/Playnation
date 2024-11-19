@@ -249,6 +249,12 @@ export interface Achievement {
   completedAt: Date,
 }
 
+export interface AchievementObject {
+  claimable_achievement?: boolean,
+  daily_reward_achievement?: boolean,
+  invite_achievement?: boolean
+}
+
 export interface TaskCategory {
   id: number; // id on db
   contentId: number;

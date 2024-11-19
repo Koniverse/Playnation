@@ -3,7 +3,7 @@
 
 import { CalendarIcon, MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Achievement } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AchievementObject } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -19,11 +19,8 @@ function Component (props: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const { className = '' } = props;
   const { activeModal, inactiveModal } = useContext(ModalContext);
-  const [dailyRewards, setDailyRewards] = useState(apiSdk.getDailyRewardAchievements());
+  const [hasClaimedDailyReward, setHasClaimedDailyReward] = useState(apiSdk.getAchievementsObjectSubject().daily_reward_achievement);
 
-  const claimableDailyRewards = useCallback(() => {
-    return dailyRewards.filter((item) => item.status === 'claimable');
-  }, [dailyRewards]);
   const openDailyRewardsModal = useCallback(() => {
     activeModal(DAILY_REWARDS_MODAL_ID);
   }, [activeModal]);
@@ -41,8 +38,8 @@ function Component (props: Props): React.ReactElement<Props> {
   }, [closeDailyRewardsModal]);
 
   useEffect(() => {
-    const sub1 = apiSdk.subscribeDailyRewardAchievements().subscribe((achievements: Achievement[]) => {
-      setDailyRewards(achievements);
+    const sub1 = apiSdk.subscribeAchievementsObjectSubject().subscribe((achievementsObject: AchievementObject) => {
+      setHasClaimedDailyReward(achievementsObject.daily_reward_achievement);
     });
 
     return () => {
@@ -66,7 +63,7 @@ function Component (props: Props): React.ReactElement<Props> {
             {t('Daily rewards')}
           </MythButton>
 
-          {claimableDailyRewards().length > 0 && <div className={'__notice-icon'}></div>}
+          {hasClaimedDailyReward && <div className={'__notice-icon'}></div>}
         </div>
       </div>
 

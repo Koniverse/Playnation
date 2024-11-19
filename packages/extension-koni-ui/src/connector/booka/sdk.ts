@@ -6,7 +6,7 @@ import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, NFLRivalCard, RankInfo, ReferralData, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, Achievement, AchievementObject, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, NFLRivalCard, RankInfo, ReferralData, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -79,7 +79,7 @@ export class BookaSdk {
   private serverTimeSubject = new BehaviorSubject<number>(Date.now());
   private dailyRewardAchievementsSubject = new BehaviorSubject<Achievement[]>([]);
   private inviteAchievementsSubject = new BehaviorSubject<Achievement[]>([]);
-  private claimAbleAchievementsSubject = new BehaviorSubject<Achievement[]>([]);
+  private achievementsObjectSubject = new BehaviorSubject<AchievementObject>({});
 
   // Special cases
   // Check if the account is banned
@@ -445,12 +445,12 @@ export class BookaSdk {
     return this.inviteAchievementsSubject;
   }
 
-  getClaimableAchievements () {
-    return this.claimAbleAchievementsSubject.value;
+  getAchievementsObjectSubject () {
+    return this.achievementsObjectSubject.value;
   }
 
-  subscribeClaimableAchievements () {
-    return this.claimAbleAchievementsSubject;
+  subscribeAchievementsObjectSubject () {
+    return this.achievementsObjectSubject;
   }
 
   /**
@@ -464,18 +464,23 @@ export class BookaSdk {
     if (achievementList) {
       const dailyRewardAchievement: Achievement[] = [];
       const inviteAchievement: Achievement[] = [];
-      const claimAbleAchievement: Achievement[] = [];
+      const achievementObject: AchievementObject = { daily_reward_achievement: false, claimable_achievement: false, invite_achievement: false };
       const achievementListFiltered = achievementList.filter((item) => {
         if (item.specialPurpose === 'daily_reward_mission') {
           dailyRewardAchievement.push(item);
 
+          if (item.status === 'claimable') {
+            achievementObject.daily_reward_achievement = true;
+          }
+
           return false;
         } else if (item.specialPurpose === 'invite_mission') {
           inviteAchievement.push(item);
+          achievementObject.invite_achievement = true;
 
           return false;
         } else if (item.status === 'claimable') {
-          claimAbleAchievement.push(item);
+          achievementObject.claimable_achievement = true;
 
           return true;
         }
@@ -483,7 +488,7 @@ export class BookaSdk {
         return true;
       });
 
-      this.claimAbleAchievementsSubject.next(claimAbleAchievement);
+      this.achievementsObjectSubject.next(achievementObject);
       this.dailyRewardAchievementsSubject.next(dailyRewardAchievement);
       this.inviteAchievementsSubject.next(inviteAchievement);
       this.achievementListSubject.next(achievementListFiltered);
