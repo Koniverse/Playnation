@@ -112,7 +112,6 @@ const ExportAllDone = new LazyLoader('ExportAllDone', () => import('@subwallet/e
 
 const Login = new LazyLoader('Login', () => import('@subwallet/extension-koni-ui/Popup/Keyring/Login'));
 const LoginNew = new LazyLoader('Login', () => import('@subwallet/extension-koni-ui/Popup/Login'));
-const LoginSuccess = new LazyLoader('LoginSuccess', () => import('@subwallet/extension-koni-ui/Popup/LoginSuccess'));
 const CreatePassword = new LazyLoader('CreatePassword', () => import('@subwallet/extension-koni-ui/Popup/Keyring/CreatePassword'));
 const ChangePassword = new LazyLoader('ChangePassword', () => import('@subwallet/extension-koni-ui/Popup/Keyring/ChangePassword'));
 const ApplyMasterPassword = new LazyLoader('ApplyMasterPassword', () => import('@subwallet/extension-koni-ui/Popup/Keyring/ApplyMasterPassword'));
@@ -242,9 +241,6 @@ export const router = createBrowserRouter([
       },
       {
         ...LoginNew.generateRouterObject('login')
-      },
-      {
-        ...LoginSuccess.generateRouterObject('login-success')
       },
       {
         path: '/keyring',

@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CallToAction, MainScreenHeader, MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -18,6 +20,7 @@ import { RewardHistoryArea } from './RewardHistoryArea';
 import { WalletInfoArea } from './WalletInfoArea';
 
 type Props = ThemeProps;
+const apiSDK = BookaSdk.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/my-profile');
@@ -25,7 +28,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { isLinkedMyth, linkMythAccount, onLogin, onLogout } = useContext(AuthenticationMythContext);
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
   const [loading, setLoading] = useState(false);
-
+  const [mineAccount, setMineAccount] = useState<BookaAccount | undefined>(apiSDK.account);
   const doLinkAccount = useCallback(() => {
     currentAccount?.address && linkMythAccount(currentAccount?.address).catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
@@ -45,6 +48,16 @@ const Component = ({ className }: Props): React.ReactElement => {
       });
   }, [onLogout]);
 
+  useEffect(() => {
+    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
+      setMineAccount(data);
+    });
+
+    return () => {
+      accountSub.unsubscribe();
+    };
+  }, []);
+
   return (
     <div className={className}>
       <MainScreenHeader
@@ -62,20 +75,26 @@ const Component = ({ className }: Props): React.ReactElement => {
         }
         title={t('My profile')}
       />
-      <AccountEditorArea className={'account-editor-area'} />
-      <LinkAccountArea
-        className={'link-account-area'}
-        doLinkAccount={doLinkAccount}
-        isLinked={isLinkedMyth}
-        isLoading={loading}
-      />
-      <WalletInfoArea className={'wallet-info-area'} />
-      <RewardHistoryArea className={'reward-history-area'} />
+      <div className={'__profile-container'}>
+        <AccountEditorArea
+          avatarSrc={mineAccount?.info.photoUrl}
+          className={'account-editor-area'}
+          telegramUsername={mineAccount?.info.telegramUsername}
+        />
+        <LinkAccountArea
+          className={'link-account-area'}
+          doLinkAccount={doLinkAccount}
+          isLinked={isLinkedMyth}
+          isLoading={loading}
+        />
+        <WalletInfoArea className={'wallet-info-area'} />
+        <RewardHistoryArea className={'reward-history-area'} />
+      </div>
       <CallToAction
         buttonLabel={'Play now'}
         className={'call-to-action'}
         subtitle={'Download Football Rivals App'}
-        title={'Want to get to the big league?'}
+        title={'Want to take your profile to the next level?'}
       />
       <div className={'__padding-area'}></div>
     </div>
@@ -85,17 +104,12 @@ const Component = ({ className }: Props): React.ReactElement => {
 const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     backgroundColor: '#000',
-    '.profile-header': {
-      position: 'fixed',
-      zIndex: 10,
-      backgroundColor: '#000000',
-      width: '100%'
-    },
-    '.call-to-action': {
-      position: 'fixed',
-      zIndex: 10,
-      width: '100%',
-      bottom: 102
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    '.__profile-container': {
+      flex: 1,
+      overflow: 'auto'
     },
     '.__padding-area': {
       position: 'fixed',

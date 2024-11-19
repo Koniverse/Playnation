@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { EmptyListContent } from '@subwallet/extension-koni-ui/components/Mythical';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,62 +16,38 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   const items: RewardHistoryItemType[] = useMemo(() => {
     return [
-      {
-        ordinal: 1,
-        name: 'Won tournament',
-        date: 'May 12th',
-        tokenValue: '2'
-      },
-      {
-        ordinal: 2,
-        name: '#1 on the leaderboard',
-        date: 'Given week',
-        tokenValue: '25'
-      },
-      {
-        ordinal: 3,
-        name: 'Completed 10 amount of daily of weekly tasks',
-        date: 'May 10th',
-        tokenValue: '8'
-      },
-      {
-        ordinal: 4,
-        name: 'Completed 10 amount of daily of weekly tasks',
-        date: 'May 10th',
-        tokenValue: '8'
-      },
-      {
-        ordinal: 5,
-        name: 'Completed 10 amount of daily of weekly tasks',
-        date: 'May 10th',
-        tokenValue: '8'
-      },
-      {
-        ordinal: 6,
-        name: 'Completed 10 amount of daily of weekly tasks',
-        date: 'May 10th',
-        tokenValue: '8'
-      }
     ] as RewardHistoryItemType[];
   }, []);
 
   return (
     <div className={className}>
-      <div className='__area-label'>
-        {t('Reward history')}
-      </div>
+      {items.length > 0
+        ? (
+          <>
+            <div className='__area-label'>
+              {t('Reward history')}
+            </div>
 
-      <div className='__list-container'>
-        {
-          items.map((item) => (
-            <RewardHistoryItem
-              {...item}
-              className={'reward-history-item'}
-              key={item.ordinal}
-            />
-          ))
-        }
-      </div>
+            <div className='__list-container'>
+              {
+                items.map((item) => (
+                  <RewardHistoryItem
+                    {...item}
+                    className={'reward-history-item'}
+                    key={item.ordinal}
+                  />
+                ))
+              }
+            </div>
+          </>
+        )
+        : (
+          <EmptyListContent
+            className={'empty-list-content'}
+            content={t('Complete events and tasks for MYTH rewards')}
+            title={t('oops! no rewards yet')}
+          />
+        )}
     </div>
   );
 };
@@ -89,6 +66,11 @@ export const RewardHistoryArea = styled(Component)<ThemeProps>(({ theme: { exten
       paddingLeft: 16,
       paddingRight: 16,
       marginBottom: 12
+    },
+
+    '.empty-list-content': {
+      paddingBottom: 103,
+      paddingTop: 56
     },
 
     '.reward-history-item + .reward-history-item': {

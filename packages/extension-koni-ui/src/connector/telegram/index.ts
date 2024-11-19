@@ -99,12 +99,12 @@ export class TelegramConnector {
     }
   }
 
-  showAlert (message: string, callback: () => void) {
+  showAlert (message: string, callback?: () => void) {
     if (this.supportModal) {
       TelegramWebApp.showAlert(message, callback);
     } else {
       alert(message);
-      callback();
+      callback && callback();
     }
   }
 
