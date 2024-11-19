@@ -27,7 +27,7 @@ const Component = ({ avatarSrc, className, telegramUsername }: Props): React.Rea
 
       <div className='__account-name-wrapper'>
         <div className='__account-name'>
-          {telegramUsername}
+          @{telegramUsername}
         </div>
       </div>
 

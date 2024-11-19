@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { CallToAction, MainScreenHeader, MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
+import { CallToAction, EmptyListContent, MainScreenHeader, MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
@@ -87,8 +87,31 @@ const Component = ({ className }: Props): React.ReactElement => {
           isLinked={isLinkedMyth}
           isLoading={loading}
         />
-        <WalletInfoArea className={'wallet-info-area'} />
-        <RewardHistoryArea className={'reward-history-area'} />
+        {isLinkedMyth
+          ? (
+            <>
+              <WalletInfoArea className={'wallet-info-area'} />
+              <RewardHistoryArea className={'reward-history-area'} />
+            </>
+          )
+          : (
+            <>
+              <div className={'empty-list-wrapper'}>
+                <EmptyListContent
+                  className={'empty-rewards-content'}
+                  content={t('Link your Mythical account to view rewards')}
+                  title={t('oops! no rewards yet ')}
+                />
+                <MythButton
+                  className={'__link-now-button'}
+                  isLoading={loading}
+                  onClick={doLinkAccount}
+                >
+                  {t('LINK NOW')}
+                </MythButton>
+              </div>
+            </>
+          )}
       </div>
       <CallToAction
         buttonLabel={'Play now'}
@@ -130,8 +153,7 @@ const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token }
     },
 
     '.account-editor-area': {
-      marginBottom: 20,
-      paddingTop: 80
+      marginBottom: 20
     },
 
     '.link-account-area': {
@@ -140,6 +162,36 @@ const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token }
 
     '.wallet-info-area': {
       marginBottom: 14
+    },
+
+    '.empty-list-wrapper': {
+      paddingTop: 121,
+      paddingBottom: 175,
+    },
+
+    '.__link-now-button': {
+      minWidth: 159,
+      height: 40,
+      paddingLeft: 4,
+      paddingRight: 2,
+      marginTop: 17,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+
+      '.__button-content': {
+        color: extendToken.mythColorDark
+      },
+
+      '.__button-background': {
+        filter: 'drop-shadow(2px 3px 0px #000)'
+      },
+
+      '.__button-background:before': {
+        backgroundColor: token.colorPrimary,
+        maskImage: 'url(/images/mythical/call-to-action-button.png)',
+        maskSize: '100% 100%',
+        maskPosition: 'top left'
+      }
     }
   };
 });

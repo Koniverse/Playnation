@@ -461,8 +461,6 @@ const Component = ({ accountInfo,
   //   ] as MissionSectionType[];
   // }, []);
 
-  console.log('missionSections', missionSections);
-
   return (
     <div className={className}>
       {
