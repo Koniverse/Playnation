@@ -249,10 +249,10 @@ export interface Achievement {
   completedAt: Date,
 }
 
-export interface AchievementObject {
-  claimable_achievement?: boolean,
-  daily_reward_achievement?: boolean,
-  invite_achievement?: boolean
+export interface ClaimableAchievement {
+  achievement?: boolean,
+  daily_reward_mission?: boolean,
+  invite_mission?: boolean
 }
 
 export interface TaskCategory {

@@ -3,7 +3,7 @@
 
 import { CalendarIcon, MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AchievementObject } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { ClaimableAchievement } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -19,7 +19,7 @@ function Component (props: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const { className = '' } = props;
   const { activeModal, inactiveModal } = useContext(ModalContext);
-  const [hasClaimedDailyReward, setHasClaimedDailyReward] = useState(apiSdk.getAchievementsObjectSubject().daily_reward_achievement);
+  const [hasClaimedDailyReward, setHasClaimedDailyReward] = useState(apiSdk.getClaimableAchievementSubject().daily_reward_mission);
 
   const openDailyRewardsModal = useCallback(() => {
     activeModal(DAILY_REWARDS_MODAL_ID);
@@ -38,8 +38,8 @@ function Component (props: Props): React.ReactElement<Props> {
   }, [closeDailyRewardsModal]);
 
   useEffect(() => {
-    const sub1 = apiSdk.subscribeAchievementsObjectSubject().subscribe((achievementsObject: AchievementObject) => {
-      setHasClaimedDailyReward(achievementsObject.daily_reward_achievement);
+    const sub1 = apiSdk.subscribeClaimableAchievementSubject().subscribe((claimableAchievement: ClaimableAchievement) => {
+      setHasClaimedDailyReward(claimableAchievement.daily_reward_mission);
     });
 
     return () => {

@@ -3,7 +3,7 @@
 
 import { LanguageType } from '@subwallet/extension-base/background/KoniTypes';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AchievementObject } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { ClaimableAchievement } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useDefaultNavigate, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { LayoutBackgroundStyle, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Icon, SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
@@ -35,7 +35,7 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const { language } = useSelector((state) => state.settings);
-  const [hasClaimableAchievements, setHasClaimableAchievements] = useState(apiSdk.getAchievementsObjectSubject().claimable_achievement);
+  const [hasClaimableAchievements, setHasClaimableAchievements] = useState(apiSdk.getClaimableAchievementSubject().achievement);
 
   const tabBarItems = useMemo((): Array<Omit<SwTabBarItem, 'onClick'> & { url: string }> => ([
     {
@@ -184,8 +184,8 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
   }, [onTabSelected, selectedTab]);
 
   useEffect(() => {
-    const sub1 = apiSdk.subscribeAchievementsObjectSubject().subscribe((achievementsObject: AchievementObject) => {
-      setHasClaimableAchievements(achievementsObject.claimable_achievement);
+    const sub1 = apiSdk.subscribeClaimableAchievementSubject().subscribe((claimableAchievement: ClaimableAchievement) => {
+      setHasClaimableAchievements(claimableAchievement.achievement);
     });
 
     return () => {
