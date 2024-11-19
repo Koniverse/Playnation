@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { detectTranslate } from '@subwallet/extension-base/utils';
 import { ConfirmYourAccountModal, TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { MintNftDetailAbout, MintNftDetailCondition } from '@subwallet/extension-koni-ui/components/Mint/MintNftDetail/variants';
@@ -18,8 +19,9 @@ import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { noop } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { ArrowCircleRight, HouseLine, SmileySad } from 'phosphor-react';
+import { ArrowCircleRight, CheckCircle, HouseLine, SmileySad } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
+import { Trans } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import styled, { useTheme } from 'styled-components';
 
@@ -146,8 +148,58 @@ const Component: React.FC<Props> = (props: Props) => {
     }
   }), [className, t, token.colorIconHover]);
 
+  const inSufficientBalanceProps = useMemo((): Partial<SwModalFuncProps> => ({
+    id: 'in_sufficient_balance',
+    className: CN('general-confirmation-modal', className),
+    title: t('Failed to mint'),
+    okText: t('Got it'),
+    okCancel: false,
+    content: (
+      <div className={'__description-modal'}>
+        <div className={'__title-modal'}>{t('Oops, your badge can’t be minted')}</div>
+        <div className={'__sub-title-modal'}>
+          <Trans
+            components={{ highlight: (
+              <a
+                className={'__link'}
+                href={'https://faucet.story.foundation'}
+                rel='noreferrer'
+                target='_blank'
+              />
+            ) }}
+            i18nKey={detectTranslate('You don’t have enough IP to mint Koni Story badge. <highlight>Get faucet</highlight> and try again')}
+          />
+        </div>
+      </div>
+    ),
+    icon: (
+      <div className={'__icon-modal'}>
+        <Icon
+          customSize={'60px'}
+          iconColor={token.colorIconHover}
+          phosphorIcon={SmileySad}
+          size='md'
+          weight={'fill'}
+        />
+      </div>
+    ),
+    closable: true,
+    maskClosable: true,
+    okButtonProps: {
+      icon: (
+        <Icon
+          phosphorIcon={CheckCircle}
+          size='md'
+          weight={'fill'}
+        />
+      ),
+      shape: 'round'
+    }
+  }), [className, t, token.colorIconHover]);
+
   const { handleSimpleConfirmModal: handleIneligibleModal } = useConfirmModal(notifyIneligibleProps);
   const { handleSimpleConfirmModal: handleFailedToMintModal } = useConfirmModal(failedToMintProps);
+  const { handleSimpleConfirmModal: handleInSufficientBalanceModal } = useConfirmModal(inSufficientBalanceProps);
 
   const onSelectTab = useCallback((value: string) => {
     setSelectedTab(value);
@@ -204,14 +256,16 @@ const Component: React.FC<Props> = (props: Props) => {
 
       const transaction = await odysseyMintNft({ address, chain: 'storyOdyssey_testnet', signature });
 
-      if (transaction.errors.length) {
+      // account has insufficient balance
+      if (transaction.errors.some((e) => e.message.toLowerCase().includes('Insufficient balance'.toLowerCase()))) {
+        handleInSufficientBalanceModal().then(noop).catch(console.error);
+      } else if (transaction.errors.length) {
         handleFailedToMintModal().then(goHome).catch(console.error);
-        setIsLoading(false);
-
-        return;
       } else {
         onSuccess();
       }
+
+      setIsLoading(false);
     } catch (e) {
       notify({
         message: (e as Error).message,
@@ -221,7 +275,7 @@ const Component: React.FC<Props> = (props: Props) => {
     }
 
     setIsLoading(false);
-  }, [handleIneligibleModal, goHome, handleFailedToMintModal, onSuccess, notify]);
+  }, [handleIneligibleModal, goHome, handleInSufficientBalanceModal, handleFailedToMintModal, onSuccess, notify]);
 
   const onPreMint = useCallback(() => {
     const getAddress = new Promise<string>((resolve, reject) => {
@@ -395,6 +449,11 @@ const MintNftDetail = styled(Component)<ThemeProps>(({ theme: { extendToken, tok
       '.__tab-item.-disabled': {
         opacity: 0.4
       }
+    },
+
+    '.__link': {
+      color: token.colorSuccess,
+      textDecoration: 'underline'
     },
 
     '.tab-content': {
