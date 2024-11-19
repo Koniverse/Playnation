@@ -411,3 +411,26 @@ export interface AirdropRaffle {
 export interface AirdropClaim {
   airdropRecordLogId: number,
 }
+
+export interface APIResponse<T> {
+  success: boolean;
+  message?: string;
+  data: T;
+}
+
+export interface NftMintingEligibility {
+  inWhiteList: boolean
+  mintedNft: boolean
+}
+
+export interface NftMintingLog {
+  id: number,
+  accountId: number,
+  campaign: string,
+  status: string
+  network: string,
+  contractAddress: string,
+  address: string,
+  signature: string,
+  extrinsicHash?: string,
+}
