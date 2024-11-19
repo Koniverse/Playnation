@@ -173,7 +173,8 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
 
           notify({
             message: message,
-            type: 'error'
+            type: 'error',
+            duration: null
           });
 
           return;
@@ -253,7 +254,8 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
           if (error.message.toLowerCase().includes('user rejected'.toLowerCase())) {
             notify({
               message: t('You’ve rejected this request'),
-              type: 'error'
+              type: 'error',
+              duration: null
             });
           }
 
@@ -295,7 +297,8 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
 
           notify({
             message: notifyMessage,
-            type: 'error'
+            type: 'error',
+            duration: null
           });
         });
 

@@ -213,7 +213,8 @@ const Component: React.FC<Props> = (props: Props) => {
     } catch (e) {
       notify({
         message: (e as Error).message,
-        type: 'error'
+        type: 'error',
+        duration: null
       });
     }
 

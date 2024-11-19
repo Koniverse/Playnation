@@ -15,7 +15,7 @@ export default function useNotification (): (props: NotificationProps) => void {
     showNotification({
       key,
       closable: true,
-      duration: null,
+      duration: 5,
       ...props
     });
   }, [key, showNotification]);
