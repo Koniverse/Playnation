@@ -3,7 +3,7 @@
 
 import { LanguageType } from '@subwallet/extension-base/background/KoniTypes';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Achievement } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { ClaimableAchievement } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useDefaultNavigate, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { LayoutBackgroundStyle, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Icon, SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
@@ -35,7 +35,7 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const { language } = useSelector((state) => state.settings);
-  const [claimableAchievements, setClaimableAchievements] = useState(apiSdk.getClaimableAchievements());
+  const [hasClaimableAchievements, setHasClaimableAchievements] = useState(apiSdk.getClaimableAchievementSubject().achievement);
 
   const tabBarItems = useMemo((): Array<Omit<SwTabBarItem, 'onClick'> & { url: string }> => ([
     {
@@ -77,7 +77,7 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
                 fill='currentColor'
               />
             </svg>
-            { claimableAchievements.length > 0 && <div className={'__notice-icon-tabbar'}></div>}
+            { hasClaimableAchievements && <div className={'__notice-icon-tabbar'}></div>}
           </>
         )
       },
@@ -153,7 +153,7 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
       key: 'my-profile',
       url: '/home/my-profile'
     }
-  ]), [claimableAchievements.length, t]);
+  ]), [hasClaimableAchievements, t]);
 
   const selectedTab = useMemo((): string => {
     const isHomePath = pathname.includes('/home');
@@ -184,8 +184,8 @@ const Component = ({ backgroundStyle = 'style-1', children, className, headerIco
   }, [onTabSelected, selectedTab]);
 
   useEffect(() => {
-    const sub1 = apiSdk.subscribeClaimableAchievements().subscribe((achievements: Achievement[]) => {
-      setClaimableAchievements(achievements);
+    const sub1 = apiSdk.subscribeClaimableAchievementSubject().subscribe((claimableAchievement: ClaimableAchievement) => {
+      setHasClaimableAchievements(claimableAchievement.achievement);
     });
 
     return () => {
