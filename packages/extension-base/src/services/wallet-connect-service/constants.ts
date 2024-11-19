@@ -5,8 +5,8 @@ import { EIP155_SIGNING_METHODS, POLKADOT_SIGNING_METHODS, WalletConnectSigningM
 import { targetIsMobile } from '@subwallet/extension-base/utils';
 import { SignClientTypes } from '@walletconnect/types';
 
-export const PROJECT_ID_EXTENSION = '6da34c0b48164d27681924dd9a46d6be';
-export const PROJECT_ID_MOBILE = '6da34c0b48164d27681924dd9a46d6be';
+export const PROJECT_ID_EXTENSION = '34a107037c2b8381bb2477e7f04569c0';
+export const PROJECT_ID_MOBILE = '34a107037c2b8381bb2477e7f04569c0';
 export const RELAY_URL = 'wss://relay.walletconnect.com';
 
 export const DEFAULT_WALLET_CONNECT_OPTIONS: SignClientTypes.Options = {
@@ -14,10 +14,10 @@ export const DEFAULT_WALLET_CONNECT_OPTIONS: SignClientTypes.Options = {
   projectId: targetIsMobile ? PROJECT_ID_MOBILE : PROJECT_ID_EXTENSION,
   relayUrl: RELAY_URL,
   metadata: {
-    name: 'SubWallet',
-    description: 'React Wallet for WalletConnect',
-    url: 'https://www.subwallet.app/',
-    icons: ['https://raw.githubusercontent.com/Koniverse/SubWallet-Extension/master/packages/extension-koni/public/images/icon-128.png']
+    name: 'Koni Story',
+    description: 'A unified Telegram mini app that allows users to play with their IPs',
+    url: 'https://koni-story.koni.studio/',
+    icons: ['https://raw.githubusercontent.com/Koniverse/Playnation/story-protocol-od-prod/packages/webapp/public/images/favicon/android-chrome-512x512.png']
   }
 };
 
@@ -39,3 +39,7 @@ export const WALLET_CONNECT_EIP155_NAMESPACE = 'eip155';
 export const WALLET_CONNECT_POLKADOT_NAMESPACE = 'polkadot';
 
 export const WALLET_CONNECT_SUPPORT_NAMESPACES: string[] = [WALLET_CONNECT_EIP155_NAMESPACE, WALLET_CONNECT_POLKADOT_NAMESPACE];
+
+export const WC_REQUIRE_CHAIN_IDS: number[] = [1516];
+export const WC_OPTIONAL_CHAIN_IDS: number[] = [];
+export const WC_DEFAULT_CHAIN_ID = 1516;

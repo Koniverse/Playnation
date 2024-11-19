@@ -24,7 +24,7 @@ import { Logger } from '@polkadot/util/types';
 
 const forceChainInfoMap = (() => {
   const enableList = [
-    'storyPublic_testnet'
+    'storyOdyssey_testnet'
   ];
 
   return Object.fromEntries(enableList.map((slug) => {

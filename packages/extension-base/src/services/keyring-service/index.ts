@@ -26,6 +26,7 @@ export class KeyringService {
   private injected: boolean;
   private usingCustomPassword = false;
   private checkUsingCustomPassword = createPromiseHandler<boolean>();
+  private currentWCAddress = '';
 
   readonly keyringStateSubject = new BehaviorSubject<KeyringState>({
     isReady: false,
@@ -202,6 +203,31 @@ export class KeyringService {
   }
 
   /* Inject */
+
+  /* Wallet Connect */
+
+  public updateWalletConnectAddress (address: string, topic = '') {
+    if (address === '') {
+      if (this.currentWCAddress) {
+        keyring.removeInjects([this.currentWCAddress]);
+      }
+    } else {
+      if (this.currentWCAddress && this.currentWCAddress !== address) {
+        keyring.removeInjects([this.currentWCAddress]);
+      }
+
+      this.currentWCAddress = address;
+
+      keyring.addInjects([{
+        address,
+        type: 'ethereum',
+        meta: {
+          name: 'Wallet Connect',
+          wcTopic: topic
+        }
+      }]);
+    }
+  }
 
   /* Reset */
   async resetWallet (resetAll: boolean) {

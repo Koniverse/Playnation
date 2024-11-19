@@ -90,7 +90,8 @@ export interface AppSettings extends LocalUiSettings, UiSettings, Omit<SettingsS
 }
 
 export interface AccountState extends AccountsContext, KeyringState, AddressBookState, BaseReduxStore {
-  currentAccount: AccountJson | null
+  currentAccount: AccountJson | null,
+  wcAccount: AccountJson | null,
   isAllAccount: boolean
 }
 
@@ -182,6 +183,7 @@ export interface ChainNominationPoolParams {
 
 export interface WalletConnectStore extends BaseReduxStore {
   sessions: Record<string, SessionTypes.Struct>;
+  projectId: string;
 }
 
 export interface MantaPayStore {

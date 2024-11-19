@@ -591,6 +591,103 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
 
     '.ant-network-item.ant-network-item .ant-network-item-name': {
       color: token.colorTextDark2
+    },
+
+    '.confirm-modal-rework': {
+      '.ant-sw-modal-confirm-btns': {
+        flexDirection: 'row',
+
+        '.ant-btn': {
+          flex: 1
+        }
+      }
+    },
+
+    '.page-icon-overide': {
+      '.ant-page-icon': {
+        backgroundColor: '#fff',
+
+        ':before': {
+          display: 'none'
+        }
+      }
+    },
+
+    '.modal-resize-content': {
+      '.ant-sw-modal-confirm-body': {
+        margin: '0 -8px'
+      },
+
+      '.ant-sw-modal-confirm-content': {
+        marginTop: '0 !important',
+        padding: '0 !important',
+        width: '100%'
+      }
+    },
+
+    '.modal-revert-header': {
+      '.ant-sw-header-container-center': {
+        flexDirection: 'row-reverse',
+
+        '.ant-sw-header-left-part': {
+          marginRight: token.sizeXS,
+          marginLeft: 0
+        }
+      }
+    },
+
+    '.ant-sw-modal.general-confirmation-modal': {
+      padding: 0,
+      maxHeight: '100%',
+      marginBottom: 0,
+      backgroundColor: 'transparent',
+      justifyContent: 'flex-end',
+
+      '.ant-sw-modal-confirm-body': {
+        background: extendToken.colorBgGradient,
+        borderRadius: 24,
+        padding: `${token.paddingXL}px ${token.paddingMD}px`,
+
+        '.ant-sw-modal-confirm-content': {
+          padding: 0,
+          margin: 0
+        },
+
+        '.__icon-modal': {
+          borderRadius: '50%',
+          padding: token.paddingLG - 2,
+          display: 'flex',
+          justifyContent: 'center',
+          backgroundColor: token.colorWhite
+        },
+
+        '.__description-modal': {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: token.size
+        },
+
+        '.__title-modal': {
+          fontSize: token.fontSizeHeading5,
+          lineHeight: token.lineHeightHeading5,
+          color: token.colorText,
+          fontWeight: 600
+        },
+
+        '.__sub-title-modal': {
+          fontSize: token.fontSizeHeading6,
+          lineHeight: token.lineHeightHeading6,
+          fontWeight: 500,
+          color: token.colorTextDark2
+        }
+      },
+      '.ant-sw-modal-confirm-btns': {
+        flexDirection: 'row',
+
+        '.ant-btn': {
+          flex: 1
+        }
+      }
     }
   });
 });

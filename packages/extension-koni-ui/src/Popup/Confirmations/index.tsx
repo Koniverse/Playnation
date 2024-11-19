@@ -240,6 +240,8 @@ const Component = function ({ className }: Props) {
           return t('Token approve');
         case ExtrinsicType.SWAP:
           return t('Swap confirmation');
+        case ExtrinsicType.MINT_NFT:
+          return t('Mint NFT confirmation');
         case ExtrinsicType.CROWDLOAN:
         case ExtrinsicType.EVM_EXECUTE:
         case ExtrinsicType.UNKNOWN:

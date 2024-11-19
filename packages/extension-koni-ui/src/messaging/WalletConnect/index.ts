@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { RequestApproveConnectWalletSession, RequestApproveWalletConnectNotSupport, RequestConnectWalletConnect, RequestRejectConnectWalletSession, RequestRejectWalletConnectNotSupport } from '@subwallet/extension-base/background/KoniTypes';
+import { RequestWalletConnectCancelSessionPromise, RequestWalletConnectGetSessionPromise, RequestWCSendTransactionRequest, RequestWCSignMessageRequest, ResponseWalletConnectCancelSessionPromise, ResponseWalletConnectCreateSession, ResponseWalletConnectGetSessionPromise, ResponseWCSendTransactionRequest, ResponseWCSignMessageRequest } from '@subwallet/extension-base/types';
 import { sendMessage } from '@subwallet/extension-koni-ui/messaging';
 
 export async function addConnection (request: RequestConnectWalletConnect): Promise<boolean> {
-  return sendMessage('pri(walletConnect.connect)', request);
+  return sendMessage('pri(walletConnect.session.connect)', request);
 }
 
 export async function approveWalletConnectSession (request: RequestApproveConnectWalletSession): Promise<boolean> {
@@ -26,4 +27,24 @@ export async function approveWalletConnectNotSupport (request: RequestApproveWal
 
 export async function rejectWalletConnectNotSupport (request: RequestRejectWalletConnectNotSupport): Promise<boolean> {
   return sendMessage('pri(walletConnect.notSupport.reject)', request);
+}
+
+export async function wcSessionCreate (): Promise<ResponseWalletConnectCreateSession> {
+  return sendMessage('pri(walletConnect.session.create)', null);
+}
+
+export async function wcGetSessionPromise (req: RequestWalletConnectGetSessionPromise): Promise<ResponseWalletConnectGetSessionPromise> {
+  return sendMessage('pri(walletConnect.session.promise)', req);
+}
+
+export async function wcCancelSessionPromise (req: RequestWalletConnectCancelSessionPromise): Promise<ResponseWalletConnectCancelSessionPromise> {
+  return sendMessage('pri(walletConnect.session.cancel)', req);
+}
+
+export async function wcSignMessageRequest (req: RequestWCSignMessageRequest): Promise<ResponseWCSignMessageRequest> {
+  return sendMessage('pri(walletConnect.requests.evm.sign.message)', req);
+}
+
+export async function wcSendTransactionRequest (req: RequestWCSendTransactionRequest): Promise<ResponseWCSendTransactionRequest> {
+  return sendMessage('pri(walletConnect.requests.evm.send.transaction)', req);
 }

@@ -4,9 +4,9 @@
 import { InGameItem } from '@playnation/game-sdk';
 import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
-import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
+import { createPromiseHandler, detectTranslate, wait } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, IAirdropNftMinting, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -16,6 +16,7 @@ import { BehaviorSubject } from 'rxjs';
 
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
+export const STORY_BADGE_HOST = process.env.STORY_BADGE_HOST || 'http://localhost:3000';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
 
@@ -30,7 +31,8 @@ const CACHE_KEYS = {
   energyConfig: 'data--energy-config-cache',
   rankInfoMap: 'data--rank-info-map-cache',
   leaderboardConfigSubject: 'data--leaderboard-config-list-cache',
-  airdropCampaignList: 'data--airdrop-campaign-list-cache'
+  airdropCampaignList: 'data--airdrop-campaign-list-cache',
+  airdropNftList: 'data--airdrop-nft-list-cache'
 };
 
 function parseCache<T> (key: string): T | undefined {
@@ -65,6 +67,7 @@ export class BookaSdk {
   private energyConfigSubject = new BehaviorSubject<EnergyConfig | undefined>(undefined);
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
+  private airdropNftMintSubject = new BehaviorSubject<IAirdropNftMinting[]>([]);
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
   private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
 
@@ -83,6 +86,7 @@ export class BookaSdk {
       const game = parseCache<Game[]>(CACHE_KEYS.gameList);
       const energyConfig = parseCache<EnergyConfig>(CACHE_KEYS.energyConfig);
       const airdropCampaignList = parseCache<AirdropCampaign[]>(CACHE_KEYS.airdropCampaignList);
+      const airdropNftMintList = parseCache<IAirdropNftMinting[]>(CACHE_KEYS.airdropNftList);
       const rankInfoMap = parseCache<Record<AccountRankType, RankInfo>>(CACHE_KEYS.rankInfoMap);
       const leaderboardConfigSubject = parseCache<Record<string, object>>(CACHE_KEYS.leaderboardConfigSubject);
 
@@ -93,6 +97,7 @@ export class BookaSdk {
       energyConfig && this.energyConfigSubject.next(energyConfig);
       rankInfoMap && this.rankInfoSubject.next(rankInfoMap);
       airdropCampaignList && this.airdropCampaignSubject.next(airdropCampaignList);
+      airdropNftMintList && this.airdropNftMintSubject.next(airdropNftMintList);
       leaderboardConfigSubject && this.leaderboardConfigSubject.next(leaderboardConfigSubject);
     } else {
       console.debug('Clearing cache');
@@ -165,12 +170,16 @@ export class BookaSdk {
     return this.airdropCampaignSubject.value;
   }
 
-  private getRequestHeader () {
+  public get airdropNftMintList () {
+    return this.airdropNftMintSubject.value;
+  }
+
+  private getRequestHeader (needAuthorize = true) {
     const header: Record<string, string> = {
       'Content-Type': 'application/json'
     };
 
-    if (this.account) {
+    if (this.account && needAuthorize) {
       header.Authorization = `Bearer ${this.account.token}`;
     }
 
@@ -190,10 +199,10 @@ export class BookaSdk {
     }
   }
 
-  private async postRequest<T> (url: string, body: any) {
+  private async postRequest<T> (url: string, body: any, needAuthorize = true) {
     const response = await fetch(url, {
       method: 'POST',
-      headers: this.getRequestHeader(),
+      headers: this.getRequestHeader(needAuthorize),
       body: JSON.stringify(body)
     });
 
@@ -347,8 +356,8 @@ export class BookaSdk {
     return taskHistoryCheck;
   }
 
-  async finishTask (taskId: number, extrinsicHash: string, network: string) {
-    const data = await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId, extrinsicHash, network });
+  async finishTask (taskId: number, payload: Record<string, unknown>) {
+    const data = await this.postRequest(`${GAME_API_HOST}/api/task/submit`, { taskId, ...payload });
 
     await this.fetchTaskCategoryList();
 
@@ -440,6 +449,12 @@ export class BookaSdk {
     const linkShare = `${url}?startApp=${this.account?.info.inviteCode || 'booka'}`;
 
     return `http://x.com/share?${contentShare}url=${linkShare}`;
+  }
+
+  async getSignatureMintNft (address: string) {
+    const data = await this.postRequest(`${GAME_API_HOST}/api/mint-nft/create-signature`, { address });
+
+    return data as { signature: string, validate: boolean };
   }
 
   async fetchReferalList () {
@@ -545,7 +560,8 @@ export class BookaSdk {
           this.fetchTaskCategoryList(),
           this.fetchTaskList(),
           this.fetchLeaderboardConfigList(),
-          this.fetchAirdropCampaign()
+          this.fetchAirdropCampaign(),
+          this.fetchNftAirdrop()
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
           // this.fetchGameItemInGameList()
@@ -901,6 +917,101 @@ export class BookaSdk {
 
   subscribeAirdropCampaign () {
     return this.airdropCampaignSubject;
+  }
+
+  subscribeAirdropNftMint () {
+    return this.airdropNftMintSubject;
+  }
+
+  // airdrop history
+  async fetchNftAirdrop () {
+    const { promise, resolve } = createPromiseHandler<void>();
+
+    await wait(1000);
+    const currentDate = new Date();
+
+    const eligibilityList = [
+      {
+        id: 1,
+        name: 'Eligibility 1',
+        type: 'type 1',
+        start: new Date((new Date()).setDate(currentDate.getDate() + 1)),
+        end: new Date((new Date()).setDate(currentDate.getDate() + 10)),
+        boxCount: 10,
+        note: 'note 1'
+      },
+      {
+        id: 2,
+        name: 'Eligibility 2',
+        type: 'type 2',
+        start: new Date((new Date()).setDate(currentDate.getDate() + 1)),
+        end: new Date((new Date()).setDate(currentDate.getDate() + 10)),
+        boxCount: 10,
+        note: 'note 2'
+      },
+      {
+        id: 3,
+        name: 'Eligibility 3',
+        type: 'type 3',
+        start: new Date((new Date()).setDate(currentDate.getDate() + 1)),
+        end: new Date((new Date()).setDate(currentDate.getDate() + 10)),
+        boxCount: 10,
+        note: 'note 3'
+      },
+      {
+        id: 4,
+        name: 'Eligibility 4',
+        type: 'type 4',
+        start: new Date((new Date()).setDate(currentDate.getDate() + 1)),
+        end: new Date((new Date()).setDate(currentDate.getDate() + 10)),
+        boxCount: 10,
+        note: 'note 4'
+      }
+    ];
+
+    this.airdropNftMintSubject.next([{
+      id: 1,
+      name: 'Koni Story',
+      icon: '/images/default-nft-logo.png',
+      banner: '',
+      start_snapshot: new Date((new Date()).setDate(currentDate.getDate() + 1)),
+      end_snapshot: new Date((new Date()).setDate(currentDate.getDate() + 10)),
+      start_mint: new Date(),
+      end_mint: new Date((new Date()).setMonth(currentDate.getMonth() + 2)),
+      network: 'Polkadot',
+      total_badges: 500,
+      symbol: 'DOT',
+      // decimal: number;
+      // method: string;
+      // raffle_count: number;
+      start: currentDate,
+      end: new Date(new Date((new Date()).setMonth(currentDate.getMonth() + 2)).setDate(currentDate.getDate() + 1)),
+      conditionDescription: '',
+      description: 'asdasdsadasddajsggdhasgdhjabsdhasbdhasdsad',
+      shortDescription: 'kkkkkkkkkkkkkkkkkkkk',
+      // tokenDistributions: JSON;
+      // npsDistributions: JSON;
+      // share: AirdropCampaignShare;
+      token_slug: 'DOT',
+      status: 'active',
+      // createdAt: Date;
+      // updatedAt: Date;
+      eligibilityList: eligibilityList,
+      eligibilityIds: [1]
+    }]);
+
+    resolve();
+
+    return promise;
+  }
+
+  async fetchStoryBadgeEligibility (address: string) {
+    const data = await this.postRequest<boolean>(`${GAME_API_HOST}/api/mint-nft/eligible`, { address });
+
+    console.log(data);
+
+    // TODO: Implement later
+    return true;
   }
 
   // Singleton

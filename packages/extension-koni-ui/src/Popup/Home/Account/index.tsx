@@ -1,12 +1,10 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
 import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
 import InviteCTA from '@subwallet/extension-koni-ui/components/Invite/InviteCTA';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { showAccountAddress } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -23,8 +21,7 @@ const apiSDK = BookaSdk.instance;
 
 const Component: React.FC<Props> = (props: Props) => {
   const { className } = props;
-  const accounts = useSelector((state: RootState) => state.accountState.accounts);
-  const accountJson = accounts.find((account) => account.address !== ALL_ACCOUNT_KEY);
+  const { wcAccount } = useSelector((state: RootState) => state.accountState);
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
   const notify = useNotification();
   const { t } = useTranslation();
@@ -32,11 +29,11 @@ const Component: React.FC<Props> = (props: Props) => {
   useSetCurrentPage('/home/account');
 
   const onCopyAddress = useCallback(() => {
-    copyToClipboard(accountJson?.address || '');
+    copyToClipboard(wcAccount?.address || '');
     notify({
       message: t('Copied to clipboard')
     });
-  }, [accountJson?.address, notify, t]);
+  }, [wcAccount?.address, notify, t]);
 
   const currentPoint = account?.attributes.accumulatePoint || 0;
 
@@ -61,10 +58,10 @@ const Component: React.FC<Props> = (props: Props) => {
           size={7}
         />
 
-        <div className='account-name'>{accountJson?.name}</div>
-        {showAccountAddress && <div className='account-address-wrapper'>
+        <div className='account-name'>{account?.info.telegramUsername}</div>
+        {wcAccount && <div className='account-address-wrapper'>
           <div className='account-address'>
-            ({accountJson?.address ? toShort(accountJson?.address, 12, 5) : ''})
+            ({toShort(wcAccount.address, 12, 5)})
           </div>
 
           <div className='account-address-copy-button-wrapper'>

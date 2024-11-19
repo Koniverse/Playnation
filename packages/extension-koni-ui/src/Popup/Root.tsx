@@ -10,6 +10,7 @@ import { DEFAULT_HOMEPAGE, TRANSACTION_STORAGES } from '@subwallet/extension-kon
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { SecurityContextProvider } from '@subwallet/extension-koni-ui/contexts/SecurityContext';
+import { WalletConnectContextProvider } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { usePredefinedModal, WalletModalContextProvider } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useSubscribeLanguage } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
@@ -86,7 +87,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const notify = useNotification();
   const [rootLoading, setRootLoading] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const initDataRef = useRef<Promise<boolean>>(dataContext.awaitStores(['accountState', 'chainStore', 'assetRegistry', 'requestState', 'settings', 'mantaPay']));
+  const initDataRef = useRef<Promise<boolean>>(dataContext.awaitStores(['accountState', 'chainStore', 'assetRegistry', 'requestState', 'settings', 'mantaPay', 'walletConnect']));
   // const currentPage = useGetCurrentPage();
   const firstRender = useRef(true);
 

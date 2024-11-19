@@ -3,10 +3,12 @@
 
 import BigN from 'bignumber.js';
 import BNEther from 'bn.js';
+import { addHexPrefix } from 'ethereumjs-util';
 import { ethers } from 'ethers';
 import { SignedTransaction } from 'web3-core';
 
 import { hexStripPrefix, numberToHex } from '@polkadot/util';
+import { HexString } from '@polkadot/util/types';
 
 const hexToNumberString = (s: string): string => {
   const temp = parseInt(s, 16);
@@ -90,4 +92,8 @@ export const signatureToHex = (sig: SignedTransaction): string => {
   const hexV = hexStripPrefix(numberToHex(v));
 
   return hexR + hexS + hexV;
+};
+
+export const ethNumberToHex = (value: number | string | BNEther | undefined): HexString | undefined => {
+  return value ? addHexPrefix(anyNumberToBN(value).toString(16)) as HexString : undefined;
 };

@@ -15,6 +15,7 @@ import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 
 import { UnlockModal } from '../components/Modal/UnlockModal';
+import { WalletConnectContextProvider } from './WalletConnectContext';
 
 interface Props {
   children: React.ReactNode;
@@ -24,8 +25,8 @@ export const PREDEFINED_MODAL_NAMES = ['debugger', 'transaction', 'confirmations
 type PredefinedModalName = typeof PREDEFINED_MODAL_NAMES[number];
 
 export interface WalletModalContextType {
-  openLeaderboardModal: (props: LeaderboardModalProps) => void
-  closeLeaderboardModal: VoidFunction
+  openLeaderboardModal: (props: LeaderboardModalProps) => void;
+  closeLeaderboardModal: VoidFunction;
 }
 
 export const WalletModalContext = React.createContext<WalletModalContextType>({
@@ -127,43 +128,46 @@ export const WalletModalContextProvider = ({ children }: Props) => {
 
   // todo: will remove ClaimDappStakingRewardsModal after Astar upgrade to v3
 
-  return <WalletModalContext.Provider value={contextValue}>
-    <div
-      id='popup-container'
-      style={{ zIndex: hasActiveModal ? undefined : -1 }}
-    />
-    {children}
-    <SwModal
-      className={'modal-full'}
-      closable={false}
-      destroyOnClose={true}
-      id={'confirmations'}
-      onCancel={onCloseModal}
-      transitionName={'fade'}
-      wrapClassName={CN({ 'd-none': !hasConfirmations })}
-    >
-      <Confirmations />
-    </SwModal>
-    <CreateAccountModal />
-    <RemindBackupSeedPhraseModal />
-    <ImportAccountModal />
-    <AttachAccountModal />
-    <NewSeedModal />
-    <ImportSeedModal />
-    <DeriveAccountModal />
-    <ClaimDappStakingRewardsModal />
-    <RequestCreatePasswordModal />
-    <RequestCameraAccessModal />
-    <CustomizeModal />
-    <UnlockModal />
-
-    {
-      !!leaderboardModalProps && (
-        <LeaderboardModal
-          {...leaderboardModalProps}
-          onCancel={closeLeaderboardModal}
+  return (
+    <WalletModalContext.Provider value={contextValue}>
+      <WalletConnectContextProvider>
+        <div
+          id='popup-container'
+          style={{ zIndex: hasActiveModal ? undefined : -1 }}
         />
-      )
-    }
-  </WalletModalContext.Provider>;
+        {children}
+        <SwModal
+          className={'modal-full'}
+          closable={false}
+          destroyOnClose={true}
+          id={'confirmations'}
+          onCancel={onCloseModal}
+          transitionName={'fade'}
+          wrapClassName={CN({ 'd-none': !hasConfirmations })}
+        >
+          <Confirmations />
+        </SwModal>
+        <CreateAccountModal />
+        <RemindBackupSeedPhraseModal />
+        <ImportAccountModal />
+        <AttachAccountModal />
+        <NewSeedModal />
+        <ImportSeedModal />
+        <DeriveAccountModal />
+        <ClaimDappStakingRewardsModal />
+        <RequestCreatePasswordModal />
+        <RequestCameraAccessModal />
+        <CustomizeModal />
+        <UnlockModal />
+        {
+          !!leaderboardModalProps && (
+            <LeaderboardModal
+              {...leaderboardModalProps}
+              onCancel={closeLeaderboardModal}
+            />
+          )
+        }
+      </WalletConnectContextProvider>
+    </WalletModalContext.Provider>
+  );
 };

@@ -73,6 +73,7 @@ const getTransactionComponent = (extrinsicType: ExtrinsicType): typeof BaseTrans
       return TokenApproveConfirmation;
     case ExtrinsicType.SWAP:
       return SwapTransactionConfirmation;
+    case ExtrinsicType.MINT_NFT:
     case ExtrinsicType.CROWDLOAN:
     case ExtrinsicType.STAKING_CANCEL_COMPOUNDING:
     case ExtrinsicType.STAKING_COMPOUNDING:

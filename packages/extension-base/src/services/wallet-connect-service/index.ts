@@ -6,14 +6,18 @@ import KoniState from '@subwallet/extension-base/koni/background/handlers/State'
 import RequestService from '@subwallet/extension-base/services/request-service';
 import Eip155RequestHandler from '@subwallet/extension-base/services/wallet-connect-service/handler/Eip155RequestHandler';
 import { SWStorage } from '@subwallet/extension-base/storage';
+import { ResponseWalletConnectCreateSession, SessionConnectStatus } from '@subwallet/extension-base/types';
+import { createPromiseHandler, PromiseHandler, wait } from '@subwallet/extension-base/utils';
+import { getId } from '@subwallet/extension-base/utils/getId';
 import { IKeyValueStorage } from '@walletconnect/keyvaluestorage';
 import SignClient from '@walletconnect/sign-client';
 import { EngineTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import { getInternalError, getSdkError } from '@walletconnect/utils';
 import { BehaviorSubject } from 'rxjs';
+import { TransactionConfig } from 'web3-core';
 
 import PolkadotRequestHandler from './handler/PolkadotRequestHandler';
-import { ALL_WALLET_CONNECT_EVENT, DEFAULT_WALLET_CONNECT_OPTIONS, WALLET_CONNECT_EIP155_NAMESPACE, WALLET_CONNECT_SUPPORTED_METHODS } from './constants';
+import { ALL_WALLET_CONNECT_EVENT, DEFAULT_WALLET_CONNECT_OPTIONS, WALLET_CONNECT_EIP155_NAMESPACE, WALLET_CONNECT_SUPPORTED_METHODS, WC_OPTIONAL_CHAIN_IDS, WC_REQUIRE_CHAIN_IDS } from './constants';
 import { convertConnectRequest, convertNotSupportRequest, isSupportWalletConnectChain } from './helpers';
 import { EIP155_SIGNING_METHODS, POLKADOT_SIGNING_METHODS, ResultApproveWalletConnectSession, WalletConnectSigningMethod } from './types';
 
@@ -55,18 +59,48 @@ export default class WalletConnectService {
 
   #client: SignClient | undefined;
   #option: SignClientTypes.Options;
+  #connectPromises: Record<string, PromiseHandler<SessionConnectStatus>> = {};
+  #currentConnectionId = '';
 
   public readonly sessionSubject: BehaviorSubject<SessionTypes.Struct[]> = new BehaviorSubject<SessionTypes.Struct[]>([]);
+  public readonly projectIdSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   constructor (koniState: KoniState, requestService: RequestService, option: SignClientTypes.Options = DEFAULT_WALLET_CONNECT_OPTIONS) {
     this.#koniState = koniState;
     this.#requestService = requestService;
     option.storage = new WCStorage();
+    delete option.storage; // Focus to use local storage
     this.#option = option;
     this.#polkadotRequestHandler = new PolkadotRequestHandler(this, requestService);
     this.#eip155RequestHandler = new Eip155RequestHandler(this.#koniState, this);
+    this.updateProjectId();
 
-    this.initClient().catch(console.error);
+    this.initClient(true).catch(console.error);
+    this.subscribeSession();
+  }
+
+  private subscribeSession () {
+    this.sessionSubject.subscribe((sessions) => {
+      const len = sessions.length;
+
+      if (len > 0) {
+        // TODO: Filter by controller
+        const session = sessions[len - 1];
+        const topic = session.topic;
+        const currentAccount = session.namespaces[WALLET_CONNECT_EIP155_NAMESPACE].accounts[0];
+        const [,, _currentAddress] = currentAccount.split(':');
+
+        this.#koniState.keyringService.updateWalletConnectAddress(_currentAddress, topic);
+      } else {
+        this.#koniState.keyringService.updateWalletConnectAddress('');
+      }
+
+      console.debug('WalletConnectService sessions', sessions);
+    });
+  }
+
+  private updateProjectId () {
+    this.projectIdSubject.next(this.#option.projectId || '');
   }
 
   private async haveData () {
@@ -94,6 +128,35 @@ export default class WalletConnectService {
 
   public get sessions (): SessionTypes.Struct[] {
     return this.#client?.session.values || [];
+  }
+
+  public get values () {
+    const sessionSubject = this.sessionSubject;
+    const projectIdSubject = this.projectIdSubject;
+
+    return {
+      // TODO: Update handler to update data
+      get session () {
+        return sessionSubject.value;
+      },
+      get projectId () {
+        return projectIdSubject.value;
+      }
+    };
+  }
+
+  public get observables () {
+    const sessionSubject = this.sessionSubject;
+    const projectIdSubject = this.projectIdSubject;
+
+    return {
+      get session () {
+        return sessionSubject.asObservable();
+      },
+      get projectId () {
+        return projectIdSubject.asObservable();
+      }
+    };
   }
 
   #updateSessions () {
@@ -210,6 +273,7 @@ export default class WalletConnectService {
 
   public async changeOption (newOption: Omit<SignClientTypes.Options, 'projectId'>) {
     this.#option = Object.assign({}, this.#option, newOption);
+    this.updateProjectId();
     await this.initClient();
   }
 
@@ -221,6 +285,100 @@ export default class WalletConnectService {
     this.#checkClient();
 
     await this.#client?.pair({ uri });
+  }
+
+  public async createSession (): Promise<ResponseWalletConnectCreateSession> {
+    await this.initClient(true);
+
+    this.#checkClient();
+    const client = this.#client as SignClient;
+
+    if (this.#currentConnectionId) {
+      throw new Error(getInternalError('RESUBSCRIBED').message);
+    }
+
+    const { approval, uri } = await client.connect({
+      requiredNamespaces: {
+        // TODO: UPGRADE IF SCALE
+        [WALLET_CONNECT_EIP155_NAMESPACE]: {
+          methods: methodEVMRequire,
+          events: ['chainChanged', 'accountsChanged'],
+          chains: WC_REQUIRE_CHAIN_IDS.map((chainId) => `${WALLET_CONNECT_EIP155_NAMESPACE}:${chainId}`)
+        }
+      },
+      ...(
+        WC_OPTIONAL_CHAIN_IDS.length
+          ? {
+            optionalNamespaces: {
+              // TODO: UPGRADE IF SCALE
+              [WALLET_CONNECT_EIP155_NAMESPACE]: {
+                methods: methodEVMRequire,
+                events: ['chainChanged', 'accountsChanged'],
+                chains: WC_OPTIONAL_CHAIN_IDS.map((chainId) => `${WALLET_CONNECT_EIP155_NAMESPACE}:${chainId}`)
+              }
+            }
+          }
+          : {}
+      )
+    });
+
+    const generatedId = getId();
+
+    const connectPromise = createPromiseHandler<SessionConnectStatus>();
+
+    this.#connectPromises[generatedId] = connectPromise;
+
+    approval()
+      .then((rs) => {
+        // If cancel, remove session
+        if (this.#connectPromises[generatedId]) {
+          const account = rs.namespaces[WALLET_CONNECT_EIP155_NAMESPACE].accounts[0];
+          const [,, approveAddress] = account.split(':');
+
+          connectPromise.resolve({
+            approveAddress,
+            isDone: true,
+            errorMessage: ''
+          });
+
+          this.#updateSessions();
+        } else {
+          const topic = rs.topic;
+
+          client.disconnect({
+            topic: topic,
+            reason: getSdkError('USER_DISCONNECTED')
+          })
+            .catch(console.error);
+        }
+      })
+      .catch((e: Error) => {
+        connectPromise.resolve({
+          approveAddress: '',
+          isDone: true,
+          errorMessage: e.message
+        });
+      })
+      .finally(() => {
+        this.#currentConnectionId = '';
+      });
+
+    return {
+      uri: uri || '',
+      id: generatedId
+    };
+  }
+
+  public getConnectPromise (id: string) {
+    return this.#connectPromises[id].promise;
+  }
+
+  public cancelConnectPromise (id: string) {
+    const connectPromise = this.#connectPromises[id];
+
+    if (connectPromise) {
+      delete this.#connectPromises[id];
+    }
   }
 
   public async approveSession (result: ResultApproveWalletConnectSession) {
@@ -253,6 +411,13 @@ export default class WalletConnectService {
     this.#checkClient();
 
     await this.#client?.respond(response);
+  }
+
+  public async sendRequest<T> (request: EngineTypes.RequestParams) {
+    this.#checkClient();
+    const client = this.#client as SignClient;
+
+    return await client.request<T>(request);
   }
 
   public async resetWallet (resetAll: boolean) {
@@ -303,12 +468,19 @@ export default class WalletConnectService {
   }
 
   public async disconnect (topic: string) {
-    await this.#client?.disconnect({
-      topic: topic,
-      reason: getSdkError('USER_DISCONNECTED')
-    });
+    try {
+      await this.#client?.disconnect({
+        topic: topic,
+        reason: getSdkError('USER_DISCONNECTED')
+      });
+      await wait(300);
+      this.#updateSessions();
+    } catch (e) {
+      await wait(300);
+      this.#updateSessions();
 
-    this.#updateSessions();
+      throw e;
+    }
   }
 
   private findMethodsMissing (methodRequire: (POLKADOT_SIGNING_METHODS | EIP155_SIGNING_METHODS) [], methods: string[]) {
@@ -320,5 +492,13 @@ export default class WalletConnectService {
 
       return methods;
     }, [] as string[]);
+  }
+
+  public evmSignMessage (topic: string, chainId: number, address: string, method: string, message: unknown) {
+    return this.#eip155RequestHandler.requestSignMessage(topic, chainId, address, method, message);
+  }
+
+  public evmSendTransaction (topic: string, chainId: number, address: string, transaction: TransactionConfig) {
+    return this.#eip155RequestHandler.requestSendTransaction(topic, chainId, address, transaction);
   }
 }
