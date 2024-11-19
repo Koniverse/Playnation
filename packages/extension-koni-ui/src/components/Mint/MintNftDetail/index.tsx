@@ -1,12 +1,13 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { TabGroup } from '@subwallet/extension-koni-ui/components';
+import { ConfirmYourAccountModal, TabGroup } from '@subwallet/extension-koni-ui/components';
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { MintNftDetailAbout, MintNftDetailCondition } from '@subwallet/extension-koni-ui/components/Mint/MintNftDetail/variants';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { CONFIRM_YOUR_ACCOUNT_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useConfirmModal, useDefaultNavigate } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
@@ -15,7 +16,7 @@ import { odysseyMintNft } from '@subwallet/extension-koni-ui/messaging/transacti
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { noop } from '@subwallet/extension-koni-ui/utils';
-import { Button, Icon, SwModalFuncProps } from '@subwallet/react-ui';
+import { Button, Icon, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { ArrowCircleRight, HouseLine, SmileySad } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
@@ -52,6 +53,7 @@ const Component: React.FC<Props> = (props: Props) => {
   const { airdropNftInfo, className, onSuccess } = props;
   const notify = useNotification();
   const { goHome } = useDefaultNavigate();
+  const { activeModal } = useContext(ModalContext);
   const { token } = useTheme() as Theme;
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
   const { t } = useTranslation();
@@ -227,7 +229,11 @@ const Component: React.FC<Props> = (props: Props) => {
         resolve(wcAccount.address);
       } else {
         requireWC()
-          .then(connectWC)
+          .then(() => {
+            return (async () => {
+              return await connectWC(false);
+            })();
+          })
           .then((address) => {
             if (address) {
               resolve(address);
@@ -241,7 +247,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
     getAddress
       .then((address) => {
-        return onMint(address);
+        activeModal(CONFIRM_YOUR_ACCOUNT_MODAL);
       })
       .catch((e: Error) => {
         console.error(e);
@@ -256,7 +262,11 @@ const Component: React.FC<Props> = (props: Props) => {
           }, noop);
         }
       });
-  }, [connectWC, onMint, requireWC, t, wcAccount]);
+  }, [activeModal, connectWC, requireWC, t, wcAccount]);
+
+  const onConfirmAccount = useCallback((address: string) => {
+    onMint(address).catch(console.error);
+  }, [onMint]);
 
   const renderButton = () => {
     return (
@@ -308,41 +318,47 @@ const Component: React.FC<Props> = (props: Props) => {
   };
 
   return (
-    <div className={className}>
-      <div className='body-part'>
-        <div className='tab-group-wrapper'>
-          <TabGroup
-            className={'tab-group'}
-            items={tabGroupItems}
-            onSelect={onSelectTab}
-            selectedItem={selectedTab}
-          />
+    <>
+      <div className={className}>
+        <div className='body-part'>
+          <div className='tab-group-wrapper'>
+            <TabGroup
+              className={'tab-group'}
+              items={tabGroupItems}
+              onSelect={onSelectTab}
+              selectedItem={selectedTab}
+            />
+          </div>
+
+          {
+            selectedTab === TabType.CONDITION && (
+              <MintNftDetailCondition
+                airdropInfo={airdropNftInfo}
+                className={'tab-content'}
+              />
+            )
+          }
+          {
+            selectedTab === TabType.ABOUT && (
+              <MintNftDetailAbout
+                airdropInfo={airdropNftInfo}
+                className={'tab-content'}
+              />
+            )
+          }
         </div>
 
-        {
-          selectedTab === TabType.CONDITION && (
-            <MintNftDetailCondition
-              airdropInfo={airdropNftInfo}
-              className={'tab-content'}
-            />
-          )
-        }
-        {
-          selectedTab === TabType.ABOUT && (
-            <MintNftDetailAbout
-              airdropInfo={airdropNftInfo}
-              className={'tab-content'}
-            />
-          )
-        }
+        <div className='footer-part'>
+          {renderButton()}
+
+        </div>
       </div>
 
-      <div className='footer-part'>
-        {renderButton()}
-
-      </div>
-    </div>
-
+      <ConfirmYourAccountModal
+        address={wcAccount?.address || ''}
+        callback={onConfirmAccount}
+      />
+    </>
   );
 };
 

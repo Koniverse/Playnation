@@ -69,5 +69,6 @@ export const ACCOUNT_ADD_POINT_MODAL = 'account-add-point-modal';
 /* Wallet */
 export const REQUIRE_CONNECT_WALLET_MODAL = 'require-connect-wallet-modal';
 export const CONNECT_WALLET_SUCCESS_MODAL = 'connect-wallet-success-modal';
+export const CONFIRM_YOUR_ACCOUNT_MODAL = 'confirm-your-account-modal';
 export const DISCONNECT_WALLET_CONNECT_MODAL = 'disconnect-wallet-connect-modal';
 export const WALLET_CONNECT_WAITING_SIGNING_MODAL = 'wallet-connect-waiting-signing-modal';
