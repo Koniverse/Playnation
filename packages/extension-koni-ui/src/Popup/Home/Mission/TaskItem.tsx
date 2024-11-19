@@ -275,8 +275,14 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
             return;
           }
 
+          let notifyMessage = error.message;
+
+          if (error.message?.toLowerCase().includes('This address has been used'.toLowerCase())) {
+            notifyMessage = t('Account already linked to another Telegram ID');
+          }
+
           notify({
-            message: error.message,
+            message: notifyMessage,
             type: 'error'
           });
         });
