@@ -148,6 +148,43 @@ const Component: React.FC<Props> = (props: Props) => {
     }
   }), [className, t, token.colorIconHover]);
 
+  const badgeAlreadyMintedProps = useMemo((): Partial<SwModalFuncProps> => ({
+    id: 'badge_already_minted',
+    className: CN('general-confirmation-modal', className),
+    title: t('Failed to mint'),
+    okText: t('Got it'),
+    okCancel: false,
+    content: (
+      <div className={'__description-modal'}>
+        <div className={'__title-modal'}>{t('Oops, your badge is already minted')}</div>
+        <div className={'__sub-title-modal'}>{t('Another Telegram ID has minted a Koni Story badge with this account. Connect to another account and try again')}</div>
+      </div>
+    ),
+    icon: (
+      <div className={'__icon-modal'}>
+        <Icon
+          customSize={'60px'}
+          iconColor={token.colorIconHover}
+          phosphorIcon={SmileySad}
+          size='md'
+          weight={'fill'}
+        />
+      </div>
+    ),
+    closable: true,
+    maskClosable: true,
+    okButtonProps: {
+      icon: (
+        <Icon
+          phosphorIcon={CheckCircle}
+          size='md'
+          weight={'fill'}
+        />
+      ),
+      shape: 'round'
+    }
+  }), [className, t, token.colorIconHover]);
+
   const inSufficientBalanceProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: 'in_sufficient_balance',
     className: CN('general-confirmation-modal', className),
@@ -200,6 +237,7 @@ const Component: React.FC<Props> = (props: Props) => {
   const { handleSimpleConfirmModal: handleIneligibleModal } = useConfirmModal(notifyIneligibleProps);
   const { handleSimpleConfirmModal: handleFailedToMintModal } = useConfirmModal(failedToMintProps);
   const { handleSimpleConfirmModal: handleInSufficientBalanceModal } = useConfirmModal(inSufficientBalanceProps);
+  const { handleSimpleConfirmModal: handleBadgeAlreadyMintedModal } = useConfirmModal(badgeAlreadyMintedProps);
 
   const onSelectTab = useCallback((value: string) => {
     setSelectedTab(value);
@@ -231,30 +269,34 @@ const Component: React.FC<Props> = (props: Props) => {
     try {
       setIsLoading(true);
 
-      const isEligible = await new Promise<boolean>((resolve) => {
-        if (!address) {
-          resolve(false);
-        }
-
-        apiSDK
-          .nftMintingCheckEligible(address)
-          .then((rs) => {
-            resolve(!rs.mintedNft && rs.inWhiteList);
-          })
-          .catch((error: Error) => {
-            console.error('Error fetching eligibility:', error);
-            resolve(false);
-          });
-      });
-
-      if (!isEligible) {
+      const handleIneligible = () => {
         handleIneligibleModal().then(goHome).catch(console.error);
         setIsLoading(false);
+      };
+
+      try {
+        const { inWhiteList, mintedNft } = await apiSDK.nftMintingCheckEligible(address);
+
+        if (!inWhiteList) {
+          handleIneligible();
+
+          return;
+        }
+
+        if (mintedNft) {
+          handleBadgeAlreadyMintedModal().catch(console.error);
+          setIsLoading(false);
+
+          return;
+        }
+      } catch (e) {
+        console.error('Error fetching eligibility:', e);
+        handleIneligible();
 
         return;
       }
 
-      const { signature } = await apiSDK.getSignatureMintNft(address);
+      const { signature } = await apiSDK.nftMintingRequestSignature(address);
 
       const transaction = await odysseyMintNft({ address, chain: 'storyOdyssey_testnet', signature });
 
@@ -279,7 +321,7 @@ const Component: React.FC<Props> = (props: Props) => {
     }
 
     setIsLoading(false);
-  }, [handleIneligibleModal, goHome, handleInSufficientBalanceModal, handleFailedToMintModal, onSuccess, notify]);
+  }, [handleIneligibleModal, goHome, handleBadgeAlreadyMintedModal, handleInSufficientBalanceModal, handleFailedToMintModal, onSuccess, notify]);
 
   const onPreMint = useCallback(() => {
     const getAddress = new Promise<string>((resolve, reject) => {
@@ -377,7 +419,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
   return (
     <>
-      <div className={className}>
+      <div className={CN(className, '-mint-nft-detail')}>
         <div className='body-part'>
           <div className='tab-group-wrapper'>
             <TabGroup
@@ -408,7 +450,6 @@ const Component: React.FC<Props> = (props: Props) => {
 
         <div className='footer-part'>
           {renderButton()}
-
         </div>
       </div>
 
@@ -422,72 +463,74 @@ const Component: React.FC<Props> = (props: Props) => {
 
 const MintNftDetail = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return ({
-    backgroundColor: extendToken.colorBgSecondary1,
-    borderRadius: 20,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    flex: 1,
-    overflow: 'hidden',
-
-    '.ant-sw-screen-layout-body-inner': {
-      paddingLeft: token.paddingXS,
-      paddingRight: token.paddingXS,
+    '&.-mint-nft-detail': {
+      backgroundColor: extendToken.colorBgSecondary1,
+      borderRadius: 20,
       display: 'flex',
-      flexDirection: 'column'
-    },
-
-    '.tab-group-wrapper': {
-      paddingLeft: 6,
-      paddingRight: 6,
-      paddingTop: token.paddingSM,
-      paddingBottom: token.paddingSM
-    },
-
-    '.tab-group': {
-      backgroundColor: 'transparent',
-
-      '.__tab-item': {
-        borderColor: 'transparent'
-      },
-
-      '.__tab-item.-disabled': {
-        opacity: 0.4
-      }
-    },
-
-    '.__link': {
-      color: token.colorSuccess,
-      textDecoration: 'underline'
-    },
-
-    '.tab-content': {
-      flex: 1,
-      overflow: 'auto'
-    },
-
-    '.header-part': {
-      marginBottom: token.margin
-    },
-
-    '.body-part': {
+      flexDirection: 'column',
+      justifyContent: 'space-between',
       flex: 1,
       overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column'
-    },
 
-    '.footer-part': {
-      padding: token.padding,
-
-      '.ant-btn': {
-        height: 48
+      '.ant-sw-screen-layout-body-inner': {
+        paddingLeft: token.paddingXS,
+        paddingRight: token.paddingXS,
+        display: 'flex',
+        flexDirection: 'column'
       },
 
-      '.ant-btn-content-wrapper': {
-        fontSize: token.fontSizeHeading6,
-        lineHeight: token.lineHeightHeading6,
-        weight: 500
+      '.tab-group-wrapper': {
+        paddingLeft: 6,
+        paddingRight: 6,
+        paddingTop: token.paddingSM,
+        paddingBottom: token.paddingSM
+      },
+
+      '.tab-group': {
+        backgroundColor: 'transparent',
+
+        '.__tab-item': {
+          borderColor: 'transparent'
+        },
+
+        '.__tab-item.-disabled': {
+          opacity: 0.4
+        }
+      },
+
+      '.__link': {
+        color: token.colorSuccess,
+        textDecoration: 'underline'
+      },
+
+      '.tab-content': {
+        flex: 1,
+        overflow: 'auto'
+      },
+
+      '.header-part': {
+        marginBottom: token.margin
+      },
+
+      '.body-part': {
+        flex: 1,
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column'
+      },
+
+      '.footer-part': {
+        padding: token.padding,
+
+        '.ant-btn': {
+          height: 48
+        },
+
+        '.ant-btn-content-wrapper': {
+          fontSize: token.fontSizeHeading6,
+          lineHeight: token.lineHeightHeading6,
+          weight: 500
+        }
       }
     }
   });
