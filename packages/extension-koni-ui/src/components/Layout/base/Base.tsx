@@ -14,7 +14,6 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import useNotification from '../../../hooks/common/useNotification';
 import SelectAccount from '../parts/SelectAccount';
 
 export interface LayoutBaseProps extends Omit<
@@ -37,7 +36,6 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const { language } = useSelector((state) => state.settings);
-  const notify = useNotification();
 
   const tabBarItems = useMemo((): TabItemType[] => ([
     // {
@@ -186,17 +184,9 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
 
   const onSelectTab = useCallback(
     (item: TabItemType) => () => {
-      if (item.key === 'mint') {
-        notify({
-          message: 'Coming soon!'
-        });
-
-        return;
-      }
-
       navigate(item.url);
     },
-    [navigate, notify]
+    [navigate]
   );
 
   const defaultOnBack = useCallback(() => {

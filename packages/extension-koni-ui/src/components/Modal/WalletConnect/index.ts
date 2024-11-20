@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './ConnectWalletSuccessModal';
+export * from './ConfirmYourAccountModal';
 export * from './DisconnectWalletConnectModalContent';
 export * from './RequireConnectWalletModalContent';
 export * from './WalletConnectWaitingSigningModal';

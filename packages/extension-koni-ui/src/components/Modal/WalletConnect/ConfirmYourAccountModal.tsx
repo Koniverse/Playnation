@@ -1,12 +1,12 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { CONNECT_WALLET_SUCCESS_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { CONFIRM_YOUR_ACCOUNT_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Field, Icon, ModalContext, PageIcon, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { ArrowCircleRight, CheckCircle } from 'phosphor-react';
+import { CheckCircle, XCircle } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled, { useTheme } from 'styled-components';
@@ -16,7 +16,7 @@ interface Props extends ThemeProps {
   callback: (address: string) => void;
 }
 
-const modalId = CONNECT_WALLET_SUCCESS_MODAL;
+const modalId = CONFIRM_YOUR_ACCOUNT_MODAL;
 
 function Component (props: Props): React.ReactElement<Props> {
   const { address, callback, className = '' } = props;
@@ -28,6 +28,10 @@ function Component (props: Props): React.ReactElement<Props> {
 
   const onClose = useCallback(() => {
     inactiveModal(modalId);
+  }, [inactiveModal]);
+
+  const onOK = useCallback(() => {
+    inactiveModal(modalId);
     callback(address);
   }, [address, callback, inactiveModal]);
 
@@ -38,20 +42,36 @@ function Component (props: Props): React.ReactElement<Props> {
           block={true}
           icon={
             <Icon
-              phosphorIcon={ArrowCircleRight}
+              phosphorIcon={XCircle}
               size='sm'
               weight='fill'
             />
           }
           onClick={onClose}
+          schema={'secondary'}
           shape={'round'}
           size={'sm'}
         >
-          {t('Continue')}
+          {t('Cancel')}
+        </Button>
+        <Button
+          block={true}
+          icon={
+            <Icon
+              phosphorIcon={CheckCircle}
+              size='sm'
+              weight='fill'
+            />
+          }
+          onClick={onOK}
+          shape={'round'}
+          size={'sm'}
+        >
+          {t('Confirm')}
         </Button>
       </>
     );
-  }, [onClose, t]);
+  }, [onClose, onOK, t]);
 
   return (
     <SwModal
@@ -60,7 +80,7 @@ function Component (props: Props): React.ReactElement<Props> {
       id={modalId}
       maskClosable={true}
       onCancel={onClose}
-      title={t('Success')}
+      title={t('Confirm your account')}
     >
       <div className='__content-area'>
         <div className='page-icon-overide'>
@@ -73,7 +93,7 @@ function Component (props: Props): React.ReactElement<Props> {
           />
         </div>
         <div className='__congratulation-text'>
-          {t("You've successfully connected your wallet to Koni Story")}
+          {t('One account can only be linked with one Telegram ID to mint one badge. Do you want to use this account to mint?')}
         </div>
         <Field
           className={'__address-field'}
@@ -92,7 +112,7 @@ function Component (props: Props): React.ReactElement<Props> {
   );
 }
 
-export const ConnectWalletSuccessModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
+export const ConfirmYourAccountModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
     '.ant-sw-modal-body': {
       paddingLeft: token.paddingXS,

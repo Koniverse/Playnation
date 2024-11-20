@@ -27,7 +27,7 @@ interface ModalCtrlState {
 type SuccessCallback = (address: string) => void;
 
 export interface WalletConnectContextType {
-  connectWC: () => Promise<string>;
+  connectWC: (showSuccessModal?: boolean) => Promise<string>;
   disconnectWC: (wcAccount: AccountJson) => (() => Promise<void>);
   requireWC: () => Promise<void>;
   waitingSigningModal: {
@@ -138,7 +138,7 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
   const { handleSimpleConfirmModal: handleDisconnectModal } = useConfirmModal(disconnectModalProps);
   const { handleSimpleConfirmModal: handleRequireModal } = useConfirmModal(requireAccountModalProps);
 
-  const connectWC = useCallback(async (): Promise<string> => {
+  const connectWC = useCallback(async (showSuccessModal = true): Promise<string> => {
     if (!wcModal) {
       setOnSuccessCb(() => {
         return noop;
@@ -184,7 +184,12 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
             // Connected with wallet
             console.log('Connected with wallet', data.approveAddress);
             wcModal.closeModal();
-            activeModal(connectSuccessModal);
+
+            if (showSuccessModal) {
+              activeModal(connectSuccessModal);
+            } else {
+              resolve(data.approveAddress);
+            }
           } else {
             // Wallet connect failed
             console.error('Wallet connect failed', data.errorMessage);
