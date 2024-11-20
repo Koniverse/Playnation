@@ -127,15 +127,46 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
       setTaskLoading(true);
       let res: SWTransactionResponse | null = null;
       const payload: Record<string, unknown> = {};
-      const networkKey = task.network || '';
+      const networkKey = task.network || 'storyOdyssey_testnet';
       const isNftTask = !!task.metadata?.contractAddress;
 
       payload.networkKey = networkKey;
 
+      const getWcAddress = async (): Promise<string | null> => {
+        if (wcAccount) {
+          return wcAccount.address;
+        } else {
+          try {
+            await requireWC();
+
+            return await connectWC();
+          } catch (e) {
+            const error = e as Error;
+
+            setTaskLoading(false);
+
+            if (error.message?.toLowerCase().includes('Unsupported chains'.toLowerCase())) {
+              telegramConnector.showPopup({
+                message: t('Your chosen wallet hasn’t supported Story Odyssey Testnet. Add network to your wallet or change to another wallet'),
+                buttons: [{ type: 'ok', text: t('Got it') }]
+              }, noop);
+            }
+
+            return null;
+          }
+        }
+      };
+
       if (onChainType) {
+        const wcAddress = await getWcAddress();
+
+        if (!wcAddress) {
+          return;
+        }
+
         const now = new Date();
         const date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-        const data = JSON.stringify({ address, type: onChainType, date });
+        const data = JSON.stringify({ address: wcAddress, type: onChainType, date });
 
         const checkCompleted = await apiSDK.completeTask(taskId);
 
@@ -160,7 +191,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
           }
         }
 
-        res = await actionTaskOnChain(onChainType, networkKey, address, data);
+        res = await actionTaskOnChain(onChainType, networkKey, wcAddress, data);
 
         if ((res && res.errors.length > 0) || !res) {
           setTaskLoading(false);
@@ -169,7 +200,6 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
           if (res && res.errors.length > 0) {
             const error = res?.errors[0] || {};
 
-            // @ts-ignore
             message = error?.message || '';
           }
 
@@ -187,47 +217,10 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         payload.extrinsicHash = res.extrinsicHash || '';
       }
 
-      let shareLeaderboard: ShareLeaderboard | null = null;
-
-      if (task.share_leaderboard) {
-        try {
-          shareLeaderboard = JSON.parse(task.share_leaderboard) as ShareLeaderboard;
-        } catch (e) {
-          console.error('shareLeaderboard', e);
-        }
-      }
-
       if (isNftTask) {
-        let address: string;
+        const wcAddress = await getWcAddress();
 
-        if (wcAccount) {
-          address = wcAccount.address;
-        } else {
-          try {
-            await requireWC();
-            address = await connectWC();
-          } catch (e) {
-            const error = e as Error;
-
-            setTaskLoading(false);
-
-            if (error.message?.toLowerCase().includes('Unsupported chains'.toLowerCase())) {
-              telegramConnector.showPopup({
-                message: t('Your chosen wallet hasn’t supported Story Odyssey Testnet. Add network to your wallet or change to another wallet'),
-                buttons: [{
-                  type: 'ok',
-                  text: t('Got it')
-                }]
-              }, noop);
-            }
-
-            return;
-          }
-        }
-
-        if (!address) {
-          setTaskLoading(false);
-
+        if (!wcAddress) {
           return;
         }
 
@@ -237,14 +230,13 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
 
         try {
           const rs = await wcSignMessageRequest({
-            address,
+            address: wcAddress,
             chainId: WC_DEFAULT_CHAIN_ID,
             payload: stringToHex(message),
             method: 'personal_sign'
           });
 
           closeWaiting();
-
           payload.signature = rs.signature;
           payload.address = address;
         } catch (e) {
@@ -305,19 +297,22 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         });
 
       if (!task.airlyftId) {
-        setTimeout(async () => {
-          let urlRedirect = task.url;
+        setTimeout(() => {
+          (async () => {
+            let urlRedirect = task.url;
 
-          if (shareLeaderboard && shareLeaderboard.content) {
-            const startEnv = shareLeaderboard.start_time;
-            const endEnv = shareLeaderboard.end_time;
+            if (task.share_leaderboard) {
+              const shareLeaderboard = JSON.parse(task.share_leaderboard) as ShareLeaderboard;
+              const startEnv = shareLeaderboard.start_time;
+              const endEnv = shareLeaderboard.end_time;
 
-            urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv, shareLeaderboard.content, task.gameId ?? 0, shareLeaderboard.url);
-          }
+              urlRedirect = await apiSDK.getShareTwitterURL(startEnv, endEnv, shareLeaderboard.content, task.gameId ?? 0, shareLeaderboard.url);
+            }
 
-          if (urlRedirect) {
-            telegramConnector.openLink(urlRedirect);
-          }
+            if (urlRedirect) {
+              telegramConnector.openLink(urlRedirect);
+            }
+          })().catch(console.error);
         }, 100);
       }
     })().catch(console.error);

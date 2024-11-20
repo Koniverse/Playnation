@@ -1,4 +1,4 @@
-// [object Object]
+// Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
@@ -17,7 +17,7 @@ export async function sendRemarkWithEvent (address: string, networkKey: string, 
     const sendPromise = remarkWithEvent({
       address,
       networkKey: networkKey,
-      dataRemark: data
+      dataRemark: JSON.stringify(data)
     });
 
     setTimeout(() => {
