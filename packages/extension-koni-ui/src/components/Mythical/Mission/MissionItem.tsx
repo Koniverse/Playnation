@@ -78,7 +78,7 @@ const Component = ({ actionContent, className,
           }
 
           <div className='__point'>
-            +{point}
+            +{Number(point).toLocaleString()}
 
             {
               state === 'CLAIMABLE' && (

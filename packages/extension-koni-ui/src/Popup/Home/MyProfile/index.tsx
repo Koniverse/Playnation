@@ -136,7 +136,7 @@ const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token }
     },
     '.__padding-area': {
       position: 'fixed',
-      zIndex: 5,
+      zIndex: 0,
       height: 21,
       width: '100%',
       bottom: 85,
@@ -170,7 +170,8 @@ const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token }
     },
 
     '.call-to-action': {
-      marginBottom: 12
+      marginBottom: 12,
+      zIndex: 10
     },
 
     '.__link-now-button': {

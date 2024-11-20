@@ -148,6 +148,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         subtitle={'Download NFL Rivals App'}
         title={'Want to score more points?'}
       />
+      <div className={'__padding-area'}></div>
     </div>
   );
 };
@@ -176,7 +177,17 @@ const MissionTemp = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     },
 
     '.call-to-action': {
-      marginBottom: 12
+      marginBottom: 12,
+      zIndex: 10
+    },
+
+    '.__padding-area': {
+      position: 'fixed',
+      zIndex: 1,
+      height: 21,
+      width: '100%',
+      bottom: 85,
+      backgroundColor: '#000'
     }
   };
 });
