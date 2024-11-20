@@ -237,8 +237,10 @@ const Component: React.FC<Props> = (props: Props) => {
         }
 
         apiSDK
-          .fetchStoryBadgeEligibility(address)
-          .then(resolve)
+          .nftMintingCheckEligible(address)
+          .then((rs) => {
+            resolve(!rs.mintedNft && rs.inWhiteList);
+          })
           .catch((error: Error) => {
             console.error('Error fetching eligibility:', error);
             resolve(false);

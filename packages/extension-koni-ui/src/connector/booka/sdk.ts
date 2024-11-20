@@ -6,7 +6,7 @@ import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate, wait } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, IAirdropNftMinting, LeaderboardPerson, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, APIResponse, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, IAirdropNftMinting, LeaderboardPerson, NftMintingEligibility, NftMintingLog, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -1005,13 +1005,22 @@ export class BookaSdk {
     return promise;
   }
 
-  async fetchStoryBadgeEligibility (address: string) {
-    const data = await this.postRequest<boolean>(`${GAME_API_HOST}/api/mint-nft/eligible`, { address });
+  async nftMintingCheckEligible (address: string, campaign = 'default') {
+    const data = await this.postRequest<APIResponse<NftMintingEligibility>>(`${GAME_API_HOST}/api/mint-nft/check-eligible`, { address, campaign });
 
-    console.log(data);
+    return data.data;
+  }
 
-    // TODO: Implement later
-    return true;
+  async nftMintingRequestSignature (address: string, campaign = 'default') {
+    const data = await this.postRequest<APIResponse<NftMintingLog>>(`${GAME_API_HOST}/api/mint-nft/request-signature`, { address, campaign });
+
+    return data.data;
+  }
+
+  async nftMintingStart (campaign = 'default', extrinsicHash?: string) {
+    const data = await this.postRequest<APIResponse<NftMintingLog>>(`${GAME_API_HOST}/api/mint-nft/start-mint`, { campaign, extrinsicHash });
+
+    return data.data;
   }
 
   // Singleton
