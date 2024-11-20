@@ -92,7 +92,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     });
 
     if (rs.error) {
-      Telegram.WebApp.showAlert(rs.error);
+      console.error(rs.error);
     } else if (rs.success) {
       setIsLinked(rs.success);
       setLinkData(rs.data);
@@ -148,7 +148,11 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
             setLinkData(rs.data);
             // Login with different email
           } else {
-            telegramConnector.showAlert(`Please login again with email "${rs.data?.link_email || ''}"`);
+            telegramConnector.showPopup({
+              message: `Wrong email. Link Mythical account with email ${rs.data?.link_email || ''} and try again`
+            }, () => {
+              onLogoutMythAccount();
+            });
           }
         } else {
           console.log('tokenData', tokenData);
@@ -156,7 +160,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
         }
       }).catch(console.error);
     }
-  }, [authContext.token, currentAccount?.address, onSubmitMythAccount, tokenData]);
+  }, [authContext.token, currentAccount?.address, onLogoutMythAccount, onSubmitMythAccount, tokenData]);
 
   const authenticationValue: AuthenticationMythContextProps = {
     account,
