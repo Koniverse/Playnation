@@ -423,12 +423,13 @@ const Component: React.FC<Props> = (props: Props) => {
 const MintNftDetail = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return ({
     backgroundColor: extendToken.colorBgSecondary1,
-    marginBottom: token.margin,
     borderRadius: 20,
-    maxHeight: 350,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
+    flex: 1,
+    overflow: 'hidden',
+
     '.ant-sw-screen-layout-body-inner': {
       paddingLeft: token.paddingXS,
       paddingRight: token.paddingXS,

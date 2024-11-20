@@ -6,6 +6,7 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import CN from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
@@ -41,7 +42,11 @@ const Component = ({ className }: Props): React.ReactElement => {
   }
 
   return (
-    <div className={className}>
+    <div className={CN(className, {
+      '-not-minted': !mintSuccess,
+      '-minted': mintSuccess
+    })}
+    >
       <MintNftHeader airdropNftInfo={currentIAirdropNftMinting} />
       {
         mintSuccess
@@ -64,7 +69,16 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     display: 'flex',
     flexDirection: 'column',
     gap: token.sizeSM,
-    padding: `0 ${token.paddingXS}px`
+    padding: `0 ${token.paddingXS}px`,
+    paddingBottom: 24,
+
+    '&.-minted': {
+
+    },
+
+    '&.-not-minted': {
+      height: '100%'
+    }
   };
 });
 

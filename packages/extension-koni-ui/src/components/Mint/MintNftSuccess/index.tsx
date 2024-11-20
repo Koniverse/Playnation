@@ -7,7 +7,6 @@ import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toShort } from '@subwallet/extension-koni-ui/utils';
-import { Image } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React from 'react';
 import { Trans } from 'react-i18next';
@@ -28,8 +27,12 @@ const Component = ({ airdropNftInfo, className }: Props) => {
       <div className={'__mint-nft-success-header'}>
         {t('Yay! You minted {{nft}} badge', { replace: { nft: name } })}
       </div>
-      <div className={CN('__mint-nft-success-content')}>
-        <Image src={icon} />
+      <div className={CN('__mint-badge-wrapper')}>
+        <img
+          alt='badge'
+          className={'__mint-badge-image'}
+          src={icon}
+        />
       </div>
       <div className={'__mint-nft-success-footer'}>
         <Trans
@@ -52,31 +55,61 @@ const Component = ({ airdropNftInfo, className }: Props) => {
 const MintNftSuccessItem = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => ({
   backgroundColor: extendToken.colorBgSecondary1,
   backgroundImage: "url('/images/paper-firework-left.png'), url('/images/paper-firework-right.png')",
-  backgroundPosition: 'calc(16px) calc(16px), calc(100% - 16px) calc(16px)',
+  backgroundPosition: '12px 28px, right 20px top 28px',
   backgroundRepeat: 'no-repeat, no-repeat',
   borderRadius: 20,
-  height: 350,
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
   alignItems: 'center',
-  padding: token.padding,
+  paddingLeft: 32,
+  paddingRight: 32,
+  paddingBottom: 32,
+  paddingTop: 28,
 
   '.__mint-nft-success-header': {
-    maxWidth: 300,
+    paddingLeft: 8,
+    paddingRight: 8,
+    marginBottom: 40,
     fontSize: token.fontSizeHeading4,
     fontFamily: token.fontFamily,
     fontWeight: 600,
     lineHeight: token.lineHeightHeading4,
-    textAlign: 'center'
+    textAlign: 'center',
+    position: 'relative',
+    zIndex: 2
   },
 
-  '.__mint-nft-success-content': {
-    borderRadius: '50%',
-    background: extendToken.colorBgGradient
+  '.__mint-badge-wrapper': {
+    marginBottom: token.size,
+    position: 'relative'
+  },
+
+  '.__mint-badge-wrapper:before': {
+    content: '""',
+    display: 'block',
+    width: 230,
+    height: 230,
+    position: 'absolute',
+    left: '50%',
+    top: '50%',
+    marginLeft: -115,
+    marginTop: -115,
+    zIndex: 1,
+    borderRadius: '100%',
+    backgroundImage: extendToken.colorBgGradient,
+    filter: 'blur(32px)'
+  },
+
+  '.__mint-badge-image': {
+    position: 'relative',
+    zIndex: 2
+
   },
 
   '.__mint-nft-success-footer': {
+    position: 'relative',
+    zIndex: 2,
     textAlign: 'center',
     fontSize: token.fontSizeHeading6,
     color: token.colorTextDark3,
