@@ -1,23 +1,37 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { MythicalWallet } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
+const apiSDK = BookaSdk.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   const { t } = useTranslation();
+  const [mythicalWallet, setMythicalWallet] = React.useState<MythicalWallet>(apiSDK.getMythicalWallet());
+
+  useEffect(() => {
+    const walletSub = apiSDK.subscribeMythicalWallet().subscribe((data) => {
+      setMythicalWallet(data);
+    });
+
+    return () => {
+      walletSub.unsubscribe();
+    };
+  }, []);
 
   return (
     <div className={className}>
       <div className='__info-item'>
         <div className='__info-label'>{t('Your Wallet')}</div>
         <div className='__info-value __wallet-address-wrapper'>
-          <div className='__wallet-address'>XG35NNH7TR</div>
+          <div className='__wallet-address'>${mythicalWallet?.address}</div>
 
           <button className={'__copy-button'}>
             <svg
@@ -39,7 +53,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       <div className='__info-item'>
         <div className='__info-label'>{t('Current Balance')}</div>
         <div className='__info-value __token-value-wrapper'>
-          <span className={'__token-value'}>{toDisplayNumber(7712762)}</span>
+          <span className={'__token-value'}>{toDisplayNumber(mythicalWallet?.balanceInMyth)}</span>
           <span className={'__token-symbol'}>&nbsp;Myth</span>
         </div>
       </div>

@@ -6,7 +6,7 @@ import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, ClaimableAchievement, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, NFLRivalCard, RankInfo, ReferralData, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, ClaimableAchievement, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, MythicalWallet, NFLRivalCard, RankInfo, ReferralData, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -16,6 +16,7 @@ import { BehaviorSubject } from 'rxjs';
 
 export const DEFAULT_INIT_DATA = process.env.DEFAULT_INIT_DATA;
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
+export const MYTHICAL_API_HOST = process.env.MYTHICAL_API_HOST || 'https://nflrivals.client.mythical.dev';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
@@ -80,6 +81,10 @@ export class BookaSdk {
   private dailyRewardAchievementsSubject = new BehaviorSubject<Achievement[]>([]);
   private inviteAchievementsSubject = new BehaviorSubject<Achievement[]>([]);
   private claimableAchievementSubject = new BehaviorSubject<ClaimableAchievement>({});
+  private mythicalWalletSubject = new BehaviorSubject<MythicalWallet>({
+    address: '',
+    balanceInMyth: '0'
+  });
 
   // Special cases
   // Check if the account is banned
@@ -1042,6 +1047,34 @@ export class BookaSdk {
 
   subscribeAirdropCampaign () {
     return this.airdropCampaignSubject;
+  }
+
+  async fetchMythicalBalance (token: string) {
+    const request = await fetch(`${MYTHICAL_API_HOST}/player/wallet-balance`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (request.status === 200 || request.status === 304) {
+      const balance = (await request.json()) as unknown as MythicalWallet;
+
+      this.mythicalWalletSubject.next(balance);
+
+      return balance;
+    } else {
+      return undefined;
+    }
+  }
+
+  getMythicalWallet () {
+    return this.mythicalWalletSubject.value;
+  }
+
+  subscribeMythicalWallet () {
+    return this.mythicalWalletSubject;
   }
 
   // Singleton

@@ -60,7 +60,10 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     //   authContext.logIn();
     // }
 
-    bookaSDK.fetchNFLRivalCardList(authContext.token).catch(console.error);
+    if (authContext.token) {
+      bookaSDK.fetchMythicalBalance(authContext.token).catch(console.error);
+      bookaSDK.fetchNFLRivalCardList(authContext.token).catch(console.error);
+    }
   }, [authContext, authContext.token]);
 
   const onLoginWithMythAccount = useCallback(() => {

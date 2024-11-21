@@ -556,3 +556,8 @@ export interface NFLRivalCard {
   jump: number;
   carry: number;
 }
+
+export interface MythicalWallet {
+  address: string,
+  balanceInMyth: string
+}
