@@ -18,12 +18,14 @@ type Props = ThemeProps & {
 const telegramConnector = TelegramConnector.instance;
 
 function Component ({ airdropInfo, className }: Props) {
+  // @ts-ignore
   const { t } = useTranslation();
 
   const openLink = useCallback((link: string) => {
     telegramConnector.openLink(link);
   }, []);
 
+  // @ts-ignore
   const buttons = useMemo(() => {
     const urlTwitter = '';
     const urlTelegram = '';
@@ -100,27 +102,27 @@ function Component ({ airdropInfo, className }: Props) {
     <div className={CN(className)}>
       <DynamicContent content={airdropInfo.description} />
 
-      <div className='__divider' />
-      <div className='__content-footer'>
-        <div className='__token-info'>
-          <div className='__token-label'>
-            {t('Token')}:
-          </div>
-          {/* <div className='__token-icon'></div> */}
-          <div className='__token-symbol'>
-            {airdropInfo.symbol}
-          </div>
-        </div>
+      {/* <div className='__divider' /> */}
+      {/* <div className='__content-footer'> */}
+      {/*  <div className='__token-info'> */}
+      {/*    <div className='__token-label'> */}
+      {/*      {t('Token')}: */}
+      {/*    </div> */}
+      {/*    /!* <div className='__token-icon'></div> *!/ */}
+      {/*    <div className='__token-symbol'> */}
+      {/*      {airdropInfo.symbol} */}
+      {/*    </div> */}
+      {/*  </div> */}
 
-        <div className='__content-footer-separator' />
+      {/*  <div className='__content-footer-separator' /> */}
 
-        <div className='__social-info'>
-          <div className='__social-label'>
-            {t('Social')}:
-          </div>
-          {buttons}
-        </div>
-      </div>
+      {/*  <div className='__social-info'> */}
+      {/*    <div className='__social-label'> */}
+      {/*      {t('Social')}: */}
+      {/*    </div> */}
+      {/*    {buttons} */}
+      {/*  </div> */}
+      {/* </div> */}
     </div>
   );
 }

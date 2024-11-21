@@ -20,9 +20,9 @@ function Component ({ airdropInfo, className }: Props) {
   const { t } = useTranslation();
 
   const checkEligibility = (eligibilityId: number) => {
-    if (airdropInfo && airdropInfo.eligibilityIds) {
-      return airdropInfo.eligibilityIds.includes(eligibilityId);
-    }
+    // if (airdropInfo && airdropInfo.eligibilityIds) {
+    //   return airdropInfo.eligibilityIds.includes(eligibilityId);
+    // }
 
     return false;
   };
@@ -56,12 +56,16 @@ function Component ({ airdropInfo, className }: Props) {
                   </div>
                 </div>
 
-                <div className='__eligibility-item-note'>
-                  <span className='__eligibility-item-note-label'>{t('Note')}:</span>
-                  <span className='__eligibility-item-note-content'>
-                    {item.note || t('A player can win multiple types of rewards')}
-                  </span>
-                </div>
+                {
+                  !!item.note && (
+                    <div className='__eligibility-item-note'>
+                      <span className='__eligibility-item-note-label'>{t('Note')}:</span>
+                      <span className='__eligibility-item-note-content'>
+                        {item.note || t('A player can win multiple types of rewards')}
+                      </span>
+                    </div>
+                  )
+                }
               </div>
             ))
           }
@@ -120,6 +124,8 @@ const MintNftDetailCondition = styled(Component)<Props>(({ theme: { token } }: P
     },
 
     '.__eligibility-item-date': {
+      fontSize: token.fontSizeSM,
+      lineHeight: token.lineHeightSM,
       display: 'flex',
       gap: token.sizeXXS
     },
