@@ -244,25 +244,27 @@ const Component: React.FC<Props> = (props: Props) => {
   }, []);
 
   const buttonType = (() => {
-    const now = Date.now();
-    const shouldCheck = airdropNftInfo?.start_mint && new Date(airdropNftInfo?.start_mint).getTime() < now;
-    const endCampaign = airdropNftInfo?.end && new Date(airdropNftInfo?.end).getTime() < now;
-    const eligibility = { currentProcess: IAirdropNftMintingProcess.ELIGIBLE };
+    return buttonTypeConst.MINT;
 
-    if (!shouldCheck && !endCampaign) {
-      return buttonTypeConst.COMING_SOON;
-    }
-
-    if (eligibility && eligibility.currentProcess) {
-      switch (eligibility.currentProcess) {
-        case IAirdropNftMintingProcess.END_CAMPAIGN:
-          return buttonTypeConst.END_CAMPAIGN;
-        default:
-          return buttonTypeConst.MINT;
-      }
-    } else {
-      return buttonTypeConst.MINT;
-    }
+    // const now = Date.now();
+    // const shouldCheck = airdropNftInfo?.start_mint && new Date(airdropNftInfo?.start_mint).getTime() < now;
+    // const endCampaign = airdropNftInfo?.end && new Date(airdropNftInfo?.end).getTime() < now;
+    // const eligibility = { currentProcess: IAirdropNftMintingProcess.ELIGIBLE };
+    //
+    // if (!shouldCheck && !endCampaign) {
+    //   return buttonTypeConst.COMING_SOON;
+    // }
+    //
+    // if (eligibility && eligibility.currentProcess) {
+    //   switch (eligibility.currentProcess) {
+    //     case IAirdropNftMintingProcess.END_CAMPAIGN:
+    //       return buttonTypeConst.END_CAMPAIGN;
+    //     default:
+    //       return buttonTypeConst.MINT;
+    //   }
+    // } else {
+    //   return buttonTypeConst.MINT;
+    // }
   })();
 
   const onMint = useCallback(async (address: string) => {
