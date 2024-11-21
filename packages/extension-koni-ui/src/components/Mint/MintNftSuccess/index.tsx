@@ -25,7 +25,7 @@ const Component = ({ airdropNftInfo, className }: Props) => {
   return (
     <div className={CN(className)}>
       <div className={'__mint-nft-success-header'}>
-        {t('Yay! You minted {{nft}} badge', { replace: { nft: name } })}
+        {t('Yay! You minted {{nft}}', { replace: { nft: name } })}
       </div>
       <div className={CN('__mint-badge-wrapper')}>
         <img
