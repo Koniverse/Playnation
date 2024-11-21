@@ -968,13 +968,13 @@ export class BookaSdk {
         id: 1,
         name: 'Top 5000 on General SP Leaderboard',
         start: getUCTPlus7('2024-11-07 07:00'),
-        end: getUCTPlus7('2024-11-21 07:00')
+        end: getUCTPlus7('2024-11-22 07:00')
       },
       {
         id: 2,
         name: 'Hunt at least 5,000 SP',
         start: getUCTPlus7('2024-11-07 07:00'),
-        end: getUCTPlus7('2024-11-21 07:00')
+        end: getUCTPlus7('2024-11-22 07:00')
       }
     ];
 
