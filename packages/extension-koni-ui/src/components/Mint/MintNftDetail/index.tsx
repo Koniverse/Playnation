@@ -44,12 +44,6 @@ const enum buttonTypeConst {
   END_CAMPAIGN = 3
 }
 
-// @ts-ignore
-const enum IAirdropNftMintingProcess {
-  END_CAMPAIGN = 'END_CAMPAIGN',
-  ELIGIBLE = 'ELIGIBLE'
-}
-
 const telegramConnector = TelegramConnector.instance;
 
 const Component: React.FC<Props> = (props: Props) => {
@@ -299,7 +293,14 @@ const Component: React.FC<Props> = (props: Props) => {
         return;
       }
 
-      const { signature } = await apiSDK.nftMintingRequestSignature(address);
+      const { signature, status } = await apiSDK.nftMintingRequestSignature(address);
+
+      if (status === 'success') {
+        setIsLoading(false);
+        onSuccess();
+
+        return;
+      }
 
       const transaction = await odysseyMintNft({ address, chain: 'storyOdyssey_testnet', signature });
 
@@ -311,6 +312,7 @@ const Component: React.FC<Props> = (props: Props) => {
       } else if (transaction.errors.length) {
         handleFailedToMintModal().then(goHome).catch(console.error);
       } else {
+        await apiSDK.nftMintingStart(transaction?.extrinsicHash);
         onSuccess();
       }
 

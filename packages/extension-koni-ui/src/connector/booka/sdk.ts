@@ -1069,13 +1069,19 @@ export class BookaSdk {
     return data.data;
   }
 
+  async nftMintingGetLog (campaign = 'default') {
+    const data = await this.postRequest<APIResponse<NftMintingLog>>(`${GAME_API_HOST}/api/mint-nft/get-mint`, { campaign });
+
+    return data.data;
+  }
+
   async nftMintingRequestSignature (address: string, campaign = 'default') {
     const data = await this.postRequest<APIResponse<NftMintingLog>>(`${GAME_API_HOST}/api/mint-nft/request-signature`, { address, campaign });
 
     return data.data;
   }
 
-  async nftMintingStart (campaign = 'default', extrinsicHash?: string) {
+  async nftMintingStart (extrinsicHash?: string, campaign = 'default') {
     const data = await this.postRequest<APIResponse<NftMintingLog>>(`${GAME_API_HOST}/api/mint-nft/start-mint`, { campaign, extrinsicHash });
 
     return data.data;
