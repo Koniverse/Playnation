@@ -28,6 +28,7 @@ import styled, { useTheme } from 'styled-components';
 type Props = ThemeProps & {
   airdropNftInfo: IAirdropNftMinting,
   onSuccess: VoidFunction;
+  isFetchingNftMintingLog: boolean;
 };
 
 const apiSDK = BookaSdk.instance;
@@ -47,7 +48,7 @@ const enum buttonTypeConst {
 const telegramConnector = TelegramConnector.instance;
 
 const Component: React.FC<Props> = (props: Props) => {
-  const { airdropNftInfo, className, onSuccess } = props;
+  const { airdropNftInfo, className, isFetchingNftMintingLog, onSuccess } = props;
   const notify = useNotification();
   const { goHome } = useDefaultNavigate();
   const { activeModal } = useContext(ModalContext);
@@ -453,9 +454,13 @@ const Component: React.FC<Props> = (props: Props) => {
           }
         </div>
 
-        <div className='footer-part'>
-          {renderButton()}
-        </div>
+        {
+          !isFetchingNftMintingLog && (
+            <div className='footer-part'>
+              {renderButton()}
+            </div>
+          )
+        }
       </div>
 
       <ConfirmYourAccountModal
