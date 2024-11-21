@@ -248,7 +248,7 @@ const Component: React.FC<Props> = (props: Props) => {
       },
       contentTitle: t('Change your wallet account'),
       content: (
-        t('Your Telegram ID is linked to account 0x9F5...e20Ee1ac {{address}}. Connect to this account and try minting again', {
+        t('Your Telegram ID is linked to account {{address}}. Connect to this account and try minting again', {
           replace: {
             address: toShort(address, 5, 8)
           }
@@ -365,6 +365,8 @@ const Component: React.FC<Props> = (props: Props) => {
         handleExistedLinkedAddressModal(address);
 
         setIsLoading(false);
+
+        return;
       }
 
       notify({
