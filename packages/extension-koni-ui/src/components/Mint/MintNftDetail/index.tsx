@@ -10,13 +10,14 @@ import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { CONFIRM_YOUR_ACCOUNT_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
+import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useConfirmModal, useDefaultNavigate } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { odysseyMintNft } from '@subwallet/extension-koni-ui/messaging/transaction/odyssey';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { noop } from '@subwallet/extension-koni-ui/utils';
+import { noop, toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { ArrowCircleRight, CheckCircle, HouseLine, SmileySad } from 'phosphor-react';
@@ -58,6 +59,7 @@ const Component: React.FC<Props> = (props: Props) => {
   const [selectedTab, setSelectedTab] = useState<string>(TabType.CONDITION);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { connectWC, requireWC } = useContext(WalletConnectContext);
+  const { alertModal } = useContext(WalletModalContext);
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
       {
@@ -235,6 +237,32 @@ const Component: React.FC<Props> = (props: Props) => {
   const { handleSimpleConfirmModal: handleInSufficientBalanceModal } = useConfirmModal(inSufficientBalanceProps);
   const { handleSimpleConfirmModal: handleBadgeAlreadyMintedModal } = useConfirmModal(badgeAlreadyMintedProps);
 
+  const handleExistedLinkedAddressModal = useCallback((address: string) => {
+    alertModal.open({
+      className: 'general-confirmation-modal modal-revert-header',
+      title: t('Failed to mint'),
+      iconProps: {
+        phosphorIcon: SmileySad,
+        weight: 'fill'
+
+      },
+      contentTitle: t('Change your wallet account'),
+      content: (
+        t('Your Telegram ID is linked to account 0x9F5...e20Ee1ac {{address}}. Connect to this account and try minting again', {
+          replace: {
+            address: toShort(address, 5, 8)
+          }
+        })
+      ),
+      okButton: {
+        icon: CheckCircle,
+        iconWeight: 'fill',
+        text: t('Got it'),
+        onClick: alertModal.close
+      }
+    });
+  }, [alertModal, t]);
+
   const onSelectTab = useCallback((value: string) => {
     setSelectedTab(value);
   }, []);
@@ -319,15 +347,35 @@ const Component: React.FC<Props> = (props: Props) => {
 
       setIsLoading(false);
     } catch (e) {
+      const error = e as Error;
+
+      if (error.message?.startsWith('Please mint with wallet "')) {
+        const address = (() => {
+          const match = error.message.match(/^Please mint with wallet "([^"]+)"/);
+
+          if (match) {
+            return match[1];
+          }
+
+          console.error('Can not get address of:', error);
+
+          return '';
+        })();
+
+        handleExistedLinkedAddressModal(address);
+
+        setIsLoading(false);
+      }
+
       notify({
-        message: (e as Error).message,
+        message: error.message,
         type: 'error',
         duration: null
       });
     }
 
     setIsLoading(false);
-  }, [handleIneligibleModal, goHome, handleBadgeAlreadyMintedModal, handleInSufficientBalanceModal, handleFailedToMintModal, onSuccess, notify]);
+  }, [handleIneligibleModal, goHome, handleBadgeAlreadyMintedModal, onSuccess, handleInSufficientBalanceModal, handleFailedToMintModal, notify, handleExistedLinkedAddressModal]);
 
   const onPreMint = useCallback(() => {
     const getAddress = new Promise<string>((resolve, reject) => {

@@ -1,13 +1,14 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AttachAccountModal, ClaimDappStakingRewardsModal, CreateAccountModal, DeriveAccountModal, ImportAccountModal, ImportSeedModal, LeaderboardModal, NewSeedModal, RemindBackupSeedPhraseModal, RequestCameraAccessModal, RequestCreatePasswordModal } from '@subwallet/extension-koni-ui/components';
+import { AlertModal, AttachAccountModal, ClaimDappStakingRewardsModal, CreateAccountModal, DeriveAccountModal, ImportAccountModal, ImportSeedModal, LeaderboardModal, NewSeedModal, RemindBackupSeedPhraseModal, RequestCameraAccessModal, RequestCreatePasswordModal } from '@subwallet/extension-koni-ui/components';
 import { LeaderboardModalProps } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardModal';
 import { CustomizeModal } from '@subwallet/extension-koni-ui/components/Modal/Customize/CustomizeModal';
-import { EARNING_INSTRUCTION_MODAL, LEADERBOARD_MODAL } from '@subwallet/extension-koni-ui/constants';
-import { useGetConfig, useSetSessionLatest } from '@subwallet/extension-koni-ui/hooks';
+import { EARNING_INSTRUCTION_MODAL, GLOBAL_ALERT_MODAL, LEADERBOARD_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { useAlert, useGetConfig, useSetSessionLatest } from '@subwallet/extension-koni-ui/hooks';
 import Confirmations from '@subwallet/extension-koni-ui/Popup/Confirmations';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
+import { AlertDialogProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext, SwModal, useExcludeModal } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -27,13 +28,26 @@ type PredefinedModalName = typeof PREDEFINED_MODAL_NAMES[number];
 export interface WalletModalContextType {
   openLeaderboardModal: (props: LeaderboardModalProps) => void;
   closeLeaderboardModal: VoidFunction;
+  alertModal: {
+    open: (props: AlertDialogProps) => void,
+    update: React.Dispatch<React.SetStateAction<AlertDialogProps | undefined>>;
+    close: VoidFunction
+  },
 }
 
 export const WalletModalContext = React.createContext<WalletModalContextType>({
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   openLeaderboardModal: () => {},
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  closeLeaderboardModal: () => {}
+  closeLeaderboardModal: () => {},
+  alertModal: {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    open: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    update: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    close: () => {}
+  }
 });
 
 export const usePredefinedModal = () => {
@@ -66,6 +80,8 @@ export const usePredefinedModal = () => {
   return { openPModal, isOpenPModal };
 };
 
+const alertModalId = GLOBAL_ALERT_MODAL;
+
 export const WalletModalContextProvider = ({ children }: Props) => {
   const { activeModal, hasActiveModal, inactiveAll, inactiveModal, inactiveModals } = useContext(ModalContext);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -74,6 +90,7 @@ export const WalletModalContextProvider = ({ children }: Props) => {
   const { getConfig } = useGetConfig();
   const { onHandleSessionLatest, setTimeBackUp } = useSetSessionLatest();
   const [leaderboardModalProps, setLeaderboardModalProps] = useState<LeaderboardModalProps | undefined>();
+  const { alertProps, closeAlert, openAlert, setAlertProps } = useAlert(alertModalId);
 
   useExcludeModal('confirmations');
   useExcludeModal(EARNING_INSTRUCTION_MODAL);
@@ -98,8 +115,13 @@ export const WalletModalContextProvider = ({ children }: Props) => {
 
   const contextValue = useMemo(() => ({
     openLeaderboardModal,
-    closeLeaderboardModal
-  }), [closeLeaderboardModal, openLeaderboardModal]);
+    closeLeaderboardModal,
+    alertModal: {
+      open: openAlert,
+      update: setAlertProps,
+      close: closeAlert
+    }
+  }), [closeAlert, closeLeaderboardModal, openAlert, openLeaderboardModal, setAlertProps]);
 
   useEffect(() => {
     if (hasMasterPassword && isLocked) {
@@ -164,6 +186,14 @@ export const WalletModalContextProvider = ({ children }: Props) => {
             <LeaderboardModal
               {...leaderboardModalProps}
               onCancel={closeLeaderboardModal}
+            />
+          )
+        }
+        {
+          !!alertProps && (
+            <AlertModal
+              modalId={alertModalId}
+              {...alertProps}
             />
           )
         }

@@ -24,6 +24,7 @@ export type AlertDialogButtonProps = {
 
 export type AlertDialogProps = {
   title: string,
+  className?: string,
   type?: NotificationType,
   closable?: boolean,
   iconProps?: PageIconProps['iconProps'],
