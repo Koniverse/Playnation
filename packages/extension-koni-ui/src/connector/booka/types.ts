@@ -348,9 +348,9 @@ export interface IAirdropNftMinting {
   icon: string;
   banner: string;
   start_snapshot: Date;
-  end_snapshot: Date;
+  end_snapshot?: Date;
   start_mint: Date;
-  end_mint: Date;
+  end_mint?: Date;
   network: string;
   total_badges: number;
   symbol: string;
@@ -372,11 +372,11 @@ export interface IAirdropNftMinting {
   eligibilityList: {
     id: number;
     name: string;
-    type: string;
+    type?: string;
     start: Date;
     end: Date;
-    boxCount: number,
-    note: string
+    boxCount?: number,
+    note?: string
   }[];
   eligibilityIds?: number[];
 }

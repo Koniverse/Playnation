@@ -928,67 +928,88 @@ export class BookaSdk {
     const { promise, resolve } = createPromiseHandler<void>();
 
     await wait(1000);
-    const currentDate = new Date();
+
+    const getUCTPlus7 = (dateString: string) => {
+      return new Date(dateString + ' UTC+7');
+    };
 
     const eligibilityList = [
       {
         id: 1,
-        name: 'Eligibility 1',
-        type: 'type 1',
-        start: new Date((new Date()).setDate(currentDate.getDate() + 1)),
-        end: new Date((new Date()).setDate(currentDate.getDate() + 10)),
-        boxCount: 10,
-        note: 'note 1'
+        name: 'Top 5000 on General SP Leaderboard',
+        start: getUCTPlus7('2024-11-07 07:00'),
+        end: getUCTPlus7('2024-11-21 07:00')
       },
       {
         id: 2,
-        name: 'Eligibility 2',
-        type: 'type 2',
-        start: new Date((new Date()).setDate(currentDate.getDate() + 1)),
-        end: new Date((new Date()).setDate(currentDate.getDate() + 10)),
-        boxCount: 10,
-        note: 'note 2'
-      },
-      {
-        id: 3,
-        name: 'Eligibility 3',
-        type: 'type 3',
-        start: new Date((new Date()).setDate(currentDate.getDate() + 1)),
-        end: new Date((new Date()).setDate(currentDate.getDate() + 10)),
-        boxCount: 10,
-        note: 'note 3'
-      },
-      {
-        id: 4,
-        name: 'Eligibility 4',
-        type: 'type 4',
-        start: new Date((new Date()).setDate(currentDate.getDate() + 1)),
-        end: new Date((new Date()).setDate(currentDate.getDate() + 10)),
-        boxCount: 10,
-        note: 'note 4'
+        name: 'Hunt at least 5,000 SP',
+        start: getUCTPlus7('2024-11-07 07:00'),
+        end: getUCTPlus7('2024-11-21 07:00')
       }
     ];
 
     this.airdropNftMintSubject.next([{
       id: 1,
       name: 'Koni Story',
-      icon: '/images/default-nft-logo.png',
+      icon: '/images/mint-event-logo.png',
       banner: '',
-      start_snapshot: new Date((new Date()).setDate(currentDate.getDate() + 1)),
-      end_snapshot: new Date((new Date()).setDate(currentDate.getDate() + 10)),
-      start_mint: new Date(),
-      end_mint: new Date((new Date()).setMonth(currentDate.getMonth() + 2)),
+      start_snapshot: getUCTPlus7('2024-11-22 09:00'),
+      start_mint: getUCTPlus7('2024-11-25 09:00'),
       network: 'Polkadot',
       total_badges: 500,
       symbol: 'DOT',
       // decimal: number;
       // method: string;
       // raffle_count: number;
-      start: currentDate,
-      end: new Date(new Date((new Date()).setMonth(currentDate.getMonth() + 2)).setDate(currentDate.getDate() + 1)),
+      start: getUCTPlus7('2024-11-07 09:00'),
+      end: getUCTPlus7('2024-11-29 09:00'),
       conditionDescription: '',
-      description: 'asdasdsadasddajsggdhasgdhjabsdhasbdhasdsad',
-      shortDescription: 'kkkkkkkkkkkkkkkkkkkk',
+      description: `
+      <p>
+          Let your IPventure begin by participating in the campaign now for a chance to earn the exclusive Koni Story badge!
+        </p>
+
+        <h2>Who we are</h2>
+
+        <p>
+          Koni Story is a unified Telegram mini app that lets you bring your IPs to life. With Koni Story, you can create unique
+          stories in your adventure — an IPventure that activates creativity, participation, and cross-community collaboration
+          through story-writing and Story World exploration within the Story ecosystem.
+        </p>
+
+        <h2>
+          How does the badge work?
+        </h2>
+
+        <p>
+          Each Koni Story badge is a soul-bound token signifying your active involvement in our campaign during Odyssey testnet
+          and can only be earned ONCE per user.
+        </p>
+
+        How to hunt SP?
+
+        <p>
+          👉Join Koni Story TG app to receive an original Story Point (SP) package that gives you a head start in the campaign
+        </p>
+
+        <p>
+          👉Accumulate more SP by completing tasks listed in the Missions tab
+        </p>
+
+        <p>
+          👉Climb up the ranks, as only top 5000 users with at least 5,000 SP will be rewarded with Koni Story badges
+        </p>
+
+        <h2>
+          For Story OG 😎
+        </h2>
+
+        <p>
+          Those who have minted IPs in <b>Iliad Testnet Commemorative collection</b>, <b>Commemorative Color NFT collection</b>, and
+          <b>Mycelium Remix collection</b> will receive additional SP.
+        </p>
+      `,
+      shortDescription: '',
       // tokenDistributions: JSON;
       // npsDistributions: JSON;
       // share: AirdropCampaignShare;

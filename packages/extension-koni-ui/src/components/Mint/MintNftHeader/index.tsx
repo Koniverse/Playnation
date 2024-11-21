@@ -17,46 +17,69 @@ type Props = ThemeProps & {
 enum Timeline {
   START = 'start',
   SNAPSHOT = 'snapshot',
-  CLAIM = 'claim',
+  MINT = 'mint',
   END = 'end'
 }
 
 function Component ({ airdropNftInfo, className }: Props) {
   const { t } = useTranslation();
 
-  const { currentTimeline, pastTimelines } = (() => {
+  const { timelines } = (() => {
     // eslint-disable-next-line camelcase
-    const { end, end_mint, start, start_mint, start_snapshot } = airdropNftInfo;
+    const { end, start, start_mint, start_snapshot } = airdropNftInfo;
     const currentDate = Date.now();
     const startMs = new Date(start).getTime();
     const endMs = new Date(end).getTime();
     const startSnapshotMs = new Date(start_snapshot).getTime();
-    // const endSnapshotMs = new Date(end_snapshot).getTime();
-    const endClaimMs = new Date(end_mint).getTime();
-    const startClaim = new Date(start_mint).getTime();
+    const startMintMs = new Date(start_mint).getTime();
 
-    let currentTimeline: Timeline = Timeline.START;
-    const pastTimelines: Timeline[] = [];
+    const timelines: Timeline[] = [];
 
     if (currentDate >= startMs && currentDate < startSnapshotMs) {
-      currentTimeline = Timeline.START;
-      pastTimelines.push(Timeline.START);
-    } else if (currentDate >= startSnapshotMs && currentDate <= startClaim) {
-      currentTimeline = Timeline.SNAPSHOT;
-      pastTimelines.push(Timeline.START, Timeline.SNAPSHOT);
-    } else if (currentDate >= startClaim && currentDate <= endClaimMs) {
-      currentTimeline = Timeline.CLAIM;
-      pastTimelines.push(Timeline.START, Timeline.SNAPSHOT, Timeline.CLAIM);
-    } else if (currentDate > endMs) {
-      currentTimeline = Timeline.END;
-      pastTimelines.push(Timeline.START, Timeline.SNAPSHOT, Timeline.CLAIM, Timeline.END);
+      timelines.push(Timeline.START);
+    } else if (currentDate >= startSnapshotMs && currentDate < startMintMs) {
+      timelines.push(Timeline.START, Timeline.SNAPSHOT);
+    } else if (currentDate >= startMintMs && currentDate < endMs) {
+      timelines.push(Timeline.START, Timeline.SNAPSHOT, Timeline.MINT);
+    } else if (currentDate >= endMs) {
+      timelines.push(Timeline.START, Timeline.SNAPSHOT, Timeline.MINT, Timeline.END);
     }
 
     return {
-      currentTimeline,
-      pastTimelines
+      timelines
     };
   })();
+
+  const getTimeLinePercent = (): string => {
+    // eslint-disable-next-line camelcase
+    const { end, start, start_mint, start_snapshot } = airdropNftInfo;
+
+    const currentDate = Date.now();
+
+    const startMs = new Date(start).getTime();
+    const endMs = new Date(end).getTime();
+    const startSnapshotMs = new Date(start_snapshot).getTime();
+    const startMintMs = new Date(start_mint).getTime();
+    const basePercent = 100 / 3;
+
+    if (currentDate >= startMs && currentDate < startSnapshotMs) {
+      return `${(currentDate - startMs) * basePercent / (startSnapshotMs - startMs)}%`;
+    }
+
+    if (currentDate >= startSnapshotMs && currentDate < startMintMs) {
+      return `${basePercent + ((currentDate - startSnapshotMs) * basePercent / (startMintMs - startSnapshotMs))}%`;
+    }
+
+    if (currentDate >= startMintMs && currentDate < endMs) {
+      return `${2 * basePercent + ((currentDate - startMintMs) * basePercent / (endMs - startMintMs))}%`;
+    }
+
+    if (currentDate >= endMs) {
+      return '100%';
+    }
+
+    return '0';
+  };
 
   return (
     <div className={CN(className)}>
@@ -84,17 +107,17 @@ function Component ({ airdropNftInfo, className }: Props) {
       </div>
 
       <div className='__time-line-area'>
-        <div className={CN('__time-line-bar', {
-          '-is-snapshot': currentTimeline === Timeline.SNAPSHOT,
-          '-is-claim': currentTimeline === Timeline.CLAIM,
-          '-is-end': currentTimeline === Timeline.END
-        })}
-        />
+        <div className={CN('__time-line-bar')}>
+          <div
+            className='__time-line-bar-current'
+            style={{ maxWidth: getTimeLinePercent() }}
+          />
+        </div>
 
         <div className='__time-line-legend-container'>
           <div className='__time-line-legend-item-wrapper'>
             <div className={CN('__time-line-legend-item', '-start', {
-              '-active': pastTimelines.includes(Timeline.START)
+              '-active': timelines.includes(Timeline.START)
             })}
             >
               <div className='__time-line-legend-item-name'>{t('Start')}</div>
@@ -106,19 +129,19 @@ function Component ({ airdropNftInfo, className }: Props) {
 
           <div className='__time-line-legend-item-wrapper'>
             <div className={CN('__time-line-legend-item', '-center', {
-              '-active': pastTimelines.includes(Timeline.SNAPSHOT)
+              '-active': timelines.includes(Timeline.SNAPSHOT)
             })}
             >
               <div className='__time-line-legend-item-name'>{t('Snapshot')}</div>
               <div className='__time-line-legend-item-date'>
-                {customFormatDate(airdropNftInfo.end_snapshot, '#DD#/#MM#')}
+                {customFormatDate(airdropNftInfo.start_snapshot, '#DD#/#MM#')}
               </div>
             </div>
           </div>
 
           <div className='__time-line-legend-item-wrapper'>
             <div className={CN('__time-line-legend-item', '-center', {
-              '-active': pastTimelines.includes(Timeline.CLAIM)
+              '-active': timelines.includes(Timeline.MINT)
             })}
             >
               <div className='__time-line-legend-item-name'>{t('Claim')}</div>
@@ -130,7 +153,7 @@ function Component ({ airdropNftInfo, className }: Props) {
 
           <div className='__time-line-legend-item-wrapper'>
             <div className={CN('__time-line-legend-item', '-end', {
-              '-active': pastTimelines.includes(Timeline.END)
+              '-active': timelines.includes(Timeline.END)
             })}
             >
               <div className='__time-line-legend-item-name'>{t('End')}</div>
@@ -202,28 +225,13 @@ const MintNftHeader = styled(Component)<Props>(({ theme: { extendToken, token } 
       borderRadius: 100,
       overflow: 'hidden',
       backgroundColor: token.colorBgSecondary,
-      marginBottom: token.marginXS,
+      marginBottom: token.marginXS
+    },
 
-      '&:before': {
-        content: '""',
-        borderRadius: 100,
-        display: 'block',
-        height: 8,
-        backgroundColor: token.colorSuccess,
-        maxWidth: '5%'
-      },
-
-      '&.-is-snapshot:before': {
-        maxWidth: `${100 / 3}%`
-      },
-
-      '&.-is-claim:before': {
-        maxWidth: `${200 / 3}%`
-      },
-
-      '&.-is-end:before': {
-        maxWidth: '100%'
-      }
+    '.__time-line-bar-current': {
+      borderRadius: 100,
+      height: 8,
+      backgroundColor: token.colorSuccess
     },
 
     '.__time-line-legend-container': {
