@@ -501,11 +501,6 @@ const MintNftDetail = styled(Component)<ThemeProps>(({ theme: { extendToken, tok
         }
       },
 
-      '.__link': {
-        color: token.colorSuccess,
-        textDecoration: 'underline'
-      },
-
       '.tab-content': {
         flex: 1,
         overflow: 'auto'
@@ -534,6 +529,13 @@ const MintNftDetail = styled(Component)<ThemeProps>(({ theme: { extendToken, tok
           lineHeight: token.lineHeightHeading6,
           weight: 500
         }
+      }
+    },
+
+    '&.ant-sw-modal': {
+      '.__link': {
+        color: token.colorSuccess,
+        textDecoration: 'underline'
       }
     }
   });

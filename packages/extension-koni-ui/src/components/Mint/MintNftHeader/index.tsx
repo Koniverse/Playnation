@@ -121,7 +121,9 @@ function Component ({ airdropNftInfo, className, onClickLogo }: Props) {
 
           <div className='__airdrop-token'>
             <span className='__airdrop-token-value'>{toDisplayNumber(airdropNftInfo.total_badges)}</span>
-            <span className='__airdrop-token-symbol'>{airdropNftInfo.symbol}</span>
+            <span className='__airdrop-token-symbol'>{
+              airdropNftInfo.total_badges > 1 ? t('badges') : t('badge')
+            }</span>
           </div>
         </div>
 

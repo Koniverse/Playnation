@@ -19,7 +19,7 @@ interface Props extends ThemeProps {
 
 const Component = ({ airdropNftInfo, className }: Props) => {
   const { t } = useTranslation();
-  const { icon, name } = airdropNftInfo;
+  const { name, nft_url: nftUrl } = airdropNftInfo;
   const wcAccount = useSelector((state: RootState) => state.accountState.wcAccount);
 
   return (
@@ -31,7 +31,7 @@ const Component = ({ airdropNftInfo, className }: Props) => {
         <img
           alt='badge'
           className={'__mint-badge-image'}
-          src={icon}
+          src={nftUrl}
         />
       </div>
       <div className={'__mint-nft-success-footer'}>

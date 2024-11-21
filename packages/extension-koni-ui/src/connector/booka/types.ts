@@ -346,6 +346,7 @@ export interface IAirdropNftMinting {
   id: number;
   name: string;
   icon: string;
+  nft_url: string;
   banner: string;
   start_snapshot: Date;
   end_snapshot?: Date;

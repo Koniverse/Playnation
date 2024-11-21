@@ -982,6 +982,7 @@ export class BookaSdk {
       id: 1,
       name: 'Koni Story badge',
       icon: '/images/mint-event-logo.png',
+      nft_url: '/images/default-nft-logo.png',
       banner: '',
       start_snapshot: getUCTPlus7('2024-11-22 09:00'),
       start_mint: getUCTPlus7('2024-11-25 09:00'),
