@@ -1,17 +1,21 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { customFormatDate, formatBalance } from '@subwallet/extension-koni-ui/utils';
-import { Image } from '@subwallet/react-ui';
+import { customFormatDate, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
+import { Button, Icon, Image } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React from 'react';
+import { ShareNetwork } from 'phosphor-react';
+import React, { useCallback } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
-  airdropNftInfo: IAirdropNftMinting
+  airdropNftInfo: IAirdropNftMinting,
+  onClickLogo?: VoidFunction,
 };
 
 enum Timeline {
@@ -21,7 +25,10 @@ enum Timeline {
   END = 'end'
 }
 
-function Component ({ airdropNftInfo, className }: Props) {
+const apiSDK = BookaSdk.instance;
+const telegramConnector = TelegramConnector.instance;
+
+function Component ({ airdropNftInfo, className, onClickLogo }: Props) {
   const { t } = useTranslation();
 
   const { timelines } = (() => {
@@ -81,6 +88,18 @@ function Component ({ airdropNftInfo, className }: Props) {
     return '0';
   };
 
+  const onClickShare = useCallback(() => {
+    if (!airdropNftInfo.share) {
+      return;
+    }
+
+    const url = apiSDK.getShareTwitterMintNftURL(airdropNftInfo);
+
+    if (url) {
+      telegramConnector.openLink(url);
+    }
+  }, [airdropNftInfo]);
+
   return (
     <div className={CN(className)}>
       <div className='__airdrop-info-area'>
@@ -88,6 +107,7 @@ function Component ({ airdropNftInfo, className }: Props) {
           <div className='__airdrop-icon'>
             <Image
               height={48}
+              onClick={onClickLogo}
               shape={'squircle'}
               src={airdropNftInfo.icon}
               width={48}
@@ -100,10 +120,28 @@ function Component ({ airdropNftInfo, className }: Props) {
           </div>
 
           <div className='__airdrop-token'>
-            <span className='__airdrop-token-value'>{formatBalance(airdropNftInfo.total_badges, 0)}</span>
+            <span className='__airdrop-token-value'>{toDisplayNumber(airdropNftInfo.total_badges)}</span>
             <span className='__airdrop-token-symbol'>{airdropNftInfo.symbol}</span>
           </div>
         </div>
+
+        <div className='__share-button-wrapper'>
+          <Button
+            className={'__share-button'}
+            disabled={!airdropNftInfo.share}
+            icon={(
+              <Icon
+                customSize={'20px'}
+                phosphorIcon={ShareNetwork}
+                weight={'fill'}
+              />
+            )}
+            onClick={onClickShare}
+            shape={'round'}
+            size={'xs'}
+          />
+        </div>
+
       </div>
 
       <div className='__time-line-area'>
@@ -144,7 +182,7 @@ function Component ({ airdropNftInfo, className }: Props) {
               '-active': timelines.includes(Timeline.MINT)
             })}
             >
-              <div className='__time-line-legend-item-name'>{t('Claim')}</div>
+              <div className='__time-line-legend-item-name'>{t('Mint')}</div>
               <div className='__time-line-legend-item-date'>
                 {customFormatDate(airdropNftInfo.start_mint, '#DD#/#MM#')}
               </div>
@@ -219,6 +257,19 @@ const MintNftHeader = styled(Component)<Props>(({ theme: { extendToken, token } 
 
     '.__airdrop-token-symbol': {
       color: token.colorTextDark3
+    },
+
+    '.__share-button-wrapper': {
+      alignSelf: 'stretch'
+    },
+
+    '.ant-btn.ant-btn.__share-button': {
+      backgroundColor: extendToken.colorBgTranslucent,
+      color: token.colorTextBase,
+
+      '&:hover': {
+        backgroundColor: extendToken.colorBgHover3
+      }
     },
 
     '.__time-line-bar': {

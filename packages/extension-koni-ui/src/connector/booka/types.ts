@@ -364,7 +364,21 @@ export interface IAirdropNftMinting {
   shortDescription: string;
   // tokenDistributions: JSON;
   // npsDistributions: JSON;
-  // share: AirdropCampaignShare;
+  share?: {
+    id?: number;
+    content: string;
+    url_share: string;
+    hashtags?: string;
+    content_not_show_point?: string | null;
+    raffle_content?: string;
+    raffle_content_not_show_point?: string | null;
+    raffle_url_share?: string;
+    raffle_hashtags?: string;
+    url_twitter?: string;
+    url_website?: string;
+    url_discord?: string;
+    url_telegram?: string;
+  };
   token_slug: string,
   status: string;
   // createdAt: Date;

@@ -44,6 +44,7 @@ const enum buttonTypeConst {
   END_CAMPAIGN = 3
 }
 
+// @ts-ignore
 const enum IAirdropNftMintingProcess {
   END_CAMPAIGN = 'END_CAMPAIGN',
   ELIGIBLE = 'ELIGIBLE'

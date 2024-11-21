@@ -27,6 +27,11 @@ const Component = ({ className }: Props): React.ReactElement => {
     setMintSuccess(true);
   }, []);
 
+  // todo: remove after debug
+  const onClickLogo = useCallback(() => {
+    setMintSuccess((prev) => !prev);
+  }, []);
+
   useEffect(() => {
     const subscription = apiSDK.subscribeAirdropNftMint().subscribe((data) => {
       setNftAirdropList(data);
@@ -47,7 +52,10 @@ const Component = ({ className }: Props): React.ReactElement => {
       '-minted': mintSuccess
     })}
     >
-      <MintNftHeader airdropNftInfo={currentIAirdropNftMinting} />
+      <MintNftHeader
+        airdropNftInfo={currentIAirdropNftMinting}
+        onClickLogo={onClickLogo}
+      />
       {
         mintSuccess
           ? (

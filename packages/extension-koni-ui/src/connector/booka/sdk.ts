@@ -396,6 +396,30 @@ export class BookaSdk {
     return null;
   }
 
+  public getShareTwitterMintNftURL (item: IAirdropNftMinting) {
+    if (!item.share) {
+      return;
+    }
+
+    try {
+      const dataShare = item.share;
+      const urlBot = dataShare.url_share;
+
+      const content = dataShare.content;
+      let hashtag = '';
+
+      if (dataShare.hashtags) {
+        hashtag = `&hashtags=${dataShare.hashtags}`;
+      }
+
+      const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
+
+      return `http://x.com/share?text=${content}&url=${linkApp}%0A${hashtag}`;
+    } catch (e) {}
+
+    return null;
+  }
+
   async getShareTwitterClaimURL (item: AirdropCampaign) {
     if (!item.share) {
       return undefined;
@@ -956,20 +980,26 @@ export class BookaSdk {
 
     this.airdropNftMintSubject.next([{
       id: 1,
-      name: 'Koni Story',
+      name: 'Koni Story badge',
       icon: '/images/mint-event-logo.png',
       banner: '',
       start_snapshot: getUCTPlus7('2024-11-22 09:00'),
       start_mint: getUCTPlus7('2024-11-25 09:00'),
       network: 'Polkadot',
-      total_badges: 500,
-      symbol: 'DOT',
+      total_badges: 5000,
+      symbol: 'badge',
       // decimal: number;
       // method: string;
       // raffle_count: number;
       start: getUCTPlus7('2024-11-07 09:00'),
       end: getUCTPlus7('2024-11-29 09:00'),
       conditionDescription: '',
+      // share: {
+      //   url_share: '',
+      //   content: `Odyssey Testnet is LIVE! Have fun with easy-peasy tasks and earn the exclusive Koni Story badge through your IPventure 👑
+      //   \nLast chance to become an @StoryProtocol OG before mainnet launch 💨
+      //   \nJoin now 👇`
+      // },
       description: `
       <p>
           Let your IPventure begin by participating in the campaign now for a chance to earn the exclusive Koni Story badge!
