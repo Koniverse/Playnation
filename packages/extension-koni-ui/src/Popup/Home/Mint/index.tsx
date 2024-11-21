@@ -30,9 +30,8 @@ const Component = ({ className }: Props): React.ReactElement => {
     setMintSuccess(true);
   }, []);
 
-  // todo: remove after debug
   const onClickLogo = useCallback(() => {
-    setMintSuccess((prev) => !prev);
+    // nothing
   }, []);
 
   useEffect(() => {
@@ -47,7 +46,6 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   useEffect(() => {
     apiSDK.nftMintingGetLog().then((rs) => {
-      // todo: remove after debug
       if (rs && rs.status === 'success') {
         setMintedAddress(rs.address);
         setMintSuccess(true);
