@@ -47,9 +47,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   useEffect(() => {
     apiSDK.nftMintingGetLog().then((rs) => {
       // todo: remove after debug
-      console.log('nftMintingGetLog rs', rs);
-
-      if (rs) {
+      if (rs && rs.status === 'success') {
         setMintedAddress(rs.address);
         setMintSuccess(true);
       }

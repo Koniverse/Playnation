@@ -3,6 +3,7 @@
 
 import { ConfirmationDefinitions, ConfirmationResult, EvmSendTransactionRequest, ExtrinsicType } from '@subwallet/extension-base/background/KoniTypes';
 import { WC_DEFAULT_CHAIN_ID, WC_USER_REJECT_MESSAGE } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { CONFIRMATION_QR_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { InjectContext } from '@subwallet/extension-koni-ui/contexts/InjectContext';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
@@ -54,6 +55,8 @@ const handleSignature = async (type: EvmSignatureSupportType, id: string, signat
     payload: signature
   } as ConfirmationResult<string>);
 };
+
+const apiSDK = BookaSdk.instance;
 
 const Component: React.FC<Props> = (props: Props) => {
   const { className, extrinsicType, id, payload, txExpirationTime, type } = props;
@@ -207,6 +210,10 @@ const Component: React.FC<Props> = (props: Props) => {
   }, [account.address, chainId, evmWallet, isMessage, onApproveSignature, payload.payload]);
 
   const onConfirmWalletConnect = useCallback(() => {
+    if (extrinsicType === ExtrinsicType.MINT_NFT) {
+      apiSDK.nftMintingStart().catch(console.error);
+    }
+
     let promise: Promise<{ signature: string }>;
 
     if (isMessage) {
@@ -254,7 +261,7 @@ const Component: React.FC<Props> = (props: Props) => {
       .finally(() => {
         setLoading(false);
       });
-  }, [isMessage, openWaiting, payload.payload, account.address, chainId, closeWaiting, onApproveSignature, notify, t, onCancel]);
+  }, [extrinsicType, isMessage, openWaiting, payload.payload, account.address, chainId, closeWaiting, onApproveSignature, onCancel, notify, t]);
 
   const onConfirm = useCallback(() => {
     removeTransactionPersist(extrinsicType);
