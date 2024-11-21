@@ -28,7 +28,7 @@ import styled, { useTheme } from 'styled-components';
 
 type Props = ThemeProps & {
   airdropNftInfo: IAirdropNftMinting,
-  onSuccess: VoidFunction;
+  onSuccess: (mintedAddress: string) => void;
   isFetchingNftMintingLog: boolean;
 };
 
@@ -326,7 +326,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
       if (status === 'success') {
         setIsLoading(false);
-        onSuccess();
+        onSuccess(address);
 
         return;
       }
@@ -342,7 +342,7 @@ const Component: React.FC<Props> = (props: Props) => {
         handleFailedToMintModal().then(goHome).catch(console.error);
       } else {
         await apiSDK.nftMintingStart(transaction?.extrinsicHash);
-        onSuccess();
+        onSuccess(address);
       }
 
       setIsLoading(false);

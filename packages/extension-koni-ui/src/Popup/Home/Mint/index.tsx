@@ -25,7 +25,8 @@ const Component = ({ className }: Props): React.ReactElement => {
     return nftAirdropList[0];
   }, [nftAirdropList]);
 
-  const onMintSuccess = useCallback(() => {
+  const onMintSuccess = useCallback((address: string) => {
+    setMintedAddress(address);
     setMintSuccess(true);
   }, []);
 
