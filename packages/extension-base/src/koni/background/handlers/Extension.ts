@@ -64,7 +64,7 @@ import { TransactionConfig } from 'web3-core';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { TypeRegistry } from '@polkadot/types';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@polkadot/types/types';
-import { assert, hexStripPrefix, hexToU8a, isAscii, isHex, u8aToHex, u8aToString } from '@polkadot/util';
+import { assert, hexStripPrefix, hexToU8a, isAscii, isHex, stringToHex, u8aToHex, u8aToString } from '@polkadot/util';
 import { base64Decode, decodeAddress, isAddress, isEthereumAddress, jsonDecrypt, keyExtractSuri, mnemonicGenerate, mnemonicValidate } from '@polkadot/util-crypto';
 import { EncryptedJson, KeypairType, Prefix } from '@polkadot/util-crypto/types';
 
@@ -4150,9 +4150,7 @@ export default class KoniExtension {
         throw new Error(t('Invalid network'));
       }
 
-      const [transaction] = await getEVMTransactionObject(chainInfo, address, address, '0', false, evmApi);
-
-      transaction.data = dataRemark;
+      const [transaction] = await getEVMTransactionObject(chainInfo, address, address, '0', false, evmApi, stringToHex(dataRemark));
 
       return await handleTransaction(transaction, ChainType.EVM);
     } else if (_isSubstrateChain(chainInfo)) {
