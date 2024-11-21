@@ -930,7 +930,13 @@ export class BookaSdk {
     await wait(1000);
 
     const getUCTPlus7 = (dateString: string) => {
-      return new Date(dateString + ' UTC+7');
+      // Split the input date string into components (e.g., "2024-11-20 07:00")
+      const [datePart, timePart] = dateString.split(' ');
+      const [year, month, day] = datePart.split('-').map(Number); // Parse date
+      const [hours, minutes] = timePart.split(':').map(Number); // Parse time
+
+      // Create a UTC+7 date object manually
+      return new Date(Date.UTC(year, month - 1, day, hours - 7, minutes));
     };
 
     const eligibilityList = [
