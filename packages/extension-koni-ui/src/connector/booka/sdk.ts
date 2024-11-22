@@ -966,7 +966,7 @@ export class BookaSdk {
     const eligibilityList = [
       {
         id: 1,
-        name: 'Top 5000 on General SP Leaderboard',
+        name: 'Rank on top 5,000 general leaderboard',
         start: getUCTPlus7('2024-11-07 07:00'),
         end: getUCTPlus7('2024-11-22 07:00')
       },
