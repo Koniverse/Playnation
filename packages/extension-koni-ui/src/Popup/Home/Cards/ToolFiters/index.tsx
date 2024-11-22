@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { LevelOptions, PositionOptions, PowerOptions, ProgramOptions, RarityOptions, TeamOptions } from '@subwallet/extension-koni-ui/constants/myth';
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ConditionProcessState } from '@subwallet/extension-koni-ui/Popup/Home/Cards';
 import { FilterOptionsSelected, ToolFiltersModal } from '@subwallet/extension-koni-ui/Popup/Home/Cards/ToolFiters/ToolFiltersModal';
@@ -16,76 +17,34 @@ type Props = ThemeProps & {
 export interface FilterItems {
   label: string;
   subLabel?: string;
-  type: string;
+  id: string;
 }
 
 export enum FilterOption {
-  CATEGORY_OPTION = 'category',
-  POSITION_OPTION = 'position'
+  POSITION_OPTION = 'position',
+  TEAM_OPTION = 'team',
+  PROGRAM_OPTION = 'program',
+  RARITY_OPTION = 'rarity',
+  POWER_OPTION = 'power',
+  LEVEL_OPTION = 'level'
 }
 
-const CategoryOptions: FilterItems[] = [
-  {
-    type: 'base_set',
-    label: 'Base Set'
-  },
-  {
-    type: 'not_tradable',
-    label: 'Not Tradable'
-
-  },
-  {
-    type: 'blueprints',
-    label: 'Blueprints'
-  },
-  {
-    type: 'limited_edition',
-    label: 'Limited Edition'
-  }
-];
-
-const PositionOptions: FilterItems[] = [
-  {
-    type: 'QB',
-    label: 'Quarterback (QB)'
-  },
-  {
-    type: 'SS',
-    label: 'Strong Safety (SS)'
-  },
-  {
-    type: 'WR',
-    label: 'Wide receiver (WR)'
-  },
-  {
-    type: 'TE',
-    label: 'Tight end (TE)'
-  },
-  {
-    type: 'CB',
-    label: 'Corner Back (CB)'
-  },
-  {
-    type: 'OL',
-    label: 'Offensive Linemen (OL)'
-  },
-  {
-    type: 'RB',
-    label: 'Running BAck (RB)'
-  },
-  {
-    type: 'FS',
-    label: 'Free Safety (FS)'
-  },
-  {
-    type: 'K',
-    label: 'Kicker (K)'
-  }
-];
-
 export const FilterOptions: Record<FilterOption, FilterItems[]> = {
-  [FilterOption.CATEGORY_OPTION]: CategoryOptions,
-  [FilterOption.POSITION_OPTION]: PositionOptions
+  [FilterOption.POSITION_OPTION]: PositionOptions,
+  [FilterOption.TEAM_OPTION]: TeamOptions,
+  [FilterOption.PROGRAM_OPTION]: ProgramOptions,
+  [FilterOption.RARITY_OPTION]: RarityOptions,
+  [FilterOption.POWER_OPTION]: PowerOptions,
+  [FilterOption.LEVEL_OPTION]: LevelOptions
+};
+
+const DEFAULT_FILTER_OPTIONS_SELECTED: FilterOptionsSelected = {
+  team: [],
+  rarity: [],
+  program: [],
+  power: [],
+  level: [],
+  position: []
 };
 
 const modalId = 'filter-modal-id';
@@ -94,37 +53,36 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
   const [numberOptionsSelected, setNumberOptionsSelected] = useState<number>(0);
-  const [tmpItemsSelected, setTmpItemsSelected] = useState<FilterOptionsSelected>({
-    category: [],
-    position: []
-  });
+  const [tmpItemsSelected, setTmpItemsSelected] = useState<FilterOptionsSelected>(DEFAULT_FILTER_OPTIONS_SELECTED);
 
-  const [itemsSelected, setItemsSelected] = useState<FilterOptionsSelected>({
-    category: [],
-    position: []
-  });
+  const [itemsSelected, setItemsSelected] = useState<FilterOptionsSelected>(DEFAULT_FILTER_OPTIONS_SELECTED);
 
   const handleConfirmSelection = useCallback(() => {
     setItemsSelected((prev) => ({
       ...prev,
-      category: [...tmpItemsSelected.category],
-      position: [...tmpItemsSelected.position]
+      position: [...tmpItemsSelected.position],
+      rarity: [...tmpItemsSelected.rarity],
+      level: [...tmpItemsSelected.level],
+      power: [...tmpItemsSelected.power],
+      program: [...tmpItemsSelected.program],
+      team: [...tmpItemsSelected.team]
     }));
   }, [tmpItemsSelected, setItemsSelected]);
 
   const handleCancel = useCallback(() => {
     setTmpItemsSelected((prev) => ({
       ...prev,
-      category: [...itemsSelected.category],
-      position: [...itemsSelected.position]
+      position: [...itemsSelected.position],
+      rarity: [...itemsSelected.rarity],
+      level: [...itemsSelected.level],
+      power: [...itemsSelected.power],
+      program: [...itemsSelected.program],
+      team: [...itemsSelected.team]
     }));
-  }, [itemsSelected.category, itemsSelected.position]);
+  }, [itemsSelected]);
 
   const handleReset = useCallback(() => {
-    setItemsSelected({
-      category: [],
-      position: []
-    });
+    setItemsSelected(DEFAULT_FILTER_OPTIONS_SELECTED);
   }, [setItemsSelected]);
 
   const onClick = useCallback(() => {
@@ -154,8 +112,8 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
       <ToolFiltersModal
         filterItems={FilterOptions}
         handleCancel={handleCancel}
-        onConfirm={handleConfirmSelection}
         handleReset={handleReset}
+        onConfirm={handleConfirmSelection}
         setConditionProcess={setConditionProcess}
         setNumberOptionsSelected={setNumberOptionsSelected}
         setTmpItemsSelected={setTmpItemsSelected}

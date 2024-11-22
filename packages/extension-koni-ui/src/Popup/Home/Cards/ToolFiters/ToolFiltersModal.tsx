@@ -24,9 +24,22 @@ interface Props extends ThemeProps {
 }
 
 export interface FilterOptionsSelected {
-  [FilterOption.CATEGORY_OPTION]: string[],
-  [FilterOption.POSITION_OPTION]: string[]
+  [FilterOption.POSITION_OPTION]: string[],
+  [FilterOption.PROGRAM_OPTION]: string[],
+  [FilterOption.RARITY_OPTION]: string[],
+  [FilterOption.TEAM_OPTION]: string[],
+  [FilterOption.LEVEL_OPTION]: string[],
+  [FilterOption.POWER_OPTION]: string[],
 }
+
+const DEFAULT_FILTER_OPTIONS_SELECTED: FilterOptionsSelected = {
+  team: [],
+  rarity: [],
+  program: [],
+  power: [],
+  level: [],
+  position: []
+};
 
 const modalId = 'filter-modal-id';
 
@@ -40,10 +53,7 @@ const Component = ({ className, filterItems, handleCancel, handleReset, onConfir
   }, [handleCancel, inactiveModal]);
 
   const onReset = useCallback(() => {
-    setTmpItemsSelected({
-      category: [],
-      position: []
-    });
+    setTmpItemsSelected(DEFAULT_FILTER_OPTIONS_SELECTED);
     setNumberOptionsSelected(0);
     setConditionProcess((prev) => ({
       ...prev,
@@ -51,7 +61,7 @@ const Component = ({ className, filterItems, handleCancel, handleReset, onConfir
     }));
     handleReset();
     inactiveModal('filter-modal-id');
-  }, [inactiveModal, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected]);
+  }, [handleReset, inactiveModal, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected]);
 
   const handleSelectItem = useCallback((typeOption: FilterOption, option: string) => {
     return () => {
@@ -70,42 +80,49 @@ const Component = ({ className, filterItems, handleCancel, handleReset, onConfir
   }, [setTmpItemsSelected]);
 
   const onApply = useCallback(() => {
-    const numberOptionsSelected = Object.values(setTmpItemsSelected).flat().length;
+    const numberOptionsSelected = Object.values(tmpItemsSelected).flat().length;
 
     setNumberOptionsSelected(numberOptionsSelected);
 
-    const filterfunction = (prev: NFLRivalCard[]) => {
+    const filterFunction = (prev: NFLRivalCard[]) => {
       if (numberOptionsSelected === 0) {
         return [...prev];
       } else {
         return [...prev].filter((card) => {
-          let isCardPositionPasses = tmpItemsSelected[FilterOption.POSITION_OPTION].length === 0;
-          let isCardCategoryPasses = tmpItemsSelected[FilterOption.CATEGORY_OPTION].length === 0;
+          const isCardPositionPassed = tmpItemsSelected[FilterOption.POSITION_OPTION].length === 0 || tmpItemsSelected[FilterOption.POSITION_OPTION].includes(card.position);
+          const isCardProgramPassed = tmpItemsSelected[FilterOption.PROGRAM_OPTION].length === 0 || tmpItemsSelected[FilterOption.PROGRAM_OPTION].includes(card.program);
+          const isCardRarityPassed = tmpItemsSelected[FilterOption.RARITY_OPTION].length === 0 || tmpItemsSelected[FilterOption.RARITY_OPTION].includes(card.rarity);
+          const isCardTeamPassed = tmpItemsSelected[FilterOption.TEAM_OPTION].length === 0 || tmpItemsSelected[FilterOption.TEAM_OPTION].includes(card.team);
 
-          console.log(isCardPositionPasses, isCardPositionPasses, card.position);
+          let isCardPowerPassed = tmpItemsSelected[FilterOption.POWER_OPTION].length === 0;
+          let isCardLevelPassed = tmpItemsSelected[FilterOption.LEVEL_OPTION].length === 0;
 
-          if (!isCardPositionPasses) {
-            isCardPositionPasses = tmpItemsSelected[FilterOption.POSITION_OPTION].includes(card.position);
+          if (!isCardPowerPassed) {
+            const idx = Math.floor((card.power - 50 >= 0 ? card.power - 50 : 0) / 10);
+
+            isCardPowerPassed = tmpItemsSelected[FilterOption.POWER_OPTION].includes(idx.toString());
           }
 
-          if (!isCardCategoryPasses) {
-            isCardCategoryPasses = true;
+          if (!isCardLevelPassed) {
+            const idx = Math.floor(card.level / 5);
+
+            isCardLevelPassed = tmpItemsSelected[FilterOption.LEVEL_OPTION].includes(idx.toString());
           }
 
-          return isCardPositionPasses && isCardCategoryPasses;
+          return isCardPositionPassed && isCardProgramPassed && isCardRarityPassed && isCardTeamPassed && isCardPowerPassed && isCardLevelPassed;
         });
       }
     };
 
     setConditionProcess((prev) => ({
       ...prev,
-      filter: filterfunction
+      filter: filterFunction
     }));
 
     onConfirm();
 
     inactiveModal('filter-modal-id');
-  }, [inactiveModal, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected, tmpItemsSelected]);
+  }, [inactiveModal, onConfirm, setConditionProcess, setNumberOptionsSelected, tmpItemsSelected]);
 
   const footerContent = useMemo(() => {
     return (
@@ -126,6 +143,26 @@ const Component = ({ className, filterItems, handleCancel, handleReset, onConfir
     );
   }, [onApply, onReset, t]);
 
+  const checkboxContent = useCallback((options: FilterItems, optionLabel: FilterOption, index: number) => {
+    const { id, label, subLabel } = options;
+
+    return (
+      <Checkbox
+        checked={tmpItemsSelected[optionLabel].includes(id)}
+        className='__filter-item'
+        key={index}
+        onClick={handleSelectItem(optionLabel, id)}
+      >
+        <div className='__filter-item-label'>
+          {t(label)}
+          {!!subLabel && <div className={'__filter-item-sub-label'}>
+            {t(subLabel)}
+          </div>}
+        </div>
+      </Checkbox>
+    );
+  }, [handleSelectItem, t, tmpItemsSelected]);
+
   return (
     <SwModal
       className={CN(className, '-full-size')}
@@ -144,20 +181,18 @@ const Component = ({ className, filterItems, handleCancel, handleReset, onConfir
               <div className={CN('__option-group-label')}>{t(optionLabel)}</div>
               <div className={CN('__option-group-content', optionLabel)}>
                 {
-                  options.map(({ label, subLabel, type }, index) => (
-                    <Checkbox
-                      checked={tmpItemsSelected[optionLabel as FilterOption].includes(type)}
-                      className='__filter-item'
-                      key={index}
-                      onClick={handleSelectItem(optionLabel as FilterOption, type)}
-                    >
-                      <div className='__filter-item-label'>
-                        {t(label)}
-                        {!!subLabel && <div className={'__filter-item-sub-label'}>
-                          {t(subLabel)}
-                        </div>}
-                      </div>
-                    </Checkbox>
+                  options.map(({ id, label, subLabel }, index) => (
+                    index % 2 === 0
+                      ? (
+                        <div
+                          className={CN('__option-group-row')}
+                          key={index}
+                        >
+                          {checkboxContent({ id, label, subLabel }, optionLabel as FilterOption, index)}
+                          {!!options[index + 1] && checkboxContent(options[index + 1], optionLabel as FilterOption, index + 1)}
+                        </div>
+                      )
+                      : <></>
                   ))
                 }
               </div>
@@ -185,11 +220,12 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
 
     '.__filter-item': {
       display: 'flex',
-      alignItems: 'center'
+      alignItems: 'center',
+      flex: '1 1 calc(50% - 16px)'
     },
     '.__filter-list': {
-      paddingTop: 20,
-      gap: 12,
+      paddingTop: token.paddingMD,
+      gap: token.size,
       flexDirection: 'column',
       display: 'flex'
     },
@@ -235,10 +271,7 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
     },
 
     '.ant-sw-modal-header.ant-sw-modal-header': {
-      paddingTop: token.padding + 2,
-      paddingBottom: token.padding + 2,
-      paddingLeft: 20,
-      paddingRight: 20
+      padding: `${token.padding + 2}px ${token.paddingMD}px`
     },
 
     '& .ant-sw-header-container-center .ant-sw-header-center-part ': {
@@ -311,16 +344,22 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
     '.__option-group': {
       display: 'flex',
       flexDirection: 'column',
-      gap: token.sizeSM,
-      margin: `0 ${token.padding}px`
+      gap: token.size,
+      margin: `0 ${token.margin}px`
     },
 
     '.__option-group-content': {
       display: 'flex',
       flexDirection: 'column',
       gap: token.sizeSM,
+      flexWrap: 'wrap'
+    },
+
+    '.__option-group-row': {
+      display: 'flex',
+      flexDirection: 'row',
       flexWrap: 'wrap',
-      maxHeight: 200
+      width: '100%'
     },
 
     '.__filter-item-label': {
@@ -353,7 +392,7 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
       fontSize: '14px',
       lineHeight: '16px',
       fontWeight: 400,
-      marginBottom: '4px'
+      marginBottom: token.marginXXS
     },
 
     '.ant-checkbox-wrapper': {
