@@ -10,13 +10,14 @@ import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { CONFIRM_YOUR_ACCOUNT_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
+import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useConfirmModal, useDefaultNavigate } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { odysseyMintNft } from '@subwallet/extension-koni-ui/messaging/transaction/odyssey';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { noop } from '@subwallet/extension-koni-ui/utils';
+import { noop, toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { ArrowCircleRight, CheckCircle, HouseLine, SmileySad } from 'phosphor-react';
@@ -27,7 +28,8 @@ import styled, { useTheme } from 'styled-components';
 
 type Props = ThemeProps & {
   airdropNftInfo: IAirdropNftMinting,
-  onSuccess: VoidFunction;
+  onSuccess: (mintedAddress: string) => void;
+  isFetchingNftMintingLog: boolean;
 };
 
 const apiSDK = BookaSdk.instance;
@@ -44,15 +46,10 @@ const enum buttonTypeConst {
   END_CAMPAIGN = 3
 }
 
-const enum IAirdropNftMintingProcess {
-  END_CAMPAIGN = 'END_CAMPAIGN',
-  ELIGIBLE = 'ELIGIBLE'
-}
-
 const telegramConnector = TelegramConnector.instance;
 
 const Component: React.FC<Props> = (props: Props) => {
-  const { airdropNftInfo, className, onSuccess } = props;
+  const { airdropNftInfo, className, isFetchingNftMintingLog, onSuccess } = props;
   const notify = useNotification();
   const { goHome } = useDefaultNavigate();
   const { activeModal } = useContext(ModalContext);
@@ -62,6 +59,7 @@ const Component: React.FC<Props> = (props: Props) => {
   const [selectedTab, setSelectedTab] = useState<string>(TabType.CONDITION);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { connectWC, requireWC } = useContext(WalletConnectContext);
+  const { alertModal } = useContext(WalletModalContext);
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
       {
@@ -239,30 +237,50 @@ const Component: React.FC<Props> = (props: Props) => {
   const { handleSimpleConfirmModal: handleInSufficientBalanceModal } = useConfirmModal(inSufficientBalanceProps);
   const { handleSimpleConfirmModal: handleBadgeAlreadyMintedModal } = useConfirmModal(badgeAlreadyMintedProps);
 
+  const handleExistedLinkedAddressModal = useCallback((address: string) => {
+    alertModal.open({
+      className: 'general-confirmation-modal modal-revert-header',
+      title: t('Failed to mint'),
+      iconProps: {
+        phosphorIcon: SmileySad,
+        weight: 'fill'
+
+      },
+      contentTitle: t('Change your wallet account'),
+      content: (
+        t('Your Telegram ID is linked to account {{address}}. Connect to this account and try minting again', {
+          replace: {
+            address: toShort(address, 5, 8)
+          }
+        })
+      ),
+      okButton: {
+        icon: CheckCircle,
+        iconWeight: 'fill',
+        text: t('Got it'),
+        onClick: alertModal.close
+      }
+    });
+  }, [alertModal, t]);
+
   const onSelectTab = useCallback((value: string) => {
     setSelectedTab(value);
   }, []);
 
   const buttonType = (() => {
     const now = Date.now();
-    const shouldCheck = airdropNftInfo?.start_mint && new Date(airdropNftInfo?.start_mint).getTime() < now;
+    const comingSoon = airdropNftInfo?.start_mint && new Date(airdropNftInfo?.start_mint).getTime() > now;
     const endCampaign = airdropNftInfo?.end && new Date(airdropNftInfo?.end).getTime() < now;
-    const eligibility = { currentProcess: IAirdropNftMintingProcess.ELIGIBLE };
 
-    if (!shouldCheck && !endCampaign) {
+    if (comingSoon) {
       return buttonTypeConst.COMING_SOON;
     }
 
-    if (eligibility && eligibility.currentProcess) {
-      switch (eligibility.currentProcess) {
-        case IAirdropNftMintingProcess.END_CAMPAIGN:
-          return buttonTypeConst.END_CAMPAIGN;
-        default:
-          return buttonTypeConst.MINT;
-      }
-    } else {
-      return buttonTypeConst.MINT;
+    if (endCampaign) {
+      return buttonTypeConst.END_CAMPAIGN;
     }
+
+    return buttonTypeConst.MINT;
   })();
 
   const onMint = useCallback(async (address: string) => {
@@ -296,7 +314,14 @@ const Component: React.FC<Props> = (props: Props) => {
         return;
       }
 
-      const { signature } = await apiSDK.nftMintingRequestSignature(address);
+      const { signature, status } = await apiSDK.nftMintingRequestSignature(address);
+
+      if (status === 'success') {
+        setIsLoading(false);
+        onSuccess(address);
+
+        return;
+      }
 
       const transaction = await odysseyMintNft({ address, chain: 'storyOdyssey_testnet', signature });
 
@@ -308,20 +333,43 @@ const Component: React.FC<Props> = (props: Props) => {
       } else if (transaction.errors.length) {
         handleFailedToMintModal().then(goHome).catch(console.error);
       } else {
-        onSuccess();
+        await apiSDK.nftMintingStart(transaction?.extrinsicHash);
+        onSuccess(address);
       }
 
       setIsLoading(false);
     } catch (e) {
+      const error = e as Error;
+
+      if (error.message?.startsWith('Please mint with wallet "')) {
+        const address = (() => {
+          const match = error.message.match(/^Please mint with wallet "([^"]+)"/);
+
+          if (match) {
+            return match[1];
+          }
+
+          console.error('Can not get address of:', error);
+
+          return '';
+        })();
+
+        handleExistedLinkedAddressModal(address);
+
+        setIsLoading(false);
+
+        return;
+      }
+
       notify({
-        message: (e as Error).message,
+        message: error.message,
         type: 'error',
         duration: null
       });
     }
 
     setIsLoading(false);
-  }, [handleIneligibleModal, goHome, handleBadgeAlreadyMintedModal, handleInSufficientBalanceModal, handleFailedToMintModal, onSuccess, notify]);
+  }, [handleIneligibleModal, goHome, handleBadgeAlreadyMintedModal, onSuccess, handleInSufficientBalanceModal, handleFailedToMintModal, notify, handleExistedLinkedAddressModal]);
 
   const onPreMint = useCallback(() => {
     const getAddress = new Promise<string>((resolve, reject) => {
@@ -378,7 +426,7 @@ const Component: React.FC<Props> = (props: Props) => {
             disabled={true}
             shape={'round'}
           >
-            {t('Coming Soon')}
+            {t('Coming soon')}
           </Button>
         )}
         {buttonType === buttonTypeConst.END_CAMPAIGN && (
@@ -393,7 +441,7 @@ const Component: React.FC<Props> = (props: Props) => {
             }
             shape={'round'}
           >
-            {t('End Campaign')}
+            {t('End campaign')}
           </Button>
         )}
         {buttonType === buttonTypeConst.MINT && (
@@ -448,9 +496,13 @@ const Component: React.FC<Props> = (props: Props) => {
           }
         </div>
 
-        <div className='footer-part'>
-          {renderButton()}
-        </div>
+        {
+          !isFetchingNftMintingLog && (
+            <div className='footer-part'>
+              {renderButton()}
+            </div>
+          )
+        }
       </div>
 
       <ConfirmYourAccountModal
@@ -498,11 +550,6 @@ const MintNftDetail = styled(Component)<ThemeProps>(({ theme: { extendToken, tok
         }
       },
 
-      '.__link': {
-        color: token.colorSuccess,
-        textDecoration: 'underline'
-      },
-
       '.tab-content': {
         flex: 1,
         overflow: 'auto'
@@ -531,6 +578,13 @@ const MintNftDetail = styled(Component)<ThemeProps>(({ theme: { extendToken, tok
           lineHeight: token.lineHeightHeading6,
           weight: 500
         }
+      }
+    },
+
+    '&.ant-sw-modal': {
+      '.__link': {
+        color: token.colorSuccess,
+        textDecoration: 'underline'
       }
     }
   });

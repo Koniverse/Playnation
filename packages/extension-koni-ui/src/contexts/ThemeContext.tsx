@@ -654,6 +654,11 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
         }
       },
 
+      '.__link': {
+        color: token.colorSuccess,
+        textDecoration: 'underline'
+      },
+
       '.__icon-modal': {
         borderRadius: '50%',
         padding: token.paddingLG - 2,

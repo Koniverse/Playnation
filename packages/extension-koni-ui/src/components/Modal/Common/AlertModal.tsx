@@ -70,6 +70,7 @@ const Component: React.FC<Props> = (props: Props) => {
                 onClick={cancelButton.onClick}
                 schema={cancelButton.schema || 'secondary'}
                 shape={'round'}
+                size={'sm'}
               >
                 {cancelButton.text}
               </Button>
@@ -86,6 +87,7 @@ const Component: React.FC<Props> = (props: Props) => {
               onClick={okButton?.onClick}
               schema={okButton.schema}
               shape={'round'}
+              size={'sm'}
             >
               {okButton.text}
             </Button>
@@ -161,6 +163,12 @@ const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: 
       '.anticon': {
         fontSize: '60px !important'
       }
+    },
+
+    '.ant-btn .anticon': {
+      width: '1em',
+      height: '1em',
+      fontSize: 20
     },
 
     '.__alert-icon': {

@@ -4,34 +4,36 @@
 import { detectTranslate } from '@subwallet/extension-base/utils';
 import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
-import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toShort } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Trans } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 interface Props extends ThemeProps {
-  airdropNftInfo: IAirdropNftMinting
+  airdropNftInfo: IAirdropNftMinting;
+  mintedAddress?: string;
 }
 
-const Component = ({ airdropNftInfo, className }: Props) => {
+const Component = ({ airdropNftInfo, className, mintedAddress = '' }: Props) => {
   const { t } = useTranslation();
-  const { icon, name } = airdropNftInfo;
-  const wcAccount = useSelector((state: RootState) => state.accountState.wcAccount);
+  const { name, nft_url: nftUrl } = airdropNftInfo;
+
+  const explorerLink = useMemo(() => {
+    return `https://story.aurascan.io/address/${mintedAddress}`;
+  }, [mintedAddress]);
 
   return (
     <div className={CN(className)}>
       <div className={'__mint-nft-success-header'}>
-        {t('Yay! You minted {{nft}} badge', { replace: { nft: name } })}
+        {t('Yay! You minted {{nft}}', { replace: { nft: name } })}
       </div>
       <div className={CN('__mint-badge-wrapper')}>
         <img
           alt='badge'
           className={'__mint-badge-image'}
-          src={icon}
+          src={nftUrl}
         />
       </div>
       <div className={'__mint-nft-success-footer'}>
@@ -40,12 +42,14 @@ const Component = ({ airdropNftInfo, className }: Props) => {
             highlight: (
               <a
                 className='__link'
-                href={'/'}
+                href={explorerLink}
+                rel='noreferrer'
+                target='_blank'
               />
             )
           }}
           i18nKey={detectTranslate('Congratulations! Your badge is minted with account {{address}}. Check out other badges <highlight>here</highlight>')}
-          values={{ address: toShort(wcAccount?.address || '', 10, 16) }}
+          values={{ address: toShort(mintedAddress, 10, 16) }}
         />
       </div>
     </div>

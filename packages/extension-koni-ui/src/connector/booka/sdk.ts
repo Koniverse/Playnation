@@ -396,6 +396,30 @@ export class BookaSdk {
     return null;
   }
 
+  public getShareTwitterMintNftURL (item: IAirdropNftMinting) {
+    if (!item.share) {
+      return;
+    }
+
+    try {
+      const dataShare = item.share;
+      const urlBot = dataShare.url_share;
+
+      const content = dataShare.content;
+      let hashtag = '';
+
+      if (dataShare.hashtags) {
+        hashtag = `&hashtags=${dataShare.hashtags}`;
+      }
+
+      const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
+
+      return `http://x.com/share?text=${content}&url=${linkApp}%0A${hashtag}`;
+    } catch (e) {}
+
+    return null;
+  }
+
   async getShareTwitterClaimURL (item: AirdropCampaign) {
     if (!item.share) {
       return undefined;
@@ -930,40 +954,53 @@ export class BookaSdk {
     await wait(1000);
 
     const getUCTPlus7 = (dateString: string) => {
-      return new Date(dateString + ' UTC+7');
+      // Split the input date string into components (e.g., "2024-11-20 07:00")
+      const [datePart, timePart] = dateString.split(' ');
+      const [year, month, day] = datePart.split('-').map(Number); // Parse date
+      const [hours, minutes] = timePart.split(':').map(Number); // Parse time
+
+      // Create a UTC+7 date object manually
+      return new Date(Date.UTC(year, month - 1, day, hours - 7, minutes));
     };
 
     const eligibilityList = [
       {
         id: 1,
-        name: 'Top 5000 on General SP Leaderboard',
+        name: 'Rank on top 5,000 general leaderboard',
         start: getUCTPlus7('2024-11-07 07:00'),
-        end: getUCTPlus7('2024-11-21 07:00')
+        end: getUCTPlus7('2024-11-22 07:00')
       },
       {
         id: 2,
         name: 'Hunt at least 5,000 SP',
         start: getUCTPlus7('2024-11-07 07:00'),
-        end: getUCTPlus7('2024-11-21 07:00')
+        end: getUCTPlus7('2024-11-22 07:00')
       }
     ];
 
     this.airdropNftMintSubject.next([{
       id: 1,
-      name: 'Koni Story',
+      name: 'Koni Story badge',
       icon: '/images/mint-event-logo.png',
+      nft_url: '/images/default-nft-logo.png',
       banner: '',
       start_snapshot: getUCTPlus7('2024-11-22 09:00'),
       start_mint: getUCTPlus7('2024-11-25 09:00'),
       network: 'Polkadot',
-      total_badges: 500,
-      symbol: 'DOT',
+      total_badges: 5000,
+      symbol: 'badge',
       // decimal: number;
       // method: string;
       // raffle_count: number;
       start: getUCTPlus7('2024-11-07 09:00'),
       end: getUCTPlus7('2024-11-29 09:00'),
       conditionDescription: '',
+      // share: {
+      //   url_share: '',
+      //   content: `Odyssey Testnet is LIVE! Have fun with easy-peasy tasks and earn the exclusive Koni Story badge through your IPventure 👑
+      //   \nLast chance to become an @StoryProtocol OG before mainnet launch 💨
+      //   \nJoin now 👇`
+      // },
       description: `
       <p>
           Let your IPventure begin by participating in the campaign now for a chance to earn the exclusive Koni Story badge!
@@ -986,7 +1023,9 @@ export class BookaSdk {
           and can only be earned ONCE per user.
         </p>
 
-        How to hunt SP?
+        <h2>
+            How to hunt SP?
+        </h2>
 
         <p>
           👉Join Koni Story TG app to receive an original Story Point (SP) package that gives you a head start in the campaign
@@ -997,7 +1036,7 @@ export class BookaSdk {
         </p>
 
         <p>
-          👉Climb up the ranks, as only top 5000 users with at least 5,000 SP will be rewarded with Koni Story badges
+          👉Climb up the ranks, as only top 5,000 users with at least 5,000 SP will be rewarded with Koni Story badges
         </p>
 
         <h2>
@@ -1032,13 +1071,19 @@ export class BookaSdk {
     return data.data;
   }
 
+  async nftMintingGetLog (campaign = 'default') {
+    const data = await this.postRequest<APIResponse<NftMintingLog>>(`${GAME_API_HOST}/api/mint-nft/get-mint`, { campaign });
+
+    return data.data;
+  }
+
   async nftMintingRequestSignature (address: string, campaign = 'default') {
     const data = await this.postRequest<APIResponse<NftMintingLog>>(`${GAME_API_HOST}/api/mint-nft/request-signature`, { address, campaign });
 
     return data.data;
   }
 
-  async nftMintingStart (campaign = 'default', extrinsicHash?: string) {
+  async nftMintingStart (extrinsicHash?: string, campaign = 'default') {
     const data = await this.postRequest<APIResponse<NftMintingLog>>(`${GAME_API_HOST}/api/mint-nft/start-mint`, { campaign, extrinsicHash });
 
     return data.data;

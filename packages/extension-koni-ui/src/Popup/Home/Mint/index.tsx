@@ -18,13 +18,20 @@ const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/leaderboard');
   const [nftAirdropList, setNftAirdropList] = useState<IAirdropNftMinting[]>(apiSDK.airdropNftMintList);
   const [mintSuccess, setMintSuccess] = useState(false);
+  const [mintedAddress, setMintedAddress] = useState<string | undefined>(undefined);
+  const [isFetchingNftMintingLog, setIsFetchingNftMintingLog] = useState<boolean>(true);
 
   const currentIAirdropNftMinting = useMemo(() => {
     return nftAirdropList[0];
   }, [nftAirdropList]);
 
-  const onMintSuccess = useCallback(() => {
+  const onMintSuccess = useCallback((address: string) => {
+    setMintedAddress(address);
     setMintSuccess(true);
+  }, []);
+
+  const onClickLogo = useCallback(() => {
+    // nothing
   }, []);
 
   useEffect(() => {
@@ -37,6 +44,19 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, []);
 
+  useEffect(() => {
+    apiSDK.nftMintingGetLog().then((rs) => {
+      if (rs && rs.status === 'success') {
+        setMintedAddress(rs.address);
+        setMintSuccess(true);
+      }
+    }).catch((e) => {
+      console.error('nftMintingGetLog Error', e);
+    }).finally(() => {
+      setIsFetchingNftMintingLog(false);
+    });
+  }, []);
+
   if (!currentIAirdropNftMinting) {
     return <></>;
   }
@@ -47,15 +67,22 @@ const Component = ({ className }: Props): React.ReactElement => {
       '-minted': mintSuccess
     })}
     >
-      <MintNftHeader airdropNftInfo={currentIAirdropNftMinting} />
+      <MintNftHeader
+        airdropNftInfo={currentIAirdropNftMinting}
+        onClickLogo={onClickLogo}
+      />
       {
         mintSuccess
           ? (
-            <MintNftSuccess airdropNftInfo={currentIAirdropNftMinting} />
+            <MintNftSuccess
+              airdropNftInfo={currentIAirdropNftMinting}
+              mintedAddress={mintedAddress}
+            />
           )
           : (
             <MintNftDetail
               airdropNftInfo={currentIAirdropNftMinting}
+              isFetchingNftMintingLog={isFetchingNftMintingLog}
               onSuccess={onMintSuccess}
             />
           )
