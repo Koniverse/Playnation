@@ -39,6 +39,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [selectedCard, setSelectedCard] = useState<NFLRivalCard | undefined>(undefined);
   const [cardItems, setCardItems] = useState<NFLRivalCard[]>([]);
   const [conditionProcess, setConditionProcess] = useState<ConditionProcessState>(ConditionProcessDefault);
+  const [isSearchAction, setIsSearchAction] = useState(false);
   const initCardItems = useRef<NFLRivalCard[]>([]);
 
   useEffect(() => {
@@ -111,8 +112,10 @@ const Component = ({ className }: Props): React.ReactElement => {
         />
 
         <ToolArea
+          isSearchAction={isSearchAction}
           listCard={cardItems}
           setConditionProcess={setConditionProcess}
+          setIsSearchAction={setIsSearchAction}
         />
 
         {cardItems.length
@@ -135,7 +138,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           : (
             <EmptyListContent
               className={'empty-list-content'}
-              content={t('Change your filter and try again')}
+              content={isSearchAction ? t('Change your search and try again') : t('Change your filter and try again')}
               title={t('oops! no cards found')}
             />
           )

@@ -5,7 +5,7 @@ import { NFLRivalCard } from '@subwallet/extension-koni-ui/connector/booka/types
 import { ConditionProcessState } from '@subwallet/extension-koni-ui/Popup/Home/Cards';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import styled from 'styled-components';
 
 import { ToolFilters } from './ToolFiters';
@@ -14,12 +14,12 @@ import { ToolSort } from './ToolSort';
 
 type Props = ThemeProps & {
   setConditionProcess: Dispatch<SetStateAction<ConditionProcessState>>,
+  isSearchAction: boolean,
+  setIsSearchAction: Dispatch<SetStateAction<boolean>>
   listCard: NFLRivalCard[]
 };
 
-const Component = ({ className, setConditionProcess }: Props): React.ReactElement => {
-  const [isSearchAction, setIsSearchAction] = useState(false);
-
+const Component = ({ className, isSearchAction, setConditionProcess, setIsSearchAction }: Props): React.ReactElement => {
   return (
     <div className={className}>
       <ToolSearch

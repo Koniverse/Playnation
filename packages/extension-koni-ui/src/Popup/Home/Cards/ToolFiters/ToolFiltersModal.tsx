@@ -8,6 +8,7 @@ import { FilterItems, FilterOption } from '@subwallet/extension-koni-ui/Popup/Ho
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Checkbox, ModalContext, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
+import _ from 'lodash';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -53,7 +54,7 @@ const Component = ({ className, filterItems, handleCancel, handleReset, onConfir
   }, [handleCancel, inactiveModal]);
 
   const onReset = useCallback(() => {
-    setTmpItemsSelected(DEFAULT_FILTER_OPTIONS_SELECTED);
+    setTmpItemsSelected(_.cloneDeep(DEFAULT_FILTER_OPTIONS_SELECTED));
     setNumberOptionsSelected(0);
     setConditionProcess((prev) => ({
       ...prev,

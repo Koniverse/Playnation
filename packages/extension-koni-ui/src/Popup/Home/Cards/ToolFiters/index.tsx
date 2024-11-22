@@ -7,6 +7,7 @@ import { ConditionProcessState } from '@subwallet/extension-koni-ui/Popup/Home/C
 import { FilterOptionsSelected, ToolFiltersModal } from '@subwallet/extension-koni-ui/Popup/Home/Cards/ToolFiters/ToolFiltersModal';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';
+import _ from 'lodash';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useState } from 'react';
 import styled from 'styled-components';
 
@@ -53,7 +54,7 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
   const [numberOptionsSelected, setNumberOptionsSelected] = useState<number>(0);
-  const [tmpItemsSelected, setTmpItemsSelected] = useState<FilterOptionsSelected>(DEFAULT_FILTER_OPTIONS_SELECTED);
+  const [tmpItemsSelected, setTmpItemsSelected] = useState<FilterOptionsSelected>(_.cloneDeep(DEFAULT_FILTER_OPTIONS_SELECTED));
 
   const [itemsSelected, setItemsSelected] = useState<FilterOptionsSelected>(DEFAULT_FILTER_OPTIONS_SELECTED);
 
