@@ -161,6 +161,8 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         const wcAddress = await getWcAddress();
 
         if (!wcAddress) {
+          setTaskLoading(false);
+
           return;
         }
 
@@ -221,6 +223,8 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         const wcAddress = await getWcAddress();
 
         if (!wcAddress) {
+          setTaskLoading(false);
+
           return;
         }
 
