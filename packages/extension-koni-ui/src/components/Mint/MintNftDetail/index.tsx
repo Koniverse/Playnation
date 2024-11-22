@@ -30,6 +30,7 @@ type Props = ThemeProps & {
   airdropNftInfo: IAirdropNftMinting,
   onSuccess: (mintedAddress: string) => void;
   isFetchingNftMintingLog: boolean;
+  alwaysShowMint?: boolean; // for debug
 };
 
 const apiSDK = BookaSdk.instance;
@@ -49,7 +50,7 @@ const enum buttonTypeConst {
 const telegramConnector = TelegramConnector.instance;
 
 const Component: React.FC<Props> = (props: Props) => {
-  const { airdropNftInfo, className, isFetchingNftMintingLog, onSuccess } = props;
+  const { airdropNftInfo, alwaysShowMint, className, isFetchingNftMintingLog, onSuccess } = props;
   const notify = useNotification();
   const { goHome } = useDefaultNavigate();
   const { activeModal } = useContext(ModalContext);
@@ -268,6 +269,10 @@ const Component: React.FC<Props> = (props: Props) => {
   }, []);
 
   const buttonType = (() => {
+    if (alwaysShowMint) {
+      return buttonTypeConst.MINT;
+    }
+
     const now = Date.now();
     const comingSoon = airdropNftInfo?.start_mint && new Date(airdropNftInfo?.start_mint).getTime() > now;
     const endCampaign = airdropNftInfo?.end && new Date(airdropNftInfo?.end).getTime() < now;

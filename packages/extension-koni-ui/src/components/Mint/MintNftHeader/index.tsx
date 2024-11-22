@@ -15,7 +15,8 @@ import styled from 'styled-components';
 
 type Props = ThemeProps & {
   airdropNftInfo: IAirdropNftMinting,
-  onClickLogo?: VoidFunction,
+  onClickLogo?: VoidFunction, // for debug
+  onClickNameArea?: VoidFunction, // for debug
 };
 
 enum Timeline {
@@ -28,7 +29,7 @@ enum Timeline {
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
 
-function Component ({ airdropNftInfo, className, onClickLogo }: Props) {
+function Component ({ airdropNftInfo, className, onClickLogo, onClickNameArea }: Props) {
   const { t } = useTranslation();
 
   const { timelines } = (() => {
@@ -114,7 +115,10 @@ function Component ({ airdropNftInfo, className, onClickLogo }: Props) {
             />
           </div>
         </div>
-        <div className='__airdrop-info-right-part'>
+        <div
+          className='__airdrop-info-right-part'
+          onClick={onClickNameArea}
+        >
           <div className='__airdrop-name'>
             {airdropNftInfo.name}
           </div>
