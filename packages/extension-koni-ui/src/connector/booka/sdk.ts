@@ -1036,7 +1036,7 @@ export class BookaSdk {
         </p>
 
         <p>
-          👉Climb up the ranks, as only top 5000 users with at least 5,000 SP will be rewarded with Koni Story badges
+          👉Climb up the ranks, as only top 5,000 users with at least 5,000 SP will be rewarded with Koni Story badges
         </p>
 
         <h2>
