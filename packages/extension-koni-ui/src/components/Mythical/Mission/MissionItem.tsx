@@ -3,6 +3,7 @@
 
 import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
 import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
@@ -78,7 +79,7 @@ const Component = ({ actionContent, className,
           }
 
           <div className='__point'>
-            +{Number(point).toLocaleString()}
+            +{toDisplayNumber(point)}
 
             {
               state === 'CLAIMABLE' && (

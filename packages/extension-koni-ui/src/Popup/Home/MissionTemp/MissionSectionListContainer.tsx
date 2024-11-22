@@ -8,6 +8,7 @@ import { Achievement, AchievementLogStatus, BookaAccount, Task, TaskAction, Task
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
 import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -259,7 +260,7 @@ const Component = ({ accountInfo,
     if (firstProcessItem) {
       const completed = Math.min(firstProcessItem.completed || 0, firstProcessItem.required);
 
-      return `${completed}/${firstProcessItem.required} ${getMetricCounterpart(firstProcessItem.metricId, achievement)}`.trim();
+      return `${toDisplayNumber(completed)}/${toDisplayNumber(firstProcessItem.required)} ${getMetricCounterpart(firstProcessItem.metricId, achievement)}`.trim();
     }
 
     return '';
