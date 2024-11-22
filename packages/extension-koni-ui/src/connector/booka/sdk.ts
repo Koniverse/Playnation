@@ -1023,7 +1023,9 @@ export class BookaSdk {
           and can only be earned ONCE per user.
         </p>
 
-        How to hunt SP?
+        <h2>
+            How to hunt SP?
+        </h2>
 
         <p>
           👉Join Koni Story TG app to receive an original Story Point (SP) package that gives you a head start in the campaign
