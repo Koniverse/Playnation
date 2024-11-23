@@ -15,6 +15,13 @@ type Props = ThemeProps & {
 
 const modalId = 'sort-modal';
 
+const rarityOrder: Record<string, number> = {
+  common: 1,
+  rare: 2,
+  epic: 3,
+  legendary: 4
+};
+
 const Component = ({ className, setConditionProcess }: Props): React.ReactElement => {
   const { activeModal } = useContext(ModalContext);
   const [sortedType, setSortedType] = useState<number>(0);
@@ -83,7 +90,7 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
         setConditionProcess((pre) => {
           return {
             ...pre,
-            sort: (prev) => prev.sort((a, b) => a.firstName.localeCompare(b.firstName)).reverse()
+            sort: (prev) => prev.sort((a, b) => rarityOrder[b.rarity] - rarityOrder[a.rarity])
           };
         });
         setSortedType(3);
@@ -96,7 +103,7 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
         setConditionProcess((pre) => {
           return {
             ...pre,
-            sort: (prev) => prev.sort((a, b) => a.firstName.localeCompare(b.firstName))
+            sort: (prev) => prev.sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity])
           };
         });
         setSortedType(4);
