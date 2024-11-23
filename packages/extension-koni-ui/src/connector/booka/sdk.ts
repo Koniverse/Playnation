@@ -434,6 +434,19 @@ export class BookaSdk {
     return this.nflRivalCardListSubject.value;
   }
 
+  async fetchMythicalBalance (token?: string) {
+    try {
+      const rs = await this.postRequest<MythicalWallet>(`${GAME_API_HOST}/api/mythical-account/fetch`, { token: token });
+
+      if (rs) {
+        this.mythicalWalletSubject.next(rs);
+      }
+    } catch (error) {
+      console.error('Error in fetchMythicalBalance:', error);
+      throw error;
+    }
+  }
+
   getDailyRewardAchievements () {
     return this.dailyRewardAchievementsSubject.value;
   }
@@ -1047,26 +1060,6 @@ export class BookaSdk {
 
   subscribeAirdropCampaign () {
     return this.airdropCampaignSubject;
-  }
-
-  async fetchMythicalBalance (token: string) {
-    const request = await fetch(`${MYTHICAL_API_HOST}/player/wallet-balance`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    if (request.status === 200 || request.status === 304) {
-      const balance = (await request.json()) as unknown as MythicalWallet;
-
-      this.mythicalWalletSubject.next(balance);
-
-      return balance;
-    } else {
-      return undefined;
-    }
   }
 
   getMythicalWallet () {
