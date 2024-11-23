@@ -3,9 +3,11 @@
 
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { MythicalWallet } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
-import React, { useEffect } from 'react';
+import { copyToClipboard, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
+import { shortenString } from '@subwallet/extension-koni-ui/utils/string';
+import React, { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -15,6 +17,7 @@ const apiSDK = BookaSdk.instance;
 const Component = ({ className }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const [mythicalWallet, setMythicalWallet] = React.useState<MythicalWallet>(apiSDK.getMythicalWallet());
+  const notify = useNotification();
 
   useEffect(() => {
     const walletSub = apiSDK.subscribeMythicalWallet().subscribe((data) => {
@@ -26,14 +29,24 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, []);
 
+  const onCopy = useCallback(() => {
+    copyToClipboard(mythicalWallet?.address || '');
+    notify({
+      message: t('Copied to clipboard')
+    });
+  }, [mythicalWallet?.address, notify, t]);
+
   return (
     <div className={className}>
       <div className='__info-item'>
         <div className='__info-label'>{t('Your Wallet')}</div>
         <div className='__info-value __wallet-address-wrapper'>
-          <div className='__wallet-address'>${mythicalWallet?.address}</div>
+          <div className='__wallet-address'>{shortenString(mythicalWallet?.address || '')}</div>
 
-          <button className={'__copy-button'}>
+          <button
+            className={'__copy-button'}
+            onClick={onCopy}
+          >
             <svg
               fill='none'
               height='20'
