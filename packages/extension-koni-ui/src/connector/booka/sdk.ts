@@ -396,7 +396,7 @@ export class BookaSdk {
     return null;
   }
 
-  public getShareTwitterMintNftURL (item: IAirdropNftMinting, useInviteCode?: boolean) {
+  public getShareTwitterMintNftURL (item: IAirdropNftMinting) {
     if (!item.share) {
       return;
     }
@@ -412,7 +412,7 @@ export class BookaSdk {
         hashtag = `&hashtags=${dataShare.hashtags}`;
       }
 
-      const linkApp = useInviteCode ? `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}` : urlBot;
+      const linkApp = `${urlBot}?startApp=${this.account?.info.inviteCode || 'booka'}`;
 
       return `http://x.com/share?text=${content}&url=${linkApp}%0A${hashtag}`;
     } catch (e) {}
@@ -996,7 +996,7 @@ export class BookaSdk {
       end: getUCTPlus7('2024-11-29 09:00'),
       conditionDescription: '',
       share: {
-        url_share: 'https://x.koni.studio/koni-story-mint',
+        url_share: 'https://x.koni.studio/mint-badge',
         content: `Odyssey Testnet is LIVE! Have fun with easy-peasy tasks and earn the exclusive Koni Story badge through your IPventure 👑
         %0ALast chance to become an @StoryProtocol OG before mainn letaunch 💨
         %0AJoin now 👇`
