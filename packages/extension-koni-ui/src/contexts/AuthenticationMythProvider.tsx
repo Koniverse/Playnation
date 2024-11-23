@@ -4,7 +4,7 @@
 import TelegramBotLink, { LinkConfig, LinkResult } from '@koniverse/telegram-bot-link';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AccountPublicInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountPublicInfo, MythicalWallet } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { AUTHENTICATE_LINKING_BOT, AUTHENTICATE_LINKING_SERVICE, AUTHENTICATE_LINKING_TOKEN, AUTHENTICATE_LINKING_URL } from '@subwallet/extension-koni-ui/constants';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
@@ -19,7 +19,8 @@ interface AuthenticationMythProviderProps {
 export interface AuthenticationMythContextProps {
   account?: AccountPublicInfo;
   isLinkedMyth: boolean;
-  linkMythAccount: (address: string) => Promise<void>;
+  mythicalWallet: MythicalWallet;
+  linkMythAccount: () => Promise<void>;
   onLogin: VoidFunction;
   onLogout: () => Promise<void>;
 }
@@ -29,6 +30,7 @@ export const LOCAL_LOGGED_IN_PROMISE_KEY = 'mythical_logged_in_promise';
 export const AuthenticationMythContext = createContext<AuthenticationMythContextProps>({
   isLinkedMyth: false,
   linkMythAccount: () => Promise.resolve(),
+  mythicalWallet: { address: '', balanceInMyth: '' } as MythicalWallet,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   onLogin: () => {},
   onLogout: () => Promise.resolve()
@@ -49,6 +51,7 @@ const telegramConnector = TelegramConnector.instance;
 
 export const AuthenticationMythProvider = ({ children }: AuthenticationMythProviderProps) => {
   const [account, setAccount] = useState<AccountPublicInfo>({} as AccountPublicInfo);
+  const [mythicalWallet, setMythicalWallet] = useState<MythicalWallet>(bookaSDK.getMythicalWallet());
   const [linkData, setLinkData] = useState<LinkResult>();
   const [isLinked, setIsLinked] = useState<boolean>(false);
   const authContext = useContext(AuthContext);
@@ -64,6 +67,16 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     bookaSDK.fetchMythicalBalance(authContext.token).catch(console.error);
   }, [authContext, authContext.token]);
 
+  useEffect(() => {
+    const unsub = bookaSDK.subscribeMythicalWallet().subscribe((data) => {
+      setMythicalWallet(data);
+    });
+
+    return () => {
+      unsub.unsubscribe();
+    };
+  }, []);
+
   const onLoginWithMythAccount = useCallback(() => {
     localStorage.setItem(LOCAL_LOGGED_IN_PROMISE_KEY, 'login');
     authContext.logIn();
@@ -78,9 +91,20 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     localStorage.setItem(LOCAL_LOGGED_IN_PROMISE_KEY, 'logout');
   }, [authContext]);
 
-  const onSubmitMythAccount = useCallback(async (address: string) => {
+  const onSubmitMythAccount = useCallback(async () => {
     if (!tokenData?.email || !authContext.token) {
       return;
+    }
+
+    let address = '';
+
+    try {
+      await bookaSDK.fetchMythicalBalance(authContext.token);
+      const mythicalBalance = bookaSDK.getMythicalWallet();
+
+      address = mythicalBalance.address;
+    } catch (error) {
+      console.error(error);
     }
 
     const rs = await linkSDK.submitLink({
@@ -100,12 +124,12 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     }
   }, [authContext.token, tokenData?.email]);
 
-  const linkMythAccount = useCallback(async (address: string) => {
+  const linkMythAccount = useCallback(async () => {
     if (!tokenData?.email || !authContext.token) {
       onLoginWithMythAccount();
     }
 
-    await onSubmitMythAccount(address);
+    await onSubmitMythAccount();
   }, [authContext.token, onLoginWithMythAccount, onSubmitMythAccount, tokenData?.email]);
 
   const onLogin = useCallback(() => {
@@ -157,7 +181,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
           }
         } else {
           console.log('tokenData', tokenData);
-          onSubmitMythAccount(currentAccount?.address || '0x0').catch(console.error);
+          onSubmitMythAccount().catch(console.error);
         }
       }).catch(console.error);
     }
@@ -166,6 +190,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
   const authenticationValue: AuthenticationMythContextProps = {
     account,
     isLinkedMyth: isLinked,
+    mythicalWallet,
     linkMythAccount,
     onLogin,
     onLogout

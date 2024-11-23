@@ -1,33 +1,20 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { MythicalWallet } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { copyToClipboard, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
-import { shortenString } from '@subwallet/extension-koni-ui/utils/string';
-import React, { useCallback, useEffect } from 'react';
+import { copyToClipboard, toDisplayNumber, toShort } from '@subwallet/extension-koni-ui/utils';
+import React, { useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
-const apiSDK = BookaSdk.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   const { t } = useTranslation();
-  const [mythicalWallet, setMythicalWallet] = React.useState<MythicalWallet>(apiSDK.getMythicalWallet());
+  const { mythicalWallet } = useContext(AuthenticationMythContext);
   const notify = useNotification();
-
-  useEffect(() => {
-    const walletSub = apiSDK.subscribeMythicalWallet().subscribe((data) => {
-      setMythicalWallet(data);
-    });
-
-    return () => {
-      walletSub.unsubscribe();
-    };
-  }, []);
 
   const onCopy = useCallback(() => {
     copyToClipboard(mythicalWallet?.address || '');
@@ -41,7 +28,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       <div className='__info-item'>
         <div className='__info-label'>{t('Your Wallet')}</div>
         <div className='__info-value __wallet-address-wrapper'>
-          <div className='__wallet-address'>{shortenString(mythicalWallet?.address || '')}</div>
+          <div className='__wallet-address'>{toShort(mythicalWallet?.address || '')}</div>
 
           <button
             className={'__copy-button'}

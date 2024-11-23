@@ -17,7 +17,7 @@ type Props = ThemeProps & {
 
 const Component = ({ className, doLinkAccount, isLinked, isLoading }: Props): React.ReactElement => {
   const { t } = useTranslation();
-  const { account } = useContext(AuthenticationMythContext);
+  const { account, mythicalWallet } = useContext(AuthenticationMythContext);
   const openContactSupport = useCallback(() => {
     openInNewTab('https://support.rivals.game/hc/en-us/requests/new')();
   }, []);
@@ -39,7 +39,7 @@ const Component = ({ className, doLinkAccount, isLinked, isLoading }: Props): Re
               />
               <div className={'__linked-account-text'}>
                 <span className={'__linked-account-gmail'}>{account?.email}</span>
-                <span className={'__linked-account-address'}>&nbsp;({account?.address && toShort(account?.address, 3, 3)})</span>
+                <span className={'__linked-account-address'}>&nbsp;({mythicalWallet?.address && toShort(mythicalWallet?.address, 3, 3)})</span>
               </div>
             </div>
           </div>

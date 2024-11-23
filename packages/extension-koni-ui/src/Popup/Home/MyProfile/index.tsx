@@ -30,7 +30,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [loading, setLoading] = useState(false);
   const [mineAccount, setMineAccount] = useState<BookaAccount | undefined>(apiSDK.account);
   const doLinkAccount = useCallback(() => {
-    currentAccount?.address && linkMythAccount(currentAccount?.address).catch(console.error);
+    currentAccount?.address && linkMythAccount().catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
 
   const logIn = useCallback(() => {
