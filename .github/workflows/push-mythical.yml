@@ -1,12 +1,9 @@
 name: Build Mythical MiniApp
 on:
-  pull_request:
-    branches:
-      - mythical-dev
-      - mythical-prod
   push:
     branches:
       - mythical-dev
+      - mythical-preview
       - mythical-prod
 
 jobs:
@@ -52,7 +49,7 @@ jobs:
         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         projectName: mythical-games
         gitHubToken: ${{ secrets.GH_AUTOMATION_TOKEN }}
-        branch: ${{ github.ref_name == 'mythical-prod' && 'main' || 'dev' }}
+        branch: ${{ vars.CF_PAGE_BRANCH }}
         directory: './packages/webapp/build'
         wranglerVersion: '3'
     - name: Notify to Discord
