@@ -25,7 +25,7 @@ const apiSDK = BookaSdk.instance;
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/my-profile');
   const { t } = useTranslation();
-  const { isLinkedMyth, linkMythAccount, onLogin, onLogout } = useContext(AuthenticationMythContext);
+  const { isLinkedMyth, linkMythAccount, mythicalWallet, onLogin, onLogout } = useContext(AuthenticationMythContext);
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
   const [loading, setLoading] = useState(false);
   const [mineAccount, setMineAccount] = useState<BookaAccount | undefined>(apiSDK.account);
@@ -89,7 +89,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         />
         {isLinkedMyth
           ? (
-            <>
+            mythicalWallet?.address && <>
               <WalletInfoArea className={'wallet-info-area'} />
               <RewardHistoryArea className={'reward-history-area'} />
             </>

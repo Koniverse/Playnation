@@ -39,7 +39,7 @@ const Component = ({ className, doLinkAccount, isLinked, isLoading }: Props): Re
               />
               <div className={'__linked-account-text'}>
                 <span className={'__linked-account-gmail'}>{account?.email}</span>
-                <span className={'__linked-account-address'}>&nbsp;({mythicalWallet?.address && toShort(mythicalWallet?.address, 3, 3)})</span>
+                {mythicalWallet?.address && <span className={'__linked-account-address'}>&nbsp;({toShort(mythicalWallet.address, 3, 3)})</span>}
               </div>
             </div>
           </div>
