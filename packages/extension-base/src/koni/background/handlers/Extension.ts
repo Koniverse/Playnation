@@ -32,7 +32,7 @@ import { createTransferExtrinsic, getTransferMockTxFee } from '@subwallet/extens
 import { createSnowBridgeExtrinsic, createXcmExtrinsic, getXcmMockTxFee } from '@subwallet/extension-base/services/balance-service/transfer/xcm';
 import { _API_OPTIONS_CHAIN_GROUP, _DEFAULT_MANTA_ZK_CHAIN, _MANTA_ZK_CHAIN_GROUP, _ZK_ASSET_PREFIX } from '@subwallet/extension-base/services/chain-service/constants';
 import { _ChainApiStatus, _ChainConnectionStatus, _ChainState, _NetworkUpsertParams, _ValidateCustomAssetRequest, _ValidateCustomAssetResponse, EnableChainParams, EnableMultiChainParams } from '@subwallet/extension-base/services/chain-service/types';
-import { _getAssetDecimals, _getAssetSymbol, _getChainNativeTokenBasicInfo, _getContractAddressOfToken, _getEvmChainId, _getSubstrateGenesisHash, _isAssetSmartContractNft, _isChainEvmCompatible, _isCustomAsset, _isLocalToken, _isMantaZkAsset, _isNativeToken, _isPureEvmChain, _isTokenEvmSmartContract, _isTokenTransferredByEvm } from '@subwallet/extension-base/services/chain-service/utils';
+import { _getAssetDecimals, _getAssetSymbol, _getChainNativeTokenBasicInfo, _getContractAddressOfToken, _getEvmChainId, _getSubstrateGenesisHash, _isAssetSmartContractNft, _isChainEvmCompatible, _isCustomAsset, _isLocalToken, _isMantaZkAsset, _isNativeToken, _isPureEvmChain, _isSubstrateChain, _isTokenEvmSmartContract, _isTokenTransferredByEvm } from '@subwallet/extension-base/services/chain-service/utils';
 import { EXTENSION_REQUEST_URL } from '@subwallet/extension-base/services/request-service/constants';
 import { AuthUrls } from '@subwallet/extension-base/services/request-service/types';
 import { DEFAULT_AUTO_LOCK_TIME } from '@subwallet/extension-base/services/setting-service/constants';
@@ -64,7 +64,7 @@ import { TransactionConfig } from 'web3-core';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { TypeRegistry } from '@polkadot/types';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@polkadot/types/types';
-import { assert, hexStripPrefix, hexToU8a, isAscii, isHex, u8aToHex, u8aToString } from '@polkadot/util';
+import { assert, hexStripPrefix, hexToU8a, isAscii, isHex, stringToHex, u8aToHex, u8aToString } from '@polkadot/util';
 import { base64Decode, decodeAddress, isAddress, isEthereumAddress, jsonDecrypt, keyExtractSuri, mnemonicGenerate, mnemonicValidate } from '@polkadot/util-crypto';
 import { EncryptedJson, KeypairType, Prefix } from '@polkadot/util-crypto/types';
 
@@ -4124,26 +4124,48 @@ export default class KoniExtension {
   }
 
   private async remarkWithEvent (request: RemarkWithEvent): Promise<SWTransactionResponse> {
-    const address = request.address;
-    const networkKey = request.networkKey;
-    const apiProps = this.#koniState.getSubstrateApi(networkKey);
+    const { address, dataRemark, networkKey } = request;
+    const chainInfo = this.#koniState.getChainInfo(networkKey);
 
-    if (!apiProps) {
-      return;
+    if (!chainInfo) {
+      throw new Error(t('Invalid network'));
     }
 
-    const transaction = apiProps.api.tx.system.remarkWithEvent(request.dataRemark);
-    const rs = await this.#koniState.transactionService.handleTransaction({
-      address: address,
-      chain: networkKey,
-      transaction: transaction,
-      extrinsicType: ExtrinsicType.REMARK_WITH_EVENT,
-      chainType: ChainType.SUBSTRATE,
-      resolveOnHasExtrinsicHash: true,
-      data: {}
-    });
+    const handleTransaction = async (transaction: SWTransaction['transaction'], chainType: ChainType) => {
+      return await this.#koniState.transactionService.handleTransaction({
+        address,
+        chain: networkKey,
+        transaction,
+        extrinsicType: ExtrinsicType.REMARK_WITH_EVENT,
+        chainType,
+        resolveOnHasExtrinsicHash: true,
+        data: transaction.data
+      });
+    };
 
-    return rs;
+    if (_isChainEvmCompatible(chainInfo)) {
+      const evmApi = this.#koniState.getEvmApiMap()[networkKey];
+
+      if (!evmApi) {
+        throw new Error(t('Invalid network'));
+      }
+
+      const [transaction] = await getEVMTransactionObject(chainInfo, address, address, '0', false, evmApi, stringToHex(dataRemark));
+
+      return await handleTransaction(transaction, ChainType.EVM);
+    } else if (_isSubstrateChain(chainInfo)) {
+      const apiProps = this.#koniState.getSubstrateApi(networkKey);
+
+      if (!apiProps) {
+        throw new Error(t('Invalid network'));
+      }
+
+      const transaction = apiProps.api.tx.system.remarkWithEvent(request.dataRemark);
+
+      return await handleTransaction(transaction, ChainType.SUBSTRATE);
+    }
+
+    throw new Error(t('Invalid network'));
   }
 
   /* Swap service */

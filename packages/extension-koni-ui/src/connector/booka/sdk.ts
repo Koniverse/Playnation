@@ -998,7 +998,7 @@ export class BookaSdk {
       share: {
         url_share: 'https://x.koni.studio/mint-badge',
         content: `Odyssey Testnet is LIVE! Have fun with easy-peasy tasks and earn the exclusive Koni Story badge through your IPventure 👑
-        %0ALast chance to become an @StoryProtocol OG before mainn letaunch 💨
+        %0ALast chance to become an @StoryProtocol OG before mainnet launch 💨
         %0AJoin now 👇`
       },
       description: `

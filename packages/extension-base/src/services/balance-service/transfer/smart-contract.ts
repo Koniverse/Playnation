@@ -18,7 +18,8 @@ export async function getEVMTransactionObject (
   to: string,
   value: string,
   transferAll: boolean,
-  web3Api: _EvmApi
+  web3Api: _EvmApi,
+  data?: string
 ): Promise<[TransactionConfig, string]> {
   const networkKey = chainInfo.slug;
 
@@ -30,7 +31,8 @@ export async function getEVMTransactionObject (
     from: from,
     gasPrice: priority.gasPrice,
     maxFeePerGas: priority.maxFeePerGas?.toString(),
-    maxPriorityFeePerGas: priority.maxPriorityFeePerGas?.toString()
+    maxPriorityFeePerGas: priority.maxPriorityFeePerGas?.toString(),
+    data
   } as TransactionConfig;
 
   const gasLimit = await web3Api.api.eth.estimateGas(transactionObject);
