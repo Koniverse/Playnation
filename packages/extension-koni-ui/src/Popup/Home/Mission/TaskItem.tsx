@@ -193,17 +193,16 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
           }
         }
 
-        res = await actionTaskOnChain(onChainType, networkKey, wcAddress, data);
+        try {
+          res = await actionTaskOnChain(onChainType, networkKey, wcAddress, data);
 
-        if ((res && res.errors.length > 0) || !res) {
-          setTaskLoading(false);
-          let message = t(`Network ${networkKey} not enable`);
-
-          if (res && res.errors.length > 0) {
-            const error = res?.errors[0] || {};
-
-            message = error?.message || '';
+          if ((res && res.errors.length > 0) || !res) {
+            throw new Error(res?.errors[0].message || 'Error');
           }
+        } catch (error) {
+          console.error(error);
+          setTaskLoading(false);
+          const message = t((error as Error)?.message || '');
 
           notify({
             message: message,
