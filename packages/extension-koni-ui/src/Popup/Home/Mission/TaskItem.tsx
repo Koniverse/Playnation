@@ -241,7 +241,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
 
           closeWaiting();
           payload.signature = rs.signature;
-          payload.address = address;
+          payload.address = wcAddress;
         } catch (e) {
           closeWaiting();
           const error = e as Error;
