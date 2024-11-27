@@ -5,9 +5,11 @@ import { FilterTabItemType, FilterTabs } from '@subwallet/extension-koni-ui/comp
 import { CallToAction, MainScreenHeader, TimeRemaining } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Achievement, Task, TaskCategory, TaskCategoryType } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { LINK_NFL_APP_DOWNLOAD } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -49,6 +51,10 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   const onSelectFilterTab = useCallback((value: string) => {
     setSelectedFilterTab(value);
+  }, []);
+
+  const openAppStoreLink = useCallback(() => {
+    openInNewTab(LINK_NFL_APP_DOWNLOAD)();
   }, []);
 
   const endTime = useMemo(() => {
@@ -145,6 +151,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       <CallToAction
         buttonLabel={'Play now'}
         className={'call-to-action'}
+        onAction={openAppStoreLink}
         subtitle={'Download NFL Rivals App'}
         title={'Want to score more points?'}
       />

@@ -4,12 +4,14 @@
 import { CallToAction, InfoIcon, MainScreenHeader, TimeRemaining } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { LeaderboardGroups, LeaderboardInfo, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { LINK_NFL_APP_DOWNLOAD } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameAccountListArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/GameAccountListArea';
 import { TERM_AND_CONDITION_MODAL_ID, TermAndConditionModal } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TermAndConditionModal';
 import { TopThreeArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TopThreeArea';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -100,6 +102,10 @@ const Component = ({ className }: Props): React.ReactElement => {
     inactiveModal(TERM_AND_CONDITION_MODAL_ID);
   }, [inactiveModal]);
 
+  const openAppStoreLink = useCallback(() => {
+    openInNewTab(LINK_NFL_APP_DOWNLOAD)();
+  }, []);
+
   return (
     <div className={className}>
       <MainScreenHeader
@@ -131,6 +137,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         <CallToAction
           buttonLabel={'Play now'}
           className={'call-to-action'}
+          onAction={openAppStoreLink}
           subtitle={'Download NFL Rivals App'}
           title={'Want to get to the big league?'}
         />

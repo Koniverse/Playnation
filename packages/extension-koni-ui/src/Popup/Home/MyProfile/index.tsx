@@ -4,10 +4,12 @@
 import { CallToAction, EmptyListContent, MainScreenHeader, MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { LINK_NFL_APP_DOWNLOAD } from '@subwallet/extension-koni-ui/constants';
 import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -31,6 +33,10 @@ const Component = ({ className }: Props): React.ReactElement => {
   const doLinkAccount = useCallback(() => {
     currentAccount?.address && linkMythAccount().catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
+
+  const openAppStoreLink = useCallback(() => {
+    openInNewTab(LINK_NFL_APP_DOWNLOAD)();
+  }, []);
 
   // @ts-ignore
   const logIn = useCallback(() => {
@@ -117,6 +123,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       <CallToAction
         buttonLabel={'Play now'}
         className={'call-to-action'}
+        onAction={openAppStoreLink}
         subtitle={'Download NFL Rivals App'}
         title={'Want to take your profile to the next level?'}
       />

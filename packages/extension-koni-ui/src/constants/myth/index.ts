@@ -12,5 +12,7 @@ export const eventStat = {
   JMP: 'jump'
 };
 
+export const LINK_NFL_APP_DOWNLOAD = 'https://nflrivals.sng.link/D6fxh/ss0n/f0ei';
+
 export * from './authentication';
 export * from './optionFilterCard';
