@@ -44,7 +44,55 @@
   <link href="/fonts/PlusJakartaSans/index.css" rel="stylesheet">
   <link href="/assets/reset.css?v=3.01" rel="stylesheet">
 
-  <script src="https://telegram.org/js/telegram-web-app.js?v=7.7"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js?v=7.10"></script>
+
+  <style>
+    .startup-screen {
+      overflow: hidden;
+      background-size: cover;
+      background-image: url("/images/startup-screen/screen-background.jpg");
+      background-position: left top;
+    }
+
+    .startup-screen-logo {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 578px;
+      height: auto;
+      margin-left: -289px;
+    }
+
+    .startup-screen-powered-by {
+      position: absolute;
+      max-width: 144px;
+      height: auto;
+      left: 0;
+      right: 0;
+      bottom: 38px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    @media screen and (max-height: 721px) {
+      .startup-screen-mockup-4 {
+        bottom: auto;
+        top: 335px;
+      }
+    }
+
+    @keyframes fadeInOut {
+        0% {
+            opacity: 0.1;
+        }
+        50% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0.1;
+        }
+    }
+  </style>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-8H37Y2SSJM"></script>
@@ -54,18 +102,33 @@
     gtag('js', new Date());
 
     gtag('config', 'G-8H37Y2SSJM');
+
+
+    const message = 'Desktop not supported. Open Football Rivals on your mobile device to join events!'
+    try {
+        Telegram.WebApp.showPopup({
+        title: 'Telegram',
+        message,
+        buttons: [
+          {
+            text: 'Got it',
+            action: 'close'
+          }
+        ]
+      })
+    } catch (e) {
+      alert(message);
+    }
   </script>
 
   <!-- Import main JS logic -->
 </head>
 
-<body style="background-color: #F0F7F8;">
+<body style="background-color: #0F0F0F;">
   <div id="root"></div>
   <div id="loading-placeholder" class="startup-screen" style="position:fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000">
-    <div style="text-align: center; padding-top: 60px">
-      Please open Football Rivals in the Telegram Mobile App
-    </div>
+    <img class="startup-screen-logo" src="/images/startup-screen/app-logo.png" alt="App logo">
+    <img class="startup-screen-powered-by" src="/images/startup-screen/powered-by.png" alt="Powered by">
   </div>
-
 </body>
 </html>
