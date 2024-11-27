@@ -10,7 +10,10 @@ export const PositionOptions = [
   { id: 'OL', label: 'Offensive Linemen (OL)' },
   { id: 'RB', label: 'Running BAck (RB)' },
   { id: 'FS', label: 'Free Safety (FS)' },
-  { id: 'K', label: 'Kicker (K)' }
+  { id: 'K', label: 'Kicker (K)' },
+  { id: 'DE', label: 'Defensive End (DE)' },
+  { id: 'DT', label: 'Defensive Tackle (DT)' },
+  { id: 'LB', label: 'Linebacker (LB)' }
 ];
 
 export const TeamOptions = [
@@ -90,7 +93,8 @@ export const RarityOptions = [
   { id: 'rare', label: 'Rare' },
   { id: 'epic', label: 'Epic' },
   { id: 'legendary', label: 'Legendary' },
-  { id: 'common', label: 'Common' }
+  { id: 'common', label: 'Common' },
+  { id: 'mythical', label: 'Mythical' }
 ];
 
 export const PowerOptions = [
