@@ -97,12 +97,12 @@ function Component ({ bonusText, className, datetime, difficulty, id, isExpired,
     const result: string[] = [];
 
     const abbMap: Record<string, string> = {
-      power: 'POW',
+      power: 'PWR',
       strength: 'STR',
       acceleration: 'ACC',
       jump: 'JMP',
       quickness: 'QUI',
-      presence: 'PRS',
+      presence: 'PRE',
       endurance: 'END',
       carry: 'CAR'
     };

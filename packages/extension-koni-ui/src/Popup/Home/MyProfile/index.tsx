@@ -8,7 +8,6 @@ import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -33,11 +32,13 @@ const Component = ({ className }: Props): React.ReactElement => {
     currentAccount?.address && linkMythAccount().catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
 
+  // @ts-ignore
   const logIn = useCallback(() => {
     setLoading(true);
     onLogin();
   }, [onLogin]);
 
+  // @ts-ignore
   const logOut = useCallback(() => {
     setLoading(true);
     onLogout().then(() => {
@@ -62,17 +63,17 @@ const Component = ({ className }: Props): React.ReactElement => {
     <div className={className}>
       <MainScreenHeader
         className={'profile-header'}
-        rightPartNode={
-          (
-            <MythButton
-              className={CN('login-button')}
-              isLoading={loading}
-              onClick={!isLinkedMyth ? logIn : logOut}
-            >
-              {!isLinkedMyth ? t('Log in') : t('Log out')}
-            </MythButton>
-          )
-        }
+        // rightPartNode={
+        //   (
+        //     <MythButton
+        //       className={CN('login-button')}
+        //       isLoading={loading}
+        //       onClick={!isLinkedMyth ? logIn : logOut}
+        //     >
+        //       {!isLinkedMyth ? t('Log in') : t('Log out')}
+        //     </MythButton>
+        //   )
+        // }
         title={t('My profile')}
       />
       <div className={'__profile-container'}>
@@ -126,7 +127,6 @@ const Component = ({ className }: Props): React.ReactElement => {
 
 const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    backgroundColor: '#000',
     display: 'flex',
     flexDirection: 'column',
     height: '100%',

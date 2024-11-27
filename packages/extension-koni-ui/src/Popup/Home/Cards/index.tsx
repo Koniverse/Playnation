@@ -163,10 +163,6 @@ const Cards = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#000',
-    backgroundImage: 'url("/images/mythical/your-card-background.png")',
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: '100% 100%',
     height: '100%',
 
     '.__card-list-container': {

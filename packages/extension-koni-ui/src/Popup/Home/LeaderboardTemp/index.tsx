@@ -107,7 +107,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         rightPartNode={
           (
             <button
-              className={'info-button'}
+              className={'info-button hidden'}
               onClick={openTermAndConditionModal}
             >
               <InfoIcon />
