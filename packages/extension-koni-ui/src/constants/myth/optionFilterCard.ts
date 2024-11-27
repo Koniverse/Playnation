@@ -13,7 +13,8 @@ export const PositionOptions = [
   { id: 'K', label: 'Kicker (K)' },
   { id: 'DE', label: 'Defensive End (DE)' },
   { id: 'DT', label: 'Defensive Tackle (DT)' },
-  { id: 'LB', label: 'Linebacker (LB)' }
+  { id: 'LB', label: 'Linebacker (LB)' },
+  { id: 'N', label: 'None (N)' }
 ];
 
 export const TeamOptions = [
