@@ -1,12 +1,12 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { BuyInGameItemResponse, ErrorCode, GetLeaderboardRequest, GetLeaderboardResponse, HapticFeedbackType, InGameItem, NewGamePlayPayload, Player, PlaynationSDKError, PlayResponse, SDKInitParams, Tournament, UpdateStatePayload, UseInGameItemResponse } from '@playnation/game-sdk';
+import { BuyInGameItemResponse, ErrorCode, GetLeaderboardRequest, HapticFeedbackType, InGameItem, NewGamePlayPayload, Player, PlaynationSDKError, PlayResponse, SDKInitParams, Tournament, UpdateStatePayload, UseInGameItemResponse } from '@playnation/game-sdk';
 import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { addLazy, createPromiseHandler, removeLazy } from '@subwallet/extension-base/utils';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Game, GameEvent } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { Game, GameEvent, LeaderboardGroups, LeaderboardInfo, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { camelCase } from 'lodash';
 import z from 'zod';
@@ -17,6 +17,16 @@ export interface GameAppOptions {
   currentGameInfo: Game;
   currentGameEvent?: GameEvent;
   onExit: () => void;
+}
+
+export type LeaderboardItem = {
+  rank: number;
+  score: number;
+}
+
+export interface GetLeaderboardResponse {
+  players: LeaderboardPerson[];
+  me?: LeaderboardItem;
 }
 
 const cloudStorage = SWStorage.instance;
@@ -71,7 +81,6 @@ export class GameApp {
     const playerId = `${account?.info?.telegramId || 'player'}-${account?.info.id || 0}`;
     const gameData = (account?.gameData || []).find((item) => item.gameId === this.currentGameInfo.id);
     const point = gameData?.point || 0;
-
     const state = await this.gameStateHandler.promise;
 
     const player: Player = {
@@ -79,7 +88,7 @@ export class GameApp {
       id: playerId,
       balance: point,
       name: `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}` || 'Player',
-      avatar: 'https://thispersondoesnotexist.com/',
+      avatar: account?.info.photoUrl,
       energy: account?.attributes?.energy || 0,
       pointConversionRate: this.currentGameInfo.pointConversionRate || 0,
       gameEnergy: this.currentGameInfo.energyPerGame,
@@ -282,14 +291,40 @@ export class GameApp {
   }
 
   onShowLeaderboard () {
-    console.log('show leaderboard');
+    window.location.href = '/home/leaderboard';
   }
 
   onShowShop () {
     console.log('open shop');
   }
 
-  onGetLeaderboard (req: GetLeaderboardRequest): GetLeaderboardResponse {
+  async onGetLeaderboard (req: GetLeaderboardRequest): Promise<GetLeaderboardResponse> {
+    const leaderboardGeneral = this.apiSDK.leaderboardConfig.leaderboard_general as unknown as LeaderboardGroups[];
+    const leaderboards = this.apiSDK.leaderboardConfig.leaderboard_map as unknown as LeaderboardInfo[];
+
+    if (leaderboardGeneral && leaderboards) {
+      const firstLeaderboardGroups = leaderboardGeneral[0];
+
+      if (!firstLeaderboardGroups || !firstLeaderboardGroups.leaderboards.length) {
+        return { players: [] };
+      }
+
+      const weekLeaderBoard = leaderboards.find((l) => l.id === firstLeaderboardGroups.leaderboards[0]?.id);
+
+      if (!weekLeaderBoard) {
+        return { players: [] };
+      }
+
+      const mapLeader = await this.apiSDK.fetchLeaderboard(weekLeaderBoard.id);
+      const mineRanked = mapLeader.results.find((item) => item.mine);
+
+      if (!mineRanked) {
+        return { players: mapLeader.results };
+      }
+
+      return { players: mapLeader.results, me: { score: mineRanked.point, rank: mineRanked.rank } };
+    }
+
     return { players: [] };
   }
 
