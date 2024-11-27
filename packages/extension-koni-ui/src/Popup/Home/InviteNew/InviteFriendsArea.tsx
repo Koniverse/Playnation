@@ -63,7 +63,7 @@ export const InviteFriendsArea = styled(Component)<ThemeProps>(({ theme: { exten
     backgroundPosition: '0 0',
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'calc(100% - 3px) 100%',
-    filter: 'drop-shadow(4px 6px 0px #000)',
+    // filter: 'drop-shadow(4px 6px 0px #000)',
     minHeight: 158,
 
     '.__area-title': {
@@ -111,7 +111,7 @@ export const InviteFriendsArea = styled(Component)<ThemeProps>(({ theme: { exten
       },
 
       '.__button-background': {
-        filter: 'drop-shadow(2px 3px 0px #000)'
+        // filter: 'drop-shadow(2px 3px 0px #000)'
       },
 
       '.__button-background:before': {

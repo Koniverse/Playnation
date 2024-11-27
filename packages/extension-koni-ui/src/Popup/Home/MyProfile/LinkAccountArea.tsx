@@ -82,7 +82,7 @@ export const LinkAccountArea = styled(Component)<ThemeProps>(({ theme: { extendT
       },
 
       '.__button-background': {
-        filter: 'drop-shadow(1.444px 2.167px 0px #000)'
+        // filter: 'drop-shadow(1.444px 2.167px 0px #000)'
       },
 
       '.__button-background:before': {
@@ -143,7 +143,7 @@ export const LinkAccountArea = styled(Component)<ThemeProps>(({ theme: { extendT
       backgroundImage: 'url(/images/mythical/linked-account-card-background.png)',
       backgroundPosition: 'top left',
       backgroundSize: '100% 100%',
-      filter: 'drop-shadow(1.251px 1.251px 0px #000)',
+      // filter: 'drop-shadow(1.251px 1.251px 0px #000)',
       display: 'flex',
       minHeight: 42,
       alignItems: 'center',

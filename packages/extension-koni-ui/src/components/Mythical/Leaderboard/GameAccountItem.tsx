@@ -73,7 +73,7 @@ const GameAccountItem = styled(Component)<Props>(({ theme: { extendToken, token 
       position: 'absolute',
       inset: 0,
       zIndex: 1,
-      filter: 'drop-shadow(2px 2px 0px #000)',
+      // filter: 'drop-shadow(2px 2px 0px #000)',
 
       '&:before': {
         content: '""',

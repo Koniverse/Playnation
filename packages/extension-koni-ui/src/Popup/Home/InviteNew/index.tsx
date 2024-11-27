@@ -208,7 +208,7 @@ const Invite = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }:
       },
 
       '.__button-background': {
-        filter: 'drop-shadow(2px 3px 0px #000)'
+        // filter: 'drop-shadow(2px 3px 0px #000)'
       },
 
       '.__button-background:before': {

@@ -109,7 +109,7 @@ export const InviteMissionArea = styled(Component)<ThemeProps>(({ theme: { exten
     '.__mission-item': {
       backgroundImage: 'url(/images/mythical/invite/invite-mission-area-background.png)',
       backgroundSize: 'calc(100% - 3px) 100%',
-      filter: 'drop-shadow(4px 6px 0px #000)',
+      // filter: 'drop-shadow(4px 6px 0px #000)',
       paddingLeft: 24,
       paddingTop: 20,
       paddingRight: 24,

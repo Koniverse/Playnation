@@ -66,7 +66,7 @@ export const CheckInItem = styled(Component)<ThemeProps>(({ theme: { extendToken
       backgroundPosition: 'center center',
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat',
-      filter: 'drop-shadow(1.373px 1.373px 0px #000)',
+      // filter: 'drop-shadow(1.373px 1.373px 0px #000)',
       inset: 0
     },
 
@@ -77,7 +77,7 @@ export const CheckInItem = styled(Component)<ThemeProps>(({ theme: { extendToken
       backgroundPosition: 'center center',
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat',
-      filter: 'drop-shadow(1.197px 1.197px 0px #000)',
+      // filter: 'drop-shadow(1.197px 1.197px 0px #000)',
       backgroundImage: 'url(/images/mythical/check-icon.png)',
       top: -7,
       right: -5

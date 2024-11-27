@@ -235,7 +235,7 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
       backgroundImage: 'url("/images/mythical/check-selected.png")',
       backgroundPosition: 'center center',
       backgroundSize: '100% 24px',
-      filter: 'drop-shadow(0.97px 0.97px 0px #000)'
+      // filter: 'drop-shadow(0.97px 0.97px 0px #000)'
     },
 
     '.ant-checkbox-wrapper .ant-checkbox .ant-checkbox-checked .ant-checkbox-inner.ant-checkbox-inner': {
@@ -411,7 +411,7 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
     '.__action-button': {
       flex: 1,
       height: 52,
-      filter: 'drop-shadow(2px 3px 0px #000)',
+      // filter: 'drop-shadow(2px 3px 0px #000)',
 
       '.__button-content': {
         color: extendToken.mythColorDark,
@@ -422,7 +422,7 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
       },
 
       '.__button-background': {
-        filter: 'drop-shadow(2px 3px 0px #000)'
+        // filter: 'drop-shadow(2px 3px 0px #000)'
       },
 
       '.__button-background:before': {

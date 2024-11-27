@@ -104,13 +104,13 @@ export const DailyRewardsArea = styled(Component)<Props>(({ theme: { extendToken
       },
 
       '.__button-background': {
-        filter: 'drop-shadow(1.444px 2.167px 0px #000)'
+        // filter: 'drop-shadow(1.444px 2.167px 0px #000)'
       },
 
       '.__button-background:before': {
         backgroundImage: 'url(/images/mythical/daily-rewards/trigger-button.png)',
         backgroundPosition: 'center center',
-        filter: 'drop-shadow(1.197px 1.197px 0px #000)',
+        // filter: 'drop-shadow(1.197px 1.197px 0px #000)',
         backgroundSize: '100% 100%'
       }
     },

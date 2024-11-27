@@ -64,7 +64,7 @@ const TimeRemaining = styled(Component)<ThemeProps>(({ theme: { extendToken, tok
     backgroundImage: 'url(/images/mythical/time-remaining-background.png)',
     backgroundPosition: 'center center',
     backgroundSize: '100% 100%',
-    filter: 'drop-shadow(4px 6px 0px #000)',
+    // filter: 'drop-shadow(4px 6px 0px #000)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',

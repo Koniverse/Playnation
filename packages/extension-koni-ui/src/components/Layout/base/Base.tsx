@@ -239,8 +239,8 @@ const Base = styled(Component)<LayoutBaseProps>(({ theme: { extendToken, token }
     backgroundPosition: 'center center',
     backgroundSize: '100% 100%',
     top: 7,
-    left: '32%',
-    filter: 'drop-shadow(0px 1.405px 4.216px rgba(0, 0, 0, 0.25))'
+    left: '32%'
+    // filter: 'drop-shadow(0px 1.405px 4.216px rgba(0, 0, 0, 0.25))'
   },
 
   '.ant-sw-screen-layout-body-inner': {

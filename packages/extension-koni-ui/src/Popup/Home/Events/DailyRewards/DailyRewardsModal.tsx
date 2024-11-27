@@ -207,7 +207,7 @@ export const DailyRewardsModal = styled(Component)<Props>(({ theme: { extendToke
       backgroundImage: 'url(/images/mythical/daily-rewards/modal-background.png)',
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat',
-      filter: 'drop-shadow(4px 6px 0px #000)',
+      // filter: 'drop-shadow(4px 6px 0px #000)',
       backgroundColor: 'transparent',
       boxShadow: 'none',
       width: '100%'
@@ -273,7 +273,7 @@ export const DailyRewardsModal = styled(Component)<Props>(({ theme: { extendToke
       },
 
       '.__button-background': {
-        filter: 'drop-shadow(1.444px 2.167px 0px #000)'
+        // filter: 'drop-shadow(1.444px 2.167px 0px #000)'
       },
 
       '.__button-background:before': {

@@ -89,7 +89,7 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       backgroundImage: 'url(/images/mythical/leaderboard-terms-conditions-bg.png)',
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat',
-      filter: 'drop-shadow(4px 6px 0px #000)',
+      // filter: 'drop-shadow(4px 6px 0px #000)',
       backgroundColor: 'transparent',
       boxShadow: 'none',
       position: 'relative'
@@ -154,7 +154,7 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       },
 
       '.__button-background': {
-        filter: 'drop-shadow(1.444px 2.167px 0px #000)'
+        // filter: 'drop-shadow(1.444px 2.167px 0px #000)'
       },
 
       '.__button-background:before': {
@@ -179,7 +179,7 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       '.__button-background:before': {
         backgroundColor: token.colorWhite,
         maskImage: 'url(/images/mythical/okay-button-background.png)',
-        filter: 'drop-shadow(1.444px 2.167px 0px #000)'
+        // filter: 'drop-shadow(1.444px 2.167px 0px #000)'
       }
     }
   });

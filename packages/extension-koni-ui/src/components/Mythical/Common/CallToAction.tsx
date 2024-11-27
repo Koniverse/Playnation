@@ -50,7 +50,7 @@ const CallToAction = styled(Component)<ThemeProps>(({ theme: { extendToken, toke
     backgroundImage: 'url(/images/mythical/call-to-action-background.png)',
     backgroundPosition: 'center center',
     backgroundSize: '100% 100%',
-    filter: 'drop-shadow(2px 2px 0px #000)',
+    // filter: 'drop-shadow(2px 2px 0px #000)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -95,7 +95,7 @@ const CallToAction = styled(Component)<ThemeProps>(({ theme: { extendToken, toke
       },
 
       '.__button-background': {
-        filter: 'drop-shadow(2px 3px 0px #000)'
+        // filter: 'drop-shadow(2px 3px 0px #000)'
       },
 
       '.__button-background:before': {

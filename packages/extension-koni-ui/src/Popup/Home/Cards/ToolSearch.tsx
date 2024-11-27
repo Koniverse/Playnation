@@ -98,7 +98,7 @@ export const ToolSearch = styled(Component)<ThemeProps>(({ theme: { extendToken,
       backgroundSize: '100% 100%',
       backgroundPosition: 'center center',
       backgroundImage: 'url(/images/mythical/search-area-img.png)',
-      filter: 'drop-shadow(1.251px 1.251px 0px #000)'
+      // filter: 'drop-shadow(1.251px 1.251px 0px #000)'
     },
 
     '.ant-input-container.ant-input-container': {
@@ -154,7 +154,7 @@ export const ToolSearch = styled(Component)<ThemeProps>(({ theme: { extendToken,
       minWidth: 68,
       height: 42,
       backgroundImage: 'url(/images/mythical/tool-search-cancel-button-background.png)',
-      filter: 'drop-shadow(1.251px 1.251px 0px #000)',
+      // filter: 'drop-shadow(1.251px 1.251px 0px #000)',
 
       '.__button-content': {
         color: token.colorTextLight1,

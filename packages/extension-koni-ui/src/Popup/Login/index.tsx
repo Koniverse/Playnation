@@ -96,7 +96,7 @@ const Login = styled(Component)<Props>(({ theme: { extendToken, token } }: Props
       backgroundSize: '100% 100%',
       backgroundPosition: 'left top',
       backgroundRepeat: 'no-repeat',
-      filter: 'drop-shadow(1.57px 1.57px 0px #000)',
+      // filter: 'drop-shadow(1.57px 1.57px 0px #000)',
       marginBottom: 34
     },
 
@@ -160,7 +160,7 @@ const Login = styled(Component)<Props>(({ theme: { extendToken, token } }: Props
       },
 
       '.__button-background': {
-        filter: 'drop-shadow(2px 3px 0px #000)'
+        // filter: 'drop-shadow(2px 3px 0px #000)'
       },
 
       '.__button-background:before': {

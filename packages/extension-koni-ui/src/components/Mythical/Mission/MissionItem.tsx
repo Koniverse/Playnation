@@ -100,7 +100,7 @@ export const MissionItem = styled(Component)<ThemeProps>(({ theme: { extendToken
     backgroundPosition: '0 0',
     backgroundSize: '100% 100%',
     backgroundRepeat: 'no-repeat',
-    filter: 'drop-shadow(2px 2px 0px #000)',
+    // filter: 'drop-shadow(2px 2px 0px #000)',
     paddingLeft: 12,
     paddingTop: 12,
     paddingRight: 12,
@@ -150,7 +150,7 @@ export const MissionItem = styled(Component)<ThemeProps>(({ theme: { extendToken
       backgroundImage: 'url(/images/mythical/check-icon.png)',
       backgroundPosition: 'center center',
       backgroundSize: '100% 100%',
-      filter: 'drop-shadow(1.197px 1.197px 0px #000)'
+      // filter: 'drop-shadow(1.197px 1.197px 0px #000)'
     },
 
     '.__status-text-wrapper.-style-1': {
@@ -192,7 +192,7 @@ export const MissionItem = styled(Component)<ThemeProps>(({ theme: { extendToken
       },
 
       '.__button-background': {
-        filter: 'drop-shadow(2px 3px 0px #000)'
+        // filter: 'drop-shadow(2px 3px 0px #000)'
       },
 
       '.__button-background:before': {
@@ -212,7 +212,7 @@ export const MissionItem = styled(Component)<ThemeProps>(({ theme: { extendToken
       height: 39,
       backgroundPosition: 'center center',
       backgroundSize: '100% 100%',
-      filter: 'drop-shadow(2px 2px 0px #000)',
+      // filter: 'drop-shadow(2px 2px 0px #000)',
       fontFamily: extendToken.fontDruk,
       fontSize: '24px',
       fontStyle: 'italic',

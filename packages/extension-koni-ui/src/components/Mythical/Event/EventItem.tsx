@@ -243,7 +243,7 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       top: 12,
       backgroundImage: `url("${itemBackground}")`,
       backgroundSize: '100% 100%',
-      filter: 'drop-shadow(4px 6px 0px #000)',
+      // filter: 'drop-shadow(4px 6px 0px #000)',
       backgroundPosition: 'left bottom',
       backgroundRepeat: 'no-repeat'
     },
@@ -253,7 +253,7 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       backgroundSize: '100% 36px',
       backgroundPosition: 'left bottom',
       backgroundRepeat: 'no-repeat',
-      filter: 'drop-shadow(1.57px 1.57px 0px #000)',
+      // filter: 'drop-shadow(1.57px 1.57px 0px #000)',
       minHeight: 36,
       position: 'absolute',
       left: -7,
@@ -289,7 +289,7 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       backgroundImage: 'url("/images/mythical/event-item-round.png")',
       backgroundPosition: 'left bottom',
       backgroundRepeat: 'no-repeat',
-      filter: 'drop-shadow(1.862px 1.862px 0px #000)',
+      // filter: 'drop-shadow(1.862px 1.862px 0px #000)',
       textAlign: 'center',
       paddingTop: 4,
       zIndex: 2
@@ -325,7 +325,7 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       backgroundImage: 'url("/images/mythical/event-item-difficulty.png")',
       backgroundPosition: 'left bottom',
       backgroundRepeat: 'no-repeat',
-      filter: 'drop-shadow(1.57px 1.57px 0px #000)',
+      // filter: 'drop-shadow(1.57px 1.57px 0px #000)',
       textAlign: 'center',
       paddingTop: 11,
       zIndex: 2
@@ -474,7 +474,7 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       height: 40,
 
       '.__button-background': {
-        filter: 'drop-shadow(2px 3px 0px #000)'
+        // filter: 'drop-shadow(2px 3px 0px #000)'
       },
 
       '.__button-background:before': {
