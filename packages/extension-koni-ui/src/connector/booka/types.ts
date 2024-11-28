@@ -106,6 +106,7 @@ export enum TaskActionComponent {
   OPEN_SCREEN = 'task.action-open-screen',
   ONCHAIN = 'task.action-onchain',
   DIRECT = 'task.action-direct',
+  CHECK_BALANCE = 'task.action-check-balance',
 }
 
 export interface TaskAction {

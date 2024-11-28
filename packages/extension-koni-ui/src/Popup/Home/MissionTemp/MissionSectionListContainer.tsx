@@ -204,6 +204,29 @@ const Component = ({ accountInfo,
     await new Promise((resolve) => setTimeout(resolve, 3000));
   }, [navigate]);
 
+  const handleCheckBalanceAction = useCallback(async (taskId?: number) => {
+    if (!taskId) {
+      return;
+    }
+
+    const checkAchievement = await apiSDK.checkAchievement(taskId);
+
+    if (checkAchievement) {
+      if (checkAchievement.success) {
+        return;
+      }
+
+      notify({
+        message: t(checkAchievement.message || 'Check balance failed'),
+        type: 'warning'
+      });
+
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }, [notify, t]);
+
   const handleShareAction = useCallback(async (action: TaskActionShare) => {
     alert(`Implement share action: ${action.url}`);
 
@@ -228,6 +251,8 @@ const Component = ({ accountInfo,
         await handleDirectAction(action as TaskActionDirect);
       } else if (actionType === TaskActionComponent.SHARE) {
         await handleShareAction(action as TaskActionShare);
+      } else if (actionType === TaskActionComponent.CHECK_BALANCE) {
+        await handleCheckBalanceAction(taskId);
       }
 
       // Finish the task
@@ -236,7 +261,7 @@ const Component = ({ accountInfo,
         networkKey
       };
     })();
-  }, [handleDirectAction, handleOnChainAction, handleOpenScreenAction, handleShareAction, handleUrlAction]);
+  }, [handleDirectAction, handleOnChainAction, handleOpenScreenAction, handleShareAction, handleUrlAction, handleCheckBalanceAction]);
 
   const doTaskAction = useCallback((task: Task) => {
     const action = task.action;
@@ -286,7 +311,7 @@ const Component = ({ accountInfo,
       };
     } else if (action) {
       return async () => {
-        await doAction(action);
+        await doAction(action, achievement.milestoneId);
       };
     }
 

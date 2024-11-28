@@ -532,6 +532,21 @@ export class BookaSdk {
     return data as {success: boolean};
   }
 
+  /**
+   * Check achievement
+   * Return {success: boolean, data: Achievement, message: string } or throw error
+   * @param milestoneId
+   */
+  async checkAchievement (milestoneId: number) {
+    const data = await this.postRequest(`${GAME_API_HOST}/api/achievement/check`, { milestoneId });
+
+    await this.fetchAchievementList();
+
+    await this.reloadAccount();
+
+    return data as {success: boolean, message?: string, data: Achievement};
+  }
+
   async fetchTaskList () {
     await this.waitForSync;
     const taskList = await this.getRequest<Task[]>(`${GAME_API_HOST}/api/task/history`);
