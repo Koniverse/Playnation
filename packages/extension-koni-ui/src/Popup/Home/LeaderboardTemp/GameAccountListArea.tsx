@@ -14,7 +14,7 @@ type Props = {
 
 function getGameAccountItem (leaderboardPersonItem: LeaderboardPerson): GameAccountItemType {
   return {
-    name: leaderboardPersonItem.accountInfo.telegramUsername,
+    name: `${leaderboardPersonItem.accountInfo.firstName} ${leaderboardPersonItem.accountInfo.lastName}`,
     prefix: `${leaderboardPersonItem.rank}`,
     point: leaderboardPersonItem.point,
     avatarSrc: leaderboardPersonItem.accountInfo.avatar,

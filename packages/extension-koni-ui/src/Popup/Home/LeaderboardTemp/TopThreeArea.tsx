@@ -26,7 +26,7 @@ function getTopAccountItem (gameAccountItem: LeaderboardPerson | undefined, rank
     isFirst: rank === 1,
     rank,
     point: gameAccountItem.point,
-    name: gameAccountItem.accountInfo.telegramUsername,
+    name: `${gameAccountItem.accountInfo.firstName} ${gameAccountItem.accountInfo.lastName}`,
     avatarSrc: gameAccountItem.accountInfo.avatar,
     tokenValue: 0
   };

@@ -38,7 +38,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     referralList.forEach((r) => {
       result.push({
         avatarSrc: r.accountInfo.avatar,
-        name: r.accountInfo.telegramUsername,
+        name: `${r.accountInfo.firstName} ${r.accountInfo.lastName}`,
         point: r.accountInfo.point
       });
     });
