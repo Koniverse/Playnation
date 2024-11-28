@@ -446,7 +446,7 @@ const Component: React.FC<Props> = (props: Props) => {
             }
             shape={'round'}
           >
-            {t('End campaign')}
+            {t('Phase 2 coming soon')}
           </Button>
         )}
         {buttonType === buttonTypeConst.MINT && (
