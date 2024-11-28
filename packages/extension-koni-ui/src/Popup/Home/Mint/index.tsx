@@ -21,6 +21,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [mintedAddress, setMintedAddress] = useState<string | undefined>(undefined);
   const [isFetchingNftMintingLog, setIsFetchingNftMintingLog] = useState<boolean>(true);
 
+  // @ts-ignore
   const [alwaysShowMint, setAlwaysShowMint] = useState<boolean>(false);
 
   const currentIAirdropNftMinting = useMemo(() => {
@@ -33,11 +34,11 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   const onClickLogo = useCallback(() => {
-    setMintSuccess((prev) => !prev);
+    // setMintSuccess((prev) => !prev);
   }, []);
 
   const onClickHeaderNameArea = useCallback(() => {
-    setAlwaysShowMint((prev) => !prev);
+    // setAlwaysShowMint((prev) => !prev);
   }, []);
 
   useEffect(() => {
