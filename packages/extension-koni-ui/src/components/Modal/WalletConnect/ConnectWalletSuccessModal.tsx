@@ -26,10 +26,16 @@ function Component (props: Props): React.ReactElement<Props> {
 
   const { inactiveModal } = useContext(ModalContext);
 
-  const onClose = useCallback(() => {
+  const onOk = useCallback(() => {
     inactiveModal(modalId);
     callback(address);
   }, [address, callback, inactiveModal]);
+
+  const onClose = useCallback(() => {
+    inactiveModal(modalId);
+    // eslint-disable-next-line node/no-callback-literal
+    callback('');
+  }, [callback, inactiveModal]);
 
   const modalFooter = useMemo(() => {
     return (
@@ -43,7 +49,7 @@ function Component (props: Props): React.ReactElement<Props> {
               weight='fill'
             />
           }
-          onClick={onClose}
+          onClick={onOk}
           shape={'round'}
           size={'sm'}
         >
@@ -51,7 +57,7 @@ function Component (props: Props): React.ReactElement<Props> {
         </Button>
       </>
     );
-  }, [onClose, t]);
+  }, [onOk, t]);
 
   return (
     <SwModal
