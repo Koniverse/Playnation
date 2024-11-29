@@ -966,15 +966,13 @@ export class BookaSdk {
     const eligibilityList = [
       {
         id: 1,
-        name: 'Rank on top 5,000 general leaderboard',
+        name: 'Hunt at least 19,999 accumulated SP from 07 Nov to 05 Dec',
         start: getUCTPlus7('2024-11-07 07:00'),
-        end: getUCTPlus7('2024-11-22 07:00')
+        end: getUCTPlus7('2024-12-05 07:00')
       },
       {
         id: 2,
-        name: 'Hunt at least 5,000 SP',
-        start: getUCTPlus7('2024-11-07 07:00'),
-        end: getUCTPlus7('2024-11-22 07:00')
+        name: 'Haven’t minted Phase 1 badge'
       }
     ];
 
@@ -984,16 +982,16 @@ export class BookaSdk {
       icon: '/images/mint-event-logo.png',
       nft_url: '/images/default-nft-logo.png',
       banner: '',
-      start_snapshot: getUCTPlus7('2024-11-22 09:00'),
-      start_mint: getUCTPlus7('2024-11-25 09:00'),
+      start_snapshot: getUCTPlus7('2024-12-05 10:00'),
+      start_mint: getUCTPlus7('2024-12-06 10:00'),
       network: 'Polkadot',
       total_badges: 5000,
       symbol: 'badge',
       // decimal: number;
       // method: string;
       // raffle_count: number;
-      start: getUCTPlus7('2024-11-07 09:00'),
-      end: getUCTPlus7('2024-11-29 09:00'),
+      start: getUCTPlus7('2024-12-02 07:00'),
+      end: getUCTPlus7('2024-12-07 10:00'),
       conditionDescription: '',
       share: {
         url_share: 'https://x.koni.studio/mint-badge',
@@ -1024,28 +1022,24 @@ export class BookaSdk {
         </p>
 
         <h2>
-            How to hunt SP?
+            How to hunt Koni Story badge Phase 2?
         </h2>
 
         <p>
-          👉Join Koni Story TG app to receive an original Story Point (SP) package that gives you a head start in the campaign
+          👉Hunt at least 19,999 accumulated SP from Nov 07 to Dec 05
         </p>
 
         <p>
-          👉Accumulate more SP by completing tasks listed in the Missions tab
-        </p>
-
-        <p>
-          👉Climb up the ranks, as only top 5,000 users with at least 5,000 SP will be rewarded with Koni Story badges
+          👉Haven’t minted Phase 1 badge
         </p>
 
         <h2>
-          For Story OG 😎
+          For Odyssey Badge Program Hunters
         </h2>
 
         <p>
-          Those who have minted IPs in <b>Iliad Testnet Commemorative collection</b>, <b>Commemorative Color NFT collection</b>, and
-          <b>Mycelium Remix collection</b> will receive additional SP.
+          Those who have minted badges from projects on Story ecosystem will receive a
+          <b>special bonus!</b>
         </p>
       `,
       shortDescription: '',

@@ -47,14 +47,14 @@ function Component ({ airdropInfo, className }: Props) {
                   />}
                 </div>
 
-                <div className='__eligibility-item-line'>
+                {!!item.start && <div className='__eligibility-item-line'>
                   <div className='__eligibility-item-line-label'>{t('Time')}</div>
                   <div className='__eligibility-item-line-value __eligibility-item-date'>
                     <span>{item.start ? customFormatDate(item.start, '#DD# #MMM#') : '__'}</span>
                     <span>-</span>
                     <span>{item.end ? customFormatDate(item.end, '#DD# #MMM#') : '__'}</span>
                   </div>
-                </div>
+                </div>}
 
                 {
                   !!item.note && (
