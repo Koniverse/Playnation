@@ -34,11 +34,11 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   const onClickLogo = useCallback(() => {
-    // setMintSuccess((prev) => !prev);
+    setMintSuccess((prev) => !prev);
   }, []);
 
   const onClickHeaderNameArea = useCallback(() => {
-    // setAlwaysShowMint((prev) => !prev);
+    setAlwaysShowMint((prev) => !prev);
   }, []);
 
   useEffect(() => {
