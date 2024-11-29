@@ -243,10 +243,11 @@ const Component = function ({ className }: Props) {
           return t('Swap confirmation');
         case ExtrinsicType.MINT_NFT:
           return t('Confirm your mint');
+        case ExtrinsicType.REMARK_WITH_EVENT:
+          return t('Approve your transaction');
         case ExtrinsicType.CROWDLOAN:
         case ExtrinsicType.EVM_EXECUTE:
         case ExtrinsicType.UNKNOWN:
-        case ExtrinsicType.REMARK_WITH_EVENT:
           return t('Transaction confirm');
       }
     } else {

@@ -17,5 +17,6 @@ export { default as JoinYieldPoolConfirmation } from './JoinYieldPool';
 export { default as TokenApproveConfirmation } from './TokenApprove';
 export { default as SwapTransactionConfirmation } from './Swap';
 export { default as MintNftConfirmation } from './MintNftConfirmation';
+export { default as RemarkWithEvent } from './RemarkWithEvent';
 
 export * from './TransferBlock';

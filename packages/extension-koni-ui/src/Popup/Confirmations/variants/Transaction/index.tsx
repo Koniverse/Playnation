@@ -16,7 +16,7 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { EvmSignArea, SubstrateSignArea } from '../../parts/Sign';
-import { BaseTransactionConfirmation, BondTransactionConfirmation, CancelUnstakeTransactionConfirmation, ClaimRewardTransactionConfirmation, DefaultWithdrawTransactionConfirmation, FastWithdrawTransactionConfirmation, JoinPoolTransactionConfirmation, JoinYieldPoolConfirmation, LeavePoolTransactionConfirmation, MintNftConfirmation, SendNftTransactionConfirmation, SwapTransactionConfirmation, TokenApproveConfirmation, TransferBlock, UnbondTransactionConfirmation, WithdrawTransactionConfirmation } from './variants';
+import { BaseTransactionConfirmation, BondTransactionConfirmation, CancelUnstakeTransactionConfirmation, ClaimRewardTransactionConfirmation, DefaultWithdrawTransactionConfirmation, FastWithdrawTransactionConfirmation, JoinPoolTransactionConfirmation, JoinYieldPoolConfirmation, LeavePoolTransactionConfirmation, MintNftConfirmation, RemarkWithEvent, SendNftTransactionConfirmation, SwapTransactionConfirmation, TokenApproveConfirmation, TransferBlock, UnbondTransactionConfirmation, WithdrawTransactionConfirmation } from './variants';
 
 interface Props extends ThemeProps {
   confirmation: ConfirmationQueueItem;
@@ -75,11 +75,12 @@ const getTransactionComponent = (extrinsicType: ExtrinsicType): typeof BaseTrans
       return SwapTransactionConfirmation;
     case ExtrinsicType.MINT_NFT:
       return MintNftConfirmation;
+    case ExtrinsicType.REMARK_WITH_EVENT:
+      return RemarkWithEvent;
     case ExtrinsicType.CROWDLOAN:
     case ExtrinsicType.STAKING_CANCEL_COMPOUNDING:
     case ExtrinsicType.STAKING_COMPOUNDING:
     case ExtrinsicType.EVM_EXECUTE:
-    case ExtrinsicType.REMARK_WITH_EVENT:
     case ExtrinsicType.UNKNOWN:
       return BaseTransactionConfirmation;
   }

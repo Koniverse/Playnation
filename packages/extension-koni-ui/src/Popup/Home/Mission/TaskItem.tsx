@@ -202,7 +202,16 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         } catch (error) {
           console.error(error);
           setTaskLoading(false);
-          const message = t((error as Error)?.message || '');
+          let message = t((error as Error)?.message || '');
+
+          if (message.toLowerCase().includes('Rejected by user'.toLowerCase())) {
+            // no need to handle ''Rejected by user' here
+            return;
+          }
+
+          if (message.toLowerCase().includes('Returned error: insufficient funds'.toLowerCase())) {
+            message = t('You don’t have enough IP to check-in. Get faucet and try again');
+          }
 
           notify({
             message: message,
