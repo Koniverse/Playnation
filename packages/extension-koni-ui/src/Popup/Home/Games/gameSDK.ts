@@ -17,6 +17,7 @@ export interface GameAppOptions {
   currentGameInfo: Game;
   currentGameEvent?: GameEvent;
   onExit: () => void;
+  onHandleNavigate?: () => void;
 }
 
 export type LeaderboardItem = {
@@ -291,7 +292,19 @@ export class GameApp {
   }
 
   onShowLeaderboard () {
-    window.location.href = '/home/leaderboard';
+    this.onHandleNavigate();
+  }
+
+  onHandleNavigate () {
+    if (this.apiSDK.currentGamePlay?.id) {
+      removeLazy(`update-state-${this.apiSDK.currentGamePlay.id}`, true);
+    }
+
+    this.stop();
+
+    if (typeof this.options.onHandleNavigate === 'function') {
+      this.options.onHandleNavigate();
+    }
   }
 
   onShowShop () {

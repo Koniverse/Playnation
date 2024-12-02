@@ -52,6 +52,20 @@ const Component = ({ className }: Props): React.ReactElement => {
     }, 600);
   }, []);
 
+  const handleNavigate = useCallback(() => {
+    navigate('/home/leaderboard');
+
+    if (gameIframe.current) {
+      gameIframe.current.style.opacity = '0';
+    }
+
+    apiSDK.fetchGameEventList().catch(console.error);
+
+    setTimeout(() => {
+      setCurrentGame(undefined);
+    }, 600);
+  }, [navigate]);
+
   const checkAccess = useCallback((game: Game) => {
     const restrictedAccess = game.restrictedAccess || [];
 
@@ -95,7 +109,8 @@ const Component = ({ className }: Props): React.ReactElement => {
           currentGameInfo: game,
           currentGameEvent: gameEvent,
           viewport: gameIframe.current,
-          onExit: exitGame
+          onExit: exitGame,
+          onHandleNavigate: handleNavigate
         }).start();
 
         gameIframe.current.style.opacity = '1';
@@ -106,7 +121,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
     setCurrentGame(game);
     setCurrentGameEvent(gameEvent);
-  }, [checkAccess, exitGame, gameEvents, gameList]);
+  }, [checkAccess, exitGame, gameEvents, gameList, handleNavigate]);
 
   const filterTabItems = useMemo<FilterTabItemType[]>(() => {
     return [
