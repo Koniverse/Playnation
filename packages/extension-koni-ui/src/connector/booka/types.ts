@@ -354,6 +354,7 @@ export interface IAirdropNftMinting {
   end_mint?: Date;
   network: string;
   total_badges: number;
+  sub_title?: string;
   symbol: string;
   // decimal: number;
   // method: string;
