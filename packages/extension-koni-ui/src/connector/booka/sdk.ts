@@ -966,7 +966,7 @@ export class BookaSdk {
     const eligibilityList = [
       {
         id: 1,
-        name: 'Hunt at least 19,999 accumulated SP from 07 Nov to 05 Dec',
+        name: 'Hunt at least 19,999 SP accumulated from 07 Nov to 05 Dec',
         start: getUCTPlus7('2024-11-07 07:00'),
         end: getUCTPlus7('2024-12-05 07:00')
       },
@@ -986,6 +986,7 @@ export class BookaSdk {
       start_mint: getUCTPlus7('2024-12-06 10:00'),
       network: 'Polkadot',
       total_badges: 5000,
+      sub_title: 'Phase 2',
       symbol: 'badge',
       // decimal: number;
       // method: string;
@@ -1026,7 +1027,7 @@ export class BookaSdk {
         </h2>
 
         <p>
-          👉Hunt at least 19,999 accumulated SP from Nov 07 to Dec 05
+          👉Hunt at least 19,999 SP accumulated from Nov 07 to Dec 05
         </p>
 
         <p>

@@ -124,10 +124,16 @@ function Component ({ airdropNftInfo, className, onClickLogo, onClickNameArea }:
           </div>
 
           <div className='__airdrop-token'>
-            <span className='__airdrop-token-value'>{toDisplayNumber(airdropNftInfo.total_badges)}</span>
-            <span className='__airdrop-token-symbol'>{
-              airdropNftInfo.total_badges > 1 ? t('badges') : t('badge')
-            }</span>
+            {!airdropNftInfo.sub_title
+              ? (<>
+                <span className='__airdrop-token-value'>{toDisplayNumber(airdropNftInfo.total_badges)}</span><span
+                  className='__airdrop-token-symbol'
+                >{airdropNftInfo.total_badges > 1 ? t('badges') : t('badge')}</span>
+              </>)
+              : (
+                <span className='__airdrop-token-sub-title'>{airdropNftInfo.sub_title}</span>
+              )
+            }
           </div>
         </div>
 
@@ -262,6 +268,10 @@ const MintNftHeader = styled(Component)<Props>(({ theme: { extendToken, token } 
     },
 
     '.__airdrop-token-symbol': {
+      color: token.colorTextDark3
+    },
+
+    '.__airdrop-token-sub-title': {
       color: token.colorTextDark3
     },
 
