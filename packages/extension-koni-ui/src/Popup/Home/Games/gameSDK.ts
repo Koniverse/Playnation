@@ -29,6 +29,8 @@ export interface GetLeaderboardResponse {
   me?: LeaderboardItem;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const mythicalCard = require('./defIds.json');
 const cloudStorage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
 
@@ -82,6 +84,7 @@ export class GameApp {
     const gameData = (account?.gameData || []).find((item) => item.gameId === this.currentGameInfo.id);
     const point = gameData?.point || 0;
     const state = await this.gameStateHandler.promise;
+    const mythicalCard_ = JSON.parse(JSON.stringify(mythicalCard));
 
     const player: Player = {
       totalScore: 0,
@@ -99,7 +102,14 @@ export class GameApp {
           quantity
         })),
       balanceNPS: account?.attributes.point || 0,
-      state,
+      state: {
+        ...state,
+        data: {
+          mythicalCards: [
+            ...mythicalCard_
+          ]
+        }
+      },
       event: this.currentGameEvent
     };
 
@@ -291,7 +301,7 @@ export class GameApp {
   }
 
   onShowLeaderboard () {
-    window.location.href = '/home/leaderboard';
+    window.history.pushState({}, '', '/home/leaderboard');
   }
 
   onShowShop () {

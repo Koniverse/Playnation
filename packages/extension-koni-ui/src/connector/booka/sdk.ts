@@ -353,6 +353,10 @@ export class BookaSdk {
     const gameList = await this.getRequest<Game[]>(`${GAME_API_HOST}/api/game/fetch`);
 
     if (gameList) {
+      gameList[0].url = 'http://localhost:8081/';
+    }
+
+    if (gameList) {
       this.gameListSubject.next(gameList);
       localStorage.setItem(CACHE_KEYS.gameList, JSON.stringify(gameList));
     }
