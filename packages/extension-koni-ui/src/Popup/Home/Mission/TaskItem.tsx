@@ -130,7 +130,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
       const networkKey = task.network || 'storyOdyssey_testnet';
       const isNftTask = !!task.metadata?.contractAddress;
 
-      payload.networkKey = networkKey;
+      payload.network = networkKey;
 
       const getWcAddress = async (): Promise<string | null> => {
         if (wcAccount) {
