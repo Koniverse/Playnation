@@ -67,19 +67,6 @@ const Component: React.FC<Props> = (props: Props) => {
     apiSDK.getNftMintingLog().catch(console.error);
   }, []);
 
-  useEffect(() => {
-    if (mintingLog?.status === 'success') {
-      onSuccess(mintingLog.address);
-      setIsLoading(false);
-    } else if (mintingLog?.status === 'submitted') {
-      setIsLoading(true);
-    } else if (mintingLog?.status === 'failed') {
-      if (mintingLog.notify) {
-        // Todo: Issue-219 Nofity the minting failed
-      }
-    }
-  }, [mintingLog, onSuccess]);
-
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
       {
@@ -134,6 +121,7 @@ const Component: React.FC<Props> = (props: Props) => {
     id: 'failed_to_mint',
     className: CN('general-confirmation-modal', className),
     title: t('Failed to mint'),
+    okText: t('Back to home'),
     okCancel: false,
     content: (
       <div className={'__description-modal'}>
@@ -256,6 +244,19 @@ const Component: React.FC<Props> = (props: Props) => {
   const { handleSimpleConfirmModal: handleFailedToMintModal } = useConfirmModal(failedToMintProps);
   const { handleSimpleConfirmModal: handleInSufficientBalanceModal } = useConfirmModal(inSufficientBalanceProps);
   const { handleSimpleConfirmModal: handleBadgeAlreadyMintedModal } = useConfirmModal(badgeAlreadyMintedProps);
+
+  useEffect(() => {
+    if (mintingLog?.status === 'success') {
+      onSuccess(mintingLog.address);
+      setIsLoading(false);
+    } else if (mintingLog?.status === 'submitted') {
+      setIsLoading(true);
+    } else if (mintingLog?.status === 'failed') {
+      if (mintingLog.notify) {
+        handleFailedToMintModal().then(goHome).catch(console.error);
+      }
+    }
+  }, [goHome, handleFailedToMintModal, mintingLog, onSuccess]);
 
   const handleExistedLinkedAddressModal = useCallback((address: string) => {
     alertModal.open({
