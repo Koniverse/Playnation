@@ -448,5 +448,6 @@ export interface NftMintingLog {
   contractAddress: string,
   address: string,
   signature: string,
+  notify?: boolean,
   extrinsicHash?: string,
 }
