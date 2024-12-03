@@ -3,16 +3,20 @@
 
 import { LanguageType } from '@subwallet/extension-base/background/KoniTypes';
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { useDefaultNavigate, useSelector } from '@subwallet/extension-koni-ui/hooks';
-import { LayoutBackgroundImages, LayoutBackgroundStyle, ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Icon, SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { NftMintingLog } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { CONFIRM_SHOW_MINTING_FAILED_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { useConfirmModal, useDefaultNavigate, useSelector } from '@subwallet/extension-koni-ui/hooks';
+import { LayoutBackgroundImages, LayoutBackgroundStyle, Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { Icon, SwModalFuncProps, SwScreenLayout, SwScreenLayoutProps } from '@subwallet/react-ui';
 import { SwTabBarItem } from '@subwallet/react-ui/es/sw-tab-bar';
 import CN from 'classnames';
-import { ArrowLeft, ChartBar, Gift, House, Target, UserCirclePlus } from 'phosphor-react';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import { ArrowLeft, ChartBar, CheckCircle, Gift, House, Target, UserCirclePlus } from 'phosphor-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
+import { useLocalStorage } from 'usehooks-ts';
 
 import SelectAccount from '../parts/SelectAccount';
 
@@ -29,6 +33,7 @@ SwScreenLayoutProps,
 const specialLanguages: Array<LanguageType> = ['ja', 'ru'];
 
 type TabItemType = Omit<SwTabBarItem, 'onClick'> & { url: string };
+const apiSDK = BookaSdk.instance;
 
 const Component = ({ backgroundImages, backgroundStyle, children, className, headerIcons, onBack, onTabSelected, ...props }: LayoutBaseProps) => {
   const navigate = useNavigate();
@@ -36,6 +41,11 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const { language } = useSelector((state) => state.settings);
+
+  const { token } = useTheme() as Theme;
+
+  const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>();
+  const [isShowPopupMintFailed, setIsShowPopupMintFailed] = useLocalStorage(CONFIRM_SHOW_MINTING_FAILED_MODAL, 'nonConfirmed');
 
   const tabBarItems = useMemo((): TabItemType[] => ([
     // {
@@ -192,6 +202,66 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
   const defaultOnBack = useCallback(() => {
     goHome();
   }, [goHome]);
+
+  const mintingFailedModalProps = useMemo((): Partial<SwModalFuncProps> => ({
+    id: 'alert-minting-failed',
+    className: CN('general-confirmation-modal', className),
+    title: t('Badge minting failed'),
+    okText: t('I understand'),
+    content: (
+      <div className={'__description-modal'}>
+        <div className={'__title-modal'}>{t('Mint your badge again')}</div>
+        <div className={'__sub-title-modal'}>{t('Due to technical issues, your badge wasn’t minted in Phase 1. Click the Mint tab to mint your badge again on December 6')}</div>
+      </div>
+    ),
+    icon: (
+      <div className={'__icon-modal'}>
+        <Icon
+          customSize={'60px'}
+          iconColor={token.colorIconHover}
+          phosphorIcon={Gift}
+          size='md'
+          weight={'fill'}
+        />
+      </div>
+    ),
+    closable: true,
+    maskClosable: true,
+    okCancel: false,
+    okButtonProps: {
+      icon: (
+        <Icon
+          phosphorIcon={CheckCircle}
+          size='md'
+          weight={'fill'}
+        />
+      ),
+      shape: 'round'
+    }
+  }), [className, t, token.colorIconHover]);
+
+  const { handleSimpleConfirmModal: handleMintingFailedModal } = useConfirmModal(mintingFailedModalProps);
+
+  useEffect(() => {
+    const fetchMintingLog = async () => {
+      try {
+        const mintingLog = await apiSDK.getNftMintingLog();
+
+        setMintingLog(mintingLog);
+      } catch (error) {
+        console.error('Error fetching minting log:', error);
+      }
+    };
+
+    fetchMintingLog().catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (mintingLog?.notify && isShowPopupMintFailed.includes('nonConfirmed')) {
+      setIsShowPopupMintFailed('confirmed');
+      handleMintingFailedModal().then().catch(console.error);
+    }
+  }, [handleMintingFailedModal, isShowPopupMintFailed, mintingLog?.notify, navigate, setIsShowPopupMintFailed]);
 
   useEffect(() => {
     onTabSelected?.(selectedTab);
