@@ -16,8 +16,7 @@ export interface GameAppOptions {
   apiSDK: BookaSdk;
   currentGameInfo: Game;
   currentGameEvent?: GameEvent;
-  onExit: () => void;
-  onHandleNavigate?: () => void;
+  onExit: (path?: string) => void;
 }
 
 export type LeaderboardItem = {
@@ -292,19 +291,7 @@ export class GameApp {
   }
 
   onShowLeaderboard () {
-    this.onHandleNavigate();
-  }
-
-  onHandleNavigate () {
-    if (this.apiSDK.currentGamePlay?.id) {
-      removeLazy(`update-state-${this.apiSDK.currentGamePlay.id}`, true);
-    }
-
-    this.stop();
-
-    if (typeof this.options.onHandleNavigate === 'function') {
-      this.options.onHandleNavigate();
-    }
+    this.onExit('/home/leaderboard');
   }
 
   onShowShop () {
@@ -341,13 +328,13 @@ export class GameApp {
     return { players: [] };
   }
 
-  onExit () {
+  onExit (path?: string) {
     if (this.apiSDK.currentGamePlay?.id) {
       removeLazy(`update-state-${this.apiSDK.currentGamePlay.id}`, true);
     }
 
     this.stop();
-    this.options.onExit();
+    this.options.onExit(path);
   }
 
   onExitToListGames () {

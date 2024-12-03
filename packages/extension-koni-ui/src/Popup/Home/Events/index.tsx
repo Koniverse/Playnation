@@ -39,7 +39,11 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [currentGameEvent, setCurrentGameEvent] = useState<GameEvent | undefined>(undefined);
   const [serverTime, setServerTime] = useState<number>(apiSDK.serverTime);
 
-  const exitGame = useCallback(() => {
+  const exitGame = useCallback((path?: string) => {
+    if (path) {
+      navigate(path);
+    }
+
     if (gameIframe.current) {
       gameIframe.current.style.opacity = '0';
     }
@@ -48,20 +52,6 @@ const Component = ({ className }: Props): React.ReactElement => {
 
     setTimeout(() => {
       setCurrentGameEvent(undefined);
-      setCurrentGame(undefined);
-    }, 600);
-  }, []);
-
-  const handleNavigate = useCallback(() => {
-    navigate('/home/leaderboard');
-
-    if (gameIframe.current) {
-      gameIframe.current.style.opacity = '0';
-    }
-
-    apiSDK.fetchGameEventList().catch(console.error);
-
-    setTimeout(() => {
       setCurrentGame(undefined);
     }, 600);
   }, [navigate]);
@@ -109,8 +99,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           currentGameInfo: game,
           currentGameEvent: gameEvent,
           viewport: gameIframe.current,
-          onExit: exitGame,
-          onHandleNavigate: handleNavigate
+          onExit: exitGame
         }).start();
 
         gameIframe.current.style.opacity = '1';
@@ -121,7 +110,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
     setCurrentGame(game);
     setCurrentGameEvent(gameEvent);
-  }, [checkAccess, exitGame, gameEvents, gameList, handleNavigate]);
+  }, [checkAccess, exitGame, gameEvents, gameList]);
 
   const filterTabItems = useMemo<FilterTabItemType[]>(() => {
     return [
