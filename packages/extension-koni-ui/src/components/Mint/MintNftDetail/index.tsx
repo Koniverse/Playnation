@@ -6,7 +6,7 @@ import { ConfirmYourAccountModal, TabGroup } from '@subwallet/extension-koni-ui/
 import { TabGroupItemType } from '@subwallet/extension-koni-ui/components/Common/TabGroup';
 import { MintNftDetailAbout, MintNftDetailCondition } from '@subwallet/extension-koni-ui/components/Mint/MintNftDetail/variants';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { IAirdropNftMinting, NftMintingLog } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { CONFIRM_YOUR_ACCOUNT_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
@@ -21,7 +21,7 @@ import { noop, toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { ArrowCircleRight, CheckCircle, HouseLine, SmileySad } from 'phosphor-react';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import styled, { useTheme } from 'styled-components';
@@ -30,6 +30,7 @@ type Props = ThemeProps & {
   airdropNftInfo: IAirdropNftMinting,
   onSuccess: (mintedAddress: string) => void;
   isFetchingNftMintingLog: boolean;
+  mintingLog?: NftMintingLog;
   alwaysShowMint?: boolean; // for debug
 };
 
@@ -50,7 +51,7 @@ const enum buttonTypeConst {
 const telegramConnector = TelegramConnector.instance;
 
 const Component: React.FC<Props> = (props: Props) => {
-  const { airdropNftInfo, alwaysShowMint, className, isFetchingNftMintingLog, onSuccess } = props;
+  const { airdropNftInfo, alwaysShowMint, className, isFetchingNftMintingLog, mintingLog, onSuccess } = props;
   const notify = useNotification();
   const { goHome } = useDefaultNavigate();
   const { activeModal } = useContext(ModalContext);
@@ -61,6 +62,24 @@ const Component: React.FC<Props> = (props: Props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { connectWC, requireWC } = useContext(WalletConnectContext);
   const { alertModal } = useContext(WalletModalContext);
+
+  useEffect(() => {
+    apiSDK.getNftMintingLog().catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (mintingLog?.status === 'success') {
+      onSuccess(mintingLog.address);
+      setIsLoading(false);
+    } else if (mintingLog?.status === 'submitted') {
+      setIsLoading(true);
+    } else if (mintingLog?.status === 'failed') {
+      if (mintingLog.notify) {
+        // Todo: Issue-219 Nofity the minting failed
+      }
+    }
+  }, [mintingLog, onSuccess]);
+
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
       {
@@ -339,7 +358,6 @@ const Component: React.FC<Props> = (props: Props) => {
         handleFailedToMintModal().then(goHome).catch(console.error);
       } else {
         await apiSDK.nftMintingStart(transaction?.extrinsicHash);
-        onSuccess(address);
       }
 
       setIsLoading(false);

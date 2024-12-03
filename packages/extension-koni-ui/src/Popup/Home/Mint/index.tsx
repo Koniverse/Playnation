@@ -3,7 +3,7 @@
 
 import { MintNftDetail, MintNftHeader, MintNftSuccess } from '@subwallet/extension-koni-ui/components/Mint';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { IAirdropNftMinting } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { IAirdropNftMinting, NftMintingLog } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
@@ -13,13 +13,15 @@ import styled from 'styled-components';
 type Props = ThemeProps;
 
 const apiSDK = BookaSdk.instance;
+const mintingLogSubscription = apiSDK.subscribeNftMintingLog();
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/leaderboard');
   const [nftAirdropList, setNftAirdropList] = useState<IAirdropNftMinting[]>(apiSDK.airdropNftMintList);
   const [mintSuccess, setMintSuccess] = useState(false);
   const [mintedAddress, setMintedAddress] = useState<string | undefined>(undefined);
-  const [isFetchingNftMintingLog, setIsFetchingNftMintingLog] = useState<boolean>(true);
+  const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>(mintingLogSubscription.value.data);
+  const [isFetchingNftMintingLog, setIsFetchingNftMintingLog] = useState<boolean>(!mintingLogSubscription.value.isFetched);
 
   // @ts-ignore
   const [alwaysShowMint, setAlwaysShowMint] = useState<boolean>(false);
@@ -52,16 +54,14 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   useEffect(() => {
-    apiSDK.nftMintingGetLog().then((rs) => {
-      if (rs && rs.status === 'success') {
-        setMintedAddress(rs.address);
-        setMintSuccess(true);
-      }
-    }).catch((e) => {
-      console.error('nftMintingGetLog Error', e);
-    }).finally(() => {
-      setIsFetchingNftMintingLog(false);
+    const sub = apiSDK.subscribeNftMintingLog().subscribe((data) => {
+      setMintingLog(data.data);
+      setIsFetchingNftMintingLog(!data.isFetched);
     });
+
+    return () => {
+      sub.unsubscribe();
+    };
   }, []);
 
   if (!currentIAirdropNftMinting) {
@@ -92,6 +92,7 @@ const Component = ({ className }: Props): React.ReactElement => {
               airdropNftInfo={currentIAirdropNftMinting}
               alwaysShowMint={alwaysShowMint}
               isFetchingNftMintingLog={isFetchingNftMintingLog}
+              mintingLog={mintingLog}
               onSuccess={onMintSuccess}
             />
           )

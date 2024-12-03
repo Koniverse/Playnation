@@ -1066,20 +1066,35 @@ export class BookaSdk {
     return data.data;
   }
 
-  async nftMintingGetLog (campaign = 'default') {
+  private mintingLogSubject = new BehaviorSubject<{
+    isFetched: boolean;
+    data?: NftMintingLog;
+  }>({ isFetched: false });
+
+  async getNftMintingLog (campaign = 'default') {
     const data = await this.postRequest<APIResponse<NftMintingLog>>(`${GAME_API_HOST}/api/mint-nft/get-mint`, { campaign });
+
+    this.mintingLogSubject.next({ isFetched: true, data: data.data });
 
     return data.data;
   }
 
+  subscribeNftMintingLog () {
+    return this.mintingLogSubject;
+  }
+
   async nftMintingRequestSignature (address: string, campaign = 'default') {
     const data = await this.postRequest<APIResponse<NftMintingLog>>(`${GAME_API_HOST}/api/mint-nft/request-signature`, { address, campaign });
+
+    this.mintingLogSubject.next({ isFetched: true, data: data.data });
 
     return data.data;
   }
 
   async nftMintingStart (extrinsicHash?: string, campaign = 'default') {
     const data = await this.postRequest<APIResponse<NftMintingLog>>(`${GAME_API_HOST}/api/mint-nft/start-mint`, { campaign, extrinsicHash });
+
+    this.mintingLogSubject.next({ isFetched: true, data: data.data });
 
     return data.data;
   }
