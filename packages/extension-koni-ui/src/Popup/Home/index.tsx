@@ -44,7 +44,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
 
   const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>();
-  const [isShowPopupMintFailed, setIsShowPopupMintFailed] = useLocalStorage(CONFIRM_SHOW_MINTING_FAILED_MODAL, 'nonConfirmed');
+  const [mintFailedLogIds, setMintFailedLogIds] = useLocalStorage<number[]>(CONFIRM_SHOW_MINTING_FAILED_MODAL, []);
 
   const banners = useGetBannerByScreen('home');
 
@@ -92,6 +92,17 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   }, [closeAddRewardsModal]);
 
   const handleMintingFailedModal = useCallback(() => {
+    const handleConfirmOrCancel = () => {
+      setMintFailedLogIds((prevIds) => {
+        if (mintingLog?.id && !prevIds.includes(mintingLog.id)) {
+          return [...prevIds, mintingLog.id];
+        }
+
+        return prevIds;
+      });
+      alertModal.close();
+    };
+
     alertModal.open({
       className: 'general-confirmation-modal modal-revert-header',
       title: t('Badge minting failed'),
@@ -107,17 +118,11 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         icon: CheckCircle,
         iconWeight: 'fill',
         text: t('I understand'),
-        onClick: () => {
-          setIsShowPopupMintFailed('confirmed');
-          alertModal.close();
-        }
+        onClick: handleConfirmOrCancel
       },
-      onCancel: () => {
-        setIsShowPopupMintFailed('confirmed');
-        alertModal.close();
-      }
+      onCancel: handleConfirmOrCancel
     });
-  }, [alertModal, setIsShowPopupMintFailed, t]);
+  }, [alertModal, mintingLog, setMintFailedLogIds, t]);
 
   useEffect(() => {
     const fetchMintingLog = async () => {
@@ -134,10 +139,10 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   }, []);
 
   useEffect(() => {
-    if (mintingLog?.notify && isShowPopupMintFailed.includes('nonConfirmed')) {
+    if (mintingLog?.notify && !mintFailedLogIds.includes(mintingLog.id)) {
       handleMintingFailedModal();
     }
-  }, [handleMintingFailedModal, isShowPopupMintFailed, mintingLog?.notify, navigate, setIsShowPopupMintFailed]);
+  }, [handleMintingFailedModal, mintFailedLogIds, mintingLog?.id, mintingLog?.notify, navigate]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount()
