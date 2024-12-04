@@ -982,8 +982,8 @@ export class BookaSdk {
       icon: '/images/mint-event-logo.png',
       nft_url: '/images/default-nft-logo.png',
       banner: '',
-      start_snapshot: getUCTPlus7('2024-12-05 10:00'),
-      start_mint: getUCTPlus7('2024-12-06 10:00'),
+      start_snapshot: getUCTPlus7('2024-11-05 10:00'),
+      start_mint: getUCTPlus7('2024-12-02 10:00'),
       network: 'Polkadot',
       total_badges: 5000,
       sub_title: 'Phase 2',
@@ -991,7 +991,7 @@ export class BookaSdk {
       // decimal: number;
       // method: string;
       // raffle_count: number;
-      start: getUCTPlus7('2024-12-02 07:00'),
+      start: getUCTPlus7('2024-11-02 07:00'),
       end: getUCTPlus7('2024-12-07 10:00'),
       conditionDescription: '',
       share: {
@@ -1072,6 +1072,7 @@ export class BookaSdk {
   }>({ isFetched: false });
 
   async getNftMintingLog (campaign = 'default') {
+    await this.syncHandler.promise;
     const data = await this.postRequest<APIResponse<NftMintingLog>>(`${GAME_API_HOST}/api/mint-nft/get-mint`, { campaign });
 
     this.mintingLogSubject.next({ isFetched: true, data: data.data });
