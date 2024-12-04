@@ -8,17 +8,21 @@ import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, homeScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
+import { BookaAccount, NftMintingLog } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, CONFIRM_SHOW_MINTING_FAILED_MODAL, homeScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
+import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
+import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
+import { CheckCircle, Gift } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Outlet } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { useLocalStorage } from 'usehooks-ts';
 
 type Props = ThemeProps;
 
@@ -36,6 +40,11 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const [addRewardModalProps, setAddRewardModalProps] = useState<AddRewardsModalProps | undefined>();
   const [initRewardModalProps, setInitRewardModalProps] = useState<InitRewardsModalProps | undefined>();
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
+  const { alertModal } = useContext(WalletModalContext);
+  const { t } = useTranslation();
+
+  const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>();
+  const [isShowPopupMintFailed, setIsShowPopupMintFailed] = useLocalStorage(CONFIRM_SHOW_MINTING_FAILED_MODAL, 'nonConfirmed');
 
   const banners = useGetBannerByScreen('home');
 
@@ -81,6 +90,54 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const onCancelRewardModal = useCallback(() => {
     closeAddRewardsModal();
   }, [closeAddRewardsModal]);
+
+  const handleMintingFailedModal = useCallback(() => {
+    alertModal.open({
+      className: 'general-confirmation-modal modal-revert-header',
+      title: t('Badge minting failed'),
+      iconProps: {
+        phosphorIcon: Gift,
+        weight: 'fill'
+      },
+      contentTitle: t('Mint your badge again'),
+      content: (
+        t('Due to technical issues, your badge wasn’t minted in Phase 1. Click the Mint tab to mint your badge again on December 6')
+      ),
+      okButton: {
+        icon: CheckCircle,
+        iconWeight: 'fill',
+        text: t('I understand'),
+        onClick: () => {
+          setIsShowPopupMintFailed('confirmed');
+          alertModal.close();
+        }
+      },
+      onCancel: () => {
+        setIsShowPopupMintFailed('confirmed');
+        alertModal.close();
+      }
+    });
+  }, [alertModal, setIsShowPopupMintFailed, t]);
+
+  useEffect(() => {
+    const fetchMintingLog = async () => {
+      try {
+        const mintingLog = await apiSDK.getNftMintingLog();
+
+        setMintingLog(mintingLog);
+      } catch (error) {
+        console.error('Error fetching minting log:', error);
+      }
+    };
+
+    fetchMintingLog().catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (mintingLog?.notify && isShowPopupMintFailed.includes('nonConfirmed')) {
+      handleMintingFailedModal();
+    }
+  }, [handleMintingFailedModal, isShowPopupMintFailed, mintingLog?.notify, navigate, setIsShowPopupMintFailed]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount()

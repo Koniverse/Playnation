@@ -11,8 +11,7 @@ import React, { useCallback, useContext } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & AlertDialogProps & {
-  modalId: string,
-  _onCancel?: () => void,
+  modalId: string
 }
 
 const alertTypeAndIconMap = {
@@ -42,18 +41,20 @@ const Component: React.FC<Props> = (props: Props) => {
     modalId,
     okButton,
     title,
-    _onCancel,
+    onCancel,
     type = NotificationType.INFO, iconProps, contentTitle } = props;
 
   const { inactiveModal } = useContext(ModalContext);
 
-  const onCancel = useCallback(() => {
-    if (_onCancel) {
-      _onCancel();
+  const _onCancel = useCallback(() => {
+    if (onCancel) {
+      onCancel();
+
+      return;
     }
 
     inactiveModal(modalId);
-  }, [_onCancel, inactiveModal, modalId]);
+  }, [onCancel, inactiveModal, modalId]);
 
   return (
     <>
@@ -100,7 +101,7 @@ const Component: React.FC<Props> = (props: Props) => {
           </>
         }
         id={modalId}
-        onCancel={onCancel}
+        onCancel={_onCancel}
         title={title}
       >
         <div className='__modal-content'>
