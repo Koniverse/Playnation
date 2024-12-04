@@ -2,17 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AccountJson } from '@subwallet/extension-base/background/types';
-import { Layout, WalletConnect } from '@subwallet/extension-koni-ui/components';
+import { AlertModal, Layout, WalletConnect } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { NftMintingLog } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/constants';
+import { CONFIRM_SHOW_MINTING_FAILED_MODAL, VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
-import { useNotification, useSelector } from '@subwallet/extension-koni-ui/hooks';
+import { useAlert, useNotification, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { noop } from '@subwallet/extension-koni-ui/utils';
 import { ButtonProps, Icon, ModalContext, Tooltip } from '@subwallet/react-ui';
-import { Export, FadersHorizontal, MagnifyingGlass } from 'phosphor-react';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import { CheckCircle, Export, FadersHorizontal, Gift, MagnifyingGlass } from 'phosphor-react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -34,6 +36,9 @@ type Props = {
 };
 
 const telegramConnector = TelegramConnector.instance;
+const apiSDK = BookaSdk.instance;
+
+const alertModalId = 'alert-minting-failed-modal';
 
 const Component = (props: Props) => {
   const { backgroundImages, backgroundStyle, children, className, onClickFilterIcon, onClickSearchIcon, onTabSelected, showConnectIcon = true, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar } = props;
@@ -45,6 +50,10 @@ const Component = (props: Props) => {
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
   const { connectWC, disconnectWC } = useContext(WalletConnectContext);
+
+  const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>();
+  const [isShowPopupMintFailed, setIsShowPopupMintFailed] = useLocalStorage(CONFIRM_SHOW_MINTING_FAILED_MODAL, 'nonConfirmed');
+  const { alertProps, closeAlert, openAlert } = useAlert(alertModalId);
 
   const { wcAccount } = useSelector((state) => state.accountState);
 
@@ -181,23 +190,83 @@ const Component = (props: Props) => {
     navigate('/settings/list');
   }, [navigate]);
 
+  const handleMintingFailedModal = useCallback(() => {
+    openAlert({
+      className: 'general-confirmation-modal modal-revert-header',
+      title: t('Badge minting failed'),
+      iconProps: {
+        phosphorIcon: Gift,
+        weight: 'fill'
+      },
+      contentTitle: t('Mint your badge again'),
+      content: (
+        t('Due to technical issues, your badge wasn’t minted in Phase 1. Click the Mint tab to mint your badge again on December 6')
+      ),
+      okButton: {
+        icon: CheckCircle,
+        iconWeight: 'fill',
+        text: t('I understand'),
+        onClick: () => {
+          setIsShowPopupMintFailed('confirmed');
+          closeAlert();
+        }
+      }
+    });
+  }, [closeAlert, openAlert, setIsShowPopupMintFailed, t]);
+
+  useEffect(() => {
+    const fetchMintingLog = async () => {
+      try {
+        const mintingLog = await apiSDK.getNftMintingLog();
+
+        setMintingLog(mintingLog);
+      } catch (error) {
+        console.error('Error fetching minting log:', error);
+      }
+    };
+
+    fetchMintingLog().catch(console.error);
+  }, []);
+
+  const onCancel = useCallback(() => {
+    setIsShowPopupMintFailed('confirmed');
+  }, [setIsShowPopupMintFailed]);
+
+  useEffect(() => {
+    if (mintingLog?.notify && isShowPopupMintFailed.includes('nonConfirmed')) {
+      handleMintingFailedModal();
+    }
+  }, [handleMintingFailedModal, isShowPopupMintFailed, mintingLog?.notify, navigate, setIsShowPopupMintFailed]);
+
   return (
-    <Layout.Base
-      backgroundImages={backgroundImages}
-      backgroundStyle={backgroundStyle}
-      className={className}
-      headerCenter={false}
-      headerIcons={headerIcons}
-      headerLeft={'default'}
-      headerOnClickLeft={onClickListIcon}
-      headerPaddingVertical={true}
-      onTabSelected={onTabSelected}
-      showHeader={true}
-      showLeftButton={true}
-      showTabBar={showTabBar ?? true}
-    >
-      {children}
-    </Layout.Base>
+    <>
+      <Layout.Base
+        backgroundImages={backgroundImages}
+        backgroundStyle={backgroundStyle}
+        className={className}
+        headerCenter={false}
+        headerIcons={headerIcons}
+        headerLeft={'default'}
+        headerOnClickLeft={onClickListIcon}
+        headerPaddingVertical={true}
+        onTabSelected={onTabSelected}
+        showHeader={true}
+        showLeftButton={true}
+        showTabBar={showTabBar ?? true}
+      >
+        {children}
+      </Layout.Base>
+
+      {
+        !!alertProps && (
+          <AlertModal
+            _onCancel={onCancel}
+            modalId={alertModalId}
+            {...alertProps}
+          />
+        )
+      }
+    </>
   );
 };
 

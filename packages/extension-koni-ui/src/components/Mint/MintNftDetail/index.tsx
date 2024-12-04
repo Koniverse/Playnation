@@ -82,7 +82,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
   const notifyIneligibleProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: 'alert-ineligible-mint',
-    className: CN('general-confirmation-modal', className),
+    className: CN('general-confirmation-modal modal-revert-header', className),
     title: t('Ineligible to mint'),
     okText: t('Back to home'),
     content: (
@@ -119,7 +119,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
   const failedToMintProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: 'failed_to_mint',
-    className: CN('general-confirmation-modal', className),
+    className: CN('general-confirmation-modal modal-revert-header', className),
     title: t('Failed to mint'),
     okText: t('Back to home'),
     okCancel: false,
@@ -156,7 +156,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
   const badgeAlreadyMintedProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: 'badge_already_minted',
-    className: CN('general-confirmation-modal', className),
+    className: CN('general-confirmation-modal modal-revert-header', className),
     title: t('Failed to mint'),
     okText: t('Got it'),
     okCancel: false,
@@ -193,7 +193,7 @@ const Component: React.FC<Props> = (props: Props) => {
 
   const inSufficientBalanceProps = useMemo((): Partial<SwModalFuncProps> => ({
     id: 'in_sufficient_balance',
-    className: CN('general-confirmation-modal', className),
+    className: CN('general-confirmation-modal modal-revert-header', className),
     title: t('Failed to mint'),
     okText: t('Got it'),
     okCancel: false,
