@@ -21,11 +21,12 @@ import { noop, toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { ArrowCircleRight, CheckCircle, HouseLine, SmileySad } from 'phosphor-react';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Trans } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import styled, { useTheme } from 'styled-components';
-import {isHex} from "@polkadot/util";
+
+import { isHex } from '@polkadot/util';
 
 type Props = ThemeProps & {
   airdropNftInfo: IAirdropNftMinting,
@@ -63,19 +64,7 @@ const Component: React.FC<Props> = (props: Props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { connectWC, requireWC } = useContext(WalletConnectContext);
   const { alertModal } = useContext(WalletModalContext);
-
-  useEffect(() => {
-    apiSDK.getNftMintingLog().catch(console.error);
-  }, []);
-
-  useEffect(() => {
-    if (mintingLog?.status === 'success') {
-      onSuccess(mintingLog.address);
-      setIsLoading(false);
-    } else if (mintingLog?.status === 'submitted') {
-      setIsLoading(true);
-    }
-  }, [mintingLog, onSuccess]);
+  const mintingFlag = useRef(false);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
@@ -485,6 +474,19 @@ const Component: React.FC<Props> = (props: Props) => {
       </>
     );
   };
+
+  useEffect(() => {
+    if (mintingLog?.status === 'success') {
+      onSuccess(mintingLog.address);
+      setIsLoading(false);
+    } else if (mintingLog?.status === 'submitted' || mintingLog?.status === 'minting') {
+      mintingFlag.current = true;
+      setIsLoading(true);
+    } else if (mintingLog?.status === 'failed') {
+      setIsLoading(false);
+      mintingFlag.current && handleFailedToMintModal().then(goHome).catch(console.error);
+    }
+  }, [goHome, handleFailedToMintModal, mintingLog, onSuccess]);
 
   return (
     <>

@@ -54,6 +54,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   useEffect(() => {
+    apiSDK.getNftMintingLog().catch(console.error);
     const sub = apiSDK.subscribeNftMintingLog().subscribe((data) => {
       setMintingLog(data.data);
       setIsFetchingNftMintingLog(!data.isFetched);

@@ -4258,7 +4258,8 @@ export default class KoniExtension {
       chainType: ChainType.EVM,
       extrinsicType: ExtrinsicType.MINT_NFT,
       transaction: transaction,
-      transferNativeAmount: '0'
+      transferNativeAmount: '0',
+      resolveOnHasExtrinsicHash: true
     });
   }
 
