@@ -334,6 +334,8 @@ const Component: React.FC<Props> = (props: Props) => {
         return;
       }
 
+      setIsLoading(true); // Hot fix minting loading problems
+
       const transaction = await odysseyMintNft({ address, chain: 'storyOdyssey_testnet', signature });
 
       // account has insufficient balance
@@ -479,11 +481,13 @@ const Component: React.FC<Props> = (props: Props) => {
     if (mintingLog?.status === 'success') {
       onSuccess(mintingLog.address);
       setIsLoading(false);
-    } else if (mintingLog?.status === 'submitted' || mintingLog?.status === 'minting') {
+    } else if (mintingLog?.status === 'minting') {
+      mintingFlag.current = true;
+    } else if (mintingLog?.status === 'submitted') {
       mintingFlag.current = true;
       setIsLoading(true);
     } else if (mintingLog?.status === 'failed') {
-      setIsLoading(false);
+      mintingFlag.current && setIsLoading(false);
       mintingFlag.current && handleFailedToMintModal().then(goHome).catch(console.error);
     }
   }, [goHome, handleFailedToMintModal, mintingLog, onSuccess]);
