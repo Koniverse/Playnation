@@ -31,10 +31,10 @@ export enum FilterOption {
 }
 
 export const FilterOptions: Record<FilterOption, FilterItems[]> = {
+  [FilterOption.RARITY_OPTION]: RarityOptions,
   [FilterOption.POSITION_OPTION]: PositionOptions,
   [FilterOption.TEAM_OPTION]: TeamOptions,
   [FilterOption.PROGRAM_OPTION]: ProgramOptions,
-  [FilterOption.RARITY_OPTION]: RarityOptions,
   [FilterOption.POWER_OPTION]: PowerOptions,
   [FilterOption.LEVEL_OPTION]: LevelOptions
 };
