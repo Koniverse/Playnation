@@ -25,6 +25,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useState } from 're
 import { Trans } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import styled, { useTheme } from 'styled-components';
+import {isHex} from "@polkadot/util";
 
 type Props = ThemeProps & {
   airdropNftInfo: IAirdropNftMinting,
@@ -66,6 +67,15 @@ const Component: React.FC<Props> = (props: Props) => {
   useEffect(() => {
     apiSDK.getNftMintingLog().catch(console.error);
   }, []);
+
+  useEffect(() => {
+    if (mintingLog?.status === 'success') {
+      onSuccess(mintingLog.address);
+      setIsLoading(false);
+    } else if (mintingLog?.status === 'submitted') {
+      setIsLoading(true);
+    }
+  }, [mintingLog, onSuccess]);
 
   const tabGroupItems = useMemo<TabGroupItemType[]>(() => {
     return [
@@ -245,19 +255,6 @@ const Component: React.FC<Props> = (props: Props) => {
   const { handleSimpleConfirmModal: handleInSufficientBalanceModal } = useConfirmModal(inSufficientBalanceProps);
   const { handleSimpleConfirmModal: handleBadgeAlreadyMintedModal } = useConfirmModal(badgeAlreadyMintedProps);
 
-  useEffect(() => {
-    if (mintingLog?.status === 'success') {
-      onSuccess(mintingLog.address);
-      setIsLoading(false);
-    } else if (mintingLog?.status === 'submitted') {
-      setIsLoading(true);
-    } else if (mintingLog?.status === 'failed') {
-      if (mintingLog.notify) {
-        handleFailedToMintModal().then(goHome).catch(console.error);
-      }
-    }
-  }, [goHome, handleFailedToMintModal, mintingLog, onSuccess]);
-
   const handleExistedLinkedAddressModal = useCallback((address: string) => {
     alertModal.open({
       className: 'general-confirmation-modal modal-revert-header',
@@ -355,7 +352,7 @@ const Component: React.FC<Props> = (props: Props) => {
         handleInSufficientBalanceModal().then(noop).catch(console.error);
       } else if (transaction.errors.some((e) => e.message.toLowerCase().includes('Rejected by user'.toLowerCase()))) {
         // do nothing
-      } else if (transaction.errors.length) {
+      } else if (transaction.errors.length || !isHex(transaction?.extrinsicHash)) {
         handleFailedToMintModal().then(goHome).catch(console.error);
       } else {
         await apiSDK.nftMintingStart(transaction?.extrinsicHash);

@@ -44,7 +44,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
 
   const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>();
-  const [isShowPopupMintFailed, setIsShowPopupMintFailed] = useLocalStorage(CONFIRM_SHOW_MINTING_FAILED_MODAL, 'nonConfirmed');
+  const [isShowPopupMintFailed, setIsShowPopupMintFailed] = useLocalStorage<number[]>(CONFIRM_SHOW_MINTING_FAILED_MODAL, []);
 
   const banners = useGetBannerByScreen('home');
 
@@ -108,22 +108,33 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         iconWeight: 'fill',
         text: t('I understand'),
         onClick: () => {
-          setIsShowPopupMintFailed('confirmed');
+          setIsShowPopupMintFailed((prevIds) => {
+            if (!!mintingLog?.id && !prevIds.includes(mintingLog.id)) {
+              return [...prevIds, mintingLog.id];
+            }
+
+            return prevIds;
+          });
           alertModal.close();
         }
       },
       onCancel: () => {
-        setIsShowPopupMintFailed('confirmed');
+        setIsShowPopupMintFailed((prevIds) => {
+          if (!!mintingLog?.id && !prevIds.includes(mintingLog.id)) {
+            return [...prevIds, mintingLog.id];
+          }
+
+          return prevIds;
+        });
         alertModal.close();
       }
     });
-  }, [alertModal, setIsShowPopupMintFailed, t]);
+  }, [alertModal, mintingLog, setIsShowPopupMintFailed, t]);
 
   useEffect(() => {
     const fetchMintingLog = async () => {
       try {
         const mintingLog = await apiSDK.getNftMintingLog();
-
         setMintingLog(mintingLog);
       } catch (error) {
         console.error('Error fetching minting log:', error);
@@ -134,7 +145,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   }, []);
 
   useEffect(() => {
-    if (mintingLog?.notify && isShowPopupMintFailed.includes('nonConfirmed')) {
+    if (mintingLog?.notify && !isShowPopupMintFailed.includes(mintingLog.id)) {
       handleMintingFailedModal();
     }
   }, [handleMintingFailedModal, isShowPopupMintFailed, mintingLog?.notify, navigate, setIsShowPopupMintFailed]);
