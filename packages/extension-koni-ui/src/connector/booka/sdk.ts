@@ -994,7 +994,7 @@ export class BookaSdk {
       // method: string;
       // raffle_count: number;
       start: getUCTPlus7('2024-12-02 07:00'),
-      end: getUCTPlus7('2024-12-09 10:00'),
+      end: getUCTPlus7('2024-12-09 12:00'),
       conditionDescription: '',
       share: {
         url_share: 'https://x.koni.studio/mint-badge',
