@@ -12,7 +12,10 @@ import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
 import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
+import { deflate, inflate } from 'pako';
 import { BehaviorSubject } from 'rxjs';
+
+import { stringToU8a, u8aToString } from '@polkadot/util';
 
 export const DEFAULT_INIT_DATA = process.env.DEFAULT_INIT_DATA;
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
@@ -38,11 +41,15 @@ const CACHE_KEYS = {
   nflRivalCardList: 'data--nfl-rival-cards-cache'
 };
 
-function parseCache<T> (key: string): T | undefined {
-  const data = localStorage.getItem(key);
+function parseCache<T> (key: string, useDecompress?: boolean): T | undefined {
+  let data = localStorage.getItem(key);
 
   if (data) {
     try {
+      if (useDecompress) {
+        data = decompressData(data);
+      }
+
       return JSON.parse(data) as T;
     } catch (e) {
       console.error('Failed to parse cache', e);
@@ -50,6 +57,20 @@ function parseCache<T> (key: string): T | undefined {
   }
 
   return undefined;
+}
+
+function compressData (data: any) {
+  const jsonData = JSON.stringify(data);
+
+  const compressed = deflate(jsonData);
+
+  return u8aToString(compressed);
+}
+
+function decompressData (data: string) {
+  const compressed = stringToU8a(data);
+
+  return inflate(compressed, { to: 'string' });
 }
 
 const metadataHandler = MetadataHandler.instance;
@@ -105,7 +126,7 @@ export class BookaSdk {
       const rankInfoMap = parseCache<Record<AccountRankType, RankInfo>>(CACHE_KEYS.rankInfoMap);
       const leaderboardConfigSubject = parseCache<Record<string, object>>(CACHE_KEYS.leaderboardConfigSubject);
       const gameEventList = parseCache<GameEvent[]>(CACHE_KEYS.gameEventList);
-      const nflRivalCardList = parseCache<NFLRivalCard[]>(CACHE_KEYS.nflRivalCardList);
+      const nflRivalCardList = parseCache<NFLRivalCard[]>(CACHE_KEYS.nflRivalCardList, true);
 
       account && this.accountSubject.next(account);
       taskCategoryList && this.taskCategoryListSubject.next(taskCategoryList);
@@ -120,12 +141,13 @@ export class BookaSdk {
       nflRivalCardList && this.nflRivalCardListSubject.next(nflRivalCardList);
     } else {
       console.debug('Clearing cache');
-      storage.removeItems(Object.keys(CACHE_KEYS).concat(['cache-version'])).catch(console.error);
       Object.keys(CACHE_KEYS).forEach((key) => {
         localStorage.removeItem(key);
       });
-
-      localStorage.setItem('cache-version', cacheVersion);
+      storage.removeItems(Object.keys(CACHE_KEYS)
+        .concat(['cache-version']))
+        .catch(console.error)
+        .finally(() => localStorage.setItem('cache-version', cacheVersion));
     }
   }
 
@@ -416,7 +438,7 @@ export class BookaSdk {
 
     if (response?.cards) {
       this.nflRivalCardListSubject.next(response.cards);
-      localStorage.setItem(CACHE_KEYS.gameEventList, JSON.stringify(response.cards));
+      localStorage.setItem(CACHE_KEYS.nflRivalCardList, compressData(response.cards));
     }
 
     this.cardListHandler.resolve();
