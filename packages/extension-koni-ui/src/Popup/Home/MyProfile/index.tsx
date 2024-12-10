@@ -106,7 +106,7 @@ const Component = ({ className }: Props): React.ReactElement => {
               <div className={'empty-list-wrapper'}>
                 <EmptyListContent
                   className={'empty-rewards-content'}
-                  content={t('Link your Mythical account to view rewards')}
+                  content={t(' Link your Mythical account to view rewards')}
                   title={t('oops! no rewards yet ')}
                 />
                 <MythButton

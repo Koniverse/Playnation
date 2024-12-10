@@ -14,10 +14,10 @@ import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-export const DEFAULT_INIT_DATA = process.env.DEFAULT_INIT_DATA;
-export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
-export const MYTHICAL_API_HOST = process.env.MYTHICAL_API_HOST || 'https://nflrivals.client.mythical.dev';
-export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
+export const DEFAULT_INIT_DATA = 'user=%7B%22id%22%3A5321439923%2C%22first_name%22%3A%22Y%E1%BA%BFn%22%2C%22last_name%22%3A%22V%C5%A9%20%F0%9F%90%BE%22%2C%22username%22%3A%22yenxiu23%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FETQilvAtiIWRoU2Y8WsrmcaWZambYRZa1YvIpso3d7Kkp9tKkZZIGP_VuhJpyP7C.svg%22%7D&chat_instance=-2593097165550487465&chat_type=sender&auth_date=1733824330&signature=XEkX9r6m9RWZXPiidjBf5kg9pQ-7nwmOhsz004Y4s7ngAwrH6RQJULrEODbZIPF4WqYjU_WHAHm8U12pkS9yCQ&hash=87c646489691c987c81440e7fa55774ca6b554193b1d1c24dc6841ec3ab1161d';
+export const GAME_API_HOST = 'https://mythical-api-dev.playnation.app';
+export const MYTHICAL_API_HOST = 'https://nflrivals.client.mythical.dev';
+export const TELEGRAM_WEBAPP_LINK = 'Playnation_bot/app';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
 
@@ -351,6 +351,10 @@ export class BookaSdk {
 
   async fetchGameList () {
     const gameList = await this.getRequest<Game[]>(`${GAME_API_HOST}/api/game/fetch`);
+
+    if (gameList) {
+      gameList[0].url = 'http://localhost:8081/';
+    }
 
     if (gameList) {
       this.gameListSubject.next(gameList);

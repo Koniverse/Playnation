@@ -119,6 +119,8 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
             message = error?.message || '';
           }
 
+          console.log('message', message);
+
           notify({
             message: message,
             type: 'error'

@@ -6,11 +6,13 @@ import { MissionItem, MissionItemType } from '@subwallet/extension-koni-ui/compo
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Achievement, AchievementLogStatus, BookaAccount, Task, TaskAction, TaskActionComponent, TaskActionDirect, TaskActionOnchain, TaskActionOpenScreen, TaskActionShare, TaskActionUrl, TaskCategory, TaskCategoryType } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
-import React, { useCallback, useMemo } from 'react';
+import { CheckCircle, Gift } from 'phosphor-react';
+import React, { useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -104,10 +106,37 @@ const Component = ({ accountInfo,
   const { t } = useTranslation();
   const notify = useNotification();
   const navigate = useNavigate();
+  const { alertModal } = useContext(WalletModalContext);
 
   const getTaskStatusText = useCallback((task: Task) => {
     return isTaskComplete(task) ? t('Done') : t('To do');
   }, [t]);
+
+  const handleMintingFailedModal = useCallback(() => {
+    alertModal.open({
+      className: 'general-confirmation-modal modal-revert-header',
+      title: t('LINK YOUR MYTHICAL ACCOUNT'),
+      content: (
+        t('You need to link your Mythical account to complete this task')
+      ),
+      okButton: {
+        icon: CheckCircle,
+        iconWeight: 'fill',
+        text: t('I understand'),
+        onClick: () => {
+          console.log('xin chao');
+        }
+      },
+      cancelButton: {
+        icon: CheckCircle,
+        iconWeight: 'fill',
+        text: t('I understand'),
+        onClick: () => {
+          console.log('xin chao');
+        }
+      }
+    });
+  }, [alertModal, t]);
 
   const getTaskActionContent = useCallback((task: Task) => {
     const action = task.action;
@@ -117,6 +146,8 @@ const Component = ({ accountInfo,
 
   const handleOnChainAction = useCallback(async (taskId: number, action: TaskActionOnchain) => {
     const { address } = accountInfo?.info || {};
+
+    console.log('log 1');
 
     if (!address) {
       return;
@@ -216,6 +247,12 @@ const Component = ({ accountInfo,
         return;
       }
 
+      if (checkAchievement.message?.startsWith('Mythical Balance')) {
+        handleMintingFailedModal();
+
+        return;
+      }
+
       notify({
         message: t(checkAchievement.message || 'Check balance failed'),
         type: 'warning'
@@ -225,7 +262,7 @@ const Component = ({ accountInfo,
     }
 
     await new Promise((resolve) => setTimeout(resolve, 3000));
-  }, [notify, t]);
+  }, [handleMintingFailedModal, notify, t]);
 
   const handleShareAction = useCallback(async (action: TaskActionShare) => {
     alert(`Implement share action: ${action.url}`);
@@ -486,6 +523,7 @@ const Component = ({ accountInfo,
   //     }
   //   ] as MissionSectionType[];
   // }, []);
+  console.log('missionSections', missionSections);
 
   return (
     <div className={className}>

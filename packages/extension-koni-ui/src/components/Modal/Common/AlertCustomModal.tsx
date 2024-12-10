@@ -2,14 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { NotificationType } from '@subwallet/extension-base/background/KoniTypes';
-import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { AlertDialogProps, ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { preloadImages } from '@subwallet/extension-koni-ui/utils';
-import { Icon, ModalContext, PageIcon, SwModal } from '@subwallet/react-ui';
+import { Button, Icon, ModalContext, PageIcon, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle, Info, Warning, XCircle } from 'phosphor-react';
 import { IconProps } from 'phosphor-react/src/lib';
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useContext } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & AlertDialogProps & {
@@ -44,7 +42,6 @@ const Component: React.FC<Props> = (props: Props) => {
     okButton,
     title,
     onCancel,
-    isCustomModal,
     type = NotificationType.INFO, iconProps, contentTitle } = props;
 
   const { inactiveModal } = useContext(ModalContext);
@@ -59,26 +56,18 @@ const Component: React.FC<Props> = (props: Props) => {
     inactiveModal(modalId);
   }, [onCancel, inactiveModal, modalId]);
 
-  useEffect(() => {
-    preloadImages([
-      '/images/mythical/alert-modal-bg.png',
-      '/images/mythical/alert-modal-ok-button.png',
-      '/images/mythical/alert-modal-cancel-button.png',
-      '/images/mythical/alert-modal-cancel-button.png',
-    ]);
-  }, []);
-
   return (
     <>
       <SwModal
         className={CN(className, '-light-theme')}
-        closable={false}
-        destroyOnClose={false}
+        closable={closable}
+        destroyOnClose={true}
         footer={
-          <div className='__buttons-container'>
+          <>
             {!!cancelButton &&
-              <MythButton
-                className={'__action-button __left-button'}
+              <Button
+                block={true}
+                className={'__left-button'}
                 icon={cancelButton.icon && (
                   <Icon
                     phosphorIcon={cancelButton.icon}
@@ -86,12 +75,15 @@ const Component: React.FC<Props> = (props: Props) => {
                   />
                 )}
                 onClick={cancelButton.onClick}
+                schema={cancelButton.schema || 'secondary'}
+                shape={'round'}
               >
                 {cancelButton.text}
-              </MythButton>
+              </Button>
             }
-            <MythButton
-              className={'__action-button __right-button'}
+            <Button
+              block={true}
+              className={'__right-button'}
               icon={okButton.icon && (
                 <Icon
                   phosphorIcon={okButton.icon}
@@ -99,17 +91,18 @@ const Component: React.FC<Props> = (props: Props) => {
                 />
               )}
               onClick={okButton?.onClick}
+              schema={okButton.schema}
+              shape={'round'}
             >
               {okButton.text}
-            </MythButton>
-          </div>
+            </Button>
+          </>
         }
         id={modalId}
-        // onCancel={_onCancel}
+        onCancel={_onCancel}
         title={title}
       >
         <div className='__modal-content'>
-          {!!isCustomModal &&
           <div className={CN('__alert-icon', {
             '-info': type === NotificationType.INFO,
             '-success': type === NotificationType.SUCCESS,
@@ -125,7 +118,6 @@ const Component: React.FC<Props> = (props: Props) => {
               }}
             />
           </div>
-          }
 
           {
             !!contentTitle && (
@@ -156,75 +148,6 @@ const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: 
       display: 'flex',
       borderTop: 0,
       gap: token.sizeXXS
-    },
-
-    '.__buttons-container': {
-      display: 'flex',
-      gap: 12,
-      justifyContent: 'space-between',
-      paddingRight: 16,
-      paddingLeft: 16
-    },
-
-    '.__action-button': {
-      height: 52,
-      paddingLeft: 12,
-      paddingRight: 10,
-
-      '.__button-content': {
-        fontSize: '22px',
-        lineHeight: '24px',
-        color: extendToken.mythColorDark
-      },
-
-      '.__button-background': {
-        // filter: 'drop-shadow(1.444px 2.167px 0px #000)'
-      },
-
-      '.__button-background:before': {
-        maskSize: '100% 100%',
-        maskPosition: 'top left'
-      }
-    },
-
-    '.__left-button': {
-      maxWidth: '45%',
-      flex: '1 5 auto',
-
-      '.__button-inner': {
-        gap: 4
-      },
-
-      '.__action-button-icon': {
-        order: 1,
-        color: extendToken.mythColorDark,
-        fontSize: 24
-      },
-
-      '.__button-background:before': {
-        backgroundColor: token.colorWhite,
-        maskImage: 'url(/images/mythical/daily-rewards/cancel-button-mask.png)'
-      }
-    },
-
-    '.__right-button': {
-      flex: '1 0 auto',
-
-      '.__button-background:before': {
-        maskImage: 'url(/images/mythical/daily-rewards/claim-button-mask.png)'
-      },
-
-      '&.-lock': {
-        '.__button-background:before': {
-          backgroundColor: extendToken.mythColorGray2
-        }
-      },
-
-      '&.-claimable': {
-        '.__button-background:before': {
-          backgroundColor: token.colorPrimary
-        }
-      }
     },
 
     '.__modal-content': {

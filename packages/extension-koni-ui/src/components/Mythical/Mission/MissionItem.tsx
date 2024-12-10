@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
+import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
+import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
-import React, { useCallback, useState } from 'react';
+import { CheckCircle, Gift } from 'phosphor-react';
+import React, { useCallback, useContext, useState } from 'react';
 import styled from 'styled-components';
 
 export type MissionItemType = {
@@ -29,6 +32,8 @@ const Component = ({ actionContent, className,
   title,
   type }: Props): React.ReactElement => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { alertModal } = useContext(WalletModalContext);
+  const { t } = useTranslation();
 
   const onAction = useCallback(() => {
     if (doAction) {
@@ -40,6 +45,32 @@ const Component = ({ actionContent, className,
         });
     }
   }, [doAction]);
+
+  const handleMintingFailedModal = useCallback(() => {
+    alertModal.open({
+      className: 'general-confirmation-modal modal-revert-header',
+      title: t('Badge minting failed'),
+      iconProps: {
+        phosphorIcon: Gift,
+        weight: 'fill'
+      },
+      contentTitle: t('Mint your badge again'),
+      content: (
+        t('Due to technical issues, your badge wasn’t minted in Phase 1. Click the Mint tab to mint your badge again on December 6')
+      ),
+      okButton: {
+        icon: CheckCircle,
+        iconWeight: 'fill',
+        text: t('I understand'),
+        onClick: () => {
+          console.log('xin chao');
+        }
+      },
+      onCancel: () => {
+        console.log('cancel - hello');
+      }
+    });
+  }, [alertModal, t]);
 
   return (
     <div className={CN(className, {
@@ -149,7 +180,7 @@ export const MissionItem = styled(Component)<ThemeProps>(({ theme: { extendToken
       height: 20,
       backgroundImage: 'url(/images/mythical/check-icon.png)',
       backgroundPosition: 'center center',
-      backgroundSize: '100% 100%',
+      backgroundSize: '100% 100%'
       // filter: 'drop-shadow(1.197px 1.197px 0px #000)'
     },
 

@@ -39,6 +39,8 @@ const Component = ({ actionReloadPoint, className, openWidget, reloadTask, taskC
     });
   }, [taskCategoryInfoMap, taskCategoryMap]);
 
+  console.log('taskCategoryInfoList', taskCategoryInfoList);
+
   return (
     <div className={className}>
       {
