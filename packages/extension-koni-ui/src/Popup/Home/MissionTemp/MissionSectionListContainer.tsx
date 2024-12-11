@@ -6,12 +6,17 @@ import { MissionItem, MissionItemType } from '@subwallet/extension-koni-ui/compo
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Achievement, AchievementLogStatus, BookaAccount, Task, TaskAction, TaskActionComponent, TaskActionDirect, TaskActionOnchain, TaskActionOpenScreen, TaskActionShare, TaskActionUrl, TaskCategory, TaskCategoryType } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
+import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
+import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
-import React, { useCallback, useMemo } from 'react';
+import { Check, X } from 'phosphor-react';
+import React, { useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -104,10 +109,65 @@ const Component = ({ accountInfo,
   const { t } = useTranslation();
   const notify = useNotification();
   const navigate = useNavigate();
+  const { alertModal } = useContext(WalletModalContext);
+  const { isLinkedMyth, linkMythAccount, mythicalWallet } = useContext(AuthenticationMythContext);
+  const { currentAccount } = useSelector((state: RootState) => state.accountState);
+  const doLinkAccount = useCallback(() => {
+    currentAccount?.address && linkMythAccount().catch(console.error);
+  }, [currentAccount?.address, linkMythAccount]);
 
   const getTaskStatusText = useCallback((task: Task) => {
     return isTaskComplete(task) ? t('Done') : t('To do');
   }, [t]);
+
+  const handleLinkAccountModal = useCallback(() => {
+    alertModal.open({
+      className: 'general-confirmation-modal modal-revert-header',
+      title: t('LINK YOUR MYTHICAL ACCOUNT'),
+      content: (
+        t('You need to link your Mythical address with your account on the NFL Rivals app to complete this task')
+      ),
+      okButton: {
+        icon: Check,
+        iconWeight: 'fill',
+        text: t('LINK NOW'),
+        onClick: doLinkAccount
+      },
+      cancelButton: {
+        icon: X,
+        text: t('CANCEL'),
+        onClick: alertModal.close
+      }
+    });
+  }, [alertModal, doLinkAccount, t]);
+
+  const handleMythicalAddressModal = useCallback(() => {
+    alertModal.open({
+      className: 'general-confirmation-modal modal-revert-header',
+      title: t('NO ADDRESS FOUND'),
+      content: (
+        t('You need to link your Mythical account to complete this task')
+      ),
+      okButton: {
+        text: t('GOT IT'),
+        onClick: alertModal.close
+      }
+    });
+  }, [alertModal, t]);
+
+  const handleInsufficientBalanceModal = useCallback((balanceRequired: string) => {
+    alertModal.open({
+      className: 'general-confirmation-modal modal-revert-header',
+      title: t('insufficient balance'),
+      content: (
+        t(`Your Mythical address has less than ${balanceRequired} MYTH. Top up your balance to complete this task`)
+      ),
+      okButton: {
+        text: t('GOT IT'),
+        onClick: alertModal.close
+      }
+    });
+  }, [alertModal, t]);
 
   const getTaskActionContent = useCallback((task: Task) => {
     const action = task.action;
@@ -216,6 +276,23 @@ const Component = ({ accountInfo,
         return;
       }
 
+      if (!isLinkedMyth) {
+        handleLinkAccountModal();
+
+        return;
+      } else if (!mythicalWallet.address) {
+        handleMythicalAddressModal();
+
+        return;
+      } else if (checkAchievement.message?.startsWith('Mythical Balance hold is less')) {
+        const parts = checkAchievement.message?.split('less than');
+        const balanceRequired = parts[1]?.trim();
+
+        handleInsufficientBalanceModal(balanceRequired);
+
+        return;
+      }
+
       notify({
         message: t(checkAchievement.message || 'Check balance failed'),
         type: 'warning'
@@ -225,7 +302,7 @@ const Component = ({ accountInfo,
     }
 
     await new Promise((resolve) => setTimeout(resolve, 3000));
-  }, [notify, t]);
+  }, [handleInsufficientBalanceModal, handleLinkAccountModal, handleMythicalAddressModal, isLinkedMyth, mythicalWallet.address, notify, t]);
 
   const handleShareAction = useCallback(async (action: TaskActionShare) => {
     alert(`Implement share action: ${action.url}`);

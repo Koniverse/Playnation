@@ -24,6 +24,7 @@ export type AlertDialogButtonProps = {
 
 export type AlertDialogProps = {
   title: string,
+  className?: string,
   type?: NotificationType,
   closable?: boolean,
   iconProps?: PageIconProps['iconProps'],
@@ -31,6 +32,8 @@ export type AlertDialogProps = {
   contentTitle?: React.ReactNode,
   cancelButton?: AlertDialogButtonProps,
   okButton: AlertDialogButtonProps,
+  onCancel?: () => void,
+  isCustomModal?: boolean
 };
 
 export type AccountType = 'ALL' | 'ETHEREUM' | 'SUBSTRATE';

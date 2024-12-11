@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { NotificationType } from '@subwallet/extension-base/background/KoniTypes';
+import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { AlertDialogProps, ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { Button, Icon, ModalContext, PageIcon, SwModal } from '@subwallet/react-ui';
+import { preloadImages } from '@subwallet/extension-koni-ui/utils';
+import { Icon, ModalContext, PageIcon, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle, Info, Warning, XCircle } from 'phosphor-react';
 import { IconProps } from 'phosphor-react/src/lib';
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & AlertDialogProps & {
@@ -35,48 +37,60 @@ const alertTypeAndIconMap = {
 
 const Component: React.FC<Props> = (props: Props) => {
   const { cancelButton,
-    className,
-    closable,
+    className
+    ,
     content,
     modalId,
     okButton,
     title,
+    onCancel,
+    isCustomModal,
     type = NotificationType.INFO, iconProps, contentTitle } = props;
 
   const { inactiveModal } = useContext(ModalContext);
 
-  const onCancel = useCallback(() => {
+  const _onCancel = useCallback(() => {
+    if (onCancel) {
+      onCancel();
+
+      return;
+    }
+
     inactiveModal(modalId);
-  }, [inactiveModal, modalId]);
+  }, [onCancel, inactiveModal, modalId]);
+
+  useEffect(() => {
+    preloadImages([
+      '/images/mythical/alert-modal-bg.png',
+      '/images/mythical/alert-modal-ok-button.png',
+      '/images/mythical/alert-modal-cancel-button.png'
+    ]);
+  }, []);
 
   return (
     <>
       <SwModal
-        className={CN(className, '-light-theme')}
-        closable={closable}
-        destroyOnClose={true}
+        className={CN(className)}
+        closable={false}
+        destroyOnClose={false}
         footer={
-          <>
+          <div className='__buttons-container'>
             {!!cancelButton &&
-              <Button
-                block={true}
-                className={'__left-button'}
+              <MythButton
+                className={'__action-button __left-button'}
                 icon={cancelButton.icon && (
                   <Icon
                     phosphorIcon={cancelButton.icon}
                     weight={cancelButton.iconWeight || 'fill'}
                   />
                 )}
-                onClick={cancelButton.onClick}
-                schema={cancelButton.schema || 'secondary'}
-                shape={'round'}
+                onClick={_onCancel}
               >
                 {cancelButton.text}
-              </Button>
+              </MythButton>
             }
-            <Button
-              block={true}
-              className={'__right-button'}
+            <MythButton
+              className={'__action-button __right-button'}
               icon={okButton.icon && (
                 <Icon
                   phosphorIcon={okButton.icon}
@@ -84,18 +98,16 @@ const Component: React.FC<Props> = (props: Props) => {
                 />
               )}
               onClick={okButton?.onClick}
-              schema={okButton.schema}
-              shape={'round'}
             >
               {okButton.text}
-            </Button>
-          </>
+            </MythButton>
+          </div>
         }
         id={modalId}
-        onCancel={onCancel}
         title={title}
       >
         <div className='__modal-content'>
+          {!!isCustomModal &&
           <div className={CN('__alert-icon', {
             '-info': type === NotificationType.INFO,
             '-success': type === NotificationType.SUCCESS,
@@ -111,6 +123,7 @@ const Component: React.FC<Props> = (props: Props) => {
               }}
             />
           </div>
+          }
 
           {
             !!contentTitle && (
@@ -132,7 +145,7 @@ const Component: React.FC<Props> = (props: Props) => {
 const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
     '.ant-sw-modal-body': {
-      paddingBottom: token.paddingXS,
+      paddingBottom: token.paddingXXS,
       paddingLeft: token.paddingXS,
       paddingRight: token.paddingXS
     },
@@ -143,16 +156,107 @@ const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: 
       gap: token.sizeXXS
     },
 
-    '.__modal-content': {
-      background: extendToken.colorBgGradient || token.colorPrimary,
-      fontSize: token.fontSize,
-      lineHeight: token.lineHeightHeading6,
+    '.ant-sw-header-center-part': {
+      position: 'relative'
+    },
+
+    '.ant-sw-sub-header-title-content.ant-sw-sub-header-title-content.ant-sw-sub-header-title-content': {
+      color: token.colorWhite,
       textAlign: 'center',
-      paddingTop: 32,
-      paddingLeft: 20,
-      paddingRight: 20,
-      paddingBottom: 32,
-      borderRadius: 24
+      fontFamily: extendToken.fontPermanentMarker,
+      fontWeight: 400,
+      lineHeight: '40px',
+      textTransform: 'uppercase',
+      'white-space': 'normal'
+    },
+
+    '.ant-sw-modal-content.ant-sw-modal-content': {
+      paddingTop: 24,
+      backgroundImage: 'url(/images/mythical/alert-modal-bg.png)',
+      backgroundSize: '100% 100%',
+      backgroundRepeat: 'no-repeat',
+      // filter: 'drop-shadow(4px 6px 0px #000)',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      width: '100%'
+    },
+
+    '.__modal-content': {
+      color: extendToken.mythColorGray1,
+      fontSize: 16,
+      fontFamily: extendToken.fontBarlowCondensed,
+      lineHeight: '18px',
+      textAlign: 'center',
+      letterSpacing: 0.32,
+      paddingLeft: 52,
+      paddingRight: 52
+      // paddingBottom: 32,
+      // borderRadius: 24
+    },
+
+    '.__buttons-container': {
+      display: 'flex',
+      gap: 12,
+      justifyContent: 'space-between',
+      flex: 1
+    },
+
+    '.__action-button': {
+      height: 52,
+      paddingLeft: 12,
+      paddingRight: 10,
+
+      '.__button-content': {
+        fontSize: '22px',
+        lineHeight: '24px',
+        color: extendToken.mythColorDark
+      },
+
+      '.__button-background': {
+        // filter: 'drop-shadow(1.444px 2.167px 0px #000)'
+      },
+
+      '.__button-background:before': {
+        maskSize: '100% 100%',
+        maskPosition: 'top left'
+      },
+
+      '.__button-inner': {
+        flexDirection: 'row-reverse'
+      }
+    },
+
+    '.__left-button': {
+      maxWidth: '45%',
+      flex: '1 5 auto',
+
+      '.__button-inner': {
+        gap: 4
+      },
+
+      '.__action-button-icon': {
+        order: 1,
+        color: extendToken.mythColorDark,
+        fontSize: 24
+      },
+
+      '.__button-background:before': {
+        backgroundColor: token.colorWhite,
+        maskImage: 'url(/images/mythical/alert-modal-cancel-button.png)'
+      }
+    },
+
+    '.__right-button': {
+      flex: '1 0 auto',
+
+      '.__button-inner': {
+        gap: 4
+      },
+
+      '.__button-background:before': {
+        backgroundColor: token.colorPrimary,
+        maskImage: 'url(/images/mythical/alert-modal-ok-button.png)'
+      }
     },
 
     '.ant-page-icon': {
@@ -179,7 +283,7 @@ const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: 
     },
 
     '.__content': {
-      color: token.colorTextDark2
+      color: extendToken.mythColorGray1
     }
   };
 });
