@@ -37,14 +37,13 @@ const alertTypeAndIconMap = {
 
 const Component: React.FC<Props> = (props: Props) => {
   const { cancelButton,
-    className
-    ,
+    className,
     content,
     modalId,
     okButton,
     title,
     onCancel,
-    isCustomModal,
+    isShowIcon,
     type = NotificationType.INFO, iconProps, contentTitle } = props;
 
   const { inactiveModal } = useContext(ModalContext);
@@ -107,7 +106,7 @@ const Component: React.FC<Props> = (props: Props) => {
         title={title}
       >
         <div className='__modal-content'>
-          {!!isCustomModal &&
+          {!!isShowIcon &&
           <div className={CN('__alert-icon', {
             '-info': type === NotificationType.INFO,
             '-success': type === NotificationType.SUCCESS,

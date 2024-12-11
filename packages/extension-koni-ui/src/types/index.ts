@@ -33,7 +33,7 @@ export type AlertDialogProps = {
   cancelButton?: AlertDialogButtonProps,
   okButton: AlertDialogButtonProps,
   onCancel?: () => void,
-  isCustomModal?: boolean
+  isShowIcon?: boolean
 };
 
 export type AccountType = 'ALL' | 'ETHEREUM' | 'SUBSTRATE';
