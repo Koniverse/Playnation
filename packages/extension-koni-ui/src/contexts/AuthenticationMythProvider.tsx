@@ -20,16 +20,17 @@ export interface AuthenticationMythContextProps {
   account?: AccountPublicInfo;
   isLinkedMyth: boolean;
   mythicalWallet: MythicalWallet;
-  linkMythAccount: () => Promise<void>;
+  linkMythAccount: (path: string) => Promise<void>;
   onLogin: VoidFunction;
   onLogout: () => Promise<void>;
 }
 
 export const LOCAL_LOGGED_IN_PROMISE_KEY = 'mythical_logged_in_promise';
+export const LOCAL_NAVIGATE_AFTER_LOGIN_KEY = 'mythical_navigate_after_login';
 
 export const AuthenticationMythContext = createContext<AuthenticationMythContextProps>({
   isLinkedMyth: false,
-  linkMythAccount: () => Promise.resolve(),
+  linkMythAccount: (path: string) => Promise.resolve(),
   mythicalWallet: { address: '', balanceInMyth: '' } as MythicalWallet,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   onLogin: () => {},
@@ -124,13 +125,17 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     }
   }, [authContext.token, tokenData?.email]);
 
-  const linkMythAccount = useCallback(async () => {
+  const linkMythAccount = useCallback(async (path: string) => {
     if (!tokenData?.email || !authContext.token) {
+      if (path) {
+        localStorage.setItem(LOCAL_NAVIGATE_AFTER_LOGIN_KEY, path);
+      }
+
       onLoginWithMythAccount();
     }
 
     await onSubmitMythAccount();
-  }, [authContext.token, onLoginWithMythAccount, onSubmitMythAccount, tokenData?.email]);
+  }, [authContext, onLoginWithMythAccount, onSubmitMythAccount, tokenData]);
 
   const onLogin = useCallback(() => {
     onLoginWithMythAccount();

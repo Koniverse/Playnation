@@ -8,7 +8,7 @@ import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
-import { AuthenticationMythProvider, LOCAL_LOGGED_IN_PROMISE_KEY } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
+import { AuthenticationMythProvider, LOCAL_LOGGED_IN_PROMISE_KEY, LOCAL_NAVIGATE_AFTER_LOGIN_KEY } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { SecurityContextProvider } from '@subwallet/extension-koni-ui/contexts/SecurityContext';
 import { usePredefinedModal, WalletModalContextProvider } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
@@ -242,13 +242,15 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     }
 
     const loginPromise = localStorage.getItem(LOCAL_LOGGED_IN_PROMISE_KEY) || '';
+    const pathAfterLogin = localStorage.getItem(LOCAL_NAVIGATE_AFTER_LOGIN_KEY);
 
     if (loginPromise === 'login') {
-      redirectTarget = myProfileUrl;
+      redirectTarget = pathAfterLogin || myProfileUrl;
       localStorage.setItem(LOCAL_LOGGED_IN_PROMISE_KEY, 'logged');
     } else if (loginPromise === 'logout') {
       localStorage.removeItem(LOCAL_LOGGED_IN_PROMISE_KEY);
-      redirectTarget = myProfileUrl;
+      localStorage.removeItem(LOCAL_NAVIGATE_AFTER_LOGIN_KEY);
+      redirectTarget = pathAfterLogin || myProfileUrl;
     }
 
     // Remove loading on finished first compute

@@ -113,7 +113,7 @@ const Component = ({ accountInfo,
   const { isLinkedMyth, linkMythAccount, mythicalWallet } = useContext(AuthenticationMythContext);
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
   const doLinkAccount = useCallback(() => {
-    currentAccount?.address && linkMythAccount().catch(console.error);
+    currentAccount?.address && linkMythAccount('/home/mission').catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
 
   const getTaskStatusText = useCallback((task: Task) => {
