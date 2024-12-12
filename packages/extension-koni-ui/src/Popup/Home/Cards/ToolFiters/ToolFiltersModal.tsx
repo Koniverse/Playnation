@@ -193,7 +193,7 @@ const Component = ({ className, filterItems, handleCancel, handleReset, onConfir
                           {!!options[index + 1] && checkboxContent(options[index + 1], optionLabel as FilterOption, index + 1)}
                         </div>
                       )
-                      : <></>
+                      : null
                   ))
                 }
               </div>
@@ -234,7 +234,7 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
     '.ant-checkbox-checked.ant-checkbox-checked': {
       backgroundImage: 'url("/images/mythical/check-selected.png")',
       backgroundPosition: 'center center',
-      backgroundSize: '100% 24px',
+      backgroundSize: '100% 24px'
       // filter: 'drop-shadow(0.97px 0.97px 0px #000)'
     },
 
