@@ -650,8 +650,8 @@ div#popup-container {
 
 .ant-sw-modal .ant-sw-header-container-center .ant-sw-header-center-part {
     width: auto;
-    margin-left: 48px;
-    margin-right: 48px;
+    /*margin-left: 48px;*/
+    /*margin-right: 48px;*/
 }
 
 .ant-sw-sub-header-title-content {

@@ -144,9 +144,10 @@ const Component: React.FC<Props> = (props: Props) => {
 const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
     '.ant-sw-modal-body': {
-      paddingBottom: token.paddingXXS,
-      paddingLeft: token.paddingXS,
-      paddingRight: token.paddingXS
+      margin: 0,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingBottom: 4
     },
 
     '.ant-sw-modal-footer': {
@@ -156,7 +157,9 @@ const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: 
     },
 
     '.ant-sw-header-center-part': {
-      position: 'relative'
+      position: 'relative',
+      marginLeft: 0,
+      marginRight: 0
     },
 
     '.ant-sw-sub-header-title-content.ant-sw-sub-header-title-content.ant-sw-sub-header-title-content': {
@@ -165,12 +168,14 @@ const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: 
       fontFamily: extendToken.fontPermanentMarker,
       fontWeight: 400,
       lineHeight: '40px',
+      fontSize: 32,
       textTransform: 'uppercase',
       'white-space': 'normal'
     },
 
     '.ant-sw-modal-content.ant-sw-modal-content': {
-      paddingTop: 24,
+      borderRadius: 0,
+      paddingTop: 27,
       backgroundImage: 'url(/images/mythical/alert-modal-bg.png)',
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat',
@@ -187,10 +192,9 @@ const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: 
       lineHeight: '18px',
       textAlign: 'center',
       letterSpacing: 0.32,
-      paddingLeft: 52,
-      paddingRight: 52
-      // paddingBottom: 32,
-      // borderRadius: 24
+      paddingLeft: 22,
+      paddingRight: 22,
+      fontWeight: 400
     },
 
     '.__buttons-container': {
@@ -264,6 +268,10 @@ const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: 
       '.anticon': {
         fontSize: '60px !important'
       }
+    },
+
+    '.anticon': {
+      fontSize: '24px !important'
     },
 
     '.__alert-icon': {

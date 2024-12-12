@@ -31,7 +31,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [loading, setLoading] = useState(false);
   const [mineAccount, setMineAccount] = useState<BookaAccount | undefined>(apiSDK.account);
   const doLinkAccount = useCallback(() => {
-    currentAccount?.address && linkMythAccount().catch(console.error);
+    currentAccount?.address && linkMythAccount('/home/my-profile').catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
 
   const openAppStoreLink = useCallback(() => {

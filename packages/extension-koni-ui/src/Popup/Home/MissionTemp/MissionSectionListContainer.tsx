@@ -113,7 +113,7 @@ const Component = ({ accountInfo,
   const { isLinkedMyth, linkMythAccount, mythicalWallet } = useContext(AuthenticationMythContext);
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
   const doLinkAccount = useCallback(() => {
-    currentAccount?.address && linkMythAccount().catch(console.error);
+    currentAccount?.address && linkMythAccount('/home/mission').catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
 
   const getTaskStatusText = useCallback((task: Task) => {
@@ -125,7 +125,7 @@ const Component = ({ accountInfo,
       className: 'general-confirmation-modal modal-revert-header',
       title: t('LINK YOUR MYTHICAL ACCOUNT'),
       content: (
-        t('You need to link your Mythical address with your account on the NFL Rivals app to complete this task')
+        t('You need to link your Mythical account to complete this task')
       ),
       okButton: {
         icon: Check,
@@ -146,7 +146,7 @@ const Component = ({ accountInfo,
       className: 'general-confirmation-modal modal-revert-header',
       title: t('NO ADDRESS FOUND'),
       content: (
-        t('You need to link your Mythical account to complete this task')
+        t('You need to link your Mythical address with your account on the NFL Rivals app to complete this task')
       ),
       okButton: {
         text: t('GOT IT'),
