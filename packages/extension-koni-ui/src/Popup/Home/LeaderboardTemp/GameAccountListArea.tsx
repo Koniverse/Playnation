@@ -36,7 +36,7 @@ export const GameAccountListArea = ({ isLoading, leaderboardPersonItems }: Props
       }
 
       const telegramAccountName = (mineAccount?.info.firstName || mineAccount?.info.lastName)
-        ? `${mineAccount?.info.firstName || ''} ${mineAccount?.info.lastName || ''}`
+        ? `${mineAccount?.info.firstName || ''} ${mineAccount?.info.lastName || ''}`.trim()
         : mineAccount.info.telegramUsername;
 
       return [{

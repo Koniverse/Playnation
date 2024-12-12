@@ -193,10 +193,7 @@ const Component = ({ className, filterItems, handleCancel, handleReset, onConfir
                           {!!options[index + 1] && checkboxContent(options[index + 1], optionLabel as FilterOption, index + 1)}
                         </div>
                       )
-                      : <div
-                        className={'__empty-component'}
-                        key={index}
-                      />
+                      : null
                   ))
                 }
               </div>
@@ -441,10 +438,6 @@ export const ToolFiltersModal = styled(Component)<ThemeProps>(({ theme: { extend
 
     '.__footer-button-cancel .__button-background:before': {
       backgroundColor: token.colorWhite
-    },
-
-    '.__empty-component': {
-      display: 'none'
     }
   };
 });
