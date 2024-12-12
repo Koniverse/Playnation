@@ -123,9 +123,9 @@ const Component = ({ accountInfo,
   const handleLinkAccountModal = useCallback(() => {
     alertModal.open({
       className: 'general-confirmation-modal modal-revert-header',
-      title: t('LINK YOUR MYTHICAL ACCOUNT'),
+      title: t('Link your mythical account'),
       content: (
-        t('You need to link your Mythical account to complete this task')
+        t('You need to link your Mythical account before claiming MYTH rewards')
       ),
       okButton: {
         icon: Check,
@@ -144,7 +144,7 @@ const Component = ({ accountInfo,
   const handleMythicalAddressModal = useCallback(() => {
     alertModal.open({
       className: 'general-confirmation-modal modal-revert-header',
-      title: t('NO ADDRESS FOUND'),
+      title: t('link your mythical address'),
       content: (
         t('You need to link your Mythical address with your account on the NFL Rivals app to complete this task')
       ),

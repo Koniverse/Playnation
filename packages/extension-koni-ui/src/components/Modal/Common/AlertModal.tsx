@@ -158,8 +158,8 @@ const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: 
 
     '.ant-sw-header-center-part': {
       position: 'relative',
-      marginLeft: 0,
-      marginRight: 0
+      marginLeft: 16,
+      marginRight: 16
     },
 
     '.ant-sw-sub-header-title-content.ant-sw-sub-header-title-content.ant-sw-sub-header-title-content': {
