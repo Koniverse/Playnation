@@ -125,7 +125,7 @@ const Component = ({ accountInfo,
       className: 'general-confirmation-modal modal-revert-header',
       title: t('Link your mythical account'),
       content: (
-        t('You need to link your Mythical account before claiming MYTH rewards')
+        t('You need to link your Mythical account to complete this task')
       ),
       okButton: {
         icon: Check,
