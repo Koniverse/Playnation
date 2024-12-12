@@ -170,6 +170,7 @@ const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: 
     },
 
     '.ant-sw-modal-content.ant-sw-modal-content': {
+      borderRadius: 0,
       paddingTop: 24,
       backgroundImage: 'url(/images/mythical/alert-modal-bg.png)',
       backgroundSize: '100% 100%',
