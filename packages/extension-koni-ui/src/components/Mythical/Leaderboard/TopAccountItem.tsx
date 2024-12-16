@@ -4,6 +4,7 @@
 import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components/Mythical';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
+import { Skeleton } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React from 'react';
 import styled from 'styled-components';
@@ -28,29 +29,58 @@ const Component = ({ avatarSrc, className, isFirst, isLoading, name = '---', poi
         '-is-first': isFirst
       })}
     >
-      <GameAccountAvatar
-        avatarSrc={avatarSrc}
-        className={'__avatar-wrapper'}
-        isPlaceholder={isLoading}
-        partNode={(
-          <div className='__rank'>
-            {rank}
-          </div>
-        )}
-      />
+      {isLoading
+        ? <Skeleton.Avatar
+          active={true}
+          shape={'circle'}
+          size={58}
+          style={{ background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)' }}
+        />
+        : <GameAccountAvatar
+          avatarSrc={avatarSrc}
+          className={'__avatar-wrapper'}
+          isPlaceholder={isLoading}
+          partNode={(
+            <div className='__rank'>
+              {rank}
+            </div>
+          )}
+        /> }
 
       <div className={CN('__account-name')}>
-        {name}
+        {isLoading
+          ? <Skeleton.Input
+            size={'small'}
+            style={{ height: 16,
+              background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)' }}
+          />
+          : name}
       </div>
 
       <div className='__point'>
-        {`${toDisplayNumber(point)}`}
+        {isLoading
+          ? <Skeleton.Input
+            active={true}
+            size='small'
+            style={{ height: 18,
+              background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)' }}
+          />
+          : `${toDisplayNumber(point)}`}
       </div>
 
       <div className='__token-Value-wrapper'>
-        <div className='__token-Value'>
-          {`+${toDisplayNumber(tokenValue)} Myth`}
-        </div>
+        {isLoading
+          ? (<Skeleton.Input
+            active={true}
+            size='small'
+            style={{ height: 24,
+              background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)' }}
+          />)
+          : (
+            <div className='__token-Value'>
+              {`+${toDisplayNumber(tokenValue)} Myth`}
+            </div>
+          )}
       </div>
 
     </div>
@@ -59,6 +89,9 @@ const Component = ({ avatarSrc, className, isFirst, isLoading, name = '---', poi
 
 const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
+    display: 'flex',
+    alignItems: 'center',
+    flexDirection: 'column',
     '.__avatar-wrapper': {
       marginLeft: 'auto',
       marginRight: 'auto',
@@ -84,6 +117,9 @@ const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, to
       position: 'absolute',
       right: 0,
       top: 0
+    },
+    '.skeleton': {
+      backgroundColor: 'red'
     },
 
     '.__account-name': {

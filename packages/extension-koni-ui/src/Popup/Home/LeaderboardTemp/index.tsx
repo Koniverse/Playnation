@@ -12,7 +12,7 @@ import { TERM_AND_CONDITION_MODAL_ID, TermAndConditionModal } from '@subwallet/e
 import { TopThreeArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TopThreeArea';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
-import { ModalContext } from '@subwallet/react-ui';
+import { ModalContext, Skeleton } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -108,24 +108,47 @@ const Component = ({ className }: Props): React.ReactElement => {
 
   return (
     <div className={className}>
-      <MainScreenHeader
-        className={'main-screen-header'}
-        rightPartNode={
-          (
-            <button
-              className={'info-button hidden'}
-              onClick={openTermAndConditionModal}
-            >
-              <InfoIcon />
-            </button>
-          )
-        }
-        title={currentLeaderboardInfo?.name || t('Leaderboard')}
-      />
+      {isLoading
+        ? (
+          <div className={'skeleton-header'}>
+            <Skeleton.Input
+              active={true}
+              style={{ width: '100%', height: 134, paddingBottom: 16, background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)' }}
+            />
+          </div>
+        )
+        : (
+          <MainScreenHeader
+            className={'main-screen-header'}
+            rightPartNode={
+              (
+                <button
+                  className={'info-button hidden'}
+                  onClick={openTermAndConditionModal}
+                >
+                  <InfoIcon />
+                </button>
+              )
+            }
+            title={currentLeaderboardInfo?.name || t('Leaderboard')}
+          />
+        ) }
 
-      {leaderboardInfo?.endTimeTs && leaderboardInfo?.specialTime && <div className='time-remaining-wrapper'>
-        <TimeRemaining endTime={new Date(leaderboardInfo.endTimeTs).toString()} />
-      </div>}
+      {leaderboardInfo?.endTimeTs && leaderboardInfo?.specialTime &&
+          <div className='time-remaining-wrapper'>
+            {isLoading
+              ? (
+                <Skeleton.Input
+                  active={true}
+                  size={'large'}
+                  // className={'__skeleton-time-remaining'}
+                  style={{ width: '100%', background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)' }}
+                />
+              )
+              : (
+                <TimeRemaining endTime={new Date(leaderboardInfo.endTimeTs).toString()} />
+              )}
+          </div>}
 
       <div className='scroll-container'>
         <TopThreeArea
@@ -133,19 +156,55 @@ const Component = ({ className }: Props): React.ReactElement => {
           isLoading={isLoading}
           leaderboardPersonItems={leaderboardPersonItems}
         />
+        {isLoading
+          ? (
+            <Skeleton.Input
+              active={true}
+              className={'skeleton-banner'}
+              size={'large'}
+              style={{
+                width: '100%',
+                height: 83,
+                background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)'
+              }}
+            />
+          )
+          : (
+            <CallToAction
+              buttonLabel={'Play now'}
+              className={'call-to-action'}
+              onAction={openAppStoreLink}
+              subtitle={'Download NFL Rivals App'}
+              title={'Want to get to the big league?'}
+            />
+          )}
 
-        <CallToAction
-          buttonLabel={'Play now'}
-          className={'call-to-action'}
-          onAction={openAppStoreLink}
-          subtitle={'Download NFL Rivals App'}
-          title={'Want to get to the big league?'}
-        />
+        {isLoading
+          ? (
+            <div className='skeleton-list-wrapper'>
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton.Input
+                  active={true}
+                  className='skeleton-list'
+                  key={index}
+                  size='small'
+                  style={{
+                    width: '100%',
+                    height: 54,
+                    background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)',
+                    marginBottom: index < 2 ? 4 : 0
+                  }}
+                />
+              ))}
+            </div>
+          )
+          : (
+            <GameAccountListArea
+              isLoading={isLoading}
+              leaderboardPersonItems={leaderboardPersonItems}
+            />
+          )}
 
-        <GameAccountListArea
-          isLoading={isLoading}
-          leaderboardPersonItems={leaderboardPersonItems}
-        />
       </div>
 
       <TermAndConditionModal
@@ -162,6 +221,26 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     flexDirection: 'column',
     overflow: 'auto',
     height: '100%',
+
+    '.skeleton-list': {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      height: 54
+    },
+
+    '.skeleton-header': {
+      paddingBottom: 20,
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column'
+    },
+
+    '.skeleton-banner': {
+      width: '100%',
+      paddingTop: 12,
+      paddingBottom: 12
+    },
 
     '.main-screen-header': {
       '.__screen-title': {
@@ -183,6 +262,8 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     },
 
     '.time-remaining-wrapper': {
+      display: 'flex',
+      flexDirection: 'column',
       paddingLeft: 16,
       paddingRight: 16,
       marginBottom: 12
