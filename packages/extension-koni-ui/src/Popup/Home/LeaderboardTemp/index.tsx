@@ -66,20 +66,25 @@ const Component = ({ className }: Props): React.ReactElement => {
   useEffect(() => {
     let isSync = true;
 
-    setIsLoading(true);
+    if (currentLeaderboardInfo) {
+      setIsLoading(true);
 
-    currentLeaderboardInfo && apiSDK.fetchLeaderboard(currentLeaderboardInfo.id, {})
-      .then((data) => {
-        if (!isSync) {
-          return;
-        }
+      apiSDK.fetchLeaderboard(currentLeaderboardInfo.id, {})
+        .then((data) => {
+          if (!isSync) {
+            return;
+          }
 
-        setLeaderboardPersonItems(data.results);
-        setLeaderboardInfo(data.filter);
-
-        setIsLoading(false);
-      })
-      .catch(() => console.log('error'));
+          setLeaderboardPersonItems(data.results);
+          setLeaderboardInfo(data.filter);
+        })
+        .catch((e) => console.log('apiSDK.fetchLeaderboard error', e))
+        .finally(() => {
+          if (isSync) {
+            setIsLoading(false);
+          }
+        });
+    }
 
     return () => {
       isSync = false;
@@ -107,7 +112,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   return (
-    <div className={className}>(
+    <div className={className}>
       <MainScreenHeader
         className={'main-screen-header'}
         rightPartNode={
@@ -122,11 +127,12 @@ const Component = ({ className }: Props): React.ReactElement => {
         }
         title={currentLeaderboardInfo?.name || t('Leaderboard')}
       />
-        )
 
       {
         <div className='time-remaining-wrapper'>
-          <TimeRemaining endTime={leaderboardInfo?.endTimeTs ? new Date(leaderboardInfo?.endTimeTs).toString() : undefined} />
+          <TimeRemaining
+            endTime={leaderboardInfo?.endTimeTs ? new Date(leaderboardInfo?.endTimeTs).toString() : undefined}
+          />
         </div>}
 
       <div className='scroll-container'>
@@ -160,17 +166,12 @@ const Component = ({ className }: Props): React.ReactElement => {
         {isLoading
           ? (
             <div className='skeleton-list-wrapper'>
-              {Array.from({ length: 3 }).map((_, index) => (
+              {Array.from({ length: 10 }).map((_, index) => (
                 <Skeleton.Input
                   active={true}
-                  className='skeleton-list'
+                  className='skeleton-list-item'
                   key={index}
                   size='small'
-                  style={{
-                    width: '100%',
-                    height: 54,
-                    marginBottom: index < 2 ? 4 : 0
-                  }}
                 />
               ))}
             </div>
@@ -181,7 +182,6 @@ const Component = ({ className }: Props): React.ReactElement => {
               leaderboardPersonItems={leaderboardPersonItems}
             />
           )}
-
       </div>
 
       <TermAndConditionModal
@@ -199,24 +199,37 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     overflow: 'auto',
     height: '100%',
 
-    '.skeleton-list': {
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      height: 54
+    '.skeleton-list-item': {
+      display: 'block !important',
+      height: '54px !important',
+
+      '&.ant-skeleton': {
+        marginLeft: 8,
+        marginRight: 8
+      },
+
+      '.ant-skeleton-input': {
+        width: '100% !important'
+      }
     },
 
-    '.skeleton-header': {
-      paddingBottom: 20,
-      width: '100%',
-      display: 'flex',
-      flexDirection: 'column'
+    '.skeleton-list-item + .skeleton-list-item': {
+      marginTop: 4
     },
 
     '.skeleton-banner': {
-      width: '100%',
-      paddingTop: 12,
-      paddingBottom: 12
+      display: 'block !important',
+      height: '83px !important',
+
+      '&.ant-skeleton': {
+        marginLeft: 8,
+        marginRight: 8,
+        marginBottom: 12
+      },
+
+      '.ant-skeleton-input': {
+        width: '100% !important'
+      }
     },
 
     '.main-screen-header': {

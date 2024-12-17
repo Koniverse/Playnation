@@ -50,26 +50,35 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       border: 0
     },
 
-    '.ant-skeleton-input-lg.ant-skeleton-input-lg.ant-skeleton-input-lg': {
-      background: 'rgba(224, 224, 224, 0.30) 81.89%'
-      // ':after': {
-      //   background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)',
-      //   animationDuration: '2.4s'
-      // }
+    '.ant-skeleton.ant-skeleton.ant-skeleton': {
+      '.ant-skeleton-input, .ant-skeleton-avatar': {
+        backgroundColor: 'rgba(224, 224, 224, 0.30)',
+
+        '&:after': {
+          display: 'none'
+        }
+      },
+
+      '.ant-skeleton-input': {
+        borderRadius: 4
+      }
     },
 
-    '.ant-skeleton-input-sm.ant-skeleton-input-sm.ant-skeleton-input-sm': {
-      background: 'rgba(224, 224, 224, 0.30) 81.89%'
-      // ':after': {
-      //   background: 'rgba(31, 31, 35, 0.00) 23.06%'
-      // }
+    '.ant-skeleton.ant-skeleton.ant-skeleton.-line': {
+      '.ant-skeleton-input': {
+        borderRadius: 32
+      }
     },
 
-    '.ant-skeleton-avatar-circle.ant-skeleton-avatar-circle.ant-skeleton-avatar-circle': {
-      background: 'rgba(224, 224, 224, 0.30) 81.89%'
-      // ':after': {
-      //   background: 'rgba(31, 31, 35, 0.00) 23.06%'
-      // }
+    '.ant-skeleton.ant-skeleton.ant-skeleton-active': {
+      '.ant-skeleton-input, .ant-skeleton-avatar': {
+        backgroundImage: 'linear-gradient(97deg, rgba(224, 224, 224,0) 25%, rgba(224, 224, 224, 0.3) 37%, rgba(224, 224, 224,0) 63%)',
+        backgroundSize: '400% 100%',
+        animationName: 'skeleton-loading',
+        animationDuration: '1.4s',
+        animationTimingFunction: 'ease',
+        animationIterationCount: 'infinite'
+      }
     },
 
     '.ant-sw-modal .ant-sw-modal-header': {
