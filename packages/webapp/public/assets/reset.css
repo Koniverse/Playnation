@@ -905,3 +905,21 @@ div.ant-notification-notice {
 .ant-sw-qr-scanner-footer .ant-btn.ant-btn {
   border-radius: 52px
 }
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}

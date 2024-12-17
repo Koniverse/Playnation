@@ -4,6 +4,7 @@
 import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components/Mythical';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
+import { Skeleton } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React from 'react';
 import styled from 'styled-components';
@@ -28,29 +29,65 @@ const Component = ({ avatarSrc, className, isFirst, isLoading, name = '---', poi
         '-is-first': isFirst
       })}
     >
-      <GameAccountAvatar
-        avatarSrc={avatarSrc}
-        className={'__avatar-wrapper'}
-        isPlaceholder={isLoading}
-        partNode={(
-          <div className='__rank'>
-            {rank}
+      {isLoading
+        ? (
+          <div className={'__avatar-wrapper'}>
+            <Skeleton.Avatar
+              active={true}
+              className={'__avatar-image-skeleton'}
+              shape={'circle'}
+            />
           </div>
-        )}
-      />
+        )
+        : (
+          <GameAccountAvatar
+            avatarSrc={avatarSrc}
+            className={'__avatar-wrapper'}
+            isPlaceholder={isLoading}
+            partNode={(
+              <div className='__rank'>
+                {rank}
+              </div>
+            )}
+          />
+        )
+      }
 
       <div className={CN('__account-name')}>
-        {name}
+        {isLoading
+          ? (
+            <Skeleton.Input
+              active={true}
+              className={'__skeleton-content'}
+            />
+          )
+          : name}
       </div>
 
       <div className='__point'>
-        {`${toDisplayNumber(point)}`}
+        {isLoading
+          ? (
+            <Skeleton.Input
+              active={true}
+              className={'__skeleton-content'}
+            />
+          )
+          : `${toDisplayNumber(point)}`}
       </div>
 
-      <div className='__token-Value-wrapper'>
-        <div className='__token-Value'>
-          {`+${toDisplayNumber(tokenValue)} Myth`}
-        </div>
+      <div className='__token-value-wrapper'>
+        {isLoading
+          ? (
+            <Skeleton.Input
+              active={true}
+              className={'__token-value-skeleton'}
+            />
+          )
+          : (
+            <div className='__token-value'>
+              {`+${toDisplayNumber(tokenValue)} Myth`}
+            </div>
+          )}
       </div>
 
     </div>
@@ -86,6 +123,21 @@ const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, to
       top: 0
     },
 
+    '.ant-skeleton.ant-skeleton.ant-skeleton .ant-skeleton-input': {
+      width: '100%',
+      minWidth: 0
+    },
+
+    '.__skeleton-content.ant-skeleton.ant-skeleton': {
+      width: '100%',
+
+      '.ant-skeleton-input': {
+        height: '100%',
+        lineHeight: 'inherit',
+        borderRadius: 32
+      }
+    },
+
     '.__account-name': {
       overflow: 'hidden',
       'white-space': 'nowrap',
@@ -106,12 +158,12 @@ const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, to
       marginBottom: 6
     },
 
-    '.__token-Value-wrapper': {
+    '.__token-value-wrapper': {
       display: 'flex',
       justifyContent: 'center'
     },
 
-    '.__token-Value': {
+    '.__token-value': {
       color: token.colorWhite,
       textAlign: 'center',
       fontFamily: extendToken.fontBarlowCondensed,
@@ -123,6 +175,13 @@ const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, to
       borderRadius: 100,
       backgroundImage: 'linear-gradient(75deg, #363535 25.94%, #191919 63.11%)',
       padding: '4px 12px'
+    },
+
+    '.__token-value-skeleton.__token-value-skeleton.__token-value-skeleton.__token-value-skeleton': {
+      height: 16,
+      width: 70,
+      borderRadius: 100,
+      lineHeight: 'inherit'
     },
 
     '&:not(.-is-first)': {
@@ -137,7 +196,7 @@ const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, to
         lineHeight: '16px'
       },
 
-      '.__avatar-image': {
+      '.__avatar-image, .__avatar-image-skeleton .ant-skeleton-avatar': {
         width: 57,
         height: 57
       },
@@ -145,13 +204,21 @@ const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, to
       '.__account-name': {
         fontSize: '14px',
         lineHeight: '16px',
-        letterSpacing: '0.28px'
+        letterSpacing: '0.28px',
+
+        '.__skeleton-content': {
+          height: 16
+        }
       },
 
       '.__point': {
         fontSize: '16px',
         lineHeight: '18px',
-        letterSpacing: '-0.16px'
+        letterSpacing: '-0.16px',
+
+        '.__skeleton-content': {
+          height: 18
+        }
       }
     },
 
@@ -167,7 +234,7 @@ const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, to
         lineHeight: '20px'
       },
 
-      '.__avatar-image': {
+      '.__avatar-image, .__avatar-image-skeleton .ant-skeleton-avatar': {
         width: 74,
         height: 74
       },
@@ -175,13 +242,21 @@ const TopAccountItem = styled(Component)<ThemeProps>(({ theme: { extendToken, to
       '.__account-name': {
         fontSize: '16px',
         lineHeight: '20px',
-        letterSpacing: '0.32px'
+        letterSpacing: '0.32px',
+
+        '.__skeleton-content': {
+          height: 20
+        }
       },
 
       '.__point': {
         fontSize: '20px',
         lineHeight: '22px',
-        letterSpacing: '-0.6px'
+        letterSpacing: '-0.6px',
+
+        '.__skeleton-content': {
+          height: 22
+        }
       }
     }
   };

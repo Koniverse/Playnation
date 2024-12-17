@@ -11,7 +11,7 @@ import styled from 'styled-components';
 import { ClockIcon } from '../Icon';
 
 type Props = ThemeProps & {
-  endTime: string;
+  endTime?: string;
 };
 
 const apiSDK = BookaSdk.instance;
