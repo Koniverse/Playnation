@@ -150,6 +150,11 @@ const AlertModal = styled(Component)<Props>(({ theme: { extendToken, token } }: 
       paddingBottom: 4
     },
 
+    '.ant-sw-header-center-part.ant-sw-header-center-part': {
+      marginLeft: 0,
+      marginRight: 0
+    },
+
     '.ant-sw-modal-footer': {
       display: 'flex',
       borderTop: 0,

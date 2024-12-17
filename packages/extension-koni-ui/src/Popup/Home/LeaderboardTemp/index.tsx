@@ -28,7 +28,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [leaderboardConfig, setLeaderboardConfig] = useState(apiSDK.leaderboardConfig);
   const [currentLeaderboardInfo, setCurrentLeaderboardInfo] = useState<LeaderboardInfo | undefined>(undefined);
   const [leaderboardPersonItems, setLeaderboardPersonItems] = useState<LeaderboardPerson[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [leaderboardInfo, setLeaderboardInfo] = useState<LeaderboardInfo | undefined>(undefined);
   const { activeModal, inactiveModal } = useContext(ModalContext);
 
