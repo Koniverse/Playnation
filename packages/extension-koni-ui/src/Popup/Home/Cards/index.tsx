@@ -127,7 +127,7 @@ const Component = ({ className }: Props): React.ReactElement => {
                     <CardItem
                       card={item}
                       className={'__card-item'}
-                      key={item.defId}
+                      key={`${item.defId}-${item.cardId}`}
                       onClick={onClickCard(item)}
                     />
                   ))
