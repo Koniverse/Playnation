@@ -19,6 +19,7 @@ interface Props extends ThemeProps {
   setNumberOptionsSelected: Dispatch<SetStateAction<number>>;
   tmpItemsSelected: FilterOptionsSelected;
   setTmpItemsSelected: Dispatch<SetStateAction<FilterOptionsSelected>>;
+  isLinkedMyth: boolean;
   onConfirm: () => void;
   handleCancel: () => void;
   handleReset: () => void;
@@ -44,7 +45,7 @@ const DEFAULT_FILTER_OPTIONS_SELECTED: FilterOptionsSelected = {
 
 const modalId = 'filter-modal-id';
 
-const Component = ({ className, filterItems, handleCancel, handleReset, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected, tmpItemsSelected }: Props): React.ReactElement => {
+const Component = ({ className, filterItems, handleCancel, handleReset, isLinkedMyth, onConfirm, setConditionProcess, setNumberOptionsSelected, setTmpItemsSelected, tmpItemsSelected }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const { inactiveModal } = useContext(ModalContext);
 
@@ -92,7 +93,7 @@ const Component = ({ className, filterItems, handleCancel, handleReset, onConfir
         return [...prev].filter((card) => {
           const isCardPositionPassed = tmpItemsSelected[FilterOption.POSITION_OPTION].length === 0 || tmpItemsSelected[FilterOption.POSITION_OPTION].includes(card.position);
           const isCardProgramPassed = tmpItemsSelected[FilterOption.PROGRAM_OPTION].length === 0 || tmpItemsSelected[FilterOption.PROGRAM_OPTION].includes(card.program);
-          const isCardRarityPassed = tmpItemsSelected[FilterOption.RARITY_OPTION].length === 0 || tmpItemsSelected[FilterOption.RARITY_OPTION].includes(card.rarity);
+          const isCardRarityPassed = tmpItemsSelected[FilterOption.RARITY_OPTION].length === 0 || (tmpItemsSelected[FilterOption.RARITY_OPTION].includes(card.rarity) && isLinkedMyth);
           const isCardTeamPassed = tmpItemsSelected[FilterOption.TEAM_OPTION].length === 0 || tmpItemsSelected[FilterOption.TEAM_OPTION].includes(card.team);
 
           let isCardPowerPassed = tmpItemsSelected[FilterOption.POWER_OPTION].length === 0;
@@ -123,7 +124,7 @@ const Component = ({ className, filterItems, handleCancel, handleReset, onConfir
     onConfirm();
 
     inactiveModal('filter-modal-id');
-  }, [inactiveModal, onConfirm, setConditionProcess, setNumberOptionsSelected, tmpItemsSelected]);
+  }, [inactiveModal, isLinkedMyth, onConfirm, setConditionProcess, setNumberOptionsSelected, tmpItemsSelected]);
 
   const footerContent = useMemo(() => {
     return (

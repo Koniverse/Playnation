@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LevelOptions, PositionOptions, PowerOptions, ProgramOptions, RarityOptions, TeamOptions } from '@subwallet/extension-koni-ui/constants/myth';
+import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ConditionProcessState } from '@subwallet/extension-koni-ui/Popup/Home/Cards';
 import { FilterOptionsSelected, ToolFiltersModal } from '@subwallet/extension-koni-ui/Popup/Home/Cards/ToolFiters/ToolFiltersModal';
@@ -55,7 +56,7 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
   const { activeModal } = useContext(ModalContext);
   const [numberOptionsSelected, setNumberOptionsSelected] = useState<number>(0);
   const [tmpItemsSelected, setTmpItemsSelected] = useState<FilterOptionsSelected>(_.cloneDeep(DEFAULT_FILTER_OPTIONS_SELECTED));
-
+  const { isLinkedMyth } = useContext(AuthenticationMythContext);
   const [itemsSelected, setItemsSelected] = useState<FilterOptionsSelected>(DEFAULT_FILTER_OPTIONS_SELECTED);
 
   const handleConfirmSelection = useCallback(() => {
@@ -114,6 +115,7 @@ const Component = ({ className, setConditionProcess }: Props): React.ReactElemen
         filterItems={FilterOptions}
         handleCancel={handleCancel}
         handleReset={handleReset}
+        isLinkedMyth={isLinkedMyth}
         onConfirm={handleConfirmSelection}
         setConditionProcess={setConditionProcess}
         setNumberOptionsSelected={setNumberOptionsSelected}
