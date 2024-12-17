@@ -34,7 +34,6 @@ const Component = ({ avatarSrc, className, isFirst, isLoading, name = '---', poi
           active={true}
           shape={'circle'}
           size={58}
-          style={{ background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)' }}
         />
         : <GameAccountAvatar
           avatarSrc={avatarSrc}
@@ -51,8 +50,7 @@ const Component = ({ avatarSrc, className, isFirst, isLoading, name = '---', poi
         {isLoading
           ? <Skeleton.Input
             size={'small'}
-            style={{ height: 16,
-              background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)' }}
+            style={{ height: 16 }}
           />
           : name}
       </div>
@@ -62,8 +60,7 @@ const Component = ({ avatarSrc, className, isFirst, isLoading, name = '---', poi
           ? <Skeleton.Input
             active={true}
             size='small'
-            style={{ height: 18,
-              background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)' }}
+            style={{ height: 18 }}
           />
           : `${toDisplayNumber(point)}`}
       </div>
@@ -73,8 +70,7 @@ const Component = ({ avatarSrc, className, isFirst, isLoading, name = '---', poi
           ? (<Skeleton.Input
             active={true}
             size='small'
-            style={{ height: 24,
-              background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)' }}
+            style={{ height: 24 }}
           />)
           : (
             <div className='__token-Value'>

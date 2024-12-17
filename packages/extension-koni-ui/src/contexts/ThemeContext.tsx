@@ -50,6 +50,28 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
       border: 0
     },
 
+    '.ant-skeleton-input-lg.ant-skeleton-input-lg.ant-skeleton-input-lg': {
+      background: 'rgba(224, 224, 224, 0.30) 81.89%'
+      // ':after': {
+      //   background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)',
+      //   animationDuration: '2.4s'
+      // }
+    },
+
+    '.ant-skeleton-input-sm.ant-skeleton-input-sm.ant-skeleton-input-sm': {
+      background: 'rgba(224, 224, 224, 0.30) 81.89%'
+      // ':after': {
+      //   background: 'rgba(31, 31, 35, 0.00) 23.06%'
+      // }
+    },
+
+    '.ant-skeleton-avatar-circle.ant-skeleton-avatar-circle.ant-skeleton-avatar-circle': {
+      background: 'rgba(224, 224, 224, 0.30) 81.89%'
+      // ':after': {
+      //   background: 'rgba(31, 31, 35, 0.00) 23.06%'
+      // }
+    },
+
     '.ant-sw-modal .ant-sw-modal-header': {
       borderRadius: '24px 24px 0 0'
     },

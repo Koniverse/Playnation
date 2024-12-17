@@ -250,7 +250,11 @@ export const formatHistoryDate = (dateMilli: string | number | Date, language: L
   return customFormatDate(dateMilli, '#MMM# #DD#, #YYYY#', 'en');
 };
 
-export function getTimeRemaining (dateNow: number, targetTime: string): string {
+export function getTimeRemaining (dateNow: number, targetTime?: string): string {
+  if (!targetTime) {
+    return '---';
+  }
+
   const end = new Date(targetTime).getTime();
 
   if (isNaN(end)) {

@@ -107,48 +107,27 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   return (
-    <div className={className}>
-      {isLoading
-        ? (
-          <div className={'skeleton-header'}>
-            <Skeleton.Input
-              active={true}
-              style={{ width: '100%', height: 134, paddingBottom: 16, background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)' }}
-            />
-          </div>
+    <div className={className}>(
+      <MainScreenHeader
+        className={'main-screen-header'}
+        rightPartNode={
+          (
+            <button
+              className={'info-button hidden'}
+              onClick={openTermAndConditionModal}
+            >
+              <InfoIcon />
+            </button>
+          )
+        }
+        title={currentLeaderboardInfo?.name || t('Leaderboard')}
+      />
         )
-        : (
-          <MainScreenHeader
-            className={'main-screen-header'}
-            rightPartNode={
-              (
-                <button
-                  className={'info-button hidden'}
-                  onClick={openTermAndConditionModal}
-                >
-                  <InfoIcon />
-                </button>
-              )
-            }
-            title={currentLeaderboardInfo?.name || t('Leaderboard')}
-          />
-        ) }
 
-      {leaderboardInfo?.endTimeTs && leaderboardInfo?.specialTime &&
-          <div className='time-remaining-wrapper'>
-            {isLoading
-              ? (
-                <Skeleton.Input
-                  active={true}
-                  size={'large'}
-                  // className={'__skeleton-time-remaining'}
-                  style={{ width: '100%', background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)' }}
-                />
-              )
-              : (
-                <TimeRemaining endTime={new Date(leaderboardInfo.endTimeTs).toString()} />
-              )}
-          </div>}
+      {
+        <div className='time-remaining-wrapper'>
+          <TimeRemaining endTime={leaderboardInfo?.endTimeTs ? new Date(leaderboardInfo?.endTimeTs).toString() : undefined} />
+        </div>}
 
       <div className='scroll-container'>
         <TopThreeArea
@@ -164,8 +143,7 @@ const Component = ({ className }: Props): React.ReactElement => {
               size={'large'}
               style={{
                 width: '100%',
-                height: 83,
-                background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)'
+                height: 83
               }}
             />
           )
@@ -191,7 +169,6 @@ const Component = ({ className }: Props): React.ReactElement => {
                   style={{
                     width: '100%',
                     height: 54,
-                    background: 'linear-gradient(136deg, rgba(31, 31, 35, 0.00) 23.06%, rgba(224, 224, 224, 0.30) 81.89%)',
                     marginBottom: index < 2 ? 4 : 0
                   }}
                 />
@@ -262,8 +239,6 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     },
 
     '.time-remaining-wrapper': {
-      display: 'flex',
-      flexDirection: 'column',
       paddingLeft: 16,
       paddingRight: 16,
       marginBottom: 12
@@ -272,13 +247,13 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     '.scroll-container': {
       flex: 1,
       overflow: 'auto',
-      paddingTop: 8
+      paddingTop: 4
     },
 
     '.top-three-area': {
       paddingLeft: 24,
-      paddingRight: 24,
-      paddingBottom: token.size
+      paddingRight: 24
+      // paddingBottom: token.size
     },
 
     '.call-to-action': {
