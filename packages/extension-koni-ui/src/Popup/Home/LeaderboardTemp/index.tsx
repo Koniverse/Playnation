@@ -247,13 +247,13 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     '.scroll-container': {
       flex: 1,
       overflow: 'auto',
-      paddingTop: 4
+      paddingTop: 8
     },
 
     '.top-three-area': {
       paddingLeft: 24,
-      paddingRight: 24
-      // paddingBottom: token.size
+      paddingRight: 24,
+      paddingBottom: token.size
     },
 
     '.call-to-action': {
