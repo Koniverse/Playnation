@@ -112,7 +112,7 @@ const Component = ({ accountInfo,
   const { alertModal } = useContext(WalletModalContext);
   const { isLinkedMyth, linkMythAccount, mythicalWallet } = useContext(AuthenticationMythContext);
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
-  const [isBalanceError, setIsBalanceError] = useState(false);
+  const [hasInsufficientBalance, setHasInsufficientBalance] = useState(false);
   const doLinkAccount = useCallback(() => {
     currentAccount?.address && linkMythAccount('/home/mission').catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
@@ -166,7 +166,7 @@ const Component = ({ accountInfo,
       okButton: {
         text: t('GOT IT'),
         onClick: () => {
-          setIsBalanceError(true);
+          setHasInsufficientBalance(true);
           alertModal.close();
         }
       }
@@ -364,7 +364,7 @@ const Component = ({ accountInfo,
     const firstProcessItem = achievement.progress[0];
 
     if (firstProcessItem) {
-      const completed = isBalanceError
+      const completed = hasInsufficientBalance
         ? toDisplayNumber(mythicalWallet?.balanceInMyth || 0)
         : Math.min(firstProcessItem?.completed || 0, firstProcessItem?.required || 0);
 
@@ -372,7 +372,7 @@ const Component = ({ accountInfo,
     }
 
     return '';
-  }, [isBalanceError, mythicalWallet?.balanceInMyth]);
+  }, [hasInsufficientBalance, mythicalWallet?.balanceInMyth]);
 
   const getAchievementActionContent = useCallback((achievement: Achievement) => {
     if (achievement.status === AchievementLogStatus.CLAIMABLE) {
