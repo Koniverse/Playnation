@@ -14,7 +14,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
 import { Check, X } from 'phosphor-react';
-import React, { useCallback, useContext, useMemo } from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -112,6 +112,7 @@ const Component = ({ accountInfo,
   const { alertModal } = useContext(WalletModalContext);
   const { isLinkedMyth, linkMythAccount, mythicalWallet } = useContext(AuthenticationMythContext);
   const { currentAccount } = useSelector((state: RootState) => state.accountState);
+  const [isBalanceError, setIsBalanceError] = useState(false);
   const doLinkAccount = useCallback(() => {
     currentAccount?.address && linkMythAccount('/home/mission').catch(console.error);
   }, [currentAccount?.address, linkMythAccount]);
@@ -164,7 +165,10 @@ const Component = ({ accountInfo,
       ),
       okButton: {
         text: t('GOT IT'),
-        onClick: alertModal.close
+        onClick: () => {
+          setIsBalanceError(true);
+          alertModal.close();
+        }
       }
     });
   }, [alertModal, t]);
@@ -360,13 +364,15 @@ const Component = ({ accountInfo,
     const firstProcessItem = achievement.progress[0];
 
     if (firstProcessItem) {
-      const completed = Math.min(firstProcessItem.completed || 0, firstProcessItem.required);
+      const completed = isBalanceError
+        ? toDisplayNumber(mythicalWallet?.balanceInMyth || 0)
+        : Math.min(firstProcessItem?.completed || 0, firstProcessItem?.required || 0);
 
       return `${toDisplayNumber(completed)}/${toDisplayNumber(firstProcessItem.required)} ${getMetricCounterpart(firstProcessItem.metricId, achievement)}`.trim();
     }
 
     return '';
-  }, []);
+  }, [isBalanceError, mythicalWallet?.balanceInMyth]);
 
   const getAchievementActionContent = useCallback((achievement: Achievement) => {
     if (achievement.status === AchievementLogStatus.CLAIMABLE) {
