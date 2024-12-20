@@ -6,7 +6,7 @@ import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, ClaimableAchievement, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, MythicalWallet, NFLRivalCard, RankInfo, ReferralData, Reward, RewardHistoryStored, RewardStatus, RewardType, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, ClaimableAchievement, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, MythicalWallet, NFLRivalCard, RankInfo, ReferralData, Reward, RewardHistoryStored, RewardStatus, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -1071,133 +1071,9 @@ export class BookaSdk {
   }
 
   async fetchRewardList (): Promise<Reward[]> {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    const result = [
-      {
-        airdrop_log_id: 1,
-        airdrop_record_id: 1,
-        type: RewardType.TOKEN,
-        campaign_id: 1,
-        campaign_method: 'raffle',
-        campaign_name: 'Weekly Leaderboard (W45)',
-        eligibility_name: 'Top 10 Weekly Leaderboard (W45)',
-        eligibility_end: 1,
-        expiryDate: 1735116370,
-        status: RewardStatus.PENDING,
-        account_id: 3,
-        eligibility_id: 1,
-        address: '',
-        point: 0,
-        network: 'mythos',
-        token_slug: 'mythos-NATIVE-MYTH',
-        decimal: 18,
-        token: 10
-      },
-      {
-        airdrop_log_id: 2,
-        airdrop_record_id: 2,
-        type: RewardType.TOKEN,
-        campaign_id: 2,
-        campaign_method: 'raffle',
-        campaign_name: 'Weekly Leaderboard (W46)',
-        eligibility_name: 'Top 10 Weekly Leaderboard (W46)',
-        eligibility_end: 2,
-        expiryDate: 1735116370,
-        status: RewardStatus.FAILED,
-        account_id: 3,
-        eligibility_id: 2,
-        address: '',
-        point: 0,
-        network: 'mythos',
-        token_slug: 'mythos-NATIVE-MYTH',
-        decimal: 18,
-        token: 15
-      },
-      {
-        airdrop_log_id: 3,
-        airdrop_record_id: 3,
-        type: RewardType.TOKEN,
-        campaign_id: 3,
-        campaign_method: 'raffle',
-        campaign_name: 'Weekly Leaderboard (W47)',
-        eligibility_name: 'Top 10 Weekly Leaderboard (W47)',
-        eligibility_end: 3,
-        expiryDate: 1735116370,
-        status: RewardStatus.PENDING,
-        account_id: 3,
-        eligibility_id: 3,
-        address: '',
-        point: 0,
-        network: 'mythos',
-        token_slug: 'mythos-NATIVE-MYTH',
-        decimal: 18,
-        token: 18
-      },
-      {
-        airdrop_log_id: 4,
-        airdrop_record_id: 4,
-        type: RewardType.TOKEN,
-        campaign_id: 4,
-        campaign_method: 'raffle',
-        campaign_name: 'Weekly Leaderboard (W48)',
-        eligibility_name: 'Top 10 Weekly Leaderboard (W48)',
-        eligibility_end: 4,
-        expiryDate: 1735116370,
-        status: RewardStatus.PENDING,
-        account_id: 3,
-        eligibility_id: 4,
-        address: '',
-        point: 0,
-        network: 'mythos',
-        token_slug: 'mythos-NATIVE-MYTH',
-        decimal: 18,
-        token: 14
-      },
-      {
-        airdrop_log_id: 6,
-        airdrop_record_id: 6,
-        type: RewardType.TOKEN,
-        campaign_id: 6,
-        campaign_method: 'raffle',
-        campaign_name: 'Weekly Leaderboard (W49)',
-        eligibility_name: 'Top 10 Weekly Leaderboard (W49)',
-        eligibility_end: 6,
-        expiryDate: 1735116370,
-        status: RewardStatus.PENDING,
-        account_id: 3,
-        eligibility_id: 6,
-        address: '',
-        point: 0,
-        network: 'mythos',
-        token_slug: 'mythos-NATIVE-MYTH',
-        decimal: 18,
-        token: 12
-      },
-      {
-        airdrop_log_id: 7,
-        airdrop_record_id: 7,
-        type: RewardType.TOKEN,
-        campaign_id: 7,
-        campaign_method: 'raffle',
-        campaign_name: 'Weekly Leaderboard (50)',
-        eligibility_name: 'Top 10 Weekly Leaderboard (50)',
-        eligibility_end: 7,
-        completeDate: 1735116370,
-        expiryDate: 1735116370,
-        status: RewardStatus.SUCCESS,
-        account_id: 3,
-        eligibility_id: 7,
-        address: '',
-        point: 0,
-        network: 'mythos',
-        token_slug: 'mythos-NATIVE-MYTH',
-        decimal: 18,
-        token: 11
-      }
-    ];
-
+    await this.waitForSync;
+    const result = await this.postRequest<Reward[]>(`${GAME_API_HOST}/api/airdrop/reward_list`, {});
     const listFilter = result.filter(({ account_id: id }) => id === this.account?.info.id);
-
     this.rewardListSubject.next(listFilter);
 
     return listFilter;
