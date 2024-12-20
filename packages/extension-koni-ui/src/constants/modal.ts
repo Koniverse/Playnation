@@ -61,4 +61,8 @@ export const SWAP_IDLE_WARNING_MODAL = 'swap-idle-warning-modal';
 /* Announcement */
 export const CLAIM_DAPP_STAKING_REWARDS_MODAL = 'claim-dapp-staking-rewards-modal';
 export const EARNING_MIGRATION_MODAL = 'earning-migration-modal';
+export const MYTHICAL_ALERT_REWARD_MODAL = 'mythical-alert-reward-modal';
+
+export const MYTHICAL_ALERT_LINKING_TO_REWARDS_MODAL = 'mythical-alert-linking-to-rewards-modal';
+
 /* Announcement */

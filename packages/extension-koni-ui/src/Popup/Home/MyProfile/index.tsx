@@ -96,10 +96,28 @@ const Component = ({ className }: Props): React.ReactElement => {
         />
         {isLinkedMyth
           ? (
-            mythicalWallet?.address && <>
-              <WalletInfoArea className={'wallet-info-area'} />
-              <RewardHistoryArea className={'reward-history-area'} />
-            </>
+            mythicalWallet?.address
+              ? <>
+                <WalletInfoArea className={'wallet-info-area'} />
+                <RewardHistoryArea className={'reward-history-area'} />
+              </>
+              : <>
+                <div className={'empty-list-wrapper'}>
+                  <EmptyListContent
+                    className={'empty-rewards-content'}
+                    content={t('Connect your Mythical account to NFL Rivals app\n' +
+                      'and create a wallet address to view rewards')}
+                    title={t('oops! no rewards yet ')}
+                  />
+                  <MythButton
+                    className={'__link-now-button'}
+                    isLoading={loading}
+                    onClick={openAppStoreLink}
+                  >
+                    {t('CONNECT NOW')}
+                  </MythButton>
+                </div>
+              </>
           )
           : (
             <>
