@@ -1,34 +1,74 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { getRewardStatus } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { Reward, RewardStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
-import React from 'react';
+import { customFormatDate, preloadImages, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
+import { Icon } from '@subwallet/react-ui';
+import CN from 'classnames';
+import { Check, ClockCounterClockwise, SpinnerGap } from 'phosphor-react';
+import React, { useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
-export type RewardHistoryItemType = {
-  ordinal: number;
-  name: string,
-  date: string,
-  tokenValue: string,
+type Props = ThemeProps & {
+  reward: Reward;
 };
 
-type Props = ThemeProps & RewardHistoryItemType;
+const RewardHistoryStatusItem = {
+  [RewardStatus.EXPIRED]: {
+    icon: ClockCounterClockwise,
+    isShowStatus: true,
+    value: 'EXPIRED',
+    color: '#FF596B'
+  },
 
-const Component = ({ className, date,
-  name,
-  ordinal,
-  tokenValue }: Props): React.ReactElement => {
+  [RewardStatus.SUCCESS]: {
+    icon: Check,
+    isShowStatus: false,
+    value: 'SUCCESS',
+    color: '#28C89F'
+  },
+
+  [RewardStatus.PENDING]: {
+    icon: SpinnerGap,
+    isShowStatus: true,
+    value: 'PENDING',
+    color: '#C4FD38'
+  }
+};
+
+const Component = ({ className, reward }: Props): React.ReactElement => {
+  const status = useMemo(() => RewardHistoryStatusItem[getRewardStatus(reward.status)], [reward.status]);
+
+  useEffect(() => {
+    preloadImages([
+      '/images/mythical/reward-history-background-item.png'
+    ]);
+  }, []);
+
   return (
     <div className={className}>
       <div className='__item-inner'>
-        <div className='__item-left-part __ordinal'>{ordinal}</div>
-        <div className='__item-center-part __name'>{name}</div>
+        <div className='__item-left-part __ordinal'>
+          <Icon
+            className={CN(`-${reward.status}`)}
+            customSize={'16px'}
+            iconColor={status.color}
+            phosphorIcon={status.icon}
+            weight={'fill'}
+          />
+        </div>
+        <div className='__item-center-part __name'>{reward.campaign_name}</div>
         <div className='__item-right-part'>
-          <div className='__date'>{date}</div>
+          {
+            status.isShowStatus
+              ? <div className={CN('__status-label', `-${status.value.toLowerCase()}`)}>{status.value}</div>
+              : <div className={CN('__status-label')}>{customFormatDate(reward?.completeDate || 0, '#MMM# #DD#', 'en')}</div>
+          }
           <div className='__token-value-wrapper'>
-            <span className='__token-value'>+{toDisplayNumber(tokenValue)}&nbsp;</span>
-            <span className='__token-symbol'>MYTH</span>
+            <span className='__token-value'>+{toDisplayNumber(reward.token)}&nbsp;</span>
+            <span className='__token-symbol'>{'MYTH'}</span>
           </div>
         </div>
       </div>
@@ -50,7 +90,10 @@ export const RewardHistoryItem = styled(Component)<ThemeProps>(({ theme: { exten
       position: 'relative',
       zIndex: 2,
       paddingTop: 6,
-      paddingBottom: 10
+      paddingBottom: 10,
+      backgroundImage: 'url(/images/mythical/reward-history-background-item.png)',
+      backgroundPosition: 'center center',
+      backgroundSize: '100% 100%'
     },
 
     '.__ordinal': {
@@ -88,7 +131,7 @@ export const RewardHistoryItem = styled(Component)<ThemeProps>(({ theme: { exten
       textAlign: 'right'
     },
 
-    '.__date': {
+    '.__status-label': {
       fontFamily: extendToken.fontBarlowCondensed,
       fontSize: '12px',
       fontStyle: 'normal',
@@ -141,6 +184,18 @@ export const RewardHistoryItem = styled(Component)<ThemeProps>(({ theme: { exten
         backgroundImage: 'linear-gradient(75deg, rgba(54, 53, 53, 0.32) 25.94%, rgba(25, 25, 25, 0.32) 63.11%)',
         backdropFilter: 'blur(16px)'
       }
+    },
+
+    '.-success': {
+      color: '#28C89F'
+    },
+
+    '.-pending': {
+      color: '#C4FD38'
+    },
+
+    '.-expired': {
+      color: '#FF596B'
     }
   };
 });

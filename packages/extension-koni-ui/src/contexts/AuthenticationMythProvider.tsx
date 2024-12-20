@@ -21,6 +21,7 @@ export interface AuthenticationMythContextProps {
   isLinkedMyth: boolean;
   mythicalWallet: MythicalWallet;
   linkMythAccount: (path: string) => Promise<void>;
+  checkAlreadyLinked: () => Promise<boolean>;
   onLogin: VoidFunction;
   onLogout: () => Promise<void>;
 }
@@ -31,6 +32,7 @@ export const LOCAL_NAVIGATE_AFTER_LOGIN_KEY = 'mythical_navigate_after_login';
 export const AuthenticationMythContext = createContext<AuthenticationMythContextProps>({
   isLinkedMyth: false,
   linkMythAccount: (path: string) => Promise.resolve(),
+  checkAlreadyLinked: () => Promise.resolve(false),
   mythicalWallet: { address: '', balanceInMyth: '' } as MythicalWallet,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   onLogin: () => {},
@@ -147,6 +149,22 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     return Promise.resolve();
   }, [onLogoutMythAccount]);
 
+  const checkAlreadyLinked = useCallback(async () => {
+    try {
+      const linkedData = await linkSDK.findLink({
+        telegram_id: startData.user?.id
+      });
+
+      if (linkedData.success && linkedData.data?.link_address) {
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }, []);
+
   useEffect(() => {
     if (linkData) {
       setAccount((prev) => {
@@ -185,7 +203,6 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
             });
           }
         } else {
-          console.log('tokenData', tokenData);
           onSubmitMythAccount().catch(console.error);
         }
       }).catch(console.error);
@@ -197,6 +214,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     isLinkedMyth: isLinked,
     mythicalWallet,
     linkMythAccount,
+    checkAlreadyLinked,
     onLogin,
     onLogout
   };

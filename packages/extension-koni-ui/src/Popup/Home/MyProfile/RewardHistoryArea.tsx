@@ -2,26 +2,35 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EmptyListContent } from '@subwallet/extension-koni-ui/components/Mythical';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { Reward } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
-import { RewardHistoryItem, RewardHistoryItemType } from './RewardHistoryItem';
+import { RewardHistoryItem } from './RewardHistoryItem';
 
 type Props = ThemeProps;
+const apiSDK = BookaSdk.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   const { t } = useTranslation();
+  const [rewardHistories, setRewardHistories] = useState<Reward[]>(apiSDK.getRewardHistoryList());
 
-  const items: RewardHistoryItemType[] = useMemo(() => {
-    return [
-    ] as RewardHistoryItemType[];
+  useEffect(() => {
+    const unsub = apiSDK.subscribeRewardList().subscribe((rewards) => {
+      setRewardHistories(rewards);
+    });
+
+    return () => {
+      unsub.unsubscribe();
+    };
   }, []);
 
   return (
     <div className={className}>
-      {items.length > 0
+      {rewardHistories.length > 0
         ? (
           <>
             <div className='__area-label'>
@@ -30,11 +39,11 @@ const Component = ({ className }: Props): React.ReactElement => {
 
             <div className='__list-container'>
               {
-                items.map((item) => (
+                rewardHistories.map((item) => (
                   <RewardHistoryItem
-                    {...item}
                     className={'reward-history-item'}
-                    key={item.ordinal}
+                    key={item.airdrop_record_id}
+                    reward={item}
                   />
                 ))
               }
@@ -66,6 +75,12 @@ export const RewardHistoryArea = styled(Component)<ThemeProps>(({ theme: { exten
       paddingLeft: 16,
       paddingRight: 16,
       marginBottom: 12
+    },
+
+    '.__list-container': {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 3
     },
 
     '.empty-list-content': {
