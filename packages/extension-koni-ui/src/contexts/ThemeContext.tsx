@@ -72,10 +72,10 @@ const GlobalStyle = createGlobalStyle<ThemeProps>(({ theme }) => {
 
     '.ant-skeleton.ant-skeleton.ant-skeleton-active': {
       '.ant-skeleton-input, .ant-skeleton-avatar': {
-        backgroundImage: 'linear-gradient(97deg, rgba(224, 224, 224,0) 25%, rgba(224, 224, 224, 0.3) 37%, rgba(224, 224, 224,0) 63%)',
+        backgroundImage: 'linear-gradient(135deg, rgba(150, 150, 150, 0) 25%, rgba(150, 150, 150, 0.3) 37%, rgba(150, 150, 150, 0) 63%)',
         backgroundSize: '400% 100%',
         animationName: 'skeleton-loading',
-        animationDuration: '1.4s',
+        animationDuration: '1s',
         animationTimingFunction: 'ease',
         animationIterationCount: 'infinite'
       }

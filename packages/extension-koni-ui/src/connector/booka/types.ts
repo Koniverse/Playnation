@@ -494,6 +494,47 @@ export interface AirdropEligibility {
   eligibilityIds?: number[];
 }
 
+export enum RewardStatus {
+  IN_REVIEW = 'IN_REVIEW',
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  FAILED = 'FAILED',
+  EXPIRED = 'EXPIRED',
+  SUCCESS = 'SUCCESS',
+}
+
+export enum RewardType {
+  NPS = 'NPS',
+  TOKEN = 'TOKEN',
+}
+
+export interface Reward {
+  airdrop_log_id: number
+  airdrop_record_id: number
+  type: RewardType
+  campaign_id: number
+  campaign_method: string
+  campaign_name: string
+  eligibility_name?: string
+  eligibility_end?: number
+  completeDate?: number
+  expiryDate: number
+  status: RewardStatus
+  account_id: number
+  eligibility_id: number
+  address?: string
+  point: number
+  network: string
+  token: number
+  token_slug?: string
+  decimal: number
+}
+
+export interface RewardHistoryStored {
+  isCheck: boolean,
+  status: RewardStatus
+}
+
 export interface AirdropRaffle {
   airdropRecordLogId: number,
   rewardAmount: number,

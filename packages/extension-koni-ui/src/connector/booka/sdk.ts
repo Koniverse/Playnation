@@ -6,7 +6,7 @@ import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, ClaimableAchievement, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, MythicalWallet, NFLRivalCard, RankInfo, ReferralData, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, ClaimableAchievement, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, MythicalWallet, NFLRivalCard, RankInfo, ReferralData, Reward, RewardHistoryStored, RewardStatus, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -41,6 +41,10 @@ const CACHE_KEYS = {
   nflRivalCardList: 'data--nfl-rival-cards-cache'
 };
 
+const CLOUD_STORAGE_KEYS = {
+  rewardHistories: 'data--reward-histories-storage'
+};
+
 function parseCache<T> (key: string, useDecompress?: boolean): T | undefined {
   let data = localStorage.getItem(key);
 
@@ -73,6 +77,18 @@ function decompressData (data: string) {
   return inflate(compressed, { to: 'string' });
 }
 
+function generateCloudKey (keys: number[], type: string) {
+  return `${type}:${keys.join('-')}`;
+}
+
+export function getRewardStatus (status: RewardStatus) {
+  if (status === RewardStatus.SUCCESS || status === RewardStatus.EXPIRED) {
+    return status;
+  }
+
+  return RewardStatus.PENDING;
+}
+
 const metadataHandler = MetadataHandler.instance;
 
 export class BookaSdk {
@@ -95,6 +111,7 @@ export class BookaSdk {
   private rankInfoSubject = new BehaviorSubject<Record<AccountRankType, RankInfo> | undefined>(undefined);
   private airdropCampaignSubject = new BehaviorSubject<AirdropCampaign[]>([]);
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
+  private rewardListSubject = new BehaviorSubject<Reward[]>([]);
   private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
   private nflRivalCardListSubject = new BehaviorSubject<NFLRivalCard[]>([]);
   private metadataSubject = new BehaviorSubject<AppMetadata | undefined>(undefined);
@@ -736,7 +753,8 @@ export class BookaSdk {
           this.fetchLeaderboardConfigList(),
           this.fetchGameList(),
           this.fetchGameEventList(),
-          this.fetchAchievementList()
+          this.fetchAchievementList(),
+          this.fetchRewardList()
           // this.fetchNFLRivalCardList(), // Run in the mythical login to get token
           // this.fetchTaskCategoryList(),
           // this.fetchTaskList(),
@@ -1046,6 +1064,94 @@ export class BookaSdk {
       console.error('Error in checkEligibilityList:', error);
       throw error;
     }
+  }
+
+  getRewardHistoryList () {
+    return this.rewardListSubject.value;
+  }
+
+  async fetchRewardList (): Promise<Reward[]> {
+    await this.waitForSync;
+    const result = await this.postRequest<Reward[]>(`${GAME_API_HOST}/api/airdrop/reward_list`, {});
+    const listFilter = result.filter(({ account_id: id }) => id === this.account?.info.id);
+    this.rewardListSubject.next(listFilter);
+
+    return listFilter;
+  }
+
+  async getRewardListIsNotChecked (): Promise<Reward[]> {
+    const rewardHistory = await storage.getItem(CLOUD_STORAGE_KEYS.rewardHistories);
+    let rewardHistoryData: Record<string, RewardHistoryStored> = {};
+    let rewardList = this.rewardListSubject.value;
+
+    if (rewardList.length === 0) {
+      try {
+        rewardList = await this.fetchRewardList();
+      } catch (e) {
+        console.error('Error in getRewardListIsNotChecked:', e);
+
+        return [];
+      }
+    }
+
+    try {
+      if (rewardHistory) {
+        rewardHistoryData = JSON.parse(rewardHistory) as Record<string, RewardHistoryStored>;
+      }
+
+      const rewardListFiltered = rewardList.filter((item) => {
+        const cloudKey = generateCloudKey([item.airdrop_log_id, item.account_id, item.campaign_id, item.eligibility_id], item.type);
+
+        if (rewardHistoryData[cloudKey]) {
+          const prevStatus = getRewardStatus(rewardHistoryData[cloudKey].status);
+
+          if (prevStatus === RewardStatus.PENDING && item.status === RewardStatus.SUCCESS) {
+            rewardHistoryData[cloudKey].isCheck = false;
+          }
+
+          rewardHistoryData[cloudKey].status = item.status;
+        } else {
+          rewardHistoryData[cloudKey] = {
+            status: item.status,
+            isCheck: false
+          };
+        }
+
+        return !rewardHistoryData[cloudKey].isCheck && item.status !== RewardStatus.EXPIRED;
+      });
+
+      await storage.setItem(CLOUD_STORAGE_KEYS.rewardHistories, JSON.stringify(rewardHistoryData));
+
+      return rewardListFiltered;
+    } catch (e) {
+      console.error('Error in getRewardListIsNotChecked:', e);
+
+      return [];
+    }
+  }
+
+  async updateRewardHistory (isOnlyPending = false) {
+    const rewardHistoryCloudStored = await storage.getItem(CLOUD_STORAGE_KEYS.rewardHistories);
+
+    if (rewardHistoryCloudStored) {
+      const rewardHistoryData = JSON.parse(rewardHistoryCloudStored) as Record<string, RewardHistoryStored>;
+
+      Object.keys(rewardHistoryData).forEach((key) => {
+        const status = getRewardStatus(rewardHistoryData[key].status);
+
+        if (isOnlyPending && status === RewardStatus.PENDING) {
+          rewardHistoryData[key].isCheck = true;
+        } else if (!isOnlyPending && (status === RewardStatus.SUCCESS || status === RewardStatus.EXPIRED)) {
+          rewardHistoryData[key].isCheck = true;
+        }
+      });
+
+      await storage.setItem(CLOUD_STORAGE_KEYS.rewardHistories, JSON.stringify(rewardHistoryData));
+    }
+  }
+
+  subscribeRewardList () {
+    return this.rewardListSubject;
   }
 
   async claimRaffle (airdropLogId: number) {
