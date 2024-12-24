@@ -118,7 +118,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         rightPartNode={
           (
             <button
-              className={'info-button hidden'}
+              className={'info-button'}
               onClick={openTermAndConditionModal}
             >
               <InfoIcon />
@@ -185,6 +185,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       </div>
 
       <TermAndConditionModal
+        metadata={leaderboardInfo?.metadata || ''}
         onCancel={closeTermAndConditionModal}
         onOk={closeTermAndConditionModal}
       />
