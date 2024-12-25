@@ -183,27 +183,26 @@ const ContentGenerator = styled(Component)<Props>(({ theme: { extendToken, token
       marginBottom: 0
     },
     '.custom-th': {
-      paddingLeft: 8,
-      paddingRight: 8,
-      border: `1px solid ${extendToken.mythColorGray1}`
+      border: `1px solid ${extendToken.mythColorGray1}`,
+      padding: 4
     },
     '.custom-thead': {
       paddingLeft: 8,
       paddingRight: 8
     },
     '.custom-td': {
-      border: `1px solid ${extendToken.mythColorGray1}`
+      border: `1px solid ${extendToken.mythColorGray1}`,
+      padding: 4
     },
     '.custom-table': {
-      marginTop: 12
+      marginBottom: 8
     },
     '.custom-img': {
       marginTop: 4,
       marginBottom: 4
     },
     '.custom-paragraph': {
-      marginTop: 4,
-      marginBottom: 4
+      marginBottom: 8
     }
   };
 });

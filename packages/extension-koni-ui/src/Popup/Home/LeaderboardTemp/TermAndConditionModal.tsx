@@ -41,13 +41,15 @@ function Component (props: Props): React.ReactElement<Props> {
     <SwModal
       className={CN(className)}
       closable={true}
+      closeIcon={
+        <div
+          className={CN(className, '__cancel-button-header')}
+          onClick={onCancel}
+        ></div>
+      }
       id={modalId}
       onCancel={onCancel}
     >
-      <div
-        className={'__cancel-button-header'}
-        onClick={onCancel}
-      ></div>
       <div className={'__modal-title'}>{t(`${metadata?.title || ''}`)}</div>
 
       <div className={'__modal-description'}>
@@ -81,6 +83,19 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       flexDirection: 'column'
     },
 
+    '.ant-sw-modal-header.ant-sw-modal-header': {
+      display: 'flex',
+      position: 'absolute',
+      top: -52,
+      right: 15
+    },
+
+    '.ant-sw-header-left-part': {
+      position: 'absolute',
+      top: 17,
+      right: 0
+    },
+
     '&.ant-sw-modal.ant-sw-modal': {
       justifyContent: 'flex-start',
       alignItems: 'center',
@@ -97,7 +112,6 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       maxWidth: 370,
       maxHeight: 484,
       paddingTop: 24,
-      paddingBottom: 24,
       height: 'auto',
       backgroundImage: 'url(/images/mythical/leaderboard-terms-conditions-bg.png)',
       backgroundSize: '100% 100%',
@@ -114,12 +128,23 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       height: 32,
       width: 30,
       position: 'absolute',
+      top: -13,
+      right: 4,
+      backgroundPosition: 'center',
+      zIndex: 1000,
+      backgroundRepeat: 'no-repeat'
+    },
+
+    '.__header-wrapper': {
+      position: 'absolute',
       top: '-44px',
       right: 0
     },
 
     '.ant-sw-modal-body': {
-      paddingBottom: 54
+      paddingBottom: 54,
+      display: 'flex',
+      flexDirection: 'column'
     },
 
     '.ant-sw-modal-header': {
@@ -134,8 +159,7 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       fontStyle: 'normal',
       fontWeight: 400,
       lineHeight: '40px',
-      textTransform: 'uppercase',
-      marginBottom: 10
+      textTransform: 'uppercase'
     },
 
     '.__modal-description': {
@@ -147,7 +171,8 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       fontWeight: 400,
       lineHeight: '18px',
       letterSpacing: '0.32px',
-      marginBottom: 20
+      marginBottom: 20,
+      overflow: 'auto'
     },
 
     '.__buttons-container': {
@@ -157,8 +182,8 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
 
     '.__action-button': {
       height: 52,
-      paddingLeft: 12,
-      paddingRight: 10,
+      marginLeft: 16,
+      marginRight: 16,
 
       '.__button-content': {
         fontSize: '22px',
