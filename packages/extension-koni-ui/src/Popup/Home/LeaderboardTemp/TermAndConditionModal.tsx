@@ -14,10 +14,10 @@ import styled from 'styled-components';
 interface Props extends ThemeProps {
   onCancel: VoidFunction;
   onOk: VoidFunction;
-  metadata?: Metadata
+  metadata?: LeaderboardMetadata
 }
 
-interface Metadata {
+export interface LeaderboardMetadata {
   title: string;
   content: string;
 }

@@ -8,7 +8,7 @@ import { LINK_NFL_APP_DOWNLOAD } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameAccountListArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/GameAccountListArea';
-import { Metadata, TERM_AND_CONDITION_MODAL_ID, TermAndConditionModal } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TermAndConditionModal';
+import { LeaderboardMetadata, TERM_AND_CONDITION_MODAL_ID, TermAndConditionModal } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TermAndConditionModal';
 import { TopThreeArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TopThreeArea';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
@@ -185,7 +185,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       </div>
 
       <TermAndConditionModal
-        metadata={leaderboardInfo?.metadata as Metadata}
+        metadata={leaderboardInfo?.metadata as LeaderboardMetadata}
         onCancel={closeTermAndConditionModal}
         onOk={closeTermAndConditionModal}
       />
