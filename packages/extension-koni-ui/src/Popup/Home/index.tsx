@@ -2,15 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
-import { CampaignBannerModal, Layout } from '@subwallet/extension-koni-ui/components';
+import { AlertModal, CampaignBannerModal, Layout, MythicalAlertRewardModal } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { Reward, RewardStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { MYTHICAL_ALERT_LINKING_TO_REWARDS_MODAL, MYTHICAL_ALERT_REWARD_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { noop } from '@subwallet/extension-koni-ui/utils';
+import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React, { useEffect, useMemo, useState } from 'react';
+import { Check, IconWeight, X } from 'phosphor-react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -19,6 +26,8 @@ type Props = ThemeProps;
 
 export const GlobalSearchTokenModalId = 'globalSearchToken';
 const apiSDK = BookaSdk.instance;
+const alertLinkingToRewardModal = MYTHICAL_ALERT_LINKING_TO_REWARDS_MODAL;
+const alertRewardModal = MYTHICAL_ALERT_REWARD_MODAL;
 const metadataHandler = MetadataHandler.instance;
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
@@ -28,11 +37,88 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const accountBalance = useAccountBalance(tokenGroupStructure.tokenGroupMap);
   const [containerClass, setContainerClass] = useState<string | undefined>();
   const banners = useGetBannerByScreen('home');
-
+  const { t } = useTranslation();
   // @ts-ignore
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   const firstBanner = useMemo((): CampaignBanner | undefined => banners[0], [banners]);
   const [backgroundStyle, setBackgroundStyle] = useState<LayoutBaseProps['backgroundStyle'] | undefined>();
+  const { checkAlreadyLinked, isLinkedMyth, onLogin } = useContext(AuthenticationMythContext);
+  const { activeModal, inactiveModal } = useContext(ModalContext);
+  const [rewardsEligible, setRewardsEligible] = useState<Reward[]>([]);
+  const [hasSuccessReward, setHasSuccessReward] = useState<boolean>(false);
+  const [hasFullPendingReward, setHasFullPendingReward] = useState<boolean>(false);
+  const alertLinkingToRewardModalProps = useMemo(() => {
+    const totalTokenOfPendingReward = rewardsEligible.reduce((acc, reward) => {
+      if (reward.status !== RewardStatus.SUCCESS) {
+        acc += reward.token;
+      }
+
+      return acc;
+    }, 0);
+
+    return {
+      title: t(`you’re eligible for ${totalTokenOfPendingReward} myth`),
+      content: t(`Link your Mythical account now to receive ${totalTokenOfPendingReward} MYTH. Make sure to connect to NFL Rivals app first and create a wallet address to receive rewards`),
+      okButton: {
+        text: 'Link now',
+        icon: Check,
+        iconWeight: 'bold' as IconWeight,
+        onClick: () => {
+          apiSDK.updateRewardHistory(true).catch(console.error);
+          inactiveModal(alertLinkingToRewardModal);
+
+          if (isLinkedMyth) {
+            navigate('/home/my-profile');
+          } else {
+            onLogin();
+          }
+        }
+      },
+      cancelButton: {
+        text: 'Cancel',
+        onClick: noop,
+        icon: X,
+        iconWeight: 'bold' as IconWeight
+      },
+      onCancel: () => {
+        inactiveModal(alertLinkingToRewardModal);
+        apiSDK.updateRewardHistory(true).catch(console.error);
+      }
+    };
+  }, [inactiveModal, isLinkedMyth, navigate, onLogin, rewardsEligible, t]);
+
+  const handleAlertReward = useCallback(async (rewardList: Reward[]) => {
+    if (rewardList.length > 0) {
+      const isHasRewardIsDistributed = rewardList.find((reward) => reward.status === RewardStatus.SUCCESS);
+
+      if (isHasRewardIsDistributed) {
+        setHasSuccessReward(true);
+        setHasSuccessReward(true);
+        activeModal(alertRewardModal);
+
+        return;
+      }
+
+      const isAlreadyLinked = await checkAlreadyLinked();
+
+      if (isAlreadyLinked) {
+        return;
+      }
+
+      setHasFullPendingReward(true);
+      activeModal(alertLinkingToRewardModal);
+    }
+  }, [activeModal, checkAlreadyLinked]);
+
+  useEffect(() => {
+    apiSDK.getRewardListIsNotChecked().then((res) => {
+      setRewardsEligible(res);
+    }).catch(console.error);
+  }, [activeModal]);
+
+  useEffect(() => {
+    handleAlertReward(rewardsEligible).catch(console.error);
+  }, [handleAlertReward, rewardsEligible]);
 
   useEffect(() => {
     const handleMaintenance = (info: MaintenanceInfo) => {
@@ -74,6 +160,12 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         </Layout.Home>
       </HomeContext.Provider>
       {firstBanner && <CampaignBannerModal banner={firstBanner} />}
+      {hasSuccessReward && <MythicalAlertRewardModal rewardsEligible={rewardsEligible} />}
+      {hasFullPendingReward && <AlertModal
+        className={CN(className, '__alert-linking-account-modal')}
+        modalId={alertLinkingToRewardModal}
+        {...alertLinkingToRewardModalProps}
+      />}
     </>
   );
 }
@@ -90,6 +182,25 @@ const Home = styled(Component)<Props>(({ theme: { token } }: Props) => {
       '.ant-sw-screen-layout-footer': {
         opacity: 0,
         pointerEvents: 'none'
+      }
+    },
+
+    '&.__alert-linking-account-modal': {
+      '.ant-sw-sub-header-title-content': {
+        padding: '0 20px'
+      },
+
+      '.__modal-content': {
+        padding: '0 27px'
+      },
+
+      '.ant-sw-modal-footer': {
+        paddingBottom: 17,
+
+        '.__buttons-container': {
+          justifyContent: 'center',
+          gap: 11
+        }
       }
     }
   });
