@@ -13,7 +13,8 @@ import { TopThreeArea } from '@subwallet/extension-koni-ui/Popup/Home/Leaderboar
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext, Skeleton } from '@subwallet/react-ui';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import CN from 'classnames';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -111,6 +112,12 @@ const Component = ({ className }: Props): React.ReactElement => {
     openInNewTab(LINK_NFL_APP_DOWNLOAD)();
   }, []);
 
+  const shouldShowInfoButton = useMemo(() => {
+    const leaderboard = leaderboardInfo?.metadata as LeaderboardMetadata | undefined;
+
+    return !!(leaderboard && 'title' in leaderboard && 'content' in leaderboard);
+  }, [leaderboardInfo]);
+
   return (
     <div className={className}>
       <MainScreenHeader
@@ -118,7 +125,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         rightPartNode={
           (
             <button
-              className={'info-button'}
+              className={CN('info-button', { hidden: !shouldShowInfoButton })}
               onClick={openTermAndConditionModal}
             >
               <InfoIcon />
