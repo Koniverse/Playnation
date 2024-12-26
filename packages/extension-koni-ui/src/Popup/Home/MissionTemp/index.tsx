@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { FilterTabItemType, FilterTabs } from '@subwallet/extension-koni-ui/components/FilterTabs';
-import { CallToAction, MainScreenHeader, TimeRemaining } from '@subwallet/extension-koni-ui/components/Mythical';
+import { CallToAction, MainScreenHeader, MythButton, TimeRemaining } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Achievement, Task, TaskCategory, TaskCategoryType } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { LINK_NFL_APP_DOWNLOAD } from '@subwallet/extension-koni-ui/constants';
@@ -12,6 +12,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import MissionSectionListContainer from './MissionSectionListContainer';
@@ -22,6 +23,7 @@ const apiSDK = BookaSdk.instance;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
+  const navigate = useNavigate();
   const { setBackgroundStyle } = useContext(HomeContext);
   const { t } = useTranslation();
   const [accountInfo, setAccountInfo] = useState(apiSDK.account);
@@ -66,6 +68,10 @@ const Component = ({ className }: Props): React.ReactElement => {
       return undefined;
     }
   }, [metadata?.timeRange, selectedFilterTab]);
+
+  const navigateToInvite = useCallback(() => {
+    navigate('/invite');
+  }, [navigate]);
 
   useEffect(() => {
     const timeSub = apiSDK.subscribeServerTime().subscribe((time) => {
@@ -124,6 +130,16 @@ const Component = ({ className }: Props): React.ReactElement => {
   return (
     <div className={className}>
       <MainScreenHeader
+        rightPartNode={
+          (
+            <MythButton
+              className={'__action-button'}
+              onClick={navigateToInvite}
+            >
+              {t('INVITE FRIENDS')}
+            </MythButton>
+          )
+        }
         title={t('Tasks')}
       />
 
@@ -166,6 +182,25 @@ const MissionTemp = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
+    '.__action-button': {
+      minWidth: 158,
+      height: 40,
+
+      '.__button-content': {
+        color: extendToken.mythColorDark
+      },
+
+      '.__button-background': {
+        // filter: 'drop-shadow(2px 3px 0px #000)'
+      },
+
+      '.__button-background:before': {
+        backgroundColor: token.colorPrimary,
+        maskImage: 'url(/images/mythical/call-to-action-button.png)',
+        maskSize: '100% 100%',
+        maskPosition: 'top left'
+      }
+    },
 
     '.filter-tabs-container': {
       marginBottom: 24

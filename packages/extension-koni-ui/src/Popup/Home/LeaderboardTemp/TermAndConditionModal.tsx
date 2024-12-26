@@ -86,7 +86,7 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
     '.ant-sw-modal-header.ant-sw-modal-header': {
       display: 'flex',
       position: 'absolute',
-      top: -52,
+      top: -51,
       right: 15
     },
 
@@ -159,7 +159,8 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       fontStyle: 'normal',
       fontWeight: 400,
       lineHeight: '40px',
-      textTransform: 'uppercase'
+      textTransform: 'uppercase',
+      paddingBottom: 8
     },
 
     '.__modal-description': {

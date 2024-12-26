@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { FilterTabItemType, FilterTabs } from '@subwallet/extension-koni-ui/components/FilterTabs';
-import { MainScreenHeader, UsersThreeIcon } from '@subwallet/extension-koni-ui/components/Mythical';
+import { MainScreenHeader } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Game, GameEvent } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
@@ -10,7 +10,7 @@ import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeCo
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { isDesktop, isMobile } from '@subwallet/extension-koni-ui/utils';
+import { isDesktop, isMobile, preloadImages } from '@subwallet/extension-koni-ui/utils';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -185,6 +185,12 @@ const Component = ({ className }: Props): React.ReactElement => {
   // }, [currentGame, currentGame?.slug, reloadGame]);
 
   useEffect(() => {
+    preloadImages([
+      '/images/mythical/invite/user-three-icon.png'
+    ]);
+  }, []);
+
+  useEffect(() => {
     const gameListSub = apiSDK.subscribeGameList().subscribe((data) => {
       setGameList(data);
     });
@@ -230,7 +236,6 @@ const Component = ({ className }: Props): React.ReactElement => {
                 className={'invite-button'}
                 onClick={navigateToInvite}
               >
-                <UsersThreeIcon />
               </button>
             </>
           )
@@ -288,7 +293,10 @@ const Event = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
       border: 0,
       fontSize: 32,
       color: extendToken.mythColorGray1,
-      cursor: 'pointer'
+      cursor: 'pointer',
+      backgroundImage: 'url(/images/mythical/invite/user-three-icon.png)',
+      backgroundSize: '100% 100%',
+      backgroundRepeat: 'no-repeat'
     },
 
     '.game-iframe': {
