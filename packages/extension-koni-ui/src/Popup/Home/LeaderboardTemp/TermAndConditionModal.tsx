@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
+import ContentGenerator from '@subwallet/extension-koni-ui/components/StaticContent/ContentGenerator';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { preloadImages } from '@subwallet/extension-koni-ui/utils';
 import { SwModal } from '@subwallet/react-ui';
@@ -13,6 +14,12 @@ import styled from 'styled-components';
 interface Props extends ThemeProps {
   onCancel: VoidFunction;
   onOk: VoidFunction;
+  metadata?: LeaderboardMetadata
+}
+
+export interface LeaderboardMetadata {
+  title: string;
+  content: string;
 }
 
 export const TERM_AND_CONDITION_MODAL_ID = 'TERM_AND_CONDITION_MODAL_ID';
@@ -20,7 +27,7 @@ const modalId = TERM_AND_CONDITION_MODAL_ID;
 
 function Component (props: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const { className = '', onCancel } = props;
+  const { className = '', metadata, onCancel } = props;
 
   useEffect(() => {
     preloadImages([
@@ -34,24 +41,23 @@ function Component (props: Props): React.ReactElement<Props> {
     <SwModal
       className={CN(className)}
       closable={true}
+      closeIcon={
+        <div
+          className={CN(className, '__cancel-button-header')}
+          onClick={onCancel}
+        ></div>
+      }
       id={modalId}
       onCancel={onCancel}
     >
-      <div className={'__cancel-button-header'} onClick={onCancel}></div>
-      <div className={'__modal-title'}>{t('Lorem ipsum')}</div>
+      <div className={'__modal-title'}>{t(`${metadata?.title || 'modal'}`)}</div>
 
       <div className={'__modal-description'}>
-        {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ' +
-          'sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, ' +
-          'quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. \n' +
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ' +
-          'dolore magna tempor incididunt ut labore et dolore magna tempor incididunt')}</div>
-      <div className={'__modal-description'}>
-        {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, ' +
-          'sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, ' +
-          'quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. \n' +
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ' +
-          'dolore magna tempor incididunt ut labore et dolore magna tempor incididunt')}</div>
+        <ContentGenerator
+          className={'__content-wrapper'}
+          content={metadata?.content || ''}
+        ></ContentGenerator>
+      </div>
 
       <div className='__buttons-container'>
         <MythButton
@@ -71,6 +77,25 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
     paddingLeft: 16,
     paddingRight: 16,
 
+    '.__modal-description .__content-wrapper': {
+      display: 'flex',
+      alignItems: 'center',
+      flexDirection: 'column'
+    },
+
+    '.ant-sw-modal-header.ant-sw-modal-header': {
+      display: 'flex',
+      position: 'absolute',
+      top: -51,
+      right: 15
+    },
+
+    '.ant-sw-header-left-part': {
+      position: 'absolute',
+      top: 17,
+      right: 0
+    },
+
     '&.ant-sw-modal.ant-sw-modal': {
       justifyContent: 'flex-start',
       alignItems: 'center',
@@ -85,7 +110,10 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
     '.ant-sw-modal-content.ant-sw-modal-content': {
       borderRadius: 0,
       maxWidth: 370,
+      maxHeight: 484,
       paddingTop: 24,
+      width: '100%',
+      height: 'auto',
       backgroundImage: 'url(/images/mythical/leaderboard-terms-conditions-bg.png)',
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat',
@@ -101,12 +129,23 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       height: 32,
       width: 30,
       position: 'absolute',
+      top: -13,
+      right: 4,
+      backgroundPosition: 'center',
+      zIndex: 1000,
+      backgroundRepeat: 'no-repeat'
+    },
+
+    '.__header-wrapper': {
+      position: 'absolute',
       top: '-44px',
       right: 0
     },
 
     '.ant-sw-modal-body': {
-      paddingBottom: 54
+      paddingBottom: 54,
+      display: 'flex',
+      flexDirection: 'column'
     },
 
     '.ant-sw-modal-header': {
@@ -122,7 +161,7 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       fontWeight: 400,
       lineHeight: '40px',
       textTransform: 'uppercase',
-      marginBottom: 10
+      paddingBottom: 8
     },
 
     '.__modal-description': {
@@ -134,7 +173,8 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       fontWeight: 400,
       lineHeight: '18px',
       letterSpacing: '0.32px',
-      marginBottom: 20
+      marginBottom: 20,
+      overflow: 'auto'
     },
 
     '.__buttons-container': {
@@ -144,8 +184,8 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
 
     '.__action-button': {
       height: 52,
-      paddingLeft: 12,
-      paddingRight: 10,
+      marginLeft: 16,
+      marginRight: 16,
 
       '.__button-content': {
         fontSize: '22px',
@@ -178,7 +218,7 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
 
       '.__button-background:before': {
         backgroundColor: token.colorWhite,
-        maskImage: 'url(/images/mythical/okay-button-background.png)',
+        maskImage: 'url(/images/mythical/okay-button-background.png)'
         // filter: 'drop-shadow(1.444px 2.167px 0px #000)'
       }
     }
