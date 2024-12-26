@@ -1,16 +1,22 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { AlertModal, MythicalAlertRewardModal } from '@subwallet/extension-koni-ui/components';
 import { FilterTabItemType, FilterTabs } from '@subwallet/extension-koni-ui/components/FilterTabs';
 import { MainScreenHeader, UsersThreeIcon } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { Game, GameEvent } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { Game, GameEvent, Reward, RewardStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { MYTHICAL_ALERT_LINKING_TO_REWARDS_MODAL, MYTHICAL_ALERT_REWARD_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameApp } from '@subwallet/extension-koni-ui/Popup/Home/Games/gameSDK';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { isDesktop, isMobile } from '@subwallet/extension-koni-ui/utils';
+import { isDesktop, isMobile, noop } from '@subwallet/extension-koni-ui/utils';
+import { ModalContext } from '@subwallet/react-ui';
+import CN from 'classnames';
+import { Check, IconWeight, X } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +31,8 @@ const telegramConnector = TelegramConnector.instance;
 type Props = ThemeProps;
 
 const apiSDK = BookaSdk.instance;
+const alertLinkingToRewardModal = MYTHICAL_ALERT_LINKING_TO_REWARDS_MODAL;
+const alertRewardModal = MYTHICAL_ALERT_REWARD_MODAL;
 
 const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/events');
@@ -38,6 +46,72 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
   const [currentGameEvent, setCurrentGameEvent] = useState<GameEvent | undefined>(undefined);
   const [serverTime, setServerTime] = useState<number>(apiSDK.serverTime);
+  const { checkAlreadyLinked, isLinkedMyth, onLogin } = useContext(AuthenticationMythContext);
+  const { activeModal, inactiveModal } = useContext(ModalContext);
+  const [rewardsEligible, setRewardsEligible] = useState<Reward[]>([]);
+  const [hasSuccessReward, setHasSuccessReward] = useState<boolean>(false);
+  const [hasFullPendingReward, setHasFullPendingReward] = useState<boolean>(false);
+  const alertLinkingToRewardModalProps = useMemo(() => {
+    const totalTokenOfPendingReward = rewardsEligible.reduce((acc, reward) => {
+      if (reward.status !== RewardStatus.SUCCESS) {
+        acc += reward.token;
+      }
+
+      return acc;
+    }, 0);
+
+    return {
+      title: t(`you’re eligible for ${totalTokenOfPendingReward} myth`),
+      content: t(`Link your Mythical account now to receive ${totalTokenOfPendingReward} MYTH. Make sure to connect to NFL Rivals app first and create a wallet address to receive rewards`),
+      okButton: {
+        text: 'Link now',
+        icon: Check,
+        iconWeight: 'bold' as IconWeight,
+        onClick: () => {
+          apiSDK.updateRewardHistory(true).catch(console.error);
+          inactiveModal(alertLinkingToRewardModal);
+
+          if (isLinkedMyth) {
+            navigate('/home/my-profile');
+          } else {
+            onLogin();
+          }
+        }
+      },
+      cancelButton: {
+        text: 'Cancel',
+        onClick: noop,
+        icon: X,
+        iconWeight: 'bold' as IconWeight
+      },
+      onCancel: () => {
+        inactiveModal(alertLinkingToRewardModal);
+        apiSDK.updateRewardHistory(true).catch(console.error);
+      }
+    };
+  }, [inactiveModal, isLinkedMyth, navigate, onLogin, rewardsEligible, t]);
+
+  const handleAlertReward = useCallback(async (rewardList: Reward[]) => {
+    if (rewardList.length > 0) {
+      const isHasRewardIsDistributed = rewardList.find((reward) => reward.status === RewardStatus.SUCCESS);
+
+      if (isHasRewardIsDistributed) {
+        setHasSuccessReward(true);
+        activeModal(alertRewardModal);
+
+        return;
+      }
+
+      const isAlreadyLinked = await checkAlreadyLinked();
+
+      if (isAlreadyLinked) {
+        return;
+      }
+
+      setHasFullPendingReward(true);
+      activeModal(alertLinkingToRewardModal);
+    }
+  }, [activeModal, checkAlreadyLinked]);
 
   const exitGame = useCallback((path?: string) => {
     if (path) {
@@ -218,6 +292,16 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [setContainerClass, showGame]);
 
+  useEffect(() => {
+    apiSDK.getRewardListIsNotChecked().then((res) => {
+      setRewardsEligible(res);
+    }).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    handleAlertReward(rewardsEligible).catch(console.error);
+  }, [handleAlertReward, rewardsEligible]);
+
   return (
     <div className={className}>
       <MainScreenHeader
@@ -261,6 +345,13 @@ const Component = ({ className }: Props): React.ReactElement => {
         selectedTab={selectedFilterTab}
         serverTime={serverTime}
       />
+
+      {hasSuccessReward && <MythicalAlertRewardModal rewardsEligible={rewardsEligible} />}
+      {hasFullPendingReward && <AlertModal
+        className={CN(className, '__alert-linking-account-modal')}
+        modalId={alertLinkingToRewardModal}
+        {...alertLinkingToRewardModalProps}
+      />}
     </div>
   );
 };
@@ -313,6 +404,25 @@ const Event = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: 
       paddingLeft: 16,
       paddingRight: 16,
       paddingBottom: 12
+    },
+
+    '&.__alert-linking-account-modal': {
+      '.ant-sw-sub-header-title-content': {
+        padding: '0 20px'
+      },
+
+      '.__modal-content': {
+        padding: '0 27px'
+      },
+
+      '.ant-sw-modal-footer': {
+        paddingBottom: 17,
+
+        '.__buttons-container': {
+          justifyContent: 'center',
+          gap: 11
+        }
+      }
     }
   };
 });

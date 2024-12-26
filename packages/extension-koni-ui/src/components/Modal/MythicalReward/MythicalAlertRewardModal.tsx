@@ -4,11 +4,12 @@
 import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Reward, RewardStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { MYTHICAL_ALERT_REWARD_MODAL } from '@subwallet/extension-koni-ui/constants';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { preloadImages, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
-import { openInNewTab } from '@subwallet/extension-koni-ui/utils/common/browser';
+// import { openInNewTab } from '@subwallet/extension-koni-ui/utils/common/browser';
 import { Logo, ModalContext, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -24,6 +25,7 @@ const apiSDK = BookaSdk.instance;
 const giftMythReward = '/images/mythical/gift-myth-reward.png';
 const closeIcon = '/images/mythical/close-button.png';
 const infoIcon = '/images/mythical/info-button.png';
+const telegramConnector = TelegramConnector.instance;
 
 function Component ({ className, rewardsEligible }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
@@ -58,9 +60,15 @@ function Component ({ className, rewardsEligible }: Props): React.ReactElement<P
   }, [inactiveModal]);
 
   const shareToTwitter = useCallback(() => {
+    const url = apiSDK.getShareTwitterAirdropURL(undefined, true, toDisplayNumber(totalReward));
+
+    if (url) {
+      telegramConnector.openLink(url);
+    }
+
     apiSDK.updateRewardHistory().catch(console.error);
     inactiveModal(MythicalAlertRewardModalId);
-  }, [inactiveModal]);
+  }, [inactiveModal, totalReward]);
 
   const goMyProfile = useCallback(() => {
     navigate('/home/my-profile');
@@ -68,9 +76,9 @@ function Component ({ className, rewardsEligible }: Props): React.ReactElement<P
     inactiveModal(MythicalAlertRewardModalId);
   }, [inactiveModal, navigate]);
 
-  const openUserGuide = useCallback(() => {
-    openInNewTab('https://www.mythical.games/mythical-rewards');
-  }, []);
+  // const openUserGuide = useCallback(() => {
+  //   openInNewTab('https://www.mythical.games/mythical-rewards');
+  // }, []);
 
   const footerModal = useMemo(() => {
     return (
@@ -106,14 +114,14 @@ function Component ({ className, rewardsEligible }: Props): React.ReactElement<P
         id={MythicalAlertRewardModalId}
         maskClosable={false}
         onCancel={onCancel}
-        rightIconProps={{
-          icon: <img
-            alt={'info'}
-            className={'icon-info'}
-            src={infoIcon}
-          />,
-          onClick: openUserGuide
-        }}
+        // rightIconProps={{
+        //   icon: <img
+        //     alt={'info'}
+        //     className={'icon-info'}
+        //     src={infoIcon}
+        //   />,
+        //   onClick: openUserGuide
+        // }}
         title={t('YOUR REWARDS')}
       >
         <div className={'__modal-content'}>
@@ -178,8 +186,9 @@ const MythicalAlertRewardModal = styled(Component)<Props>(({ theme: { extendToke
     '.ant-sw-modal-footer': {
       display: 'flex',
       borderTop: 0,
-      gap: token.sizeXXS,
-      paddingBottom: 34
+      gap: 11,
+      paddingBottom: 17,
+      justifyContent: 'center'
     },
 
     '.ant-sw-header-center-part': {
