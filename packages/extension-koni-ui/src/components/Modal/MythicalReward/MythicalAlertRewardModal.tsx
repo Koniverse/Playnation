@@ -156,7 +156,7 @@ const MythicalAlertRewardModal = styled(Component)<Props>(({ theme: { extendToke
   return {
     '.ant-sw-modal-body': {
       margin: 0,
-      padding: token.paddingXL,
+      padding: `${token.paddingXL}px ${token.paddingXL}px 27px ${token.paddingXL}px`,
       position: 'relative'
     },
 
@@ -175,7 +175,11 @@ const MythicalAlertRewardModal = styled(Component)<Props>(({ theme: { extendToke
     },
 
     '.ant-sw-modal-title': {
-      flexDirection: 'row-reverse'
+      '.ant-sw-header-container-center': {
+        flexDirection: 'row-reverse',
+        alignItems: 'flex-start',
+        padding: '0 8px'
+      }
     },
 
     '.ant-sw-header-center-part.ant-sw-header-center-part': {
@@ -187,7 +191,7 @@ const MythicalAlertRewardModal = styled(Component)<Props>(({ theme: { extendToke
       display: 'flex',
       borderTop: 0,
       gap: 11,
-      paddingBottom: 17,
+      paddingBottom: 34,
       justifyContent: 'center'
     },
 
@@ -209,7 +213,7 @@ const MythicalAlertRewardModal = styled(Component)<Props>(({ theme: { extendToke
     },
 
     '&.ant-sw-modal .ant-sw-modal-body.ant-sw-modal-body': {
-      paddingTop: token.paddingXL
+      paddingTop: 42
     },
 
     '.ant-sw-modal-content.ant-sw-modal-content': {
@@ -230,7 +234,7 @@ const MythicalAlertRewardModal = styled(Component)<Props>(({ theme: { extendToke
       fontFamily: extendToken.fontBarlowCondensed,
       display: 'flex',
       flexDirection: 'column',
-      gap: token.sizeXL,
+      gap: 25.81,
       lineHeight: '18px',
       textAlign: 'center',
       letterSpacing: 0.32,
