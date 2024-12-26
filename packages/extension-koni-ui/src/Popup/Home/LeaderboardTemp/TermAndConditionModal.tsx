@@ -50,7 +50,7 @@ function Component (props: Props): React.ReactElement<Props> {
       id={modalId}
       onCancel={onCancel}
     >
-      <div className={'__modal-title'}>{t(`${metadata?.title || ''}`)}</div>
+      <div className={'__modal-title'}>{t(`${metadata?.title || 'modal'}`)}</div>
 
       <div className={'__modal-description'}>
         <ContentGenerator
@@ -112,6 +112,7 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       maxWidth: 370,
       maxHeight: 484,
       paddingTop: 24,
+      width: '100%',
       height: 'auto',
       backgroundImage: 'url(/images/mythical/leaderboard-terms-conditions-bg.png)',
       backgroundSize: '100% 100%',
