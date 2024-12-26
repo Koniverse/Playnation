@@ -138,7 +138,7 @@ export const RewardHistoryItem = styled(Component)<ThemeProps>(({ theme: { exten
       fontWeight: 400,
       lineHeight: 'normal',
       letterSpacing: '0.24px',
-      color: extendToken.mythColorGray1,
+      color: extendToken.mythColorGray2,
       marginBottom: 4
     },
 
@@ -159,10 +159,10 @@ export const RewardHistoryItem = styled(Component)<ThemeProps>(({ theme: { exten
 
     '.__token-symbol': {
       fontFamily: extendToken.fontBarlowCondensed,
-      fontSize: '16px',
+      fontSize: '14px',
       fontStyle: 'italic',
       fontWeight: 500,
-      lineHeight: '18px',
+      lineHeight: '20px',
       color: extendToken.mythColorGray2,
       letterSpacing: '-0.16px'
     },
@@ -184,6 +184,9 @@ export const RewardHistoryItem = styled(Component)<ThemeProps>(({ theme: { exten
         backgroundImage: 'linear-gradient(75deg, rgba(54, 53, 53, 0.32) 25.94%, rgba(25, 25, 25, 0.32) 63.11%)',
         backdropFilter: 'blur(16px)'
       }
+    },
+    '.__item-left-part __ordinal': {
+      marginLeft: -8
     },
 
     '.-success': {

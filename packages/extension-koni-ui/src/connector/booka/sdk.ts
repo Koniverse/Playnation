@@ -630,8 +630,15 @@ export class BookaSdk {
     return `https://t.me/${TELEGRAM_WEBAPP_LINK}?startapp=${this.account?.info.inviteCode || 'booka'}`;
   }
 
-  public getShareTwitterAirdropURL (item: AirdropCampaign) {
-    if (!item.share) {
+  // @Todo: Need update share url of campaign data in reward list and then clear useFakeData param
+  public getShareTwitterAirdropURL (item?: AirdropCampaign, useFakeData?: boolean, totalTokenReward?: string) {
+    if (!item?.share) {
+      if (useFakeData && totalTokenReward) {
+        const content = `I've won ${totalTokenReward} MYTH on @PlayNFLRivals Telegram bot`;
+
+        return `http://x.com/share?text=${content}&url=${'https://x.playnation.app'}`;
+      }
+
       return;
     }
 
@@ -1074,6 +1081,7 @@ export class BookaSdk {
     await this.waitForSync;
     const result = await this.postRequest<Reward[]>(`${GAME_API_HOST}/api/airdrop/reward_list`, {});
     const listFilter = result.filter(({ account_id: id }) => id === this.account?.info.id);
+
     this.rewardListSubject.next(listFilter);
 
     return listFilter;
