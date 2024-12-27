@@ -180,8 +180,7 @@ const ContentGenerator = styled(Component)<Props>(({ theme: { extendToken, token
     },
     '.custom-ul': {
       paddingInlineStart: 24,
-      marginBottom: 8,
-      textAlign: 'left'
+      marginBottom: 8
     },
     '.custom-th': {
       border: `1px solid ${extendToken.mythColorGray1}`,
@@ -197,15 +196,15 @@ const ContentGenerator = styled(Component)<Props>(({ theme: { extendToken, token
     },
     '.custom-table': {
       margin: 'auto',
-      marginBottom: 8
+      marginBottom: 8,
+      textAlign: 'center'
     },
     '.custom-img': {
       marginTop: 4,
       marginBottom: 4
     },
     '.custom-paragraph': {
-      marginBottom: 8,
-      textAlign: 'left'
+      marginBottom: 8
     }
   };
 });
