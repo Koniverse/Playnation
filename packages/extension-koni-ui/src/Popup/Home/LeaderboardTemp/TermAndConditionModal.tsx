@@ -79,7 +79,7 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
 
     '.__modal-description .__content-wrapper': {
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'start',
       flexDirection: 'column'
     },
 
