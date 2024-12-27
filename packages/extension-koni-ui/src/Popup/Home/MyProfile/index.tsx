@@ -69,17 +69,17 @@ const Component = ({ className }: Props): React.ReactElement => {
     <div className={className}>
       <MainScreenHeader
         className={'profile-header'}
-        rightPartNode={
-          (
-            <MythButton
-              className={'login-button'}
-              isLoading={loading}
-              onClick={!isLinkedMyth ? logIn : logOut}
-            >
-              {!isLinkedMyth ? t('Log in') : t('Log out')}
-            </MythButton>
-          )
-        }
+        // rightPartNode={
+        //   (
+        //     <MythButton
+        //       className={'login-button'}
+        //       isLoading={loading}
+        //       onClick={!isLinkedMyth ? logIn : logOut}
+        //     >
+        //       {!isLinkedMyth ? t('Log in') : t('Log out')}
+        //     </MythButton>
+        //   )
+        // }
         title={t('My profile')}
       />
       <div className={'__profile-container'}>
