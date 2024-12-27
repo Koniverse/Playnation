@@ -133,7 +133,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         rightPartNode={
           (
             <MythButton
-              className={'__action-button'}
+              className={'invite-friends-button'}
               onClick={navigateToInvite}
             >
               {t('INVITE FRIENDS')}
@@ -182,7 +182,7 @@ const MissionTemp = styled(Component)<ThemeProps>(({ theme: { extendToken, token
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    '.__action-button': {
+    '.invite-friends-button': {
       minWidth: 158,
       height: 40,
 
