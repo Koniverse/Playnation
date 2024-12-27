@@ -31,6 +31,7 @@ function Component ({ className, rewardsEligible }: Props): React.ReactElement<P
   const { t } = useTranslation();
   const { inactiveModal } = useContext(ModalContext);
   const navigate = useNavigate();
+  const [account, setAccount] = useState(apiSDK.account);
   const [totalReward, setTotalReward] = useState<number>(0);
 
   useEffect(() => {
@@ -60,15 +61,18 @@ function Component ({ className, rewardsEligible }: Props): React.ReactElement<P
   }, [inactiveModal]);
 
   const shareToTwitter = useCallback(() => {
-    const url = apiSDK.getShareTwitterAirdropURL(undefined, true, toDisplayNumber(totalReward));
+    const content = `I’ve won ${toDisplayNumber(totalReward)} MYTH on Football Rivals Telegram bot 💥
+                                                 %0AWant to win MYTH too? Join me NOW 👇`;
 
-    if (url) {
-      telegramConnector.openLink(url);
-    }
+    const urlShare = 'https://x.koni.studio/football-rivals';
+    const linkShare = `${urlShare}?startApp=${account?.info.inviteCode || 'booka'}`;
 
+    const url = `http://x.com/share?text=${content}&url=${linkShare}`;
+
+    telegramConnector.openLink(url);
     apiSDK.updateRewardHistory().catch(console.error);
     inactiveModal(MythicalAlertRewardModalId);
-  }, [inactiveModal, totalReward]);
+  }, [account?.info.inviteCode, inactiveModal, totalReward]);
 
   const goMyProfile = useCallback(() => {
     navigate('/home/my-profile');
@@ -79,6 +83,16 @@ function Component ({ className, rewardsEligible }: Props): React.ReactElement<P
   // const openUserGuide = useCallback(() => {
   //   openInNewTab('https://www.mythical.games/mythical-rewards');
   // }, []);
+
+  useEffect(() => {
+    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
+      setAccount(data);
+    });
+
+    return () => {
+      accountSub.unsubscribe();
+    };
+  }, []);
 
   const footerModal = useMemo(() => {
     return (
