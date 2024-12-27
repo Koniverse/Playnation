@@ -138,8 +138,8 @@ const Component = ({ className }: Props): React.ReactElement => {
       {
         <div className='time-remaining-wrapper'>
           <TimeRemaining
-            endTime={leaderboardInfo?.endTimeTs ? new Date(leaderboardInfo?.endTimeTs).toString() : undefined}
             delayTime={leaderboardInfo?.specialTimeDelayDuration}
+            endTime={leaderboardInfo?.endTimeTs ? new Date(leaderboardInfo?.endTimeTs).toString() : undefined}
           />
         </div>}
 

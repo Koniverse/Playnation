@@ -42,9 +42,11 @@ const Component = ({ className, delayTime,
 
   const calculateDelayTime = useMemo(() => {
     const currentTime = Date.now();
+
     if (!endTime) {
       return undefined;
     }
+
     const delayStartTime = new Date(endTime).getTime();
     const delayEndTime = delayStartTime + Number(delayTime) * 86400000;
 
@@ -55,30 +57,25 @@ const Component = ({ className, delayTime,
     return undefined;
   }, [delayTime]);
 
+  const timeRemainingLabel = useMemo(() => {
+    return calculateDelayTime ? t('New leaderboard in') : t('Time remaining');
+  }, [calculateDelayTime]);
+
   return (
     <div
       className={className}
     >
+      <div className='__title'>
+        {timeRemainingLabel}
+      </div>
 
-      {!!calculateDelayTime ? (
-        <>
-          <div className='__delay-time'>{t(`New leaderboard in ${calculateDelayTime}`)}</div>
-        </>
-      ) : (
-        <>
-          <div className='__title'>
-            {t('Time remaining')}
-          </div>
+      <div className='__separator'></div>
 
-          <div className='__separator'></div>
+      <ClockIcon className={'__clock-icon'}/>
 
-          <ClockIcon className={'__clock-icon'}/>
-
-          <div className='__datetime'>
-            {dateTime}
-          </div>
-        </>
-      )}
+      <div className='__datetime'>
+        {calculateDelayTime || dateTime}
+      </div>
     </div>
   );
 };
