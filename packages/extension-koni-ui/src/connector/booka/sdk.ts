@@ -1,21 +1,21 @@
 // Copyright 2019-2022 @subwallet/extension authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {InGameItem} from '@playnation/game-sdk';
-import {GameState} from '@playnation/game-sdk/dist/types';
-import {SWStorage} from '@subwallet/extension-base/storage';
-import {createPromiseHandler, detectTranslate} from '@subwallet/extension-base/utils';
-import {AppMetadata, MetadataHandler} from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import {AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, ClaimableAchievement, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, MythicalWallet, NFLRivalCard, RankInfo, ReferralData, Reward, RewardStatus, RewardType, Task, TaskCategory} from '@subwallet/extension-koni-ui/connector/booka/types';
-import {TelegramConnector} from '@subwallet/extension-koni-ui/connector/telegram';
-import {signRaw} from '@subwallet/extension-koni-ui/messaging';
-import {populateTemplateString} from '@subwallet/extension-koni-ui/utils';
-import {formatDateFully} from '@subwallet/extension-koni-ui/utils/date';
+import { InGameItem } from '@playnation/game-sdk';
+import { GameState } from '@playnation/game-sdk/dist/types';
+import { SWStorage } from '@subwallet/extension-base/storage';
+import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
+import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
+import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, ClaimableAchievement, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, MythicalWallet, NFLRivalCard, RankInfo, ReferralData, Reward, RewardHistoryStored, RewardStatus, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { signRaw } from '@subwallet/extension-koni-ui/messaging';
+import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
+import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
-import {deflate, inflate} from 'pako';
-import {BehaviorSubject} from 'rxjs';
+import { deflate, inflate } from 'pako';
+import { BehaviorSubject } from 'rxjs';
 
-import {stringToU8a, u8aToString} from '@polkadot/util';
+import { stringToU8a, u8aToString } from '@polkadot/util';
 
 export const DEFAULT_INIT_DATA = process.env.DEFAULT_INIT_DATA;
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
@@ -39,6 +39,10 @@ const CACHE_KEYS = {
   achievementList: 'data--achievement-list-cache',
   gameEventList: 'data--game-event-cache',
   nflRivalCardList: 'data--nfl-rival-cards-cache'
+};
+
+const CLOUD_STORAGE_KEYS = {
+  rewardHistories: 'data--reward-histories-storage'
 };
 
 function parseCache<T> (key: string, useDecompress?: boolean): T | undefined {
@@ -71,6 +75,18 @@ function decompressData (data: string) {
   const compressed = stringToU8a(data);
 
   return inflate(compressed, { to: 'string' });
+}
+
+function generateCloudKey (keys: number[], type: string) {
+  return `${type}:${keys.join('-')}`;
+}
+
+export function getRewardStatus (status: RewardStatus) {
+  if (status === RewardStatus.SUCCESS || status === RewardStatus.EXPIRED) {
+    return status;
+  }
+
+  return RewardStatus.PENDING;
 }
 
 const metadataHandler = MetadataHandler.instance;
@@ -614,8 +630,15 @@ export class BookaSdk {
     return `https://t.me/${TELEGRAM_WEBAPP_LINK}?startapp=${this.account?.info.inviteCode || 'booka'}`;
   }
 
-  public getShareTwitterAirdropURL (item: AirdropCampaign) {
-    if (!item.share) {
+  // @Todo: Need update share url of campaign data in reward list and then clear useFakeData param
+  public getShareTwitterAirdropURL (item?: AirdropCampaign, useFakeData?: boolean, totalTokenReward?: string) {
+    if (!item?.share) {
+      if (useFakeData && totalTokenReward) {
+        const content = `I've won ${totalTokenReward} MYTH on @PlayNFLRivals Telegram bot`;
+
+        return `http://x.com/share?text=${content}&url=${'https://x.playnation.app'}`;
+      }
+
       return;
     }
 
@@ -737,7 +760,8 @@ export class BookaSdk {
           this.fetchLeaderboardConfigList(),
           this.fetchGameList(),
           this.fetchGameEventList(),
-          this.fetchAchievementList()
+          this.fetchAchievementList(),
+          this.fetchRewardList()
           // this.fetchNFLRivalCardList(), // Run in the mythical login to get token
           // this.fetchTaskCategoryList(),
           // this.fetchTaskList(),
@@ -1049,135 +1073,89 @@ export class BookaSdk {
     }
   }
 
+  getRewardHistoryList () {
+    return this.rewardListSubject.value;
+  }
+
   async fetchRewardList (): Promise<Reward[]> {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await this.waitForSync;
+    const result = await this.postRequest<Reward[]>(`${GAME_API_HOST}/api/airdrop/reward_list`, {});
+    const listFilter = result.filter(({ account_id: id }) => id === this.account?.info.id);
 
-    const result = [
-      {
-        airdrop_log_id: 1,
-        airdrop_record_id: 1,
-        type: RewardType.TOKEN,
-        campaign_id: 1,
-        campaign_method: 'raffle',
-        campaign_name: 'Weekly Leaderboard (W45)',
-        eligibility_name: 'Top 10 Weekly Leaderboard (W45)',
-        eligibility_end: 1,
-        expiryDate: 1735116370,
-        status: RewardStatus.EXPIRED,
-        account_id: 1,
-        eligibility_id: 1,
-        address: '',
-        point: 0,
-        network: 'mythos',
-        token_slug: 'mythos-NATIVE-MYTH',
-        decimal: 18,
-        token: 10
-      },
-      {
-        airdrop_log_id: 2,
-        airdrop_record_id: 2,
-        type: RewardType.TOKEN,
-        campaign_id: 2,
-        campaign_method: 'raffle',
-        campaign_name: 'Weekly Leaderboard (W46)',
-        eligibility_name: 'Top 10 Weekly Leaderboard (W46)',
-        eligibility_end: 2,
-        expiryDate: 1735116370,
-        status: RewardStatus.SUCCESS,
-        account_id: 2,
-        eligibility_id: 2,
-        address: '',
-        point: 0,
-        network: 'mythos',
-        token_slug: 'mythos-NATIVE-MYTH',
-        decimal: 18,
-        token: 15
-      },
-      {
-        airdrop_log_id: 3,
-        airdrop_record_id: 3,
-        type: RewardType.TOKEN,
-        campaign_id: 3,
-        campaign_method: 'raffle',
-        campaign_name: 'Weekly Leaderboard (W47)',
-        eligibility_name: 'Top 10 Weekly Leaderboard (W47)',
-        eligibility_end: 3,
-        expiryDate: 1735116370,
-        status: RewardStatus.PROCESSING,
-        account_id: 3,
-        eligibility_id: 3,
-        address: '',
-        point: 0,
-        network: 'mythos',
-        token_slug: 'mythos-NATIVE-MYTH',
-        decimal: 18,
-        token: 18
-      },
-      {
-        airdrop_log_id: 4,
-        airdrop_record_id: 4,
-        type: RewardType.TOKEN,
-        campaign_id: 4,
-        campaign_method: 'raffle',
-        campaign_name: 'Weekly Leaderboard (W48)',
-        eligibility_name: 'Top 10 Weekly Leaderboard (W48)',
-        eligibility_end: 4,
-        expiryDate: 1735116370,
-        status: RewardStatus.FAILED,
-        account_id: 4,
-        eligibility_id: 4,
-        address: '',
-        point: 0,
-        network: 'mythos',
-        token_slug: 'mythos-NATIVE-MYTH',
-        decimal: 18,
-        token: 14
-      },
-      {
-        airdrop_log_id: 6,
-        airdrop_record_id: 6,
-        type: RewardType.TOKEN,
-        campaign_id: 6,
-        campaign_method: 'raffle',
-        campaign_name: 'Weekly Leaderboard (W49)',
-        eligibility_name: 'Top 10 Weekly Leaderboard (W49)',
-        eligibility_end: 6,
-        expiryDate: 1735116370,
-        status: RewardStatus.PENDING,
-        account_id: 6,
-        eligibility_id: 6,
-        address: '',
-        point: 0,
-        network: 'mythos',
-        token_slug: 'mythos-NATIVE-MYTH',
-        decimal: 18,
-        token: 12
-      },
-      {
-        airdrop_log_id: 7,
-        airdrop_record_id: 7,
-        type: RewardType.TOKEN,
-        campaign_id: 7,
-        campaign_method: 'raffle',
-        campaign_name: 'Weekly Leaderboard (50)',
-        eligibility_name: 'Top 10 Weekly Leaderboard (50)',
-        eligibility_end: 7,
-        expiryDate: 1735116370,
-        status: RewardStatus.IN_REVIEW,
-        account_id: 7,
-        eligibility_id: 7,
-        address: '',
-        point: 0,
-        network: 'mythos',
-        token_slug: 'mythos-NATIVE-MYTH',
-        decimal: 18,
-        token: 11
+    this.rewardListSubject.next(listFilter);
+
+    return listFilter;
+  }
+
+  async getRewardListIsNotChecked (): Promise<Reward[]> {
+    const rewardHistory = await storage.getItem(CLOUD_STORAGE_KEYS.rewardHistories);
+    let rewardHistoryData: Record<string, RewardHistoryStored> = {};
+    let rewardList = this.rewardListSubject.value;
+
+    if (rewardList.length === 0) {
+      try {
+        rewardList = await this.fetchRewardList();
+      } catch (e) {
+        console.error('Error in getRewardListIsNotChecked:', e);
+
+        return [];
       }
-    ]
+    }
 
-    this.rewardListSubject.next(result);
+    try {
+      if (rewardHistory) {
+        rewardHistoryData = JSON.parse(rewardHistory) as Record<string, RewardHistoryStored>;
+      }
 
-    return result;
+      const rewardListFiltered = rewardList.filter((item) => {
+        const cloudKey = generateCloudKey([item.airdrop_log_id, item.account_id, item.campaign_id, item.eligibility_id], item.type);
+
+        if (rewardHistoryData[cloudKey]) {
+          const prevStatus = getRewardStatus(rewardHistoryData[cloudKey].status);
+
+          if (prevStatus === RewardStatus.PENDING && item.status === RewardStatus.SUCCESS) {
+            rewardHistoryData[cloudKey].isCheck = false;
+          }
+
+          rewardHistoryData[cloudKey].status = item.status;
+        } else {
+          rewardHistoryData[cloudKey] = {
+            status: item.status,
+            isCheck: false
+          };
+        }
+
+        return !rewardHistoryData[cloudKey].isCheck && item.status !== RewardStatus.EXPIRED;
+      });
+
+      await storage.setItem(CLOUD_STORAGE_KEYS.rewardHistories, JSON.stringify(rewardHistoryData));
+
+      return rewardListFiltered;
+    } catch (e) {
+      console.error('Error in getRewardListIsNotChecked:', e);
+
+      return [];
+    }
+  }
+
+  async updateRewardHistory (isOnlyPending = false) {
+    const rewardHistoryCloudStored = await storage.getItem(CLOUD_STORAGE_KEYS.rewardHistories);
+
+    if (rewardHistoryCloudStored) {
+      const rewardHistoryData = JSON.parse(rewardHistoryCloudStored) as Record<string, RewardHistoryStored>;
+
+      Object.keys(rewardHistoryData).forEach((key) => {
+        const status = getRewardStatus(rewardHistoryData[key].status);
+
+        if (isOnlyPending && status === RewardStatus.PENDING) {
+          rewardHistoryData[key].isCheck = true;
+        } else if (!isOnlyPending && (status === RewardStatus.SUCCESS || status === RewardStatus.EXPIRED)) {
+          rewardHistoryData[key].isCheck = true;
+        }
+      });
+
+      await storage.setItem(CLOUD_STORAGE_KEYS.rewardHistories, JSON.stringify(rewardHistoryData));
+    }
   }
 
   subscribeRewardList () {

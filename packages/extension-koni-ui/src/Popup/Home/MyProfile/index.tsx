@@ -72,7 +72,7 @@ const Component = ({ className }: Props): React.ReactElement => {
         // rightPartNode={
         //   (
         //     <MythButton
-        //       className={CN('login-button')}
+        //       className={'login-button'}
         //       isLoading={loading}
         //       onClick={!isLinkedMyth ? logIn : logOut}
         //     >
@@ -96,10 +96,28 @@ const Component = ({ className }: Props): React.ReactElement => {
         />
         {isLinkedMyth
           ? (
-            mythicalWallet?.address && <>
-              <WalletInfoArea className={'wallet-info-area'} />
-              <RewardHistoryArea className={'reward-history-area'} />
-            </>
+            mythicalWallet?.address
+              ? <>
+                <WalletInfoArea className={'wallet-info-area'} />
+                <RewardHistoryArea className={'reward-history-area'} />
+              </>
+              : <>
+                <div className={'empty-list-wrapper'}>
+                  <EmptyListContent
+                    className={'empty-rewards-content'}
+                    content={t('Connect your Mythical account to NFL Rivals app\n' +
+                      'and create a wallet address to view rewards')}
+                    title={t('oops! no rewards yet ')}
+                  />
+                  <MythButton
+                    className={'__link-now-button'}
+                    isLoading={loading}
+                    onClick={openAppStoreLink}
+                  >
+                    {t('CONNECT NOW')}
+                  </MythButton>
+                </div>
+              </>
           )
           : (
             <>
@@ -172,8 +190,7 @@ const MyProfile = styled(Component)<ThemeProps>(({ theme: { extendToken, token }
     },
 
     '.empty-list-wrapper': {
-      paddingTop: 121,
-      paddingBottom: 175
+      padding: '121px 49px 175px 49px'
     },
 
     '.call-to-action': {

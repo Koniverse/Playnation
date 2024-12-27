@@ -517,6 +517,7 @@ export interface Reward {
   campaign_name: string
   eligibility_name?: string
   eligibility_end?: number
+  completeDate?: number
   expiryDate: number
   status: RewardStatus
   account_id: number
@@ -527,6 +528,11 @@ export interface Reward {
   token: number
   token_slug?: string
   decimal: number
+}
+
+export interface RewardHistoryStored {
+  isCheck: boolean,
+  status: RewardStatus
 }
 
 export interface AirdropRaffle {

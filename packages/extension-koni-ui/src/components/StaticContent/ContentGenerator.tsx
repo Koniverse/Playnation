@@ -94,6 +94,54 @@ const Component = ({ className, content }: Props) => {
               onClick={onClickHyperLink(href)}
             >{children}</a>
           );
+        },
+        th (props) {
+          const { children, ...rest } = props;
+
+          return (
+            <th
+              {...rest}
+              className={'custom-th'}
+            >
+              {children}
+            </th>
+          );
+        },
+        thead (props) {
+          const { children, ...rest } = props;
+
+          return (
+            <thead
+              {...rest}
+              className={'custom-thead'}
+            >
+              {children}
+            </thead>
+          );
+        },
+        table (props) {
+          const { children, ...rest } = props;
+
+          return (
+            <table
+              {...rest}
+              className={'custom-table'}
+            >
+              {children}
+            </table>
+          );
+        },
+        td (props) {
+          const { children, ...rest } = props;
+
+          return (
+            <td
+              {...rest}
+              className={'custom-td'}
+            >
+              {children}
+            </td>
+          );
         }
       }}
       remarkPlugins={[gfm]}
@@ -101,7 +149,7 @@ const Component = ({ className, content }: Props) => {
   );
 };
 
-const ContentGenerator = styled(Component)<Props>(({ theme: { token } }: Props) => {
+const ContentGenerator = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
     '.custom-body': {
       color: token.colorWhite,
@@ -132,15 +180,31 @@ const ContentGenerator = styled(Component)<Props>(({ theme: { token } }: Props) 
     },
     '.custom-ul': {
       paddingInlineStart: 24,
-      marginBottom: 0
+      marginBottom: 8
+    },
+    '.custom-th': {
+      border: `1px solid ${extendToken.mythColorGray1}`,
+      padding: 4
+    },
+    '.custom-thead': {
+      paddingLeft: 8,
+      paddingRight: 8
+    },
+    '.custom-td': {
+      border: `1px solid ${extendToken.mythColorGray1}`,
+      padding: 4
+    },
+    '.custom-table': {
+      margin: 'auto',
+      marginBottom: 8,
+      textAlign: 'center'
     },
     '.custom-img': {
       marginTop: 4,
       marginBottom: 4
     },
     '.custom-paragraph': {
-      marginTop: 4,
-      marginBottom: 4
+      marginBottom: 8
     }
   };
 });
