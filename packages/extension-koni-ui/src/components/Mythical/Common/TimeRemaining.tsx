@@ -55,11 +55,11 @@ const Component = ({ className, delayTime,
     }
 
     return undefined;
-  }, [delayTime]);
+  }, [endTime, delayTime]);
 
   const timeRemainingLabel = useMemo(() => {
     return calculateDelayTime ? t('New leaderboard in') : t('Time remaining');
-  }, [calculateDelayTime]);
+  }, [t, calculateDelayTime]);
 
   return (
     <div
@@ -71,7 +71,7 @@ const Component = ({ className, delayTime,
 
       <div className='__separator'></div>
 
-      <ClockIcon className={'__clock-icon'}/>
+      <ClockIcon className={'__clock-icon'} />
 
       <div className='__datetime'>
         {calculateDelayTime || dateTime}
@@ -80,7 +80,7 @@ const Component = ({ className, delayTime,
   );
 };
 
-const TimeRemaining = styled(Component)<ThemeProps>(({theme: {extendToken, token}}: ThemeProps) => {
+const TimeRemaining = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     minHeight: 65,
     backgroundImage: 'url(/images/mythical/time-remaining-background.png)',
