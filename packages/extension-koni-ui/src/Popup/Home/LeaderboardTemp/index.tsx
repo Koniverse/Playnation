@@ -127,7 +127,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     const delayEndTime = delayStartTime + Number(leaderboardInfo.specialTimeDelayDuration) * 86400000;
 
     if (currentTime > delayStartTime) {
-      return getTimeRemaining(delayStartTime, new Date(delayEndTime).toString());
+      return getTimeRemaining(currentTime, new Date(delayEndTime).toString());
     }
 
     return undefined;
