@@ -38,7 +38,7 @@ const Component = ({ className, customDateTimeHandler, customTitleHandler, endTi
     return () => {
       timeSub.unsubscribe();
     };
-  }, [endTime]);
+  }, []);
 
   const timeRemainingTitle = useMemo(() => {
     if (customTitleHandler && !!customTitleHandler(serverTime)) {
