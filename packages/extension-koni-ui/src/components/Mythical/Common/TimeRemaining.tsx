@@ -4,7 +4,7 @@
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { getTimeRemaining } from '@subwallet/extension-koni-ui/utils';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -12,11 +12,12 @@ import { ClockIcon } from '../Icon';
 
 type Props = ThemeProps & {
   endTime?: string;
+  delayTime?: number;
 };
 
 const apiSDK = BookaSdk.instance;
 
-const Component = ({ className,
+const Component = ({ className, delayTime,
   endTime }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const [dateTime, setDateTime] = useState<string>('---');
@@ -39,26 +40,50 @@ const Component = ({ className,
     };
   }, [endTime]);
 
+  const calculateDelayTime = useMemo(() => {
+    const currentTime = Date.now();
+    if (!endTime) {
+      return undefined;
+    }
+    const delayStartTime = new Date(endTime).getTime();
+    const delayEndTime = delayStartTime + Number(delayTime) * 86400000;
+
+    if (delayTime && currentTime > delayStartTime) {
+      return getTimeRemaining(delayStartTime, new Date(delayEndTime).toString());
+    }
+
+    return undefined;
+  }, [delayTime]);
+
   return (
     <div
       className={className}
     >
-      <div className='__title'>
-        {t('Time remaining')}
-      </div>
 
-      <div className='__separator'></div>
+      {!!calculateDelayTime ? (
+        <>
+          <div className='__delay-time'>{t(`New leaderboard in ${calculateDelayTime}`)}</div>
+        </>
+      ) : (
+        <>
+          <div className='__title'>
+            {t('Time remaining')}
+          </div>
 
-      <ClockIcon className={'__clock-icon'} />
+          <div className='__separator'></div>
 
-      <div className='__datetime'>
-        {dateTime}
-      </div>
+          <ClockIcon className={'__clock-icon'}/>
+
+          <div className='__datetime'>
+            {dateTime}
+          </div>
+        </>
+      )}
     </div>
   );
 };
 
-const TimeRemaining = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
+const TimeRemaining = styled(Component)<ThemeProps>(({theme: {extendToken, token}}: ThemeProps) => {
   return {
     minHeight: 65,
     backgroundImage: 'url(/images/mythical/time-remaining-background.png)',
@@ -69,7 +94,7 @@ const TimeRemaining = styled(Component)<ThemeProps>(({ theme: { extendToken, tok
     justifyContent: 'center',
     alignItems: 'center',
 
-    '.__title': {
+    '.__title, .__delay-time': {
       color: token.colorSecondary,
       fontFamily: extendToken.fontDruk,
       fontSize: '24px',
