@@ -12,27 +12,27 @@ import { ClockIcon } from '../Icon';
 
 type Props = ThemeProps & {
   endTime?: string;
-  delayTime?: number;
+  customDateTimeHandler?: (currentTime?: number) => string | undefined;
+  customTitleHandler?: (currentTime?: number) => string | undefined;
 };
 
 const apiSDK = BookaSdk.instance;
 
-const Component = ({ className, delayTime,
-  endTime }: Props): React.ReactElement => {
+const Component = ({ className, customDateTimeHandler, customTitleHandler, endTime }: Props): React.ReactElement => {
   const { t } = useTranslation();
-  const [dateTime, setDateTime] = useState<string>('---');
+  const [serverTime, setServerTime] = useState<number | undefined>();
 
   useEffect(() => {
     const serverTimeSubject = apiSDK.subscribeServerTime();
 
-    const updateDateTime = () => {
-      setDateTime(getTimeRemaining(serverTimeSubject.value, endTime));
+    const updateDateTime = (value: number) => {
+      setServerTime(value);
     };
 
-    updateDateTime();
+    updateDateTime(serverTimeSubject.value);
 
-    const timeSub = serverTimeSubject.subscribe(() => {
-      updateDateTime();
+    const timeSub = serverTimeSubject.subscribe((value) => {
+      updateDateTime(value);
     });
 
     return () => {
@@ -40,33 +40,30 @@ const Component = ({ className, delayTime,
     };
   }, [endTime]);
 
-  const calculateDelayTime = useMemo(() => {
-    const currentTime = Date.now();
-
-    if (!endTime) {
-      return undefined;
+  const timeRemainingTitle = useMemo(() => {
+    if (customTitleHandler && !!customTitleHandler(serverTime)) {
+      return customTitleHandler(serverTime);
     }
 
-    const delayStartTime = new Date(endTime).getTime();
-    const delayEndTime = delayStartTime + Number(delayTime) * 86400000;
+    return t('Time remaining');
+  }, [customTitleHandler, serverTime, t]);
 
-    if (delayTime && currentTime > delayStartTime) {
-      return getTimeRemaining(delayStartTime, new Date(delayEndTime).toString());
+  const dateTime = useMemo(() => {
+    if (customDateTimeHandler && !!customDateTimeHandler(serverTime)) {
+      return customDateTimeHandler(serverTime);
+    } else if (endTime) {
+      return getTimeRemaining(serverTime, endTime);
     }
 
-    return undefined;
-  }, [endTime, delayTime]);
-
-  const timeRemainingLabel = useMemo(() => {
-    return calculateDelayTime ? t('New leaderboard in') : t('Time remaining');
-  }, [t, calculateDelayTime]);
+    return '---';
+  }, [customDateTimeHandler, endTime, serverTime]);
 
   return (
     <div
       className={className}
     >
       <div className='__title'>
-        {timeRemainingLabel}
+        {timeRemainingTitle}
       </div>
 
       <div className='__separator'></div>
@@ -74,7 +71,7 @@ const Component = ({ className, delayTime,
       <ClockIcon className={'__clock-icon'} />
 
       <div className='__datetime'>
-        {calculateDelayTime || dateTime}
+        {dateTime}
       </div>
     </div>
   );
