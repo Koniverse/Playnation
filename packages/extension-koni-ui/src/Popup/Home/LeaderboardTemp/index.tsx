@@ -11,7 +11,7 @@ import { GameAccountListArea } from '@subwallet/extension-koni-ui/Popup/Home/Lea
 import { LeaderboardMetadata, TERM_AND_CONDITION_MODAL_ID, TermAndConditionModal } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TermAndConditionModal';
 import { TopThreeArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TopThreeArea';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
+import { getTimeRemaining, openInNewTab } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext, Skeleton } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -118,6 +118,33 @@ const Component = ({ className }: Props): React.ReactElement => {
     return !!(leaderboard && 'title' in leaderboard && 'content' in leaderboard);
   }, [leaderboardInfo]);
 
+  const timeRemainingDateTimeHandler = useCallback((currentTime?: number) => {
+    if (!leaderboardInfo?.endTimeTs || !currentTime) {
+      return undefined;
+    }
+
+    const delayStartTime = leaderboardInfo?.endTimeTs;
+    const delayEndTime = delayStartTime + Number(leaderboardInfo.specialTimeDelayDuration) * 86400000;
+
+    if (currentTime > delayStartTime) {
+      return getTimeRemaining(delayStartTime, new Date(delayEndTime).toString());
+    }
+
+    return undefined;
+  }, [leaderboardInfo?.endTimeTs, leaderboardInfo?.specialTimeDelayDuration]);
+
+  const timeRemainingTitleHandler = useCallback((currentTime?: number) => {
+    if (!leaderboardInfo?.endTimeTs || !currentTime) {
+      return undefined;
+    }
+
+    if (currentTime > leaderboardInfo?.endTimeTs) {
+      return t('New leaderboard in');
+    }
+
+    return undefined;
+  }, [leaderboardInfo?.endTimeTs, t]);
+
   return (
     <div className={className}>
       <MainScreenHeader
@@ -138,7 +165,8 @@ const Component = ({ className }: Props): React.ReactElement => {
       {
         <div className='time-remaining-wrapper'>
           <TimeRemaining
-            endTime={leaderboardInfo?.endTimeTs ? new Date(leaderboardInfo?.endTimeTs).toString() : undefined}
+            customDateTimeHandler={timeRemainingDateTimeHandler}
+            customTitleHandler={timeRemainingTitleHandler}
           />
         </div>}
 
