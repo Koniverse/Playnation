@@ -167,6 +167,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           <TimeRemaining
             customDateTimeHandler={timeRemainingDateTimeHandler}
             customTitleHandler={timeRemainingTitleHandler}
+            endTime={leaderboardInfo?.endTimeTs ? new Date(leaderboardInfo?.endTimeTs).toString() : undefined}
           />
         </div>}
 
