@@ -126,7 +126,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     const delayStartTime = leaderboardInfo?.endTimeTs;
     const delayEndTime = delayStartTime + Number(leaderboardInfo.specialTimeDelayDuration) * 86400000;
 
-    if (currentTime > delayStartTime) {
+    if (currentTime > delayStartTime && currentTime < delayEndTime) {
       return getTimeRemaining(currentTime, new Date(delayEndTime).toString());
     }
 
@@ -174,6 +174,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       <div className='scroll-container'>
         <TopThreeArea
           className={'top-three-area'}
+          customDateTimeHandler={timeRemainingDateTimeHandler}
           isLoading={isLoading}
           leaderboardPersonItems={leaderboardPersonItems}
         />

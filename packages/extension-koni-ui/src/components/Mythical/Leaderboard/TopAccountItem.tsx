@@ -19,10 +19,11 @@ export type TopAccountItemType = {
 }
 
 type Props = ThemeProps & TopAccountItemType & {
-  isLoading?: boolean
+  isLoading?: boolean,
+  isShowToken?: boolean
 };
 
-const Component = ({ avatarSrc, className, isFirst, isLoading, name = '---', point = 0, rank, tokenValue = 0 }: Props): React.ReactElement => {
+const Component = ({ avatarSrc, className, isFirst, isLoading, isShowToken, name = '---', point = 0, rank, tokenValue = 0 }: Props): React.ReactElement => {
   return (
     <div className={CN(
       className, {
@@ -75,7 +76,7 @@ const Component = ({ avatarSrc, className, isFirst, isLoading, name = '---', poi
           : `${toDisplayNumber(point)}`}
       </div>
 
-      <div className='__token-value-wrapper'>
+      {isShowToken && <div className='__token-value-wrapper'>
         {isLoading
           ? (
             <Skeleton.Input
@@ -88,7 +89,7 @@ const Component = ({ avatarSrc, className, isFirst, isLoading, name = '---', poi
               {`+${toDisplayNumber(tokenValue)} Myth`}
             </div>
           )}
-      </div>
+      </div>}
 
     </div>
   );
