@@ -20,10 +20,10 @@ export type TopAccountItemType = {
 
 type Props = ThemeProps & TopAccountItemType & {
   isLoading?: boolean,
-  isShowToken?: boolean
+  shouldShowToken?: boolean
 };
 
-const Component = ({ avatarSrc, className, isFirst, isLoading, isShowToken, name = '---', point = 0, rank, tokenValue = 0 }: Props): React.ReactElement => {
+const Component = ({ avatarSrc, className, isFirst, isLoading, name = '---', point = 0, rank, shouldShowToken, tokenValue = 0 }: Props): React.ReactElement => {
   return (
     <div className={CN(
       className, {
@@ -76,7 +76,7 @@ const Component = ({ avatarSrc, className, isFirst, isLoading, isShowToken, name
           : `${toDisplayNumber(point)}`}
       </div>
 
-      {isShowToken && <div className='__token-value-wrapper'>
+      {shouldShowToken && <div className='__token-value-wrapper'>
         {isLoading
           ? (
             <Skeleton.Input

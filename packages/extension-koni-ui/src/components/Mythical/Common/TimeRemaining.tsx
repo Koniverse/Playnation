@@ -1,10 +1,9 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { getTimeRemaining } from '@subwallet/extension-koni-ui/utils';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -12,51 +11,30 @@ import { ClockIcon } from '../Icon';
 
 type Props = ThemeProps & {
   endTime?: string;
-  customDateTimeHandler?: (currentTime?: number) => string | undefined;
-  customTitleHandler?: (currentTime?: number) => string | undefined;
+  specialTimeRemaining?: string;
+  specialTimeTitle?: string;
+  serverTime?: number;
 };
 
-const apiSDK = BookaSdk.instance;
-
-const Component = ({ className, customDateTimeHandler, customTitleHandler, endTime }: Props): React.ReactElement => {
+const Component = ({ className, endTime, serverTime, specialTimeRemaining, specialTimeTitle }: Props): React.ReactElement => {
   const { t } = useTranslation();
-  const [serverTime, setServerTime] = useState<number | undefined>();
-
-  useEffect(() => {
-    const serverTimeSubject = apiSDK.subscribeServerTime();
-
-    const updateDateTime = (value: number) => {
-      setServerTime(value);
-    };
-
-    updateDateTime(serverTimeSubject.value);
-
-    const timeSub = serverTimeSubject.subscribe((value) => {
-      updateDateTime(value);
-    });
-
-    return () => {
-      timeSub.unsubscribe();
-    };
-  }, []);
-
   const timeRemainingTitle = useMemo(() => {
-    if (customTitleHandler && !!customTitleHandler(serverTime)) {
-      return customTitleHandler(serverTime);
+    if (specialTimeTitle) {
+      return specialTimeTitle;
     }
 
     return t('Time remaining');
-  }, [customTitleHandler, serverTime, t]);
+  }, [specialTimeTitle, t]);
 
   const dateTime = useMemo(() => {
-    if (customDateTimeHandler && !!customDateTimeHandler(serverTime)) {
-      return customDateTimeHandler(serverTime);
+    if (specialTimeRemaining) {
+      return specialTimeRemaining;
     } else if (endTime) {
       return getTimeRemaining(serverTime, endTime);
     }
 
     return '---';
-  }, [customDateTimeHandler, endTime, serverTime]);
+  }, [specialTimeRemaining, endTime, serverTime]);
 
   return (
     <div

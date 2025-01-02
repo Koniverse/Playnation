@@ -3,16 +3,15 @@
 
 import { TopAccountItem } from '@subwallet/extension-koni-ui/components/Mythical';
 import { TopAccountItemType } from '@subwallet/extension-koni-ui/components/Mythical/Leaderboard/TopAccountItem';
-import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React, { useEffect, useMemo, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
   leaderboardPersonItems: LeaderboardPerson[];
   isLoading: boolean;
-  customDateTimeHandler?: (currentTime?: number) => string | undefined;
+  shouldShowToken?: boolean;
 };
 
 function getTopAccountItem (gameAccountItem: LeaderboardPerson | undefined, rank: number): TopAccountItemType {
@@ -34,31 +33,7 @@ function getTopAccountItem (gameAccountItem: LeaderboardPerson | undefined, rank
   };
 }
 
-const apiSDK = BookaSdk.instance;
-
-const Component = ({ className, customDateTimeHandler, isLoading, leaderboardPersonItems }: Props): React.ReactElement => {
-  const [serverTime, setServerTime] = useState<number | undefined>();
-
-  useEffect(() => {
-    const serverTimeSubject = apiSDK.subscribeServerTime();
-
-    const updateDateTime = (value: number) => {
-      setServerTime(value);
-    };
-
-    updateDateTime(serverTimeSubject.value);
-
-    const timeSub = serverTimeSubject.subscribe((value) => {
-      updateDateTime(value);
-    });
-
-    return () => {
-      timeSub.unsubscribe();
-    };
-  }, []);
-
-  const isShowToken = useMemo(() => !!customDateTimeHandler?.(serverTime), [customDateTimeHandler, serverTime]);
-
+const Component = ({ className, isLoading, leaderboardPersonItems, shouldShowToken }: Props): React.ReactElement => {
   return (
     <div
       className={className}
@@ -68,7 +43,7 @@ const Component = ({ className, customDateTimeHandler, isLoading, leaderboardPer
           <TopAccountItem
             {...getTopAccountItem(leaderboardPersonItems[1], 2)}
             isLoading={isLoading}
-            isShowToken={isShowToken}
+            shouldShowToken={shouldShowToken}
           />
         }
       </div>
@@ -77,7 +52,7 @@ const Component = ({ className, customDateTimeHandler, isLoading, leaderboardPer
           <TopAccountItem
             {...getTopAccountItem(leaderboardPersonItems[0], 1)}
             isLoading={isLoading}
-            isShowToken={isShowToken}
+            shouldShowToken={shouldShowToken}
           />
         }
       </div>
@@ -86,7 +61,7 @@ const Component = ({ className, customDateTimeHandler, isLoading, leaderboardPer
           <TopAccountItem
             {...getTopAccountItem(leaderboardPersonItems[2], 3)}
             isLoading={isLoading}
-            isShowToken={isShowToken}
+            shouldShowToken={shouldShowToken}
           />
         }
       </div>

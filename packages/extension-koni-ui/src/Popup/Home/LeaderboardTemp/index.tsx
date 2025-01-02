@@ -6,7 +6,7 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { LeaderboardGroups, LeaderboardInfo, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { LINK_NFL_APP_DOWNLOAD } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
-import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
+import { useServerTime, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameAccountListArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/GameAccountListArea';
 import { LeaderboardMetadata, TERM_AND_CONDITION_MODAL_ID, TermAndConditionModal } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TermAndConditionModal';
 import { TopThreeArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TopThreeArea';
@@ -32,6 +32,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [isLoading, setIsLoading] = useState(true);
   const [leaderboardInfo, setLeaderboardInfo] = useState<LeaderboardInfo | undefined>(undefined);
   const { activeModal, inactiveModal } = useContext(ModalContext);
+  const { serverTime } = useServerTime();
 
   useEffect(() => {
     const subscriptionLeaderboard = apiSDK.subscribeLeaderboardConfig().subscribe((data) => {
@@ -118,32 +119,41 @@ const Component = ({ className }: Props): React.ReactElement => {
     return !!(leaderboard && 'title' in leaderboard && 'content' in leaderboard);
   }, [leaderboardInfo]);
 
-  const timeRemainingDateTimeHandler = useCallback((currentTime?: number) => {
-    if (!leaderboardInfo?.endTimeTs || !currentTime) {
+  const specialTimeRemaining = useMemo(() => {
+    if (!leaderboardInfo?.endTimeTs || !serverTime) {
       return undefined;
     }
 
     const delayStartTime = leaderboardInfo?.endTimeTs;
     const delayEndTime = delayStartTime + Number(leaderboardInfo.specialTimeDelayDuration) * 86400000;
 
-    if (currentTime > delayStartTime && currentTime < delayEndTime) {
-      return getTimeRemaining(currentTime, new Date(delayEndTime).toString());
+    const targetTime = serverTime > delayStartTime && serverTime < delayEndTime
+      ? delayEndTime
+      : delayStartTime;
+
+    return getTimeRemaining(serverTime, new Date(targetTime).toString());
+  }, [leaderboardInfo?.endTimeTs, leaderboardInfo?.specialTimeDelayDuration, serverTime]);
+
+  const shouldShowToken = useMemo(() => {
+    if (!leaderboardInfo?.endTimeTs || !serverTime) {
+      return false;
     }
 
-    return undefined;
-  }, [leaderboardInfo?.endTimeTs, leaderboardInfo?.specialTimeDelayDuration]);
+    const delayStartTime = leaderboardInfo?.endTimeTs;
+    const delayEndTime = delayStartTime + Number(leaderboardInfo.specialTimeDelayDuration) * 86400000;
 
-  const timeRemainingTitleHandler = useCallback((currentTime?: number) => {
-    if (!leaderboardInfo?.endTimeTs || !currentTime) {
+    return serverTime > delayStartTime && serverTime < delayEndTime;
+  }, [leaderboardInfo?.endTimeTs, leaderboardInfo?.specialTimeDelayDuration, serverTime]);
+
+  const specialTimeTitle = useMemo(() => {
+    if (!leaderboardInfo?.endTimeTs || !serverTime) {
       return undefined;
     }
 
-    if (currentTime > leaderboardInfo?.endTimeTs) {
-      return t('New leaderboard in');
-    }
-
-    return undefined;
-  }, [leaderboardInfo?.endTimeTs, t]);
+    return serverTime > leaderboardInfo.endTimeTs
+      ? t('New leaderboard in')
+      : t('Time remaining');
+  }, [leaderboardInfo?.endTimeTs, serverTime, t]);
 
   return (
     <div className={className}>
@@ -165,18 +175,19 @@ const Component = ({ className }: Props): React.ReactElement => {
       {
         <div className='time-remaining-wrapper'>
           <TimeRemaining
-            customDateTimeHandler={timeRemainingDateTimeHandler}
-            customTitleHandler={timeRemainingTitleHandler}
             endTime={leaderboardInfo?.endTimeTs ? new Date(leaderboardInfo?.endTimeTs).toString() : undefined}
+            serverTime={serverTime}
+            specialTimeRemaining={specialTimeRemaining}
+            specialTimeTitle={specialTimeTitle}
           />
         </div>}
 
       <div className='scroll-container'>
         <TopThreeArea
           className={'top-three-area'}
-          customDateTimeHandler={timeRemainingDateTimeHandler}
           isLoading={isLoading}
           leaderboardPersonItems={leaderboardPersonItems}
+          shouldShowToken={shouldShowToken}
         />
         {isLoading
           ? (
