@@ -119,7 +119,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     return !!(leaderboard && 'title' in leaderboard && 'content' in leaderboard);
   }, [leaderboardInfo]);
 
-  const specialTimeRemaining = useMemo(() => {
+  const timeRemainingDateTime = useMemo(() => {
     if (!leaderboardInfo?.endTimeTs || !serverTime) {
       return undefined;
     }
@@ -145,7 +145,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     return serverTime > delayStartTime && serverTime < delayEndTime;
   }, [leaderboardInfo?.endTimeTs, leaderboardInfo?.specialTimeDelayDuration, serverTime]);
 
-  const specialTimeTitle = useMemo(() => {
+  const timeRemainingTitle = useMemo(() => {
     if (!leaderboardInfo?.endTimeTs || !serverTime) {
       return undefined;
     }
@@ -175,10 +175,8 @@ const Component = ({ className }: Props): React.ReactElement => {
       {
         <div className='time-remaining-wrapper'>
           <TimeRemaining
-            endTime={leaderboardInfo?.endTimeTs ? new Date(leaderboardInfo?.endTimeTs).toString() : undefined}
-            serverTime={serverTime}
-            specialTimeRemaining={specialTimeRemaining}
-            specialTimeTitle={specialTimeTitle}
+            specialTimeRemaining={timeRemainingDateTime}
+            specialTimeTitle={timeRemainingTitle}
           />
         </div>}
 

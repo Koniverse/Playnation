@@ -7,7 +7,7 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Achievement, Task, TaskCategory, TaskCategoryType } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { LINK_NFL_APP_DOWNLOAD } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
-import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
+import { useServerTime, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -32,8 +32,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [achievements, setAchievements] = useState<Achievement[]>(apiSDK.achievementList);
   const [selectedFilterTab, setSelectedFilterTab] = useState<string>(TaskCategoryType.DAILY);
   const [metadata, setMetadata] = useState(apiSDK.getMetadata());
-  const [serverTime, setServerTime] = useState<number>(apiSDK.serverTime);
-
+  const { serverTime } = useServerTime();
   const filterTabItems = useMemo<FilterTabItemType[]>(() => {
     return [
       {
@@ -72,16 +71,6 @@ const Component = ({ className }: Props): React.ReactElement => {
   const navigateToInvite = useCallback(() => {
     navigate('/invite');
   }, [navigate]);
-
-  useEffect(() => {
-    const timeSub = apiSDK.subscribeServerTime().subscribe((time) => {
-      setServerTime(time);
-    });
-
-    return () => {
-      timeSub.unsubscribe();
-    };
-  }, []);
 
   useEffect(() => {
     setBackgroundStyle('style-2');
@@ -151,7 +140,10 @@ const Component = ({ className }: Props): React.ReactElement => {
       />
 
       {endTime && <div className='time-remaining-wrapper'>
-        <TimeRemaining endTime={endTime} />
+        <TimeRemaining
+          endTime={endTime}
+          serverTime={serverTime}
+        />
       </div>}
 
       <MissionSectionListContainer
