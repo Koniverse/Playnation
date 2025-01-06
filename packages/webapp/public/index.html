@@ -97,7 +97,7 @@
   <link href="/assets/reset.css?v=3.01" rel="stylesheet">
 
   <script src="https://unpkg.com/bowser@2.11.0/es5.js"></script>
-  <script src="https://telegram.org/js/telegram-web-app.js?v=8.10"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-V0K5J7F5G6"></script>
@@ -107,10 +107,10 @@
     gtag('js', new Date());
     gtag('config', 'G-V0K5J7F5G6');
 
-    const bowser = window.bowser.getParser(window.navigator.userAgent);
-    if ((typeof TelegramWebviewProxy === "undefined" && !Telegram?.WebApp?.initData) || (bowser.getPlatform()?.type === 'desktop')) {
-      window.location.href = "/not-support.html";
-    }
+    // const bowser = window.bowser.getParser(window.navigator.userAgent);
+    // if ((typeof TelegramWebviewProxy === "undefined" && !Telegram?.WebApp?.initData) || (bowser.getPlatform()?.type === 'desktop')) {
+    //   window.location.href = "/not-support.html";
+    // }
   </script>
 
   <!-- Import main JS logic -->

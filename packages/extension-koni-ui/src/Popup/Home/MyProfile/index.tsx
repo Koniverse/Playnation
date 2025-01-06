@@ -56,8 +56,10 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [onLogout]);
 
   useEffect(() => {
+    apiSDK.pushDebugLog('init-my-profile', {mineAccount}).catch(console.error);
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
       setMineAccount(data);
+      apiSDK.pushDebugLog('update-my-profile', {mineAccount}).catch(console.error)
     });
 
     return () => {
