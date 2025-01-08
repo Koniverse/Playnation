@@ -133,6 +133,7 @@ export class BookaSdk {
     this.initMetadataHandling();
     const version = localStorage.getItem('cache-version');
 
+    // Todo #249: Try to reset cache
     if (cacheVersion === version) {
       const account = parseCache<BookaAccount>(CACHE_KEYS.account);
       const taskCategoryList = parseCache<TaskCategory[]>(CACHE_KEYS.taskCategoryList);
@@ -751,7 +752,7 @@ export class BookaSdk {
 
   async pushDebugLog(type: string, input: any, isError?: boolean) {
     const debugUrl = 'https://mythical-debug.playnation.app/debug';
-    // const debugUrl = 'http://localhost:8822/debug';
+    // const debugUrl = 'https://debug.anhmtv.xyz/debug';
 
     const {id, datas, errors} = this.debugData;
 

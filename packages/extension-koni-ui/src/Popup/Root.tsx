@@ -112,8 +112,11 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   useEffect(() => {
     let cancel = false;
 
+    // Todo #249: Có thể không login do thiếu một số thông tin ở vị trí này
+    BookaSdk.instance.pushDebugLog('before-login', {}).catch(console.error);
     initDataRef.current.then(() => {
       if (cancel || accounts.length === 0) {
+        BookaSdk.instance.pushDebugLog('account-not-ready', {cancel, accounts, hasMasterPassword}).catch(console.error);
         return;
       }
 
@@ -121,11 +124,15 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
 
       const targetAddress = (currentAddress && !isAccountAll(currentAddress)) ? currentAddress : accounts[0].address;
 
+      BookaSdk.instance.pushDebugLog('start-login', {targetAddress, syncAddress: syncAddress.current}).catch(console.error);
       if (targetAddress !== syncAddress.current) {
         BookaSdk.instance.login(targetAddress).catch(console.error);
         syncAddress.current = targetAddress;
       }
-    }).catch(console.error);
+    }).catch((e ) => {
+      BookaSdk.instance.pushDebugLog('init-data-error', e).catch(console.error);
+      console.error(e);
+    });
 
     return () => {
       cancel = true;

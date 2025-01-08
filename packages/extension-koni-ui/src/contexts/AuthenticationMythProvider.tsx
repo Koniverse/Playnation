@@ -52,6 +52,7 @@ const startData = Telegram.WebApp.initDataUnsafe;
 const linkSDK = new TelegramBotLink(config as LinkConfig);
 const telegramConnector = TelegramConnector.instance;
 
+// Todo #249: Kiểm tra khả năng không chạy vào login khi nào?
 export const AuthenticationMythProvider = ({ children }: AuthenticationMythProviderProps) => {
   const [account, setAccount] = useState<AccountPublicInfo>({} as AccountPublicInfo);
   const [mythicalWallet, setMythicalWallet] = useState<MythicalWallet>(bookaSDK.getMythicalWallet());
@@ -181,9 +182,13 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
         };
       });
 
+      // Todo #249: Problems may be from here
       if (linkData.link_address && !isSameAddress(bookaSDK.account?.info.address || '', linkData.link_address)) {
+        bookaSDK.pushDebugLog('on_link_data', linkData).catch(console.error);
         onLoginWithTelegramAccount(linkData.link_address).catch(console.error);
       }
+    } else {
+      bookaSDK.pushDebugLog('link_data_not_found', linkData).catch(console.error);
     }
   }, [linkData, onLoginWithTelegramAccount]);
 
