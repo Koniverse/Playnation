@@ -1,32 +1,37 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { WalletUnlockType } from '@subwallet/extension-base/background/KoniTypes';
-import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
-import { isSameAddress } from '@subwallet/extension-base/utils';
-import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
-import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
-import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
-import { AuthenticationMythProvider, LOCAL_LOGGED_IN_PROMISE_KEY, LOCAL_NAVIGATE_AFTER_LOGIN_KEY } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
-import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
-import { SecurityContextProvider } from '@subwallet/extension-koni-ui/contexts/SecurityContext';
-import { usePredefinedModal, WalletModalContextProvider } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
-import { useSubscribeLanguage } from '@subwallet/extension-koni-ui/hooks';
+import {Logo2D} from '@subwallet/extension-koni-ui/components/Logo';
+import {
+  AUTHENTICATE_LOGOUT_REDIRECT,
+  AUTHENTICATE_REDIRECT_URI,
+  AUTHORIZATION_ENDPOINT,
+  CLIENT_ID,
+  LOGOUT_ENDPOINT,
+  TOKEN_ENDPOINT
+} from '@subwallet/extension-koni-ui/constants';
+import {
+  AuthenticationMythProvider,
+  LOCAL_LOGGED_IN_PROMISE_KEY,
+  LOCAL_NAVIGATE_AFTER_LOGIN_KEY
+} from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
+import {SecurityContextProvider} from '@subwallet/extension-koni-ui/contexts/SecurityContext';
+import {
+  usePredefinedModal,
+  WalletModalContextProvider
+} from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
+import {useSubscribeLanguage} from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
-import useUILock from '@subwallet/extension-koni-ui/hooks/common/useUILock';
-import { subscribeNotifications } from '@subwallet/extension-koni-ui/messaging';
-import { RootState } from '@subwallet/extension-koni-ui/stores';
-import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { isAccountAll, isNoAccount, removeStorage } from '@subwallet/extension-koni-ui/utils';
-import { changeHeaderLogo } from '@subwallet/react-ui';
-import { NotificationProps } from '@subwallet/react-ui/es/notification/NotificationProvider';
+import {subscribeNotifications} from '@subwallet/extension-koni-ui/messaging';
+import {ThemeProps} from '@subwallet/extension-koni-ui/types';
+import {changeHeaderLogo} from '@subwallet/react-ui';
+import {NotificationProps} from '@subwallet/react-ui/es/notification/NotificationProvider';
 import CN from 'classnames';
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { AuthProvider, TAuthConfig, TRefreshTokenExpiredEvent } from 'react-oauth2-code-pkce';
-import { useSelector } from 'react-redux';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {AuthProvider, TAuthConfig, TRefreshTokenExpiredEvent} from 'react-oauth2-code-pkce';
+import {Navigate, Outlet, useLocation} from 'react-router-dom';
 import styled from 'styled-components';
+import { BookaSdk } from '../connector/booka/sdk';
 
 changeHeaderLogo(<Logo2D />);
 
@@ -35,20 +40,9 @@ export const RouteState = {
   lastPathName: '/'
 };
 
-const welcomeUrl = '/welcome';
-// const gameUrl = '/home/games';
 const eventsUrl = '/home/events';
-// const tokenUrl = '/home/token';
-const loginUrl = '/keyring/login';
 const myProfileUrl = '/home/my-profile';
-const phishingUrl = '/phishing-page-detected';
-const createPasswordUrl = '/keyring/create-password';
-const migratePasswordUrl = '/keyring/migrate-password';
-const securityUrl = '/settings/security';
-const createDoneUrl = '/create-done';
-const baseAccountPath = '/accounts';
-const allowImportAccountPaths = ['new-seed-phrase', 'import-seed-phrase', 'import-private-key', 'restore-json', 'import-by-qr', 'attach-read-only', 'connect-polkadot-vault', 'connect-keystone', 'connect-ledger'];
-const allowImportAccountUrls = allowImportAccountPaths.map((path) => `${baseAccountPath}/${path}`);
+
 
 export const MainWrapper = styled('div')<ThemeProps>(({ theme: { token } }: ThemeProps) => ({
   display: 'flex',
@@ -69,16 +63,16 @@ function removeLoadingPlaceholder (animation: boolean): void {
       // Callback after 1 second
       setTimeout(() => {
         // Add transition effect
-        element.style.transition = 'opacity 0.1s ease-in-out';
+        element.style.transition = 'opacity 0.15s ease-in-out';
         // Set opacity to 0
         element.style.opacity = '0';
         element.style.pointerEvents = 'none';
-      }, 3000);
+      }, 2000);
 
       setTimeout(() => {
         // Add transition effect
         element.parentNode?.removeChild(element);
-      }, 3500);
+      }, 2500);
 
       // Remove element
     } else {
@@ -88,69 +82,19 @@ function removeLoadingPlaceholder (animation: boolean): void {
 }
 
 function DefaultRoute ({ children }: { children: React.ReactNode }): React.ReactElement {
-  const dataContext = useContext(DataContext);
   const location = useLocation();
   const { isOpenPModal, openPModal } = usePredefinedModal();
   const notify = useNotification();
   const [rootLoading, setRootLoading] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const initDataRef = useRef<Promise<boolean>>(dataContext.awaitStores(['accountState', 'chainStore', 'assetRegistry', 'requestState', 'settings', 'mantaPay']));
-  // const currentPage = useGetCurrentPage();
   const firstRender = useRef(true);
-
   useSubscribeLanguage();
 
-  const { unlockType } = useSelector((state: RootState) => state.settings);
-  const { hasConfirmations, hasInternalConfirmations } = useSelector((state: RootState) => state.requestState);
-  const { accounts, currentAccount, hasMasterPassword, isLocked, useCustomPassword } = useSelector((state: RootState) => state.accountState);
-  const [initAccount, setInitAccount] = useState(currentAccount);
-  const noAccount = useMemo(() => isNoAccount(accounts), [accounts]);
-  const { isUILocked } = useUILock();
-  const needUnlock = isUILocked || (isLocked && unlockType === WalletUnlockType.ALWAYS_REQUIRED);
-  const syncAddress = useRef<string | undefined>();
 
   useEffect(() => {
-    let cancel = false;
-
-    // Todo #249: Có thể không login do thiếu một số thông tin ở vị trí này
-    BookaSdk.instance.pushDebugLog('before-login', {}).catch(console.error);
-    initDataRef.current.then(() => {
-      if (cancel || accounts.length === 0) {
-        BookaSdk.instance.pushDebugLog('account-not-ready', {cancel, accounts, hasMasterPassword}).catch(console.error);
-        return;
-      }
-
-      const currentAddress = currentAccount?.address;
-
-      const targetAddress = (currentAddress && !isAccountAll(currentAddress)) ? currentAddress : accounts[0].address;
-
-      BookaSdk.instance.pushDebugLog('start-login', {targetAddress, syncAddress: syncAddress.current}).catch(console.error);
-      if (targetAddress !== syncAddress.current) {
-        BookaSdk.instance.login(targetAddress).catch(console.error);
-        syncAddress.current = targetAddress;
-      }
-    }).catch((e ) => {
-      BookaSdk.instance.pushDebugLog('init-data-error', e).catch(console.error);
-      console.error(e);
-    });
-
-    return () => {
-      cancel = true;
-    };
-  }, [accounts, currentAccount?.address]);
-
-  const needMigrate = useMemo(
-    () => !!accounts
-      .filter((acc) => acc.address !== ALL_ACCOUNT_KEY && !acc.isExternal && !acc.isInjected)
-      .filter((acc) => !acc.isMasterPassword)
-      .length
-    , [accounts]
-  );
-
-  useEffect(() => {
-    initDataRef.current.then(() => {
+    BookaSdk.instance.login().catch(console.error).finally(() => {
       setDataLoaded(true);
-    }).catch(console.error);
+    });
   }, []);
 
   useEffect(() => {
@@ -200,52 +144,8 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       return null;
     }
 
-    const ignoreRedirect = pathName.startsWith(phishingUrl);
-
-    if (ignoreRedirect) {
-      // Do nothing
-    } else if (needMigrate && hasMasterPassword && !needUnlock) {
-      redirectTarget = migratePasswordUrl;
-    } else if (hasMasterPassword && needUnlock) {
-      redirectTarget = loginUrl;
-    } else if (hasMasterPassword && useCustomPassword && pathName === createPasswordUrl) {
-      redirectTarget = DEFAULT_ROUTER_PATH;
-    } else if (!hasMasterPassword) {
-      if (noAccount) {
-        if (![...allowImportAccountUrls, welcomeUrl, createPasswordUrl, securityUrl].includes(pathName)) {
-          redirectTarget = welcomeUrl;
-        }
-      } else if (pathName !== createDoneUrl) {
-        redirectTarget = createPasswordUrl;
-      }
-    } else if (noAccount) {
-      if (![...allowImportAccountUrls, welcomeUrl, createPasswordUrl, securityUrl].includes(pathName)) {
-        redirectTarget = welcomeUrl;
-      }
-    } else if (pathName === DEFAULT_ROUTER_PATH) {
-      // if (hasConfirmations) {
-      //   openPModal('confirmations');
-      // } else
-      // if (firstRender.current && currentPage) {
-      //   redirectTarget = currentPage;
-      // } else {
-      //   redirectTarget = gameUrl;
-      // }
-      redirectTarget = eventsUrl;
-    } else if (pathName === loginUrl && !needUnlock) {
-      redirectTarget = DEFAULT_ROUTER_PATH;
-    } else if (pathName === welcomeUrl && !noAccount) {
-      redirectTarget = DEFAULT_ROUTER_PATH;
-    } else if (pathName === migratePasswordUrl && !needMigrate) {
-      if (noAccount) {
-        redirectTarget = welcomeUrl;
-      } else {
-        redirectTarget = DEFAULT_ROUTER_PATH;
-      }
-    } else if ((hasInternalConfirmations || hasConfirmations)) {
-      openPModal('confirmations');
-    } else if (!(hasInternalConfirmations || hasConfirmations) && isOpenPModal('confirmations')) {
-      openPModal(null);
+    if (pathName === '/') {
+      return eventsUrl;
     }
 
     const loginPromise = localStorage.getItem(LOCAL_LOGGED_IN_PROMISE_KEY) || '';
@@ -275,18 +175,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     } else {
       return null;
     }
-  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, openPModal]);
-
-  // Remove transaction persist state
-  useEffect(() => {
-    if (!isSameAddress(initAccount?.address || '', currentAccount?.address || '')) {
-      for (const key of TRANSACTION_STORAGES) {
-        removeStorage(key);
-      }
-
-      setInitAccount(currentAccount);
-    }
-  }, [currentAccount, initAccount]);
+  }, [location.pathname, dataLoaded, isOpenPModal, openPModal]);
 
   if (rootLoading || redirectPath) {
     return <>{redirectPath && <Navigate to={redirectPath} />}</>;

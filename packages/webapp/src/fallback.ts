@@ -29,6 +29,7 @@ global.chrome.runtime = {
       version: process.env.PKG_VERSION
     };
   },
+  // @ts-ignore
   lastError: undefined
 };
 

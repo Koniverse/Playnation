@@ -67,15 +67,15 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     //   authContext.logIn();
     // }
 
-    bookaSDK.pushDebugLog('fetch_data_with_token', {'token': authContext?.token?.length}).catch(console.error);
+    bookaSDK.pushDebugLog('fetch_data_with_token', {'token': authContext?.token?.length});
     bookaSDK.fetchNFLRivalCardList(authContext.token).catch(console.error);
     bookaSDK.fetchMythicalBalance(authContext.token).catch(console.error);
   }, [authContext, authContext.token]);
 
   useEffect(() => {
-    bookaSDK.pushDebugLog('init-authentication-myth', mythicalWallet).catch(console.error);
+    bookaSDK.pushDebugLog('init-authentication-myth', mythicalWallet);
     const unsub = bookaSDK.subscribeMythicalWallet().subscribe((data) => {
-      bookaSDK.pushDebugLog('update-authentication-myth', mythicalWallet).catch(console.error);
+      bookaSDK.pushDebugLog('update-authentication-myth', mythicalWallet);
       setMythicalWallet(data);
     });
 
@@ -184,11 +184,11 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
 
       // Todo #249: Problems may be from here
       if (linkData.link_address && !isSameAddress(bookaSDK.account?.info.address || '', linkData.link_address)) {
-        bookaSDK.pushDebugLog('on_link_data', linkData).catch(console.error);
+        bookaSDK.pushDebugLog('on_link_data', linkData);
         onLoginWithTelegramAccount(linkData.link_address).catch(console.error);
       }
     } else {
-      bookaSDK.pushDebugLog('link_data_not_found', linkData).catch(console.error);
+      bookaSDK.pushDebugLog('link_data_not_found', linkData);
     }
   }, [linkData, onLoginWithTelegramAccount]);
 

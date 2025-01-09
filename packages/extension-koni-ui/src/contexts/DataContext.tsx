@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { persistor, store, StoreName } from '@subwallet/extension-koni-ui/stores';
-import { subscribeAccountsData, subscribeAddressBook, subscribeAssetLogoMaps, subscribeAssetRegistry, subscribeAssetSettings, subscribeAuthorizeRequests, subscribeAuthUrls, subscribeBalance, subscribeBuyServices, subscribeBuyTokens, subscribeChainInfoMap, subscribeChainLogoMaps, subscribeChainStateMap, subscribeChainStatusMap, subscribeConfirmationRequests, subscribeConnectWCRequests, subscribeKeyringState, subscribeMetadataRequests, subscribeMultiChainAssetMap, subscribePrice, subscribeProcessingCampaign, subscribeSigningRequests, subscribeTransactionRequests, subscribeTxHistory, subscribeUiSettings, subscribeWalletConnectSessions, subscribeWCNotSupportRequests, subscribeXcmRefMap } from '@subwallet/extension-koni-ui/stores/utils';
 import Bowser from 'bowser';
 import React from 'react';
 import { Provider } from 'react-redux';
@@ -186,56 +185,6 @@ export const DataContext = React.createContext(_DataContext);
 export const DataContextProvider = ({ children }: DataContextProviderProps) => {
   // Init basic data
   initBasicData();
-
-  // Init subscription
-  // Common
-  _DataContext.addHandler({ ...subscribeAccountsData, name: 'subscribeAccountsData', relatedStores: ['accountState'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeKeyringState, name: 'subscribeCurrentAccount', relatedStores: ['accountState'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeAddressBook, name: 'subscribeAddressBook', relatedStores: ['accountState'], isStartImmediately: true });
-
-  _DataContext.addHandler({ ...subscribeChainStateMap, name: 'subscribeChainStateMap', relatedStores: ['chainStore'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeChainStatusMap, name: 'subscribeChainStatusMap', relatedStores: ['chainStore'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeChainInfoMap, name: 'subscribeChainInfoMap', relatedStores: ['chainStore'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeAssetRegistry, name: 'subscribeAssetRegistry', relatedStores: ['assetRegistry'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeMultiChainAssetMap, name: 'subscribeMultiChainAssetMap', relatedStores: ['assetRegistry'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeAssetSettings, name: 'subscribeAssetSettings', relatedStores: ['assetRegistry'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeXcmRefMap, name: 'subscribeXcmRefMap', relatedStores: ['assetRegistry'], isStartImmediately: true });
-
-  // _DataContext.addHandler({ ...subscribeMantaPayConfig, name: 'subscribeMantaPayConfig', relatedStores: ['mantaPay'], isStartImmediately: true });
-  // _DataContext.addHandler({ ...subscribeMantaPaySyncingState, name: 'subscribeMantaPaySyncingState', relatedStores: ['mantaPay'], isStartImmediately: true });
-
-  _DataContext.addHandler({ ...subscribeProcessingCampaign, name: 'subscribeProcessingCampaign', relatedStores: ['campaign'], isStartImmediately: true });
-
-  _DataContext.addHandler({ ...subscribeBuyTokens, name: 'subscribeBuyTokens', relatedStores: ['buyService'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeBuyServices, name: 'subscribeBuyServices', relatedStores: ['buyService'], isStartImmediately: true });
-
-  // Settings
-  _DataContext.addHandler({ ...subscribeUiSettings, name: 'subscribeUiSettings', relatedStores: ['settings'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeChainLogoMaps, name: 'subscribeChainLogoMaps', relatedStores: ['settings'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeAssetLogoMaps, name: 'subscribeAssetLogoMaps', relatedStores: ['settings'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeAuthUrls, name: 'subscribeAuthUrls', relatedStores: ['settings'], isStartImmediately: true });
-
-  // Confirmations
-  _DataContext.addHandler({ ...subscribeAuthorizeRequests, name: 'subscribeAuthorizeRequests', relatedStores: ['requestState'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeMetadataRequests, name: 'subscribeMetadataRequests', relatedStores: ['requestState'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeSigningRequests, name: 'subscribeSigningRequests', relatedStores: ['requestState'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeConfirmationRequests, name: 'subscribeConfirmationRequests', relatedStores: ['requestState'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeTransactionRequests, name: 'subscribeTransactionRequests', relatedStores: ['requestState'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeConnectWCRequests, name: 'subscribeConnectWCRequests', relatedStores: ['requestState'], isStartImmediately: true });
-  _DataContext.addHandler({ ...subscribeWCNotSupportRequests, name: 'subscribeWCNotSupportRequests', relatedStores: ['requestState'], isStartImmediately: true });
-
-  // Features
-  _DataContext.addHandler({ ...subscribePrice, name: 'subscribePrice', relatedStores: ['price'] });
-  _DataContext.addHandler({ ...subscribeBalance, name: 'subscribeBalance', relatedStores: ['balance'], isStartImmediately: true });
-  // _DataContext.addHandler({ ...subscribeNftItems, name: 'subscribeNftItems', relatedStores: ['nft'] });
-  // _DataContext.addHandler({ ...subscribeNftCollections, name: 'subscribeNftCollections', relatedStores: ['nft'] });
-  // _DataContext.addHandler({ ...subscribeStaking, name: 'subscribeStaking', relatedStores: ['staking'] });
-  // _DataContext.addHandler({ ...subscribeStakingReward, name: 'subscribeStakingReward', relatedStores: ['staking'] });
-  // _DataContext.addHandler({ ...subscribeChainStakingMetadata, name: 'subscribeChainStakingMetadata', relatedStores: ['staking'] });
-  // _DataContext.addHandler({ ...subscribeStakingNominatorMetadata, name: 'subscribeStakingNominatorMetadata', relatedStores: ['staking'] });
-  _DataContext.addHandler({ ...subscribeTxHistory, name: 'subscribeTxHistory', relatedStores: ['transactionHistory'] });
-  _DataContext.addHandler({ ...subscribeWalletConnectSessions, name: 'subscribeWalletConnectSessions', relatedStores: ['walletConnect'] });
-  // _DataContext.addHandler({ ...getMissionPoolData, name: 'getMissionPoolData', relatedStores: ['missionPool'], isStartImmediately: true });
 
   return <Provider store={store}>
     <PersistGate persistor={persistor}>

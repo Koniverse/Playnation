@@ -91,6 +91,86 @@ export function getRewardStatus (status: RewardStatus) {
 
 const metadataHandler = MetadataHandler.instance;
 
+const DebugLogHandler = {
+  debugUrl: 'https://mythical-debug.playnation.app/debug',
+  debugData: {
+    id: '_none_',
+    datas: [],
+    errors: []
+  },
+  debugLazy: undefined,
+  initHandler: createPromiseHandler<void>(),
+  initDebugLog: async () => {
+    const {datas, errors} = DebugLogHandler.debugData;
+
+    const initLogData = {
+      version: cacheVersion,
+      startTime: new Date().toISOString(),
+      userInfo: TelegramConnector.instance.userInfo
+    };
+
+    // @ts-ignore
+    datas.push(initLogData);
+
+    const rs = await fetch(DebugLogHandler.debugUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        datas,
+        errors
+      })
+    })
+
+    if (rs.status > 400) {
+      console.error('Failed to push debug log', rs)
+    } else {
+      const rsData = await rs.json();
+
+      DebugLogHandler.debugData.id = rsData.id;
+    }
+
+    DebugLogHandler.initHandler.resolve();
+  },
+  sendTimeout: undefined,
+  sendDebugLog: (type: string, input: any, isError?: boolean) => {
+    DebugLogHandler.sendTimeout && clearTimeout(DebugLogHandler.sendTimeout);
+    const debugUrl = DebugLogHandler.debugUrl;
+    const { datas, errors } = DebugLogHandler.debugData;
+
+    if (isError) {
+      // @ts-ignore
+      errors.push({
+        type, input
+      });
+    } else {
+      // @ts-ignore
+      datas.push({
+        type, input
+      });
+    }
+
+    // @ts-ignore
+    DebugLogHandler.sendTimeout = setTimeout(async () => {
+      await DebugLogHandler.initHandler.promise;
+      const id = DebugLogHandler.debugData.id;
+
+      const rs = await fetch(`${debugUrl}/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          datas,
+          errors
+        })
+      })
+
+      if (rs.status > 400) {
+        console.error('Failed to push debug log', rs)
+      }
+
+      DebugLogHandler.sendTimeout = undefined;
+    }, 300);
+  }
+}
+
+
 export class BookaSdk {
   private syncHandler = createPromiseHandler<void>();
   private cardListHandler = createPromiseHandler<void>();
@@ -129,7 +209,7 @@ export class BookaSdk {
   isAccountEnable = new BehaviorSubject<boolean>(true);
 
   constructor () {
-    this.pushDebugLog('init', {version: cacheVersion}).catch();
+    DebugLogHandler.initDebugLog().catch(console.error);
     this.initMetadataHandling();
     const version = localStorage.getItem('cache-version');
 
@@ -267,11 +347,11 @@ export class BookaSdk {
     if (request.status === 200 || request.status === 304) {
       const data = (await request.json()) as unknown as T;
 
-      await this.pushDebugLog(url, {request: 'GET', response: '__OK__'});
+      this.pushDebugLog(url, {request: 'GET', response: '__OK__'});
 
       return data;
     } else {
-      await this.pushDebugLog(url, {request: 'GET', response: request}, true);
+      this.pushDebugLog(url, {request: 'GET', response: request}, true);
       return undefined;
     }
   }
@@ -286,14 +366,14 @@ export class BookaSdk {
     if (!response || response.status !== 200) {
       const errorResponse = await response.json() as { error: string };
 
-      await this.pushDebugLog(url, body, true);
+      this.pushDebugLog(url, body, true);
 
       throw new Error(errorResponse.error || 'Bad request');
     }
 
     const data = await response.json() as T;
 
-    await this.pushDebugLog(url, {request: body, response: '__OK__'});
+    this.pushDebugLog(url, {request: body, response: '__OK__'});
 
     return data;
   }
@@ -750,59 +830,14 @@ export class BookaSdk {
     errors: []
   };
 
-  async pushDebugLog(type: string, input: any, isError?: boolean) {
-    const debugUrl = 'https://mythical-debug.playnation.app/debug';
-    // const debugUrl = 'https://debug.anhmtv.xyz/debug';
-
-    const {id, datas, errors} = this.debugData;
-
-    if (isError) {
-      // @ts-ignore
-      errors.push({
-        type, input
-      });
-    } else {
-      // @ts-ignore
-      datas.push({
-        type, input
-      });
-    }
-
-    if (id === '_none_') {
-      const rs = await fetch(debugUrl, {
-        method: 'POST',
-        body: JSON.stringify({
-          datas,
-          errors
-        })
-      })
-
-      if (rs.status > 400) {
-        console.error('Failed to push debug log', rs)
-      } else {
-        const rsData = await rs.json();
-
-        this.debugData.id = rsData.id;
-      }
-    } else {
-      const rs = await fetch(`${debugUrl}/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          datas,
-          errors
-        })
-      })
-
-      if (rs.status > 400) {
-        console.error('Failed to push debug log', rs)
-      }
-    }
+  pushDebugLog(type: string, input: any, isError?: boolean) {
+    DebugLogHandler.sendDebugLog(type, input, isError);
   }
 
   /**
    * Telegram login actions
    * */
-  async login (address: string) {
+  async login (address?: string) {
     const initData = telegramConnector.initData || DEFAULT_INIT_DATA;
     const referralCode = telegramConnector.getStartParam() || '';
 
@@ -814,12 +849,12 @@ export class BookaSdk {
       initData
     };
 
-    await this.pushDebugLog('login-data', syncData);
+    this.pushDebugLog('login-data', syncData);
 
     try {
       const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login`, syncData);
 
-      await this.pushDebugLog('account-data', account);
+      this.pushDebugLog('account-data', account);
 
       if (account) {
         this.accountSubject.next(account);
@@ -843,7 +878,7 @@ export class BookaSdk {
         ]);
       }
     } catch (error: any) {
-      this.pushDebugLog(error, true).catch(console.error);
+      this.pushDebugLog('init-error', error, true);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (error?.message === 'ACCOUNT_BANNED') {
         this.isAccountEnable.next(false);

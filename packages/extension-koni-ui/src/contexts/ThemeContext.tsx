@@ -5,12 +5,11 @@ import type { ThemeProps } from '../types';
 
 import { ThemeNames } from '@subwallet/extension-base/background/KoniTypes';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import applyPreloadStyle from '@subwallet/extension-koni-ui/preloadStyle';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { generateTheme, getDefaultLogoMap, SW_THEME_CONFIGS, SwThemeConfig } from '@subwallet/extension-koni-ui/themes';
 import { ConfigProvider, theme as reactUiTheme } from '@subwallet/react-ui';
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled, { createGlobalStyle, ThemeProvider as StyledComponentThemeProvider } from 'styled-components';
 
@@ -652,7 +651,6 @@ const TooltipContainer = styled.div({
 });
 
 export function ThemeProvider ({ children }: ThemeProviderProps): React.ReactElement<ThemeProviderProps> {
-  const dataContext = useContext(DataContext);
   const logoMaps = useSelector((state: RootState) => state.settings.logoMaps);
   const [themeReady, setThemeReady] = useState(false);
   const themeName = useSelector((state: RootState) => state.settings.theme);
@@ -671,10 +669,8 @@ export function ThemeProvider ({ children }: ThemeProviderProps): React.ReactEle
   }, [logoMaps.assetLogoMap, logoMaps.chainLogoMap, themeName]);
 
   useEffect(() => {
-    dataContext.awaitStores(['settings']).then(() => {
-      setThemeReady(true);
-    }).catch(console.error);
-  }, [dataContext]);
+    setThemeReady(true);
+  }, []);
 
   // Reduce number of re-rendering
   if (!themeReady) {
