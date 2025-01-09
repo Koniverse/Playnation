@@ -4,7 +4,7 @@
 import { CallToAction, InfoIcon, MainScreenHeader, TimeRemaining } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { LeaderboardGroups, LeaderboardInfo, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { LINK_NFL_APP_DOWNLOAD } from '@subwallet/extension-koni-ui/constants';
+import { LINK_NFL_APP_DOWNLOAD, TAC_READ_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useServerTime, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { GameAccountListArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/GameAccountListArea';
@@ -17,6 +17,7 @@ import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
+import { useLocalStorage } from 'usehooks-ts';
 
 type Props = ThemeProps;
 
@@ -33,6 +34,62 @@ const Component = ({ className }: Props): React.ReactElement => {
   const [leaderboardInfo, setLeaderboardInfo] = useState<LeaderboardInfo | undefined>(undefined);
   const { activeModal, inactiveModal } = useContext(ModalContext);
   const { serverTime } = useServerTime();
+  const [isTacRead, setIsTacRead] = useLocalStorage(TAC_READ_FLAG, false);
+
+  const openTermAndConditionModal = useCallback(() => {
+    activeModal(TERM_AND_CONDITION_MODAL_ID);
+  }, [activeModal]);
+
+  const closeTermAndConditionModal = useCallback(() => {
+    inactiveModal(TERM_AND_CONDITION_MODAL_ID);
+    setIsTacRead(true);
+  }, [inactiveModal, setIsTacRead]);
+
+  const openAppStoreLink = useCallback(() => {
+    openInNewTab(LINK_NFL_APP_DOWNLOAD)();
+  }, []);
+
+  const shouldShowInfoButton = useMemo(() => {
+    const leaderboard = leaderboardInfo?.metadata as LeaderboardMetadata | undefined;
+
+    return !!(leaderboard && 'title' in leaderboard && 'content' in leaderboard);
+  }, [leaderboardInfo]);
+
+  const timeRemainingDateTime = useMemo(() => {
+    if (!leaderboardInfo?.endTimeTs || !serverTime) {
+      return undefined;
+    }
+
+    const delayStartTime = leaderboardInfo?.endTimeTs;
+    const delayEndTime = delayStartTime + Number(leaderboardInfo.specialTimeDelayDuration) * 86400000;
+
+    const targetTime = serverTime > delayStartTime && serverTime < delayEndTime
+      ? delayEndTime
+      : delayStartTime;
+
+    return getTimeRemaining(serverTime, new Date(targetTime).toString());
+  }, [leaderboardInfo?.endTimeTs, leaderboardInfo?.specialTimeDelayDuration, serverTime]);
+
+  const shouldShowToken = useMemo(() => {
+    if (!leaderboardInfo?.endTimeTs || !serverTime) {
+      return false;
+    }
+
+    const delayStartTime = leaderboardInfo?.endTimeTs;
+    const delayEndTime = delayStartTime + Number(leaderboardInfo.specialTimeDelayDuration) * 86400000;
+
+    return serverTime > delayStartTime && serverTime < delayEndTime;
+  }, [leaderboardInfo?.endTimeTs, leaderboardInfo?.specialTimeDelayDuration, serverTime]);
+
+  const timeRemainingTitle = useMemo(() => {
+    if (!leaderboardInfo?.endTimeTs || !serverTime) {
+      return undefined;
+    }
+
+    return serverTime > leaderboardInfo.endTimeTs
+      ? t('New leaderboard in')
+      : t('Time remaining');
+  }, [leaderboardInfo?.endTimeTs, serverTime, t]);
 
   useEffect(() => {
     const subscriptionLeaderboard = apiSDK.subscribeLeaderboardConfig().subscribe((data) => {
@@ -101,59 +158,19 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [setContainerClass]);
 
-  const openTermAndConditionModal = useCallback(() => {
-    activeModal(TERM_AND_CONDITION_MODAL_ID);
-  }, [activeModal]);
+  const isTacContentReady = !!leaderboardInfo?.metadata;
 
-  const closeTermAndConditionModal = useCallback(() => {
-    inactiveModal(TERM_AND_CONDITION_MODAL_ID);
-  }, [inactiveModal]);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!isTacRead && isTacContentReady) {
+        activeModal(TERM_AND_CONDITION_MODAL_ID);
+      }
+    }, 500);
 
-  const openAppStoreLink = useCallback(() => {
-    openInNewTab(LINK_NFL_APP_DOWNLOAD)();
-  }, []);
-
-  const shouldShowInfoButton = useMemo(() => {
-    const leaderboard = leaderboardInfo?.metadata as LeaderboardMetadata | undefined;
-
-    return !!(leaderboard && 'title' in leaderboard && 'content' in leaderboard);
-  }, [leaderboardInfo]);
-
-  const timeRemainingDateTime = useMemo(() => {
-    if (!leaderboardInfo?.endTimeTs || !serverTime) {
-      return undefined;
-    }
-
-    const delayStartTime = leaderboardInfo?.endTimeTs;
-    const delayEndTime = delayStartTime + Number(leaderboardInfo.specialTimeDelayDuration) * 86400000;
-
-    const targetTime = serverTime > delayStartTime && serverTime < delayEndTime
-      ? delayEndTime
-      : delayStartTime;
-
-    return getTimeRemaining(serverTime, new Date(targetTime).toString());
-  }, [leaderboardInfo?.endTimeTs, leaderboardInfo?.specialTimeDelayDuration, serverTime]);
-
-  const shouldShowToken = useMemo(() => {
-    if (!leaderboardInfo?.endTimeTs || !serverTime) {
-      return false;
-    }
-
-    const delayStartTime = leaderboardInfo?.endTimeTs;
-    const delayEndTime = delayStartTime + Number(leaderboardInfo.specialTimeDelayDuration) * 86400000;
-
-    return serverTime > delayStartTime && serverTime < delayEndTime;
-  }, [leaderboardInfo?.endTimeTs, leaderboardInfo?.specialTimeDelayDuration, serverTime]);
-
-  const timeRemainingTitle = useMemo(() => {
-    if (!leaderboardInfo?.endTimeTs || !serverTime) {
-      return undefined;
-    }
-
-    return serverTime > leaderboardInfo.endTimeTs
-      ? t('New leaderboard in')
-      : t('Time remaining');
-  }, [leaderboardInfo?.endTimeTs, serverTime, t]);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [activeModal, isTacContentReady, isTacRead]);
 
   return (
     <div className={className}>
@@ -172,13 +189,12 @@ const Component = ({ className }: Props): React.ReactElement => {
         title={currentLeaderboardInfo?.name || t('Leaderboard')}
       />
 
-      {
-        <div className='time-remaining-wrapper'>
-          <TimeRemaining
-            specialTimeRemaining={timeRemainingDateTime}
-            specialTimeTitle={timeRemainingTitle}
-          />
-        </div>}
+      <div className='time-remaining-wrapper'>
+        <TimeRemaining
+          specialTimeRemaining={timeRemainingDateTime}
+          specialTimeTitle={timeRemainingTitle}
+        />
+      </div>
 
       <div className='scroll-container'>
         <TopThreeArea
