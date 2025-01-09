@@ -9,6 +9,7 @@ import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
+import { sendEventGA } from '@subwallet/extension-koni-ui/utils/googleAnalytics';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -35,6 +36,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [linkMythAccount]);
 
   const openAppStoreLink = useCallback(() => {
+    sendEventGA('nfl-rivals-download-link-click');
     openInNewTab(LINK_NFL_APP_DOWNLOAD)();
   }, []);
 

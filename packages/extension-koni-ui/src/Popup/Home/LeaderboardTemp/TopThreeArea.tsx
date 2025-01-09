@@ -11,6 +11,7 @@ import styled from 'styled-components';
 type Props = ThemeProps & {
   leaderboardPersonItems: LeaderboardPerson[];
   isLoading: boolean;
+  shouldShowToken?: boolean;
 };
 
 function getTopAccountItem (gameAccountItem: LeaderboardPerson | undefined, rank: number): TopAccountItemType {
@@ -32,7 +33,7 @@ function getTopAccountItem (gameAccountItem: LeaderboardPerson | undefined, rank
   };
 }
 
-const Component = ({ className, isLoading, leaderboardPersonItems }: Props): React.ReactElement => {
+const Component = ({ className, isLoading, leaderboardPersonItems, shouldShowToken }: Props): React.ReactElement => {
   return (
     <div
       className={className}
@@ -42,6 +43,7 @@ const Component = ({ className, isLoading, leaderboardPersonItems }: Props): Rea
           <TopAccountItem
             {...getTopAccountItem(leaderboardPersonItems[1], 2)}
             isLoading={isLoading}
+            shouldShowToken={shouldShowToken}
           />
         }
       </div>
@@ -50,6 +52,7 @@ const Component = ({ className, isLoading, leaderboardPersonItems }: Props): Rea
           <TopAccountItem
             {...getTopAccountItem(leaderboardPersonItems[0], 1)}
             isLoading={isLoading}
+            shouldShowToken={shouldShowToken}
           />
         }
       </div>
@@ -58,6 +61,7 @@ const Component = ({ className, isLoading, leaderboardPersonItems }: Props): Rea
           <TopAccountItem
             {...getTopAccountItem(leaderboardPersonItems[2], 3)}
             isLoading={isLoading}
+            shouldShowToken={shouldShowToken}
           />
         }
       </div>

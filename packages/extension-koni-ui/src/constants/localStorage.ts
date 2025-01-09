@@ -36,3 +36,4 @@ export const LATEST_SESSION = 'general.latest-session';
 export const UPGRADE_FIREFOX_VERSION = 'general.updated-version-firefox';
 export const VISIT_INVITATION_SCREEN_FLAG = 'general.visit-invitation-screen-flag';
 export const VISIT_LOGIN_CTA_FLAG = 'general.visit-login-cta-flag';
+export const TAC_READ_FLAG = 'general.tac-read-flag';
