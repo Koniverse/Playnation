@@ -10,6 +10,7 @@ import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
+import { sendEventGA } from '@subwallet/extension-koni-ui/utils/googleAnalytics';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -35,6 +36,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [currentAccount?.address, linkMythAccount]);
 
   const openAppStoreLink = useCallback(() => {
+    sendEventGA('nfl-rivals-download-link-click');
     openInNewTab(LINK_NFL_APP_DOWNLOAD)();
   }, []);
 

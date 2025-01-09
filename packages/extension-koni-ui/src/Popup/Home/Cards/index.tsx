@@ -7,6 +7,7 @@ import { NFLRivalCard } from '@subwallet/extension-koni-ui/connector/booka/types
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
+import { sendEventGA } from '@subwallet/extension-koni-ui/utils/googleAnalytics';
 import { ModalContext } from '@subwallet/react-ui';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -92,6 +93,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [setContainerClass]);
 
   const handleOpenMarket = useCallback(() => {
+    sendEventGA('mythical-marketplace-link-click');
     openInNewTab(NFL_RIVALS_MARKET_LINK)();
   }, []);
 

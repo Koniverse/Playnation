@@ -11,6 +11,7 @@ import { LINK_NFL_APP_DOWNLOAD } from '@subwallet/extension-koni-ui/constants';
 import { useDefaultNavigate, useNotification, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, openInNewTab } from '@subwallet/extension-koni-ui/utils';
+import { sendEventGA } from '@subwallet/extension-koni-ui/utils/googleAnalytics';
 import CN from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
@@ -57,6 +58,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [inviteURL]);
 
   const openAppStoreLink = useCallback(() => {
+    sendEventGA('nfl-rivals-download-link-click');
     openInNewTab(LINK_NFL_APP_DOWNLOAD)();
   }, []);
 
