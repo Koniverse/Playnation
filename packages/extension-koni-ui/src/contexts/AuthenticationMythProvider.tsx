@@ -83,7 +83,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
 
   const onLoginWithMythAccount = useCallback(() => {
     localStorage.setItem(LOCAL_LOGGED_IN_PROMISE_KEY, 'login');
-    sendEventGA('ink-mythical-account');
+    sendEventGA('link-mythical-account');
     authContext.logIn();
   }, [authContext]);
 
