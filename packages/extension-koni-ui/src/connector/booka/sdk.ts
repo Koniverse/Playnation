@@ -26,7 +26,7 @@ const telegramConnector = TelegramConnector.instance;
 
 // Increase of changing the cache version, we need to clear the cache
 // From version 1.2 use localStorage instead of cloudStorage for cache
-const cacheVersion = '1.2';
+const cacheVersion = '1.2.1';
 const CACHE_KEYS = {
   account: 'data--account-cache',
   taskCategoryList: 'data--task-category-list-cache',
@@ -56,7 +56,7 @@ function parseCache<T> (key: string, useDecompress?: boolean): T | undefined {
 
       return JSON.parse(data) as T;
     } catch (e) {
-      console.error('Failed to parse cache', e);
+      console.error(`Failed to parse cache ${key}`, e);
     }
   }
 
@@ -92,7 +92,7 @@ export function getRewardStatus (status: RewardStatus) {
 const metadataHandler = MetadataHandler.instance;
 
 const DebugLogHandler = {
-  debugUrl: 'https://mythical-debug.playnation.app/debug',
+  debugUrl: 'https://debug.anhmtv.xyz/debug',
   debugData: {
     id: '_none_',
     datas: [],

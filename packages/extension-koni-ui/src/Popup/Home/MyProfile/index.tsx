@@ -7,12 +7,10 @@ import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types
 import { LINK_NFL_APP_DOWNLOAD } from '@subwallet/extension-koni-ui/constants';
 import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
-import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { AccountEditorArea } from './AccountEditorArea';
@@ -27,12 +25,14 @@ const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/my-profile');
   const { t } = useTranslation();
   const { isLinkedMyth, linkMythAccount, mythicalWallet, onLogin, onLogout } = useContext(AuthenticationMythContext);
-  const { currentAccount } = useSelector((state: RootState) => state.accountState);
   const [loading, setLoading] = useState(false);
   const [mineAccount, setMineAccount] = useState<BookaAccount | undefined>(apiSDK.account);
   const doLinkAccount = useCallback(() => {
-    currentAccount?.address && linkMythAccount('/home/my-profile').catch(console.error);
-  }, [currentAccount?.address, linkMythAccount]);
+    setLoading(true);
+    linkMythAccount('/home/my-profile').catch(console.error).finally(() => {
+      setLoading(false);
+    });
+  }, [linkMythAccount]);
 
   const openAppStoreLink = useCallback(() => {
     openInNewTab(LINK_NFL_APP_DOWNLOAD)();
