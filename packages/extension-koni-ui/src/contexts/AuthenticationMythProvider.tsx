@@ -70,7 +70,8 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     bookaSDK.pushDebugLog('fetch_data_with_token', { token: authContext?.token?.length });
     bookaSDK.fetchNFLRivalCardList(authContext.token).catch(console.error);
     bookaSDK.fetchMythicalBalance(authContext.token).catch(console.error);
-  }, [authContext, authContext.token]);
+
+  }, [authContext.token]);
 
   useEffect(() => {
     bookaSDK.pushDebugLog('init-authentication-myth', mythicalWallet);

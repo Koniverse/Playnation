@@ -567,6 +567,7 @@ export class BookaSdk {
   }
 
   async fetchMythicalBalance (token?: string) {
+    await this.waitForSync;
     try {
       const rs = await this.postRequest<MythicalWallet>(`${GAME_API_HOST}/api/mythical-account/fetch`, { token: token });
 
