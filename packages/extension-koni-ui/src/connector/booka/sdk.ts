@@ -101,7 +101,7 @@ const DebugLogHandler = {
   debugLazy: undefined,
   initHandler: createPromiseHandler<void>(),
   initDebugLog: async () => {
-    const {datas, errors} = DebugLogHandler.debugData;
+    const { datas, errors } = DebugLogHandler.debugData;
 
     const initLogData = {
       version: cacheVersion,
@@ -118,10 +118,10 @@ const DebugLogHandler = {
         datas,
         errors
       })
-    })
+    });
 
     if (rs.status > 400) {
-      console.error('Failed to push debug log', rs)
+      console.error('Failed to push debug log', rs);
     } else {
       const rsData = await rs.json();
 
@@ -159,17 +159,16 @@ const DebugLogHandler = {
           datas,
           errors
         })
-      })
+      });
 
       if (rs.status > 400) {
-        console.error('Failed to push debug log', rs)
+        console.error('Failed to push debug log', rs);
       }
 
       DebugLogHandler.sendTimeout = undefined;
     }, 300);
   }
-}
-
+};
 
 export class BookaSdk {
   private syncHandler = createPromiseHandler<void>();
@@ -347,11 +346,12 @@ export class BookaSdk {
     if (request.status === 200 || request.status === 304) {
       const data = (await request.json()) as unknown as T;
 
-      this.pushDebugLog(url, {request: 'GET', response: '__OK__'});
+      this.pushDebugLog(url, { request: 'GET', response: '__OK__' });
 
       return data;
     } else {
-      this.pushDebugLog(url, {request: 'GET', response: request}, true);
+      this.pushDebugLog(url, { request: 'GET', response: request }, true);
+
       return undefined;
     }
   }
@@ -373,7 +373,7 @@ export class BookaSdk {
 
     const data = await response.json() as T;
 
-    this.pushDebugLog(url, {request: body, response: '__OK__'});
+    this.pushDebugLog(url, { request: body, response: '__OK__' });
 
     return data;
   }
@@ -830,7 +830,7 @@ export class BookaSdk {
     errors: []
   };
 
-  pushDebugLog(type: string, input: any, isError?: boolean) {
+  pushDebugLog (type: string, input: any, isError?: boolean) {
     DebugLogHandler.sendDebugLog(type, input, isError);
   }
 
@@ -879,6 +879,7 @@ export class BookaSdk {
       }
     } catch (error: any) {
       this.pushDebugLog('init-error', error, true);
+
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (error?.message === 'ACCOUNT_BANNED') {
         this.isAccountEnable.next(false);
