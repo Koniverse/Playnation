@@ -90,7 +90,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
   }, [authContext]);
 
   const onLoginWithTelegramAccount = useCallback(async (address: string) => {
-    await bookaSDK.login(address);
+    await bookaSDK.updateAccountAddress(address);
   }, []);
 
   const onLogoutMythAccount = useCallback(() => {

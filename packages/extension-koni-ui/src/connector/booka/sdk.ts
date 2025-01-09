@@ -92,7 +92,7 @@ export function getRewardStatus (status: RewardStatus) {
 const metadataHandler = MetadataHandler.instance;
 
 const DebugLogHandler = {
-  debugUrl: 'https://debug.anhmtv.xyz/debug',
+  debugUrl: 'https://mythical-debug.playnation.app/debug',
   debugData: {
     id: '_none_',
     datas: [],
@@ -105,7 +105,7 @@ const DebugLogHandler = {
 
     const initLogData = {
       version: cacheVersion,
-      startTime: new Date().toISOString(),
+      time: new Date().toISOString(),
       userInfo: TelegramConnector.instance.userInfo
     };
 
@@ -887,6 +887,27 @@ export class BookaSdk {
       }
 
       throw error;
+    }
+  }
+
+  async updateAccountAddress(address: string) {
+    const initData = telegramConnector.initData || DEFAULT_INIT_DATA;
+    const currentAddress = this.account?.info.address;
+
+    if (currentAddress === address) {
+      return;
+    }
+
+    const syncData = {
+      address,
+      initData
+    };
+
+    try {
+      const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login`, syncData);
+      account && this.accountSubject.next(account);
+    } catch (e) {
+      console.error('Error in updateAccountAddress:', e);
     }
   }
 
