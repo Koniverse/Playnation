@@ -8,6 +8,7 @@ import { AccountPublicInfo, MythicalWallet } from '@subwallet/extension-koni-ui/
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { AUTHENTICATE_LINKING_BOT, AUTHENTICATE_LINKING_SERVICE, AUTHENTICATE_LINKING_TOKEN, AUTHENTICATE_LINKING_URL } from '@subwallet/extension-koni-ui/constants';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
+import { sendEventGA } from '@subwallet/extension-koni-ui/utils/googleAnalytics';
 import React, { createContext, ReactElement, useCallback, useContext, useEffect, useState } from 'react';
 import { AuthContext } from 'react-oauth2-code-pkce';
 import { useSelector } from 'react-redux';
@@ -82,6 +83,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
 
   const onLoginWithMythAccount = useCallback(() => {
     localStorage.setItem(LOCAL_LOGGED_IN_PROMISE_KEY, 'login');
+    sendEventGA('link-mythical-account');
     authContext.logIn();
   }, [authContext]);
 

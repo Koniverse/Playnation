@@ -12,6 +12,7 @@ import { LeaderboardMetadata, TERM_AND_CONDITION_MODAL_ID, TermAndConditionModal
 import { TopThreeArea } from '@subwallet/extension-koni-ui/Popup/Home/LeaderboardTemp/TopThreeArea';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { getTimeRemaining, openInNewTab } from '@subwallet/extension-koni-ui/utils';
+import { sendEventGA } from '@subwallet/extension-koni-ui/utils/googleAnalytics';
 import { ModalContext, Skeleton } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -46,6 +47,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, [inactiveModal, setIsTacRead]);
 
   const openAppStoreLink = useCallback(() => {
+    sendEventGA('nfl-rivals-download-link-click');
     openInNewTab(LINK_NFL_APP_DOWNLOAD)();
   }, []);
 
@@ -158,7 +160,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     };
   }, [setContainerClass]);
 
-  const isTacContentReady = !!leaderboardInfo?.metadata;
+  const isTacContentReady = shouldShowInfoButton;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
