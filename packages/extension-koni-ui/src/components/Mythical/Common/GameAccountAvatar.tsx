@@ -19,6 +19,10 @@ function Component ({ avatarSrc, className, isPlaceholder, partNode }: Props) {
       return '/images/games/default-avatar.png';
     }
 
+    if (avatarSrc.startsWith('http')) {
+      return avatarSrc;
+    }
+
     return `${GAME_API_HOST}/${avatarSrc}`;
   })();
 
