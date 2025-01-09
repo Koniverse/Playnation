@@ -67,7 +67,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     //   authContext.logIn();
     // }
 
-    bookaSDK.pushDebugLog('fetch_data_with_token', {'token': authContext?.token?.length});
+    bookaSDK.pushDebugLog('fetch_data_with_token', { token: authContext?.token?.length });
     bookaSDK.fetchNFLRivalCardList(authContext.token).catch(console.error);
     bookaSDK.fetchMythicalBalance(authContext.token).catch(console.error);
   }, [authContext, authContext.token]);

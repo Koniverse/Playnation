@@ -1,36 +1,23 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {Logo2D} from '@subwallet/extension-koni-ui/components/Logo';
-import {
-  AUTHENTICATE_LOGOUT_REDIRECT,
-  AUTHENTICATE_REDIRECT_URI,
-  AUTHORIZATION_ENDPOINT,
-  CLIENT_ID,
-  LOGOUT_ENDPOINT,
-  TOKEN_ENDPOINT
-} from '@subwallet/extension-koni-ui/constants';
-import {
-  AuthenticationMythProvider,
-  LOCAL_LOGGED_IN_PROMISE_KEY,
-  LOCAL_NAVIGATE_AFTER_LOGIN_KEY
-} from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
-import {SecurityContextProvider} from '@subwallet/extension-koni-ui/contexts/SecurityContext';
-import {
-  usePredefinedModal,
-  WalletModalContextProvider
-} from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
-import {useSubscribeLanguage} from '@subwallet/extension-koni-ui/hooks';
+import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
+import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT } from '@subwallet/extension-koni-ui/constants';
+import { AuthenticationMythProvider, LOCAL_LOGGED_IN_PROMISE_KEY, LOCAL_NAVIGATE_AFTER_LOGIN_KEY } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
+import { SecurityContextProvider } from '@subwallet/extension-koni-ui/contexts/SecurityContext';
+import { WalletModalContextProvider } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
+import { useSubscribeLanguage } from '@subwallet/extension-koni-ui/hooks';
 import useNotification from '@subwallet/extension-koni-ui/hooks/common/useNotification';
-import {subscribeNotifications} from '@subwallet/extension-koni-ui/messaging';
-import {ThemeProps} from '@subwallet/extension-koni-ui/types';
-import {changeHeaderLogo} from '@subwallet/react-ui';
-import {NotificationProps} from '@subwallet/react-ui/es/notification/NotificationProvider';
+import { subscribeNotifications } from '@subwallet/extension-koni-ui/messaging';
+import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { changeHeaderLogo } from '@subwallet/react-ui';
+import { NotificationProps } from '@subwallet/react-ui/es/notification/NotificationProvider';
 import CN from 'classnames';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {AuthProvider, TAuthConfig, TRefreshTokenExpiredEvent} from 'react-oauth2-code-pkce';
-import {Navigate, Outlet, useLocation} from 'react-router-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { AuthProvider, TAuthConfig, TRefreshTokenExpiredEvent } from 'react-oauth2-code-pkce';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+
 import { BookaSdk } from '../connector/booka/sdk';
 
 changeHeaderLogo(<Logo2D />);
@@ -42,7 +29,6 @@ export const RouteState = {
 
 const eventsUrl = '/home/events';
 const myProfileUrl = '/home/my-profile';
-
 
 export const MainWrapper = styled('div')<ThemeProps>(({ theme: { token } }: ThemeProps) => ({
   display: 'flex',
@@ -83,13 +69,12 @@ function removeLoadingPlaceholder (animation: boolean): void {
 
 function DefaultRoute ({ children }: { children: React.ReactNode }): React.ReactElement {
   const location = useLocation();
-  const { isOpenPModal, openPModal } = usePredefinedModal();
   const notify = useNotification();
   const [rootLoading, setRootLoading] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
   const firstRender = useRef(true);
-  useSubscribeLanguage();
 
+  useSubscribeLanguage();
 
   useEffect(() => {
     BookaSdk.instance.login().catch(console.error).finally(() => {
@@ -175,7 +160,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     } else {
       return null;
     }
-  }, [location.pathname, dataLoaded, isOpenPModal, openPModal]);
+  }, [location.pathname, dataLoaded]);
 
   if (rootLoading || redirectPath) {
     return <>{redirectPath && <Navigate to={redirectPath} />}</>;
