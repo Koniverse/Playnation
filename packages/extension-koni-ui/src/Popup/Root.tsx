@@ -2,7 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
-import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT } from '@subwallet/extension-koni-ui/constants';
+import {
+  AUTHENTICATE_LOGOUT_REDIRECT,
+  AUTHENTICATE_REDIRECT_URI,
+  AUTHORIZATION_ENDPOINT,
+  CLIENT_ID,
+  LOGOUT_ENDPOINT,
+  TOKEN_ENDPOINT,
+  VISIT_LOGIN_CTA_FLAG
+} from '@subwallet/extension-koni-ui/constants';
 import { AuthenticationMythProvider, LOCAL_LOGGED_IN_PROMISE_KEY, LOCAL_NAVIGATE_AFTER_LOGIN_KEY } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { SecurityContextProvider } from '@subwallet/extension-koni-ui/contexts/SecurityContext';
 import { WalletModalContextProvider } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
@@ -19,6 +27,8 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { BookaSdk } from '../connector/booka/sdk';
+import {useLocalStorage} from "usehooks-ts";
+import {VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE} from "@subwallet/extension-koni-ui/constants/localStorageDefaultValue";
 
 changeHeaderLogo(<Logo2D />);
 
@@ -28,6 +38,7 @@ export const RouteState = {
 };
 
 const eventsUrl = '/home/events';
+const loginCTA = '/login';
 const myProfileUrl = '/home/my-profile';
 
 export const MainWrapper = styled('div')<ThemeProps>(({ theme: { token } }: ThemeProps) => ({
@@ -73,6 +84,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const [rootLoading, setRootLoading] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
   const firstRender = useRef(true);
+  const [isVisitedLoginCTA] = useLocalStorage(VISIT_LOGIN_CTA_FLAG, VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE);
 
   useSubscribeLanguage();
 
@@ -129,10 +141,6 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       return null;
     }
 
-    if (pathName === '/') {
-      return eventsUrl;
-    }
-
     const loginPromise = localStorage.getItem(LOCAL_LOGGED_IN_PROMISE_KEY) || '';
     const pathAfterLogin = localStorage.getItem(LOCAL_NAVIGATE_AFTER_LOGIN_KEY);
 
@@ -154,6 +162,14 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
 
       return false;
     });
+
+    if (pathName === '/' && !redirectTarget) {
+      if (isVisitedLoginCTA) {
+        redirectTarget = eventsUrl;
+      } else {
+        redirectTarget = loginCTA;
+      }
+    }
 
     if (redirectTarget && redirectTarget !== pathName) {
       return redirectTarget;
