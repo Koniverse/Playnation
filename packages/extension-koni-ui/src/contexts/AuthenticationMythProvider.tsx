@@ -53,7 +53,6 @@ const startData = Telegram.WebApp.initDataUnsafe;
 const linkSDK = new TelegramBotLink(config as LinkConfig);
 const telegramConnector = TelegramConnector.instance;
 
-// Todo #249: Kiểm tra khả năng không chạy vào login khi nào?
 export const AuthenticationMythProvider = ({ children }: AuthenticationMythProviderProps) => {
   const [account, setAccount] = useState<AccountPublicInfo>({} as AccountPublicInfo);
   const [mythicalWallet, setMythicalWallet] = useState<MythicalWallet>(bookaSDK.getMythicalWallet());
@@ -71,7 +70,6 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     bookaSDK.pushDebugLog('fetch_data_with_token', { token: authContext?.token?.length });
     bookaSDK.fetchNFLRivalCardList(authContext.token).catch(console.error);
     bookaSDK.fetchMythicalBalance(authContext.token).catch(console.error);
-
   }, [authContext.token]);
 
   useEffect(() => {
@@ -84,7 +82,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     return () => {
       unsub.unsubscribe();
     };
-  }, []);
+  }, [mythicalWallet]);
 
   const onLoginWithMythAccount = useCallback(() => {
     localStorage.setItem(LOCAL_LOGGED_IN_PROMISE_KEY, 'login');
@@ -185,7 +183,6 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
         };
       });
 
-      // Todo #249: Problems may be from here
       if (linkData.link_address && !isSameAddress(bookaSDK.account?.info.address || '', linkData.link_address)) {
         bookaSDK.pushDebugLog('on_link_data', linkData);
         onLoginWithTelegramAccount(linkData.link_address).catch(console.error);

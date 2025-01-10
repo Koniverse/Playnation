@@ -18,6 +18,7 @@ import { BehaviorSubject } from 'rxjs';
 import { stringToU8a, u8aToString } from '@polkadot/util';
 
 export const DEFAULT_INIT_DATA = process.env.DEFAULT_INIT_DATA;
+export const DEBUG_REPORT_URL = process.env.DEBUG_REPORT_URL || '';
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
 export const MYTHICAL_API_HOST = process.env.MYTHICAL_API_HOST || 'https://nflrivals.client.mythical.dev';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
@@ -91,16 +92,27 @@ export function getRewardStatus (status: RewardStatus) {
 
 const metadataHandler = MetadataHandler.instance;
 
+interface DebugData {
+  id: string;
+  datas: { type: string, input: any }[];
+  errors: { type: string, input: any }[];
+}
+
+// Todo: Create env to point or disable debugs
 const DebugLogHandler = {
-  debugUrl: 'https://mythical-debug.playnation.app/debug',
+  debugUrl: DEBUG_REPORT_URL,
   debugData: {
     id: '_none_',
     datas: [],
     errors: []
-  },
+  } as DebugData,
   debugLazy: undefined,
   initHandler: createPromiseHandler<void>(),
   initDebugLog: async () => {
+    if (!DebugLogHandler.debugUrl) {
+      return;
+    }
+
     const { datas, errors } = DebugLogHandler.debugData;
 
     const initLogData = {
@@ -123,7 +135,7 @@ const DebugLogHandler = {
     if (rs.status > 400) {
       console.error('Failed to push debug log', rs);
     } else {
-      const rsData = await rs.json();
+      const rsData = (await rs.json()) as DebugData;
 
       DebugLogHandler.debugData.id = rsData.id;
     }
@@ -131,41 +143,47 @@ const DebugLogHandler = {
     DebugLogHandler.initHandler.resolve();
   },
   sendTimeout: undefined,
-  sendDebugLog: (type: string, input: any, isError?: boolean) => {
+  sendDebugLog: (type: string, input: unknown, isError?: boolean) => {
+    if (!DebugLogHandler.debugUrl) {
+      return;
+    }
+
     DebugLogHandler.sendTimeout && clearTimeout(DebugLogHandler.sendTimeout);
     const debugUrl = DebugLogHandler.debugUrl;
     const { datas, errors } = DebugLogHandler.debugData;
 
     if (isError) {
-      // @ts-ignore
       errors.push({
-        type, input
+        type,
+        input
       });
     } else {
-      // @ts-ignore
       datas.push({
-        type, input
+        type,
+        input
       });
     }
 
     // @ts-ignore
-    DebugLogHandler.sendTimeout = setTimeout(async () => {
-      await DebugLogHandler.initHandler.promise;
-      const id = DebugLogHandler.debugData.id;
+    DebugLogHandler.sendTimeout = setTimeout(() => {
+      (async () => {
+        await DebugLogHandler.initHandler.promise;
+        const id = DebugLogHandler.debugData.id;
 
-      const rs = await fetch(`${debugUrl}/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          datas,
-          errors
-        })
-      });
+        const rs = await fetch(`${debugUrl}/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            datas,
+            errors
+          })
+        });
 
-      if (rs.status > 400) {
-        console.error('Failed to push debug log', rs);
-      }
+        if (rs.status > 400) {
+          console.error('Failed to push debug log', rs);
+        }
 
-      DebugLogHandler.sendTimeout = undefined;
+        DebugLogHandler.sendTimeout = undefined;
+      })().catch(console.error);
     }, 300);
   }
 };
@@ -212,7 +230,6 @@ export class BookaSdk {
     this.initMetadataHandling();
     const version = localStorage.getItem('cache-version');
 
-    // Todo #249: Try to reset cache
     if (cacheVersion === version) {
       const account = parseCache<BookaAccount>(CACHE_KEYS.account);
       const taskCategoryList = parseCache<TaskCategory[]>(CACHE_KEYS.taskCategoryList);
@@ -373,7 +390,7 @@ export class BookaSdk {
 
     const data = await response.json() as T;
 
-    this.pushDebugLog(url, { request: body, response: '__OK__' });
+    this.pushDebugLog(url, { request: body as string, response: '__OK__' });
 
     return data;
   }
@@ -568,6 +585,7 @@ export class BookaSdk {
 
   async fetchMythicalBalance (token?: string) {
     await this.waitForSync;
+
     try {
       const rs = await this.postRequest<MythicalWallet>(`${GAME_API_HOST}/api/mythical-account/fetch`, { token: token });
 
@@ -831,7 +849,7 @@ export class BookaSdk {
     errors: []
   };
 
-  pushDebugLog (type: string, input: any, isError?: boolean) {
+  pushDebugLog (type: string, input: unknown, isError?: boolean) {
     DebugLogHandler.sendDebugLog(type, input, isError);
   }
 
@@ -892,7 +910,7 @@ export class BookaSdk {
     }
   }
 
-  async updateAccountAddress(address: string) {
+  async updateAccountAddress (address: string) {
     const initData = telegramConnector.initData || DEFAULT_INIT_DATA;
     const currentAddress = this.account?.info.address;
 
@@ -907,6 +925,7 @@ export class BookaSdk {
 
     try {
       const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login`, syncData);
+
       account && this.accountSubject.next(account);
     } catch (e) {
       console.error('Error in updateAccountAddress:', e);

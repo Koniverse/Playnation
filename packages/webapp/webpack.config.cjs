@@ -58,6 +58,7 @@ const _additionalEnv = {
   INFURA_API_KEY: JSON.stringify(process.env.INFURA_API_KEY),
   INFURA_API_KEY_SECRET: JSON.stringify(process.env.INFURA_API_KEY_SECRET),
   DEFAULT_INIT_DATA: JSON.stringify(process.env.DEFAULT_INIT_DATA),
+  DEBUG_REPORT_URL: JSON.stringify(process.env.DEBUG_REPORT_URL),
   GAME_API_HOST: JSON.stringify(process.env.GAME_API_HOST),
   TELEGRAM_WEBAPP_LINK: JSON.stringify(process.env.TELEGRAM_WEBAPP_LINK),
   AUTHENTICATE_CLIENT_ID: JSON.stringify(process.env.AUTHENTICATE_CLIENT_ID),
