@@ -4,9 +4,9 @@
 import { InGameItem } from '@playnation/game-sdk';
 import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
-import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
+import { createPromiseHandler, detectTranslate, wait } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, ClaimableAchievement, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, MythicalWallet, NFLRivalCard, RankInfo, ReferralData, Reward, RewardHistoryStored, RewardStatus, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, ClaimableAchievement, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardGroups, LeaderboardInfo, LeaderboardPerson, LeaderboardResult, MythicalWallet, NFLRivalCard, RankInfo, ReferralData, Reward, RewardConfigs, RewardHistoryStored, RewardStatus, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -1085,6 +1085,94 @@ export class BookaSdk {
     this.rewardListSubject.next(listFilter);
 
     return listFilter;
+  }
+
+  async fetchLeaderboardRewardConfig (): Promise<RewardConfigs[]> {
+    const leaderboardGeneral = this.leaderboardConfig.leaderboard_general as unknown as LeaderboardGroups[];
+    const leaderboards = this.leaderboardConfig.leaderboard_map as unknown as LeaderboardInfo[];
+
+    if (leaderboardGeneral && leaderboards) {
+      const firstLeaderboardGroups = leaderboardGeneral[0];
+
+      if (!firstLeaderboardGroups || !firstLeaderboardGroups.leaderboards.length) {
+        return [];
+      }
+
+      const currentLeaderboard = leaderboards.find((l) => l.id === firstLeaderboardGroups.leaderboards[0]?.id);
+
+      if (!currentLeaderboard) {
+        return [];
+      }
+
+      try {
+        await wait(100);
+        // const rewardConfigs = await this.postRequest<RewardConfigs[]>(`${GAME_API_HOST}/api/airdrop/reward-config`, { leaderboard_id: currentLeaderboard.id});
+
+        // return rewardConfigs || [];
+
+        return [
+          {
+            to: 1,
+            from: 1,
+            name: 'Top 1 | Daily {cycle}',
+            amount: 1000
+          },
+          {
+            to: 2,
+            from: 2,
+            name: 'Top 2 | Daily {cycle}',
+            amount: 500
+          },
+          {
+            to: 3,
+            from: 3,
+            name: 'Top 3 | Daily {cycle}',
+            amount: 100
+          },
+          {
+            to: 4,
+            from: 4,
+            name: 'Top 4 | Daily {cycle}',
+            amount: 50
+          },
+          {
+            to: 5,
+            from: 5,
+            name: 'Top 5 | Daily {cycle}',
+            amount: 10
+          },
+          {
+            to: 100,
+            from: 6,
+            name: 'Top 6-100 | Daily {cycle}',
+            amount: 5
+          },
+
+          {
+            to: 10,
+            from: 1,
+            name: 'Top 1-10 | Weekly {cycle}',
+            amount: 150
+          },
+          {
+            to: 20,
+            from: 11,
+            name: 'Top 11-20 | Weekly {cycle}',
+            amount: 50
+          },
+          {
+            to: 100,
+            from: 21,
+            name: 'Top 21-100 | Weekly {cycle}',
+            amount: 10
+          }
+        ];
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    return [];
   }
 
   async getRewardListIsNotChecked (): Promise<Reward[]> {
