@@ -111,10 +111,9 @@ const Component = ({ accountInfo,
   const navigate = useNavigate();
   const { alertModal } = useContext(WalletModalContext);
   const { isLinkedMyth, linkMythAccount, mythicalWallet } = useContext(AuthenticationMythContext);
-  const { currentAccount } = useSelector((state: RootState) => state.accountState);
   const doLinkAccount = useCallback(() => {
-    currentAccount?.address && linkMythAccount('/home/mission').catch(console.error);
-  }, [currentAccount?.address, linkMythAccount]);
+    linkMythAccount('/home/mission').catch(console.error);
+  }, [linkMythAccount]);
 
   const getTaskStatusText = useCallback((task: Task) => {
     return isTaskComplete(task) ? t('Done') : t('To do');

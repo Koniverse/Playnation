@@ -7,11 +7,9 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AccountPublicInfo, MythicalWallet } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { AUTHENTICATE_LINKING_BOT, AUTHENTICATE_LINKING_SERVICE, AUTHENTICATE_LINKING_TOKEN, AUTHENTICATE_LINKING_URL } from '@subwallet/extension-koni-ui/constants';
-import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { sendEventGA } from '@subwallet/extension-koni-ui/utils/googleAnalytics';
 import React, { createContext, ReactElement, useCallback, useContext, useEffect, useState } from 'react';
 import { AuthContext } from 'react-oauth2-code-pkce';
-import { useSelector } from 'react-redux';
 
 interface AuthenticationMythProviderProps {
   children?: ReactElement;
@@ -60,7 +58,6 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
   const [isLinked, setIsLinked] = useState<boolean>(false);
   const authContext = useContext(AuthContext);
   const tokenData = authContext.tokenData;
-  const { currentAccount } = useSelector((state: RootState) => state.accountState);
 
   useEffect(() => {
     // if (localStorage.getItem(LOCAL_LOGGED_IN_PROMISE_KEY) === 'logged' && !authContext.token) {
@@ -215,7 +212,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
         }
       }).catch(console.error);
     }
-  }, [authContext.token, currentAccount?.address, onLogoutMythAccount, onSubmitMythAccount, tokenData]);
+  }, [authContext.token, onLogoutMythAccount, onSubmitMythAccount, tokenData]);
 
   const authenticationValue: AuthenticationMythContextProps = {
     account,
