@@ -84,14 +84,16 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const [rootLoading, setRootLoading] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
   const firstRender = useRef(true);
-  const [isVisitedLoginCTA] = useLocalStorage(VISIT_LOGIN_CTA_FLAG, VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE);
+  const [isVisitedLoginCTA, setIsVisitedLoginCTA] = useLocalStorage(VISIT_LOGIN_CTA_FLAG, VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE);
 
   useSubscribeLanguage();
 
   useEffect(() => {
-    BookaSdk.instance.login().catch(console.error).finally(() => {
-      setDataLoaded(true);
-    });
+    BookaSdk.instance.login()
+      .catch(console.error)
+      .finally(() => {
+        setDataLoaded(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -163,11 +165,29 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       return false;
     });
 
+    // Check if account is newly created and shoe login CTA
     if (pathName === '/' && !redirectTarget) {
-      if (isVisitedLoginCTA) {
-        redirectTarget = eventsUrl;
-      } else {
+      let shouldShowLoginCTA = !isVisitedLoginCTA;
+      const userCreated = BookaSdk.instance.account?.info?.createdAt
+      if (userCreated && !isVisitedLoginCTA) {
+        try  {
+          const createTime = new Date(userCreated).getTime();
+          const now = new Date().getTime();
+
+          // Show only in 10 minutes after account created
+          shouldShowLoginCTA = ((now - createTime) < 3600000) && !isVisitedLoginCTA;
+          if (!shouldShowLoginCTA) {
+            setIsVisitedLoginCTA(true);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      if (shouldShowLoginCTA) {
         redirectTarget = loginCTA;
+      } else {
+        redirectTarget = eventsUrl;
       }
     }
 
