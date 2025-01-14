@@ -96,24 +96,14 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       right: 0
     },
 
-    '&.ant-sw-modal.ant-sw-modal': {
-      justifyContent: 'flex-start',
-      alignItems: 'center',
-
-      '&:before, &:after': {
-        content: '""',
-        display: 'block',
-        flex: 1
-      }
-    },
-
     '.ant-sw-modal-content.ant-sw-modal-content': {
       borderRadius: 0,
       maxWidth: 370,
       maxHeight: 484,
       paddingTop: 24,
       width: '100%',
-      height: 'auto',
+      marginTop: 'auto',
+      marginBottom: 'auto',
       backgroundImage: 'url(/images/mythical/leaderboard-terms-conditions-bg.png)',
       backgroundSize: '100% 100%',
       backgroundRepeat: 'no-repeat',
@@ -173,6 +163,7 @@ export const TermAndConditionModal = styled(Component)<Props>(({ theme: { extend
       lineHeight: '18px',
       letterSpacing: '0.32px',
       marginBottom: 20,
+      flex: 1,
       overflow: 'auto'
     },
 

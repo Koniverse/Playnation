@@ -530,10 +530,10 @@ export interface Reward {
   decimal: number
 }
 
-export interface RewardConfigs {
-  name: string,
-  from: number;
+export interface RewardConfigItem {
   to: number;
+  from: number;
+  name: string;
   amount: number;
 }
 
