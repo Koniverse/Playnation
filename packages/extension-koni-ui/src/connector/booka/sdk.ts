@@ -6,7 +6,7 @@ import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, ClaimableAchievement, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, MythicalWallet, NFLRivalCard, RankInfo, ReferralData, Reward, RewardHistoryStored, RewardStatus, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, Achievement, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, BookaAccount, ClaimableAchievement, EnergyConfig, Game, GameEvent, GameInventoryItem, GameItem, GamePlay, LeaderboardPerson, LeaderboardResult, MythicalWallet, NFLRivalCard, RankInfo, ReferralData, Reward, RewardConfigItem, RewardHistoryStored, RewardStatus, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -1235,6 +1235,18 @@ export class BookaSdk {
     this.rewardListSubject.next(listFilter);
 
     return listFilter;
+  }
+
+  async fetchLeaderboardRewardConfig (leaderboardId: number): Promise<RewardConfigItem[]> {
+    try {
+      const rewardConfigs = await this.postRequest<RewardConfigItem[]>(`${GAME_API_HOST}/api/airdrop/reward-config`, { leaderboard_id: leaderboardId });
+
+      return rewardConfigs || [];
+    } catch (e) {
+      console.error(e);
+    }
+
+    return [];
   }
 
   async getRewardListIsNotChecked (): Promise<Reward[]> {

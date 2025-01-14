@@ -3,18 +3,25 @@
 
 import { TopAccountItem } from '@subwallet/extension-koni-ui/components/Mythical';
 import { TopAccountItemType } from '@subwallet/extension-koni-ui/components/Mythical/Leaderboard/TopAccountItem';
-import { LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { LeaderboardPerson, RewardConfigItem } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import React from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
   leaderboardPersonItems: LeaderboardPerson[];
   isLoading: boolean;
   shouldShowToken?: boolean;
+  rewardConfigs: RewardConfigItem[];
 };
 
-function getTopAccountItem (gameAccountItem: LeaderboardPerson | undefined, rank: number): TopAccountItemType {
+function getTokenValue (rank: number, rewardConfigs: RewardConfigItem[]) {
+  return rewardConfigs
+    .filter((item) => item.from <= rank && item.to >= rank) // Lọc các rank phù hợp
+    .reduce((total, item) => total + item.amount, 0);
+}
+
+function getTopAccountItem (gameAccountItem: LeaderboardPerson | undefined, rank: number, rewardConfigs: RewardConfigItem[]): TopAccountItemType {
   if (!gameAccountItem) {
     return {
       isFirst: rank === 1,
@@ -29,11 +36,23 @@ function getTopAccountItem (gameAccountItem: LeaderboardPerson | undefined, rank
     point: gameAccountItem.point,
     name: `${gameAccountItem.accountInfo.firstName} ${gameAccountItem.accountInfo.lastName}`,
     avatarSrc: gameAccountItem.accountInfo.avatar,
-    tokenValue: 0
+    tokenValue: getTokenValue(rank, rewardConfigs)
   };
 }
 
-const Component = ({ className, isLoading, leaderboardPersonItems, shouldShowToken }: Props): React.ReactElement => {
+const Component = ({ className, isLoading, leaderboardPersonItems, rewardConfigs, shouldShowToken }: Props): React.ReactElement => {
+  const top1Props = useMemo(() => {
+    return getTopAccountItem(leaderboardPersonItems[0], 1, rewardConfigs);
+  }, [leaderboardPersonItems, rewardConfigs]);
+
+  const top2Props = useMemo(() => {
+    return getTopAccountItem(leaderboardPersonItems[1], 2, rewardConfigs);
+  }, [leaderboardPersonItems, rewardConfigs]);
+
+  const top3Props = useMemo(() => {
+    return getTopAccountItem(leaderboardPersonItems[2], 3, rewardConfigs);
+  }, [leaderboardPersonItems, rewardConfigs]);
+
   return (
     <div
       className={className}
@@ -41,7 +60,7 @@ const Component = ({ className, isLoading, leaderboardPersonItems, shouldShowTok
       <div className='top-account-item-wrapper'>
         {
           <TopAccountItem
-            {...getTopAccountItem(leaderboardPersonItems[1], 2)}
+            {...top2Props}
             isLoading={isLoading}
             shouldShowToken={shouldShowToken}
           />
@@ -50,7 +69,7 @@ const Component = ({ className, isLoading, leaderboardPersonItems, shouldShowTok
       <div className='top-account-item-wrapper -is-first'>
         {
           <TopAccountItem
-            {...getTopAccountItem(leaderboardPersonItems[0], 1)}
+            {...top1Props}
             isLoading={isLoading}
             shouldShowToken={shouldShowToken}
           />
@@ -59,7 +78,7 @@ const Component = ({ className, isLoading, leaderboardPersonItems, shouldShowTok
       <div className='top-account-item-wrapper'>
         {
           <TopAccountItem
-            {...getTopAccountItem(leaderboardPersonItems[2], 3)}
+            {...top3Props}
             isLoading={isLoading}
             shouldShowToken={shouldShowToken}
           />
