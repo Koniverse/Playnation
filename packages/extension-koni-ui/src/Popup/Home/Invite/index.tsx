@@ -68,7 +68,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const inviteURL = useMemo(() => {
     const encodeURL = apiSDK.getInviteURL();
 
-    return `https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent('Invite your friend and earn a bonus gift for each friend you bring in!')}`;
+    return `https://t.me/share/url?url=${encodeURL}&text=${encodeURIComponent('Come join me in Football Rivals. This mini-app is quite fun and allows you to win weekly real rewards.')}`;
   }, []);
 
   const inviteFriend = useCallback(() => {
