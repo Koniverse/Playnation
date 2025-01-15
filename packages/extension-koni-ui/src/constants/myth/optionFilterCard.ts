@@ -98,7 +98,12 @@ export const RarityOptions = [
   { id: 'mythical', label: 'Mythical' }
 ];
 
-export const MaxPowerIdx = 5;
+/*
+Apply the formula to determine the ID of the list of options to determine the selected option.
+Since the previous options were built based on value ranges that have the same cycle, to cover the range of remaining attribute values,
+it is necessary to use MaxId to round up to the largest ID in case the remaining attribute values do not follow the cycle."
+ */
+export const MaxPowerOptionId = 5;
 export const PowerOptions = [
   { id: '0', label: '<60' },
   { id: '1', label: '60-69' },
@@ -108,7 +113,7 @@ export const PowerOptions = [
   { id: '5', label: '100+' }
 ];
 
-export const MaxLevelIdx = 4;
+export const MaxLevelOptionId = 4;
 export const LevelOptions = [
   { id: '0', label: '≥1' },
   { id: '1', label: '≥5' },
