@@ -98,6 +98,7 @@ export const RarityOptions = [
   { id: 'mythical', label: 'Mythical' }
 ];
 
+export const MaxPowerIdx = 5;
 export const PowerOptions = [
   { id: '0', label: '<60' },
   { id: '1', label: '60-69' },
@@ -107,6 +108,7 @@ export const PowerOptions = [
   { id: '5', label: '100+' }
 ];
 
+export const MaxLevelIdx = 4;
 export const LevelOptions = [
   { id: '0', label: '≥1' },
   { id: '1', label: '≥5' },

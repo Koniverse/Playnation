@@ -3,6 +3,7 @@
 
 import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { NFLRivalCard } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { MaxLevelIdx, MaxPowerIdx } from '@subwallet/extension-koni-ui/constants';
 import { ConditionProcessState } from '@subwallet/extension-koni-ui/Popup/Home/Cards';
 import { FilterItems, FilterOption } from '@subwallet/extension-koni-ui/Popup/Home/Cards/ToolFiters/index';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -99,13 +100,13 @@ const Component = ({ className, filterItems, handleCancel, handleReset, onConfir
           let isCardLevelPassed = tmpItemsSelected[FilterOption.LEVEL_OPTION].length === 0;
 
           if (!isCardPowerPassed) {
-            const idx = Math.floor((card.power - 50 >= 0 ? card.power - 50 : 0) / 10);
+            const idx = Math.min(Math.floor((card.power - 50 >= 0 ? card.power - 50 : 0) / 10), MaxPowerIdx);
 
             isCardPowerPassed = tmpItemsSelected[FilterOption.POWER_OPTION].includes(idx.toString());
           }
 
           if (!isCardLevelPassed) {
-            const idx = Math.floor(card.level / 5);
+            const idx = Math.min(Math.floor(card.level / 5), MaxLevelIdx);
 
             isCardLevelPassed = tmpItemsSelected[FilterOption.LEVEL_OPTION].includes(idx.toString());
           }
