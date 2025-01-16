@@ -3,7 +3,7 @@
 
 import { CallToAction, InfoIcon, MainScreenHeader, TimeRemaining } from '@subwallet/extension-koni-ui/components/Mythical';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { LeaderboardGroups, LeaderboardInfo, LeaderboardPerson } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { LeaderboardGroups, LeaderboardInfo, LeaderboardPerson, RewardConfigItem } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { LINK_NFL_APP_DOWNLOAD, TAC_READ_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useServerTime, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
@@ -30,9 +30,11 @@ const Component = ({ className }: Props): React.ReactElement => {
   const { setContainerClass } = useContext(HomeContext);
   const [leaderboardConfig, setLeaderboardConfig] = useState(apiSDK.leaderboardConfig);
   const [currentLeaderboardInfo, setCurrentLeaderboardInfo] = useState<LeaderboardInfo | undefined>(undefined);
+  //  currentLeaderboardExtraInfo: extra info of currentLeaderboardInfo that needs to get from server
+  const [currentLeaderboardExtraInfo, setCurrentLeaderboardExtraInfo] = useState<LeaderboardInfo | undefined>(undefined);
   const [leaderboardPersonItems, setLeaderboardPersonItems] = useState<LeaderboardPerson[]>([]);
+  const [leaderboardRewardConfigs, setLeaderboardRewardConfigs] = useState<RewardConfigItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [leaderboardInfo, setLeaderboardInfo] = useState<LeaderboardInfo | undefined>(undefined);
   const { activeModal, inactiveModal } = useContext(ModalContext);
   const { serverTime } = useServerTime();
   const [isTacRead, setIsTacRead] = useLocalStorage(TAC_READ_FLAG, false);
@@ -52,46 +54,54 @@ const Component = ({ className }: Props): React.ReactElement => {
   }, []);
 
   const shouldShowInfoButton = useMemo(() => {
-    const leaderboard = leaderboardInfo?.metadata as LeaderboardMetadata | undefined;
+    const leaderboard = currentLeaderboardExtraInfo?.metadata as LeaderboardMetadata | undefined;
 
     return !!(leaderboard && 'title' in leaderboard && 'content' in leaderboard);
-  }, [leaderboardInfo]);
+  }, [currentLeaderboardExtraInfo]);
 
   const timeRemainingDateTime = useMemo(() => {
-    if (!leaderboardInfo?.endTimeTs || !serverTime) {
+    if (!currentLeaderboardExtraInfo?.endTimeTs || !serverTime) {
       return undefined;
     }
 
-    const delayStartTime = leaderboardInfo?.endTimeTs;
-    const delayEndTime = delayStartTime + Number(leaderboardInfo.specialTimeDelayDuration) * 86400000;
+    const delayStartTime = currentLeaderboardExtraInfo?.endTimeTs;
+    const delayEndTime = delayStartTime + Number(currentLeaderboardExtraInfo.specialTimeDelayDuration) * 86400000;
 
     const targetTime = serverTime > delayStartTime && serverTime < delayEndTime
       ? delayEndTime
       : delayStartTime;
 
     return getTimeRemaining(serverTime, new Date(targetTime).toString());
-  }, [leaderboardInfo?.endTimeTs, leaderboardInfo?.specialTimeDelayDuration, serverTime]);
+  }, [currentLeaderboardExtraInfo?.endTimeTs, currentLeaderboardExtraInfo?.specialTimeDelayDuration, serverTime]);
 
   const shouldShowToken = useMemo(() => {
-    if (!leaderboardInfo?.endTimeTs || !serverTime) {
+    if (!currentLeaderboardExtraInfo?.endTimeTs || !serverTime) {
       return false;
     }
 
-    const delayStartTime = leaderboardInfo?.endTimeTs;
-    const delayEndTime = delayStartTime + Number(leaderboardInfo.specialTimeDelayDuration) * 86400000;
+    const delayStartTime = currentLeaderboardExtraInfo?.endTimeTs;
+    const delayEndTime = delayStartTime + Number(currentLeaderboardExtraInfo.specialTimeDelayDuration) * 86400000;
 
     return serverTime > delayStartTime && serverTime < delayEndTime;
-  }, [leaderboardInfo?.endTimeTs, leaderboardInfo?.specialTimeDelayDuration, serverTime]);
+  }, [currentLeaderboardExtraInfo?.endTimeTs, currentLeaderboardExtraInfo?.specialTimeDelayDuration, serverTime]);
 
   const timeRemainingTitle = useMemo(() => {
-    if (!leaderboardInfo?.endTimeTs || !serverTime) {
+    if (!currentLeaderboardExtraInfo?.endTimeTs || !serverTime) {
       return undefined;
     }
 
-    return serverTime > leaderboardInfo.endTimeTs
+    return serverTime > currentLeaderboardExtraInfo.endTimeTs
       ? t('New leaderboard in')
       : t('Time remaining');
-  }, [leaderboardInfo?.endTimeTs, serverTime, t]);
+  }, [currentLeaderboardExtraInfo?.endTimeTs, serverTime, t]);
+
+  useEffect(() => {
+    setContainerClass('leaderboard-screen-wrapper');
+
+    return () => {
+      setContainerClass(undefined);
+    };
+  }, [setContainerClass]);
 
   useEffect(() => {
     const subscriptionLeaderboard = apiSDK.subscribeLeaderboardConfig().subscribe((data) => {
@@ -130,16 +140,23 @@ const Component = ({ className }: Props): React.ReactElement => {
     if (currentLeaderboardInfo) {
       setIsLoading(true);
 
-      apiSDK.fetchLeaderboard(currentLeaderboardInfo.id, {})
-        .then((data) => {
-          if (!isSync) {
-            return;
-          }
+      Promise.all(
+        [
+          apiSDK.fetchLeaderboard(currentLeaderboardInfo.id, {}),
+          apiSDK.fetchLeaderboardRewardConfig(currentLeaderboardInfo.id)
+        ]
+      ).then(([
+        leaderboardData,
+        leaderboardRewardConfigData
+      ]) => {
+        if (!isSync) {
+          return;
+        }
 
-          setLeaderboardPersonItems(data.results);
-          setLeaderboardInfo(data.filter);
-        })
-        .catch((e) => console.log('apiSDK.fetchLeaderboard error', e))
+        setLeaderboardPersonItems(leaderboardData.results);
+        setCurrentLeaderboardExtraInfo(leaderboardData.filter);
+        setLeaderboardRewardConfigs(leaderboardRewardConfigData);
+      }).catch((e) => console.log('apiSDK.fetchLeaderboard error', e))
         .finally(() => {
           if (isSync) {
             setIsLoading(false);
@@ -151,14 +168,6 @@ const Component = ({ className }: Props): React.ReactElement => {
       isSync = false;
     };
   }, [currentLeaderboardInfo]);
-
-  useEffect(() => {
-    setContainerClass('leaderboard-screen-wrapper');
-
-    return () => {
-      setContainerClass(undefined);
-    };
-  }, [setContainerClass]);
 
   const isTacContentReady = shouldShowInfoButton;
 
@@ -203,6 +212,7 @@ const Component = ({ className }: Props): React.ReactElement => {
           className={'top-three-area'}
           isLoading={isLoading}
           leaderboardPersonItems={leaderboardPersonItems}
+          rewardConfigs={leaderboardRewardConfigs}
           shouldShowToken={shouldShowToken}
         />
         {isLoading
@@ -249,7 +259,7 @@ const Component = ({ className }: Props): React.ReactElement => {
       </div>
 
       <TermAndConditionModal
-        metadata={leaderboardInfo?.metadata as LeaderboardMetadata}
+        metadata={currentLeaderboardExtraInfo?.metadata as LeaderboardMetadata}
         onCancel={closeTermAndConditionModal}
         onOk={closeTermAndConditionModal}
       />
