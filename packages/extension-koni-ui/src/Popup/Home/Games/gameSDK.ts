@@ -315,7 +315,12 @@ export class GameApp {
         return { players: [] };
       }
 
-      const mapLeader = await this.apiSDK.fetchLeaderboard(weekLeaderBoard.id);
+      const mapLeader = await this.apiSDK.fetchLeaderboard(
+        weekLeaderBoard.id,
+        {
+          withoutDelayTime: true
+        }
+      );
       const mineRanked = mapLeader.results.find((item) => item.mine);
 
       if (!mineRanked) {
