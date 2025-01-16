@@ -108,7 +108,7 @@ const Component = ({ className, filterItems, handleCancel, handleReset, onConfir
           if (!isCardLevelPassed) {
             const idx = Math.min(Math.floor(card.level / 5), MaxLevelOptionId);
 
-            isCardLevelPassed = tmpItemsSelected[FilterOption.LEVEL_OPTION].includes(idx.toString());
+            isCardLevelPassed = tmpItemsSelected[FilterOption.LEVEL_OPTION].some((level) => idx >= Number.parseInt(level));
           }
 
           return isCardPositionPassed && isCardProgramPassed && isCardRarityPassed && isCardTeamPassed && isCardPowerPassed && isCardLevelPassed;
