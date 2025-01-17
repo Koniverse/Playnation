@@ -530,6 +530,13 @@ export interface Reward {
   decimal: number
 }
 
+export interface RewardConfigItem {
+  to: number;
+  from: number;
+  name: string;
+  amount: number;
+}
+
 export interface RewardHistoryStored {
   isCheck: boolean,
   status: RewardStatus
