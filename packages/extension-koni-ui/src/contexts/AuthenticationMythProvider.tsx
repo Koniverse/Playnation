@@ -122,6 +122,11 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     });
 
     if (rs.error) {
+      telegramConnector.showPopup({
+        message: rs.error
+      }, () => {
+        onLogoutMythAccount();
+      });
       console.error(rs.error);
     } else if (rs.success) {
       setIsLinked(rs.success);
