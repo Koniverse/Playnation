@@ -17,6 +17,9 @@
   "version": "1.2.10-0",
   "dependencies": {
     "@babel/runtime": "^7.20.6",
+    "@chatscope/chat-ui-kit-react": "^2.0.3",
+    "@chatscope/chat-ui-kit-styles": "^1.4.0",
+    "@chatscope/use-chat": "^3.1.2",
     "@coinbase/cbpay-js": "^1.7.0",
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@fortawesome/free-brands-svg-icons": "^6.2.1",
@@ -24,6 +27,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.2.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@ledgerhq/hw-app-eth": "^6.35.0",
+    "@microsoft/fetch-event-source": "^2.0.1",
     "@playnation/game-sdk": "^1.0.9-beta.7",
     "@polkadot/api-contract": "^11.0.3",
     "@polkadot/hw-ledger": "^12.6.2",
@@ -87,6 +91,7 @@
     "styled-components": "^5.3.6",
     "url-parse": "^1.5.10",
     "usehooks-ts": "^2.9.1",
+    "uuid": "^9.0.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {

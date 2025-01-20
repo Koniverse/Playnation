@@ -11,7 +11,7 @@ import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/Wall
 import { useNotification, useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { noop } from '@subwallet/extension-koni-ui/utils';
 import { ButtonProps, Icon, ModalContext, Tooltip } from '@subwallet/react-ui';
-import { Export, FadersHorizontal, MagnifyingGlass } from 'phosphor-react';
+import { ChatCircleDots, Export, FadersHorizontal, MagnifyingGlass } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -102,7 +102,19 @@ const Component = (props: Props) => {
   }, [disconnectWC]);
 
   const headerIcons = useMemo<ButtonProps[]>(() => {
-    const icons: ButtonProps[] = [];
+    const icons: ButtonProps[] = [
+      {
+        icon: (
+          <Icon
+            phosphorIcon={ChatCircleDots}
+            size='md'
+          />
+        ),
+        onClick: () => {
+          navigate('/ai-agent');
+        }
+      }
+    ];
 
     if (showFilterIcon) {
       icons.push({
@@ -175,7 +187,7 @@ const Component = (props: Props) => {
     }
 
     return icons;
-  }, [showFilterIcon, showSearchIcon, showGiftIcon, showConnectIcon, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, t, onOpenInvite, wcAccount, onDisconnectWallet, onConnectWallet, connectLoading]);
+  }, [showFilterIcon, showSearchIcon, showGiftIcon, showConnectIcon, navigate, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, t, onOpenInvite, wcAccount, onDisconnectWallet, onConnectWallet, connectLoading]);
 
   const onClickListIcon = useCallback(() => {
     navigate('/settings/list');

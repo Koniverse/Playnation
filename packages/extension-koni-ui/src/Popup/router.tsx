@@ -76,7 +76,7 @@ const NftCollectionDetail = new LazyLoader('NftCollectionDetail', () => import('
 const NftImport = new LazyLoader('NftImport', () => import('@subwallet/extension-koni-ui/Popup/Home/Nfts/NftImport'));
 
 const History = new LazyLoader('History', () => import('@subwallet/extension-koni-ui/Popup/Home/History'));
-const Crowdloans = new LazyLoader('Crowdloans', () => import('@subwallet/extension-koni-ui/Popup/Home/Crowdloans'));
+// const Crowdloans = new LazyLoader('Crowdloans', () => import('@subwallet/extension-koni-ui/Popup/Home/Crowdloans'));
 const HomeAccount = new LazyLoader('Home', () => import('@subwallet/extension-koni-ui/Popup/Home/Account'));
 const Home = new LazyLoader('Home', () => import('@subwallet/extension-koni-ui/Popup/Home'));
 
@@ -116,6 +116,8 @@ const ApplyMasterPassword = new LazyLoader('ApplyMasterPassword', () => import('
 const AccountDetail = new LazyLoader('AccountDetail', () => import('@subwallet/extension-koni-ui/Popup/Account/AccountDetail'));
 const AccountExport = new LazyLoader('AccountExport', () => import('@subwallet/extension-koni-ui/Popup/Account/AccountExport'));
 
+const AiAgent = new LazyLoader('AiAgent', () => import('@subwallet/extension-koni-ui/Popup/AiAgent'));
+
 const Transaction = new LazyLoader('Transaction', () => import('@subwallet/extension-koni-ui/Popup/Transaction/Transaction'));
 const TransactionDone = new LazyLoader('TransactionDone', () => import('@subwallet/extension-koni-ui/Popup/TransactionDone'));
 const SendFund = new LazyLoader('SendFund', () => import('@subwallet/extension-koni-ui/Popup/Transaction/variants/SendFund'));
@@ -129,9 +131,9 @@ const Withdraw = new LazyLoader('Withdraw', () => import('@subwallet/extension-k
 
 // Earning
 
-const EarningEntry = new LazyLoader('EarningEntry', () => import('@subwallet/extension-koni-ui/Popup/Home/Earning/EarningEntry'));
-const EarningPools = new LazyLoader('EarningPools', () => import('@subwallet/extension-koni-ui/Popup/Home/Earning/EarningPools'));
-const EarningPositionDetail = new LazyLoader('EarningPositionDetail', () => import('@subwallet/extension-koni-ui/Popup/Home/Earning/EarningPositionDetail'));
+// const EarningEntry = new LazyLoader('EarningEntry', () => import('@subwallet/extension-koni-ui/Popup/Home/Earning/EarningEntry'));
+// const EarningPools = new LazyLoader('EarningPools', () => import('@subwallet/extension-koni-ui/Popup/Home/Earning/EarningPools'));
+// const EarningPositionDetail = new LazyLoader('EarningPositionDetail', () => import('@subwallet/extension-koni-ui/Popup/Home/Earning/EarningPositionDetail'));
 
 // Wallet Connect
 const ConnectWalletConnect = new LazyLoader('ConnectWalletConnect', () => import('@subwallet/extension-koni-ui/Popup/WalletConnect/ConnectWalletConnect'));
@@ -195,17 +197,17 @@ export const router = createBrowserRouter([
               NftItemDetail.generateRouterObject('item-detail')
             ]
           },
-          Crowdloans.generateRouterObject('crowdloans'),
+          // Crowdloans.generateRouterObject('crowdloans'),
           // Staking.generateRouterObject('staking'),
-          {
-            path: 'earning',
-            element: <Outlet />,
-            children: [
-              EarningEntry.generateRouterObject(''),
-              EarningPools.generateRouterObject('pools'),
-              EarningPositionDetail.generateRouterObject('position-detail')
-            ]
-          },
+          // {
+          //   path: 'earning',
+          //   element: <Outlet />,
+          //   children: [
+          //     EarningEntry.generateRouterObject(''),
+          //     EarningPools.generateRouterObject('pools'),
+          //     EarningPositionDetail.generateRouterObject('position-detail')
+          //   ]
+          // },
           History.generateRouterObject('history'),
           History.generateRouterObject('history/:address/:chain/:extrinsicHashOrId')
         ]
@@ -226,6 +228,9 @@ export const router = createBrowserRouter([
             element: <Example />
           }
         ]
+      },
+      {
+        ...AiAgent.generateRouterObject('/ai-agent')
       },
       {
         ...AirDropDetail.generateRouterObject('airdrop/detail/:id')
