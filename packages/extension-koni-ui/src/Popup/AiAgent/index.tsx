@@ -636,7 +636,7 @@ const Component = (props: Props): React.ReactElement => {
 };
 
 const WrapperComponent = (props: ThemeProps) => {
-  const chatflowid = '54f0e2a0-49f2-482b-9634-ade54fc948e3';
+  const chatflowid = 'dfcf9c3f-0f99-4bb9-8872-cac2329a5393';
 
   const chatId = useMemo(() => {
     let result = getCurrentChatId(chatflowid);
