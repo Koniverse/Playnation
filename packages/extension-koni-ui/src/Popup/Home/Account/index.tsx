@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWStorage } from '@subwallet/extension-base/storage';
-import { GameAccountAvatar, OnChainProfileModal } from '@subwallet/extension-koni-ui/components';
-import InviteCTA from '@subwallet/extension-koni-ui/components/Invite/InviteCTA';
+import { EmptyList, GameAccountAvatar, OnChainProfileModal } from '@subwallet/extension-koni-ui/components';
+import WalletConnectStats from '@subwallet/extension-koni-ui/components/EmptyList/WalletConnectStats';
+import NFTListModal from '@subwallet/extension-koni-ui/components/Modal/NFTListModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
@@ -12,7 +13,7 @@ import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, toDisplayNumber, toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext } from '@subwallet/react-ui';
-import { Copy } from 'phosphor-react';
+import { ArrowSquareIn, Copy, ShareNetwork, SmileySad } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -24,6 +25,11 @@ const cloudStorage = SWStorage.instance;
 const cloudStorageKey = 'on-chain-profile-modal';
 const onChainProfileAlterModal = ON_CHAIN_PROFILE_MODAL;
 const addressExitedModal = 'address-existed-modal';
+const nftListModalId = 'nft-list-modal';
+
+const showEmptyList = true;
+const showWalletConnect = false;
+const showOverview = false;
 
 const Component: React.FC<Props> = (props: Props) => {
   const { className } = props;
@@ -60,6 +66,13 @@ const Component: React.FC<Props> = (props: Props) => {
     inactiveModal(onChainProfileAlterModal);
     activeModal(addressExitedModal);
   }, [activeModal, inactiveModal]);
+
+  const openNftModal = useCallback(() => {
+    activeModal(nftListModalId);
+  }, [activeModal]);
+
+  const onShareButton = useCallback(() => {
+  }, []);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount()
@@ -109,24 +122,101 @@ const Component: React.FC<Props> = (props: Props) => {
           </div>
         </div>}
       </div>
-      <div className='block-info-card'>
-        <div className='account-detail-area'>
-          <div className='__title'>
-            Your Story Point (SP)
-          </div>
-          <div className='__point'>
-            {toDisplayNumber(currentPoint)}
-          </div>
+      <div className={'block-info-account'}>
+        <div className={'left-block-info-account'}>
+          <div className={'left-block-info-account-label'}>You have</div>
+          <div className={'left-block-info-account-value'}>{toDisplayNumber(18260)}</div>
+          <div className={'left-block-info-account-unit'}>Story Point (SP)</div>
         </div>
-        <div className={'separator'}>
-          <div className='__left'></div>
-          <div className='__center'>
-            <hr />
-          </div>
-          <div className='__right'></div>
+        <div className={'block-info-account-separator'}></div>
+        <div className={'right-block-info-account'}>
+          <div className={'right-block-info-account-label'}>Active day</div>
+          <div className={'right-block-info-account-value'}>{toDisplayNumber(100)}</div>
+          <div className={'right-block-info-account-unit'}>days</div>
         </div>
-        <InviteCTA hideCopyLink={true} />
+        <div className={'right-block-info-account'}></div>
       </div>
+      {showOverview && (
+        <div className='block-stats-info'>
+          <div className={'block-stats'}>
+            <div className={'block-stats-left'}>Your IPventure Stats</div>
+            <div className={'block-stats-right'}>
+              <div className={'block-stats-right-value'}>205</div>
+              <div className={'block-stats-right-unit'}>Transactions</div>
+            </div>
+          </div>
+          <div className={'block-content-wrapper'}>
+            <div className={'block-content1'}>
+              <div className={'block-content-label'}>Stake</div>
+              <div className={'block-content-value'}>125</div>
+              <div className={'block-content-unit'}>Transactions</div>
+            </div>
+            <div className={'block-content2'}>
+              <div className={'block-content-label'}>Swap</div>
+              <div className={'block-content-value'}>10</div>
+              <div className={'block-content-unit'}>Transactions</div>
+            </div>
+            <div className={'block-content3'}>
+              <div className={'block-content-label'}>
+                <div className={'nft-label'}>NFT</div>
+                <div
+                  className={'nft-arrow-icon'}
+                  onClick={openNftModal}
+                >
+                  <Icon
+                    phosphorIcon={ArrowSquareIn}
+                    size='md'
+                    weight={'fill'}
+                  />
+                </div>
+              </div>
+              <div className={'block-content-value'}>50</div>
+              <div className={'block-content-unit'}>NFTs</div>
+            </div>
+            <div className={'block-content4'}>
+              <div className={'block-content-label'}>Others</div>
+              <div className={'block-content-value'}>35</div>
+              <div className={'block-content-unit'}>Transactions</div>
+            </div>
+          </div>
+          <Button
+            block={true}
+            className={'share-button'}
+            icon={(
+              <Icon
+                customSize={'20px'}
+                phosphorIcon={ShareNetwork}
+                weight={'fill'}
+              />
+            )}
+            onClick={onShareButton}
+            schema={'primary'}
+            shape={'round'}
+          >
+            {t('Share')}
+          </Button>
+        </div>
+      )}
+
+      {showEmptyList && (
+        <div className='block-stats-info'>
+          <div className={'empty-list-label'}>Your IPventure Stats</div>
+          <EmptyList
+            className={'empty-list-block'}
+            emptyTitle={t('Uh oh, no transactions found')}
+            phosphorIcon={SmileySad}
+          />
+        </div>
+      )}
+
+      {showWalletConnect && (
+        <div className='block-stats-info'>
+          <WalletConnectStats
+            className={'wallet-connect-stats'}
+          />
+        </div>
+      )}
+
       <OnChainProfileModal
         content={<>
           <div>New feature</div>
@@ -143,17 +233,202 @@ const Component: React.FC<Props> = (props: Props) => {
         modalId={addressExitedModal}
         onErrorHandler={onShowAddressExistedModal}
       />
+      <NFTListModal />
     </div>
   );
 };
 
 const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
-    // account
     paddingTop: token.paddingXXS,
     paddingLeft: token.paddingXS,
     paddingRight: token.paddingXS,
     paddingBottom: 24,
+
+    '.block-info-account': {
+      display: 'flex',
+      background: token.colorWhite,
+      borderRadius: '20px 20px',
+      paddingTop: 8,
+      paddingRight: 16,
+      paddingBottom: 16,
+      paddingLeft: 16,
+      alignItems: 'center',
+      textAlign: 'left',
+
+      '.block-info-account-separator': {
+        backgroundColor: token.colorBgDivider,
+        width: 64,
+        marginTop: 8,
+        marginBottom: 8,
+        transform: 'rotate(90deg)',
+        strokeWidth: 1,
+        height: 2
+      },
+
+      '.left-block-info-account, .right-block-info-account': {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4
+      },
+
+      '.left-block-info-account': {
+        minWidth: 200
+      },
+      '.left-block-info-account-label, .right-block-info-account-label': {
+        color: token.colorTextDark3,
+        fontSize: token.fontSizeSM,
+        fontWeight: token.bodyFontWeight,
+        lineHeight: token.lineHeightSM
+      },
+      '.left-block-info-account-value, .right-block-info-account-value': {
+        color: token.colorTextBase,
+        fontSize: token.fontSizeHeading3,
+        fontWeight: token.fontWeightStrong,
+        lineHeight: token.lineHeightHeading3
+      },
+      '.left-block-info-account-unit, .right-block-info-account-unit': {
+        color: token.colorTextLabel,
+        fontSize: token.fontSize,
+        fontWeight: token.fontWeightStrong,
+        lineHeight: token.lineHeightHeading3
+      }
+    },
+
+    '.block-stats-info': {
+      display: 'flex',
+      background: token.colorWhite,
+      borderRadius: '20px 20px',
+      marginTop: 12,
+      paddingTop: 12,
+      paddingLeft: 16,
+      paddingRight: 16,
+      paddingBottom: 12,
+      flexDirection: 'column',
+
+      '.block-stats': {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+        alignItems: 'center'
+      },
+
+      '.block-content-wrapper': {
+        marginTop: 12,
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: 12
+      },
+
+      '.block-stats-left, .block-stats-right-unit, .empty-list-label': {
+        color: token.colorText,
+        fontSize: token.fontSizeLG,
+        fontWeight: token.fontWeightStrong,
+        lineHeight: token.lineHeightHeading3
+      },
+
+      '.empty-list-label': {
+        paddingTop: 14,
+        paddingBottom: 18
+      },
+
+      '.block-stats-right': {
+        textAlign: 'right'
+      },
+
+      '.block-stats-right-value': {
+        color: token.colorText,
+        fontSize: token.fontSizeHeading3,
+        fontWeight: token.fontWeightStrong,
+        lineHeight: token.lineHeightHeading3
+      },
+
+      '.block-stats-right-unit': {
+        color: token.colorTextLabel
+      },
+
+      '.block-content-label': {
+        fontSize: token.fontSizeSM,
+        fontWeight: 700,
+        lineHeight: token.lineHeightHeading3,
+        color: token.colorTextSecondary
+      },
+      '.block-content-value': {
+        fontSize: token.fontSizeXL,
+        fontWeight: token.fontWeightStrong,
+        lineHeight: token.lineHeightHeading3,
+        color: token.colorTextBase
+      },
+      '.block-content-unit': {
+        fontSize: token.fontSizeSM,
+        fontWeight: token.bodyFontWeight,
+        lineHeight: token.lineHeightSM,
+        color: token.colorTextSecondary
+      },
+
+      '.block-content1, .block-content2, .block-content3, .block-content4': {
+        borderRadius: 12,
+        backgroundColor: token.colorFillSecondary,
+        display: 'flex',
+        padding: '8px 16px 10px 16px',
+        alignItems: 'flex-start',
+        flexDirection: 'column',
+        gap: 4
+      },
+
+      '.block-content3': {
+        '.block-content-label': {
+          display: 'flex',
+          justifyContent: 'space-between',
+          width: '100%'
+        }
+      },
+
+      '.share-button': {
+        marginTop: 12,
+        background: 'linear-gradient(117deg, #FFD8E6 9.05%, #BCEBFF 91.43%)',
+        '.ant-btn-content-wrapper': {
+          color: token.colorTextDark1,
+          fontSize: token.fontSize,
+          fontWeight: token.bodyFontWeight,
+          lineHeight: token.lineHeightSM
+        },
+        '.anticon': {
+          color: token.colorTextBase
+        }
+      },
+
+      '.wallet-connect-stats': {
+        paddingTop: 20,
+        paddingBottom: 13,
+        '.empty_icon_wrapper': {
+          paddingBottom: 24,
+          marginBottom: 0
+        },
+        '.empty_title': {
+          fontSize: token.fontSizeLG,
+          fontWeight: token.fontWeightStrong,
+          lineHeight: token.lineHeightHeading3,
+          paddingBottom: 9
+        },
+        '.ant-btn-content-wrapper': {
+          fontSize: token.fontSize,
+          fontWeight: token.bodyFontWeight,
+          lineHeight: token.lineHeightSM
+        },
+        '.anticon': {
+          fontSize: token.fontSizeXL
+        }
+      },
+
+      '.empty-list-block': {
+        paddingBottom: 12,
+        '.empty_title': {
+          marginBottom: 0
+        }
+      }
+    },
 
     '.account-info-area': {
       display: 'flex',

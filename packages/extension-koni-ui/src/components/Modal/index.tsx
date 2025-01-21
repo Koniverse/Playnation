@@ -23,3 +23,4 @@ export * from './GlobalSearchTokenModal';
 export * from './InitRewardsModal';
 export * from './ReceiveModal';
 export * from './Shop';
+export * from './NFTListModal';
