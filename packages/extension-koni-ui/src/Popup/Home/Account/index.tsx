@@ -1,28 +1,35 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
+import { SWStorage } from '@subwallet/extension-base/storage';
+import { GameAccountAvatar, OnChainProfileModal } from '@subwallet/extension-koni-ui/components';
 import InviteCTA from '@subwallet/extension-koni-ui/components/Invite/InviteCTA';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, toDisplayNumber, toShort } from '@subwallet/extension-koni-ui/utils';
-import { Button, Icon } from '@subwallet/react-ui';
+import { Button, Icon, ModalContext } from '@subwallet/react-ui';
 import { Copy } from 'phosphor-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 type Props = ThemeProps;
 const apiSDK = BookaSdk.instance;
+const cloudStorage = SWStorage.instance;
+const cloudStorageKey = 'on-chain-profile-modal';
+const onChainProfileAlterModal = ON_CHAIN_PROFILE_MODAL;
+const addressExitedModal = 'address-existed-modal';
 
 const Component: React.FC<Props> = (props: Props) => {
   const { className } = props;
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
+  const { activeModal, inactiveModal } = useContext(ModalContext);
   const notify = useNotification();
   const { t } = useTranslation();
 
@@ -37,6 +44,23 @@ const Component: React.FC<Props> = (props: Props) => {
 
   const currentPoint = account?.attributes.accumulatePoint || 0;
 
+  const onShowOnChainProfileModal = useCallback(async () => {
+    try {
+      const status = await cloudStorage.getItem(cloudStorageKey);
+
+      if (!status) {
+        activeModal(onChainProfileAlterModal);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [activeModal]);
+
+  const onShowAddressExistedModal = useCallback(() => {
+    inactiveModal(onChainProfileAlterModal);
+    activeModal(addressExitedModal);
+  }, [activeModal, inactiveModal]);
+
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount()
       .subscribe((data) => {
@@ -47,6 +71,10 @@ const Component: React.FC<Props> = (props: Props) => {
       accountSub.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    onShowOnChainProfileModal().catch(console.error);
+  }, [onShowOnChainProfileModal]);
 
   return (
     <div className={className}>
@@ -99,6 +127,22 @@ const Component: React.FC<Props> = (props: Props) => {
         </div>
         <InviteCTA hideCopyLink={true} />
       </div>
+      <OnChainProfileModal
+        content={<>
+          <div>New feature</div>
+        </>}
+        onErrorHandler={onShowAddressExistedModal}
+      />
+      <OnChainProfileModal
+        content={
+          <div>
+            <div>Address existed</div>
+          </div>
+        }
+        isNeedConnectWallet={true}
+        modalId={addressExitedModal}
+        onErrorHandler={onShowAddressExistedModal}
+      />
     </div>
   );
 };

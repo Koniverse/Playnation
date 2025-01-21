@@ -1116,6 +1116,24 @@ export class BookaSdk {
     return data.data;
   }
 
+  async getMintedAddress () {
+    const data = await this.getRequest<{ address: string, status: boolean }>(`${GAME_API_HOST}/api/integrated-profile/get-minted-address`);
+
+    return null;
+  }
+
+  async setAccountAddress (address: string) {
+    const data = await this.postRequest<{ status: boolean }>(`${GAME_API_HOST}/api/integrated-profile/set-account-address`, { address });
+
+    return data.status;
+  }
+
+  async getStatsOfAddress () {
+    await wait(1000);
+
+    return {};
+  }
+
   // Singleton
   private static _instance: BookaSdk;
 
