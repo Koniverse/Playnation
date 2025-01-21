@@ -39,6 +39,7 @@ const Component = (props: Props): React.ReactElement => {
       }
     ]
   );
+  const [pendingMessages, setPendingMessages] = useState<MessageType[]>([]);
 
   const [chatId, setChatId] = useState(props.chatId);
   const [isMessageStopping, setIsMessageStopping] = useState(false);
@@ -52,6 +53,7 @@ const Component = (props: Props): React.ReactElement => {
   // follow-up prompts
   const [followUpPromptsStatus, setFollowUpPromptsStatus] = useState<boolean>(false);
   const [followUpPrompts, setFollowUpPrompts] = useState<string[]>([]);
+  const [endStreamTrigger, setEndStreamTrigger] = useState<string | undefined>();
 
   /**
    * Add each chat message into localStorage
@@ -386,6 +388,7 @@ const Component = (props: Props): React.ReactElement => {
         }
       },
       async onclose () {
+        setEndStreamTrigger(`${Date.now()}`);
         closeResponse();
       },
       onerror (err) {
@@ -610,6 +613,40 @@ const Component = (props: Props): React.ReactElement => {
       ]);
     };
   }, [props.apiHost, props.chatflowid, props.onRequest, props.welcomeMessage]);
+
+  useEffect(() => {
+    if (endStreamTrigger) {
+      // do some logic before stream end
+
+      if (messages.length && messages[messages.length - 1] && messages[messages.length - 1].message.startsWith('Hmm, I\'m not sure.')) {
+        // demo
+        console.log('Hmm, I\'m not sure.');
+      }
+    }
+
+    // note: check the dependency carefully
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endStreamTrigger]);
+
+  // if not loading and have pendingMessages, update messages to show
+  useEffect(() => {
+    const timeOut = setTimeout(() => {
+      if (!loading && pendingMessages.length) {
+        setPendingMessages([]);
+        setMessages((prevMessages) => {
+          const allMessages = [...cloneDeep(prevMessages), ...pendingMessages];
+
+          addChatMessage(allMessages);
+
+          return allMessages;
+        });
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timeOut);
+    };
+  }, [addChatMessage, loading, pendingMessages]);
 
   return (
     <Layout.WithSubHeaderOnly

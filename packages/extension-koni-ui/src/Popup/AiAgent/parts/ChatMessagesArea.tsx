@@ -5,7 +5,7 @@ import { Message, MessageList, TypingIndicator } from '@chatscope/chat-ui-kit-re
 import { MessageType } from '@subwallet/extension-koni-ui/Popup/AiAgent/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
-import React, { Fragment } from 'react';
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import styled from 'styled-components';
 
@@ -24,24 +24,17 @@ function Component (props: Props): React.ReactElement<Props> {
       <MessageList autoScrollToBottom={true}>
         {
           messages.map((message, index) => (
-            <Fragment
+            <Message
               key={index}
+              model={{
+                direction: message.type === 'userMessage' ? 'outgoing' : 'incoming',
+                position: 'normal'
+              }}
             >
-              {
-                ['userMessage', 'apiMessage'].includes(message.type) && (
-                  <Message
-                    model={{
-                      direction: message.type === 'userMessage' ? 'outgoing' : 'incoming',
-                      position: 'normal'
-                    }}
-                  >
-                    <Message.CustomContent>
-                      <ReactMarkdown>{message.message}</ReactMarkdown>
-                    </Message.CustomContent>
-                  </Message>
-                )
-              }
-            </Fragment>
+              <Message.CustomContent>
+                <ReactMarkdown>{message.message}</ReactMarkdown>
+              </Message.CustomContent>
+            </Message>
           ))
         }
       </MessageList>
