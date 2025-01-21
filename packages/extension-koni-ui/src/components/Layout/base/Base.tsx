@@ -14,8 +14,6 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import SelectAccount from '../parts/SelectAccount';
-
 export interface LayoutBaseProps extends Omit<
 SwScreenLayoutProps,
 'tabBarItems' | 'footer' | 'headerContent' | 'selectedTabBarItem'
@@ -215,7 +213,6 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
         '-has-game-bgi': backgroundImages?.game,
         '-has-euro-bgi': backgroundImages?.euro
       })}
-      headerContent={props.showHeader && <SelectAccount />}
       headerIcons={headerIcons}
       onBack={onBack || defaultOnBack}
       selectedTabBarItem={selectedTab}
