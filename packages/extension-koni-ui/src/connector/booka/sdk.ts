@@ -1119,7 +1119,7 @@ export class BookaSdk {
   async getMintedAddress () {
     const data = await this.getRequest<{ address: string, status: boolean }>(`${GAME_API_HOST}/api/integrated-profile/get-minted-address`);
 
-    return null;
+    return data?.address;
   }
 
   async setAccountAddress (address: string) {

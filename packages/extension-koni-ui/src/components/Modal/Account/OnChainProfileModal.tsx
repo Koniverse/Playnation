@@ -35,8 +35,8 @@ function Component ({ className, onErrorHandler, content, isNeedConnectWallet, m
   const { inactiveModal } = useContext(ModalContext);
   const [loading, setLoading] = useState(false);
 
-  const getWcAddress = useCallback(async (): Promise<string | null> => {
-    if (wcAccount) {
+  const getWcAddress = useCallback(async (isNeedConnectWallet: boolean): Promise<string | null> => {
+    if (wcAccount && !isNeedConnectWallet) {
       return wcAccount.address;
     } else {
       try {
@@ -72,13 +72,12 @@ function Component ({ className, onErrorHandler, content, isNeedConnectWallet, m
         await apiSDK.setAccountAddress(addressMinted);
         await apiSDK.getStatsOfAddress();
         inactiveModal(modalId);
-        setLoading(false);
       } else {
         inactiveModal(modalId);
         let _wcAddress = wcAccount?.address || null;
 
         if (!_wcAddress || isNeedConnectWallet) {
-          _wcAddress = await getWcAddress();
+          _wcAddress = await getWcAddress(!!isNeedConnectWallet);
         }
 
         if (_wcAddress) {
@@ -97,7 +96,6 @@ function Component ({ className, onErrorHandler, content, isNeedConnectWallet, m
             await apiSDK.setAccountAddress(_wcAddress);
             await apiSDK.getStatsOfAddress();
             closeWaiting();
-            setLoading(false);
           } catch (e) {
             closeWaiting();
             inactiveModal(modalId);
@@ -121,6 +119,8 @@ function Component ({ className, onErrorHandler, content, isNeedConnectWallet, m
           }
         }
       }
+
+      setLoading(false);
     };
 
     func().catch(console.error);
