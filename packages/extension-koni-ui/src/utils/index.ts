@@ -213,6 +213,7 @@ export { toAddress } from './account/toAddress';
 export { openInNewTab } from '@subwallet/extension-koni-ui/utils/common/browser';
 
 export * from './account';
+export * from './ai';
 export * from './buy';
 export * from './campaign';
 export * from './chain';

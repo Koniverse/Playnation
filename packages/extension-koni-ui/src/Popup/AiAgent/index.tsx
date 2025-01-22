@@ -2,10 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
+import { ExtrinsicStatus, RequestTransfer } from '@subwallet/extension-base/background/KoniTypes';
+import { SWTransactionBrief, SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import { GameAccountAvatar, Layout } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { useSelector } from '@subwallet/extension-koni-ui/hooks';
+import { makeTransfer, subscribeTransactionById } from '@subwallet/extension-koni-ui/messaging';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { AiTransactionData, transformAiMessageData } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
 import { cloneDeep } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -31,6 +36,15 @@ type Props = ThemeProps & {
 const defaultWelcomeMessage = 'Hi there! How can I help?';
 const apiSDK = BookaSdk.instance;
 
+interface AiTransactionInfo extends AiTransactionData {
+  aiMessageId?: string;
+  transactionId?: string;
+}
+
+const pendingTxMessage = 'Transaction have creating...';
+const submitTxMessage = "Your transaction has been submitted, please wait while it's being processed";
+const successTxMessage = 'Your transaction has completed with hash: ';
+
 const Component = (props: Props): React.ReactElement => {
   const { className } = props;
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
@@ -52,6 +66,13 @@ const Component = (props: Props): React.ReactElement => {
   const [followUpPromptsStatus, setFollowUpPromptsStatus] = useState<boolean>(false);
   const [followUpPrompts, setFollowUpPrompts] = useState<string[]>([]);
   const [endStreamTrigger, setEndStreamTrigger] = useState<string | undefined>();
+  const startChat = useMemo(() => !!endStreamTrigger, [endStreamTrigger]);
+
+  const [aiTransactionInfo, setAiTransactionInfo] = useState<AiTransactionInfo>({ type: 'unknown' });
+
+  const { wcAccount } = useSelector((state) => state.accountState);
+
+  const submitTxRef = useRef(false);
 
   const chatMessagesAreaRef = useRef<ChatMessagesAreaRef>(null);
   const chatMessagesAreaRefCurrent = chatMessagesAreaRef.current;
@@ -192,6 +213,7 @@ const Component = (props: Props): React.ReactElement => {
 
   const updateLastMessage = useCallback((text: string) => {
     setMessages((prevMessages) => {
+      console.debug('updateLastMessage');
       const allMessages = [...cloneDeep(prevMessages)];
 
       if (allMessages[allMessages.length - 1].type === 'userMessage') {
@@ -524,6 +546,95 @@ const Component = (props: Props): React.ReactElement => {
   //     }
   // });
 
+  const onSubmitTx = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
+    if (wcAccount) {
+      if (aiTransactionInfo.type === 'transfer') {
+        submitTxRef.current = true;
+
+        // Handle message when create transaction
+        // setPendingMessages((prevMessages) => {
+        //   const messages: MessageType[] = [...prevMessages, { message: pendingTxMessage, type: 'apiMessage' }];
+        //
+        //   addChatMessage(messages);
+        //
+        //   return messages;
+        // });
+      }
+
+      let submitFunc: Promise<SWTransactionResponse> | undefined;
+
+      if (aiTransactionInfo.type === 'transfer') {
+        submitFunc = makeTransfer({
+          from: wcAccount.address,
+          ...aiTransactionInfo.data as Omit<RequestTransfer, 'from'>
+        });
+      }
+
+      if (submitFunc) {
+        submitFunc
+          .then((rs) => {
+            if (rs.errors.length) {
+              // Handle error
+              setPendingMessages((prevMessages) => {
+                const messages: MessageType[] = [...prevMessages, { message: rs.errors[0].message, type: 'apiMessage' }];
+
+                addChatMessage(messages);
+
+                return messages;
+              });
+            }
+
+            if (rs.id) {
+              const handleResult = (data: SWTransactionBrief) => {
+                if (data.status === ExtrinsicStatus.SUBMITTING) {
+                  // Handle on submit
+                  setPendingMessages((prevMessages) => {
+                    const messages: MessageType[] = [...prevMessages, { message: submitTxMessage, type: 'apiMessage' }];
+
+                    addChatMessage(messages);
+
+                    return messages;
+                  });
+                } else if (data.status === ExtrinsicStatus.SUCCESS) {
+                  // Handle on success
+                  setPendingMessages((prevMessages) => {
+                    const messages: MessageType[] = [...prevMessages, { message: successTxMessage + data.extrinsicHash, type: 'apiMessage' }];
+
+                    addChatMessage(messages);
+
+                    return messages;
+                  });
+                }
+              };
+
+              subscribeTransactionById({ id: rs.id }, handleResult)
+                .then(handleResult)
+                .catch(console.error);
+            }
+          })
+          .catch((err: Error) => {
+            // Handle error
+            setPendingMessages((prevMessages) => {
+              if (prevMessages.length) {
+                const messages: MessageType[] = [...prevMessages, { message: err.message, type: 'apiMessage' }];
+
+                addChatMessage(messages);
+
+                return messages;
+              } else {
+                return prevMessages;
+              }
+            });
+          })
+          .finally(() => {
+            submitTxRef.current = false;
+          });
+      }
+    }
+
+    return Promise.resolve(undefined);
+  }, [wcAccount, addChatMessage]);
+
   useEffect(() => {
     const chatflowData = getLocalStorageChatflow(props.chatflowid);
     const chatMessage = (() => {
@@ -659,6 +770,29 @@ const Component = (props: Props): React.ReactElement => {
     // note: check the dependency carefully
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endStreamTrigger]);
+
+  useEffect(() => {
+    if (messages.length) {
+      const lastMessage = messages[messages.length - 1];
+
+      if (lastMessage.type === 'apiMessage') {
+        const converted = transformAiMessageData(lastMessage.message);
+
+        console.log('converted', converted);
+        setAiTransactionInfo({ ...converted, aiMessageId: lastMessage.messageId });
+      } else {
+        setAiTransactionInfo({ type: 'unknown' });
+      }
+    } else {
+      setAiTransactionInfo({ type: 'unknown' });
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
+      onSubmitTx(aiTransactionInfo).catch(console.error);
+    }
+  }, [aiTransactionInfo, onSubmitTx, startChat]);
 
   // if not loading and have pendingMessages, update messages to show
   useEffect(() => {
