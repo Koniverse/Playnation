@@ -546,6 +546,95 @@ const Component = (props: Props): React.ReactElement => {
   //     }
   // });
 
+  const onSubmitTx = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
+    if (wcAccount) {
+      if (aiTransactionInfo.type === 'transfer') {
+        submitTxRef.current = true;
+
+        // Handle message when create transaction
+        // setPendingMessages((prevMessages) => {
+        //   const messages: MessageType[] = [...prevMessages, { message: pendingTxMessage, type: 'apiMessage' }];
+        //
+        //   addChatMessage(messages);
+        //
+        //   return messages;
+        // });
+      }
+
+      let submitFunc: Promise<SWTransactionResponse> | undefined;
+
+      if (aiTransactionInfo.type === 'transfer') {
+        submitFunc = makeTransfer({
+          from: wcAccount.address,
+          ...aiTransactionInfo.data as Omit<RequestTransfer, 'from'>
+        });
+      }
+
+      if (submitFunc) {
+        submitFunc
+          .then((rs) => {
+            if (rs.errors.length) {
+              // Handle error
+              setPendingMessages((prevMessages) => {
+                const messages: MessageType[] = [...prevMessages, { message: rs.errors[0].message, type: 'apiMessage' }];
+
+                addChatMessage(messages);
+
+                return messages;
+              });
+            }
+
+            if (rs.id) {
+              const handleResult = (data: SWTransactionBrief) => {
+                if (data.status === ExtrinsicStatus.SUBMITTING) {
+                  // Handle on submit
+                  setPendingMessages((prevMessages) => {
+                    const messages: MessageType[] = [...prevMessages, { message: submitTxMessage, type: 'apiMessage' }];
+
+                    addChatMessage(messages);
+
+                    return messages;
+                  });
+                } else if (data.status === ExtrinsicStatus.SUCCESS) {
+                  // Handle on success
+                  setPendingMessages((prevMessages) => {
+                    const messages: MessageType[] = [...prevMessages, { message: successTxMessage + data.extrinsicHash, type: 'apiMessage' }];
+
+                    addChatMessage(messages);
+
+                    return messages;
+                  });
+                }
+              };
+
+              subscribeTransactionById({ id: rs.id }, handleResult)
+                .then(handleResult)
+                .catch(console.error);
+            }
+          })
+          .catch((err: Error) => {
+            // Handle error
+            setPendingMessages((prevMessages) => {
+              if (prevMessages.length) {
+                const messages: MessageType[] = [...prevMessages, { message: err.message, type: 'apiMessage' }];
+
+                addChatMessage(messages);
+
+                return messages;
+              } else {
+                return prevMessages;
+              }
+            });
+          })
+          .finally(() => {
+            submitTxRef.current = false;
+          });
+      }
+    }
+
+    return Promise.resolve(undefined);
+  }, [wcAccount, addChatMessage]);
+
   useEffect(() => {
     const chatflowData = getLocalStorageChatflow(props.chatflowid);
     const chatMessage = (() => {
@@ -699,95 +788,11 @@ const Component = (props: Props): React.ReactElement => {
     }
   }, [messages]);
 
-  const onSubmitTx = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
-    if (wcAccount) {
-      if (aiTransactionInfo.type === 'transfer') {
-        submitTxRef.current = true;
-
-        // setPendingMessages((prevMessages) => {
-        //   const messages: MessageType[] = [...prevMessages, { message: pendingTxMessage, type: 'apiMessage' }];
-        //
-        //   addChatMessage(messages);
-        //
-        //   return messages;
-        // });
-      }
-
-      let submitFunc: Promise<SWTransactionResponse> | undefined;
-
-      if (aiTransactionInfo.type === 'transfer') {
-        submitFunc = makeTransfer({
-          from: wcAccount.address,
-          ...aiTransactionInfo.data as Omit<RequestTransfer, 'from'>
-        });
-      }
-
-      if (submitFunc) {
-        submitFunc
-          .then((rs) => {
-            if (rs.errors.length) {
-              setPendingMessages((prevMessages) => {
-                const messages: MessageType[] = [...prevMessages, { message: rs.errors[0].message, type: 'apiMessage' }];
-
-                addChatMessage(messages);
-
-                return messages;
-              });
-            }
-
-            if (rs.id) {
-              const handleResult = (data: SWTransactionBrief) => {
-                if (data.status === ExtrinsicStatus.SUBMITTING) {
-                  setPendingMessages((prevMessages) => {
-                    const messages: MessageType[] = [...prevMessages, { message: submitTxMessage, type: 'apiMessage' }];
-
-                    addChatMessage(messages);
-
-                    return messages;
-                  });
-                } else if (data.status === ExtrinsicStatus.SUCCESS) {
-                  setPendingMessages((prevMessages) => {
-                    const messages: MessageType[] = [...prevMessages, { message: successTxMessage + data.extrinsicHash, type: 'apiMessage' }];
-
-                    addChatMessage(messages);
-
-                    return messages;
-                  });
-                }
-              };
-
-              subscribeTransactionById({ id: rs.id }, handleResult)
-                .then(handleResult)
-                .catch(console.error);
-            }
-          })
-          .catch((err: Error) => {
-            setPendingMessages((prevMessages) => {
-              if (prevMessages.length) {
-                const messages: MessageType[] = [...prevMessages, { message: err.message, type: 'apiMessage' }];
-
-                addChatMessage(messages);
-
-                return messages;
-              } else {
-                return prevMessages;
-              }
-            });
-          })
-          .finally(() => {
-            submitTxRef.current = false;
-          });
-      }
-    }
-
-    return Promise.resolve(undefined);
-  }, [wcAccount, addChatMessage]);
-
   useEffect(() => {
-    if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current) {
+    if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
       onSubmitTx(aiTransactionInfo).catch(console.error);
     }
-  }, [aiTransactionInfo, onSubmitTx]);
+  }, [aiTransactionInfo, onSubmitTx, startChat]);
 
   // if not loading and have pendingMessages, update messages to show
   useEffect(() => {
