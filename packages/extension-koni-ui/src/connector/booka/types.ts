@@ -458,6 +458,18 @@ export enum AccountIntegratedProfileStatus {
   SYNCED = 'synced',
 }
 
+interface ERC721Contract {
+  name: string;
+  address: string;
+}
+
+export interface NFTTokenData {
+  owner: string;
+  token_id: string;
+  created_at: string;
+  erc721_contract: ERC721Contract;
+}
+
 export interface IntegratedProfileResult {
   totalTransactions: number;
   totalStakeVerioTransactions: number;
@@ -468,4 +480,5 @@ export interface IntegratedProfileResult {
   syncedAt?: Date | null;
   telegramId?: number;
   loginCount?: number;
+  erc721ContractList?: NFTTokenData[]
 }

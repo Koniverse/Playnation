@@ -6,7 +6,8 @@ import { EmptyList, GameAccountAvatar, OnChainProfileModal } from '@subwallet/ex
 import WalletConnectStats from '@subwallet/extension-koni-ui/components/EmptyList/WalletConnectStats';
 import NFTListModal from '@subwallet/extension-koni-ui/components/Modal/NFTListModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { BookaAccount, IntegratedProfileResult } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { useNotification, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
@@ -14,7 +15,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, toDisplayNumber, toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext } from '@subwallet/react-ui';
 import { ArrowSquareIn, Copy, ShareNetwork, SmileySad } from 'phosphor-react';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -22,19 +23,18 @@ import styled from 'styled-components';
 type Props = ThemeProps;
 const apiSDK = BookaSdk.instance;
 const cloudStorage = SWStorage.instance;
+const telegramConnector = TelegramConnector.instance;
 const cloudStorageKey = 'on-chain-profile-modal';
 const onChainProfileAlterModal = ON_CHAIN_PROFILE_MODAL;
 const addressExitedModal = 'address-existed-modal';
 const nftListModalId = 'nft-list-modal';
 
-const showEmptyList = true;
-const showWalletConnect = false;
-const showOverview = false;
 
 const Component: React.FC<Props> = (props: Props) => {
   const { className } = props;
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
+  const [accountIntegrationProfile, setAccountIntegrationProfile] = useState<IntegratedProfileResult | undefined>();
   const { activeModal, inactiveModal } = useContext(ModalContext);
   const notify = useNotification();
   const { t } = useTranslation();
@@ -71,8 +71,32 @@ const Component: React.FC<Props> = (props: Props) => {
     activeModal(nftListModalId);
   }, [activeModal]);
 
-  const onShareButton = useCallback(() => {
-  }, []);
+  const onClickShare = useCallback(() => {
+    if (!accountIntegrationProfile?.totalTransactions) {
+      return;
+    }
+
+    const inviteLink = apiSDK.getInviteURL();
+
+    const content = `Just checked my @koniverse Integrated Profile and found that I’ve made ${accountIntegrationProfile?.totalTransactions} transactions on @StoryProtocol Odyssey 🎉%0AWanna see yours? Join me now on @koniverse 👉`;
+    const url = `http://x.com/share?text=${content}&url=${inviteLink}`;
+
+    if (url) {
+      telegramConnector.openLink(url);
+    }
+  }, [accountIntegrationProfile?.totalTransactions]);
+
+  const remainingTransactionsValue = useMemo(() => {
+    const profile = accountIntegrationProfile;
+
+    if (!profile) {
+      return 0;
+    }
+
+    const remainingValue = profile.totalTransactions - profile.totalSwapPiperXTransactions - profile.totalStakeVerioTransactions - profile.totalBadgeNFTsOwned;
+
+    return remainingValue < 0 ? 0 : remainingValue;
+  }, [accountIntegrationProfile]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount()
@@ -89,6 +113,31 @@ const Component: React.FC<Props> = (props: Props) => {
     onShowOnChainProfileModal().catch(console.error);
   }, [onShowOnChainProfileModal]);
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = apiSDK.getStatsOfAddress();
+
+        setAccountIntegrationProfile(data);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    fetchStats().catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    const profileSub = apiSDK.subscribeAccountIntegrationProfile()
+      .subscribe((data) => {
+        setAccountIntegrationProfile(data);
+      });
+
+    return () => {
+      profileSub.unsubscribe();
+    };
+  }, []);
+
   return (
     <div className={className}>
       <div className='account-info-area'>
@@ -96,7 +145,7 @@ const Component: React.FC<Props> = (props: Props) => {
           avatarPath={account?.info.photoUrl || undefined}
           className={'account-avatar'}
           hasBoxShadow
-          size={7}
+          size={'custom'}
         />
 
         <div className='account-name'>{account?.info.telegramUsername}</div>
@@ -125,35 +174,34 @@ const Component: React.FC<Props> = (props: Props) => {
       <div className={'block-info-account'}>
         <div className={'left-block-info-account'}>
           <div className={'left-block-info-account-label'}>You have</div>
-          <div className={'left-block-info-account-value'}>{toDisplayNumber(18260)}</div>
+          <div className={'left-block-info-account-value'}>{toDisplayNumber(currentPoint)}</div>
           <div className={'left-block-info-account-unit'}>Story Point (SP)</div>
         </div>
         <div className={'block-info-account-separator'}></div>
         <div className={'right-block-info-account'}>
           <div className={'right-block-info-account-label'}>Active day</div>
-          <div className={'right-block-info-account-value'}>{toDisplayNumber(100)}</div>
+          <div className={'right-block-info-account-value'}>{toDisplayNumber(accountIntegrationProfile?.loginCount)}</div>
           <div className={'right-block-info-account-unit'}>days</div>
         </div>
-        <div className={'right-block-info-account'}></div>
       </div>
-      {showOverview && (
+      {accountIntegrationProfile && (
         <div className='block-stats-info'>
           <div className={'block-stats'}>
             <div className={'block-stats-left'}>Your IPventure Stats</div>
             <div className={'block-stats-right'}>
-              <div className={'block-stats-right-value'}>205</div>
+              <div className={'block-stats-right-value'}>{toDisplayNumber(accountIntegrationProfile?.totalTransactions)}</div>
               <div className={'block-stats-right-unit'}>Transactions</div>
             </div>
           </div>
           <div className={'block-content-wrapper'}>
             <div className={'block-content1'}>
               <div className={'block-content-label'}>Stake</div>
-              <div className={'block-content-value'}>125</div>
+              <div className={'block-content-value'}>{toDisplayNumber(accountIntegrationProfile?.totalStakeVerioTransactions)}</div>
               <div className={'block-content-unit'}>Transactions</div>
             </div>
             <div className={'block-content2'}>
               <div className={'block-content-label'}>Swap</div>
-              <div className={'block-content-value'}>10</div>
+              <div className={'block-content-value'}>{toDisplayNumber(accountIntegrationProfile?.totalSwapPiperXTransactions)}</div>
               <div className={'block-content-unit'}>Transactions</div>
             </div>
             <div className={'block-content3'}>
@@ -164,18 +212,18 @@ const Component: React.FC<Props> = (props: Props) => {
                   onClick={openNftModal}
                 >
                   <Icon
+                    customSize={'20px'}
                     phosphorIcon={ArrowSquareIn}
-                    size='md'
                     weight={'fill'}
                   />
                 </div>
               </div>
-              <div className={'block-content-value'}>50</div>
+              <div className={'block-content-value'}>{toDisplayNumber(accountIntegrationProfile?.totalBadgeNFTsOwned)}</div>
               <div className={'block-content-unit'}>NFTs</div>
             </div>
             <div className={'block-content4'}>
               <div className={'block-content-label'}>Others</div>
-              <div className={'block-content-value'}>35</div>
+              <div className={'block-content-value'}>{toDisplayNumber(remainingTransactionsValue)}</div>
               <div className={'block-content-unit'}>Transactions</div>
             </div>
           </div>
@@ -189,16 +237,17 @@ const Component: React.FC<Props> = (props: Props) => {
                 weight={'fill'}
               />
             )}
-            onClick={onShareButton}
+            onClick={onClickShare}
             schema={'primary'}
             shape={'round'}
+            size={'sm'}
           >
             {t('Share')}
           </Button>
         </div>
       )}
 
-      {showEmptyList && (
+      {!accountIntegrationProfile && wcAccount && (
         <div className='block-stats-info'>
           <div className={'empty-list-label'}>Your IPventure Stats</div>
           <EmptyList
@@ -209,7 +258,7 @@ const Component: React.FC<Props> = (props: Props) => {
         </div>
       )}
 
-      {showWalletConnect && (
+      {!wcAccount && (
         <div className='block-stats-info'>
           <WalletConnectStats
             className={'wallet-connect-stats'}
@@ -233,7 +282,9 @@ const Component: React.FC<Props> = (props: Props) => {
         modalId={addressExitedModal}
         onErrorHandler={onShowAddressExistedModal}
       />
-      <NFTListModal />
+      <NFTListModal
+        erc721ContractList={accountIntegrationProfile?.erc721ContractList}
+      />
     </div>
   );
 };
@@ -258,12 +309,11 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
 
       '.block-info-account-separator': {
         backgroundColor: token.colorBgDivider,
-        width: 64,
-        marginTop: 8,
-        marginBottom: 8,
-        transform: 'rotate(90deg)',
+        width: 2,
+        marginLeft: 8,
+        marginRight: 8,
         strokeWidth: 1,
-        height: 2
+        height: 64
       },
 
       '.left-block-info-account, .right-block-info-account': {
@@ -273,8 +323,15 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
       },
 
       '.left-block-info-account': {
-        minWidth: 200
+        flex: 1,
+        paddingRight: 8
       },
+
+      '.right-block-info-account': {
+        minWidth: 142,
+        paddingLeft: 16
+      },
+
       '.left-block-info-account-label, .right-block-info-account-label': {
         color: token.colorTextDark3,
         fontSize: token.fontSizeSM,
@@ -382,6 +439,9 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
           display: 'flex',
           justifyContent: 'space-between',
           width: '100%'
+        },
+        '.nft-arrow-icon:hover': {
+          cursor: 'pointer'
         }
       },
 
@@ -400,8 +460,10 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
       },
 
       '.wallet-connect-stats': {
-        paddingTop: 20,
+        paddingTop: 21,
         paddingBottom: 13,
+        paddingLeft: 12,
+        paddingRight: 12,
         '.empty_icon_wrapper': {
           paddingBottom: 24,
           marginBottom: 0
@@ -410,7 +472,7 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
           fontSize: token.fontSizeLG,
           fontWeight: token.fontWeightStrong,
           lineHeight: token.lineHeightHeading3,
-          paddingBottom: 9
+          marginBottom: 9
         },
         '.ant-btn-content-wrapper': {
           fontSize: token.fontSize,
@@ -419,11 +481,16 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
         },
         '.anticon': {
           fontSize: token.fontSizeXL
+        },
+        '.ant-btn': {
+          minWidth: 173
         }
       },
 
       '.empty-list-block': {
-        paddingBottom: 12,
+        paddingBottom: 26,
+        paddingRight: 19,
+        paddingLeft: 19,
         '.empty_title': {
           marginBottom: 0
         }
@@ -435,16 +502,27 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
       flexDirection: 'column',
       alignItems: 'center',
       textAlign: 'center',
-      marginBottom: 24
-    },
+      marginBottom: 19,
 
-    '.account-avatar': {
-      marginBottom: token.margin
+      '.account-avatar': {
+        borderWidth: 2,
+        width: 92,
+        height: 92,
+        minWidth: 92,
+
+        '.__inner': {
+          borderWidth: 4
+        },
+
+        '.__avatar-image': {
+          borderWidth: 2
+        }
+      }
     },
 
     '.account-name': {
       fontSize: token.fontSizeHeading4,
-      lineHeight: token.lineHeightHeading4,
+      lineHeight: token.lineHeightHeading3,
       fontWeight: token.headingFontWeight,
       color: token.colorTextDark1,
       marginBottom: token.marginXXS
@@ -452,8 +530,8 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
 
     '.account-address-wrapper': {
       color: token.colorTextDark3,
-      fontSize: token.fontSize,
-      lineHeight: token.lineHeight,
+      fontSize: token.fontSizeSM,
+      lineHeight: token.lineHeightSM,
       display: 'flex',
       gap: token.sizeXXS
     },
