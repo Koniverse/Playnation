@@ -73,4 +73,9 @@ export type MessageType = {
   id?: string;
   followUpPrompts?: string;
   dateTime?: string;
+
+  // message that is set manually, not from AI, or not logged by AI
+  isManualMessage?: boolean;
+  // trigger action that is related to the app,
+  appTriggeredAction?: 'requestUserConnectWallet'
 };

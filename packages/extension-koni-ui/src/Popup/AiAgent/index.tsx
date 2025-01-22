@@ -4,7 +4,9 @@
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
 import { ExtrinsicStatus, RequestTransfer } from '@subwallet/extension-base/background/KoniTypes';
 import { SWTransactionBrief, SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
-import { Layout } from '@subwallet/extension-koni-ui/components';
+import { GameAccountAvatar, Layout } from '@subwallet/extension-koni-ui/components';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { makeTransfer, subscribeTransactionById } from '@subwallet/extension-koni-ui/messaging';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -17,7 +19,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import useDefaultNavigate from '../../hooks/router/useDefaultNavigate';
 import { ChatInputArea } from './parts/ChatInputArea';
-import { ChatMessagesArea } from './parts/ChatMessagesArea';
+import { ChatMessagesArea, ChatMessagesAreaRef } from './parts/ChatMessagesArea';
 import { FileUpload, IAction, IAgentReasoning, IncomingInput, MessageType, messageType } from './types';
 import { getCurrentChatId, getLocalStorageChatflow, isStreamAvailableQuery, sendMessageQuery, setCurrentChatId, setLocalStorageChatflow } from './utils';
 
@@ -32,6 +34,7 @@ type Props = ThemeProps & {
 }
 
 const defaultWelcomeMessage = 'Hi there! How can I help?';
+const apiSDK = BookaSdk.instance;
 
 interface AiTransactionInfo extends AiTransactionData {
   aiMessageId?: string;
@@ -44,15 +47,10 @@ const successTxMessage = 'Your transaction has completed with hash: ';
 
 const Component = (props: Props): React.ReactElement => {
   const { className } = props;
+  const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
+
   const { goBack } = useDefaultNavigate();
-  const [messages, setMessages] = useState<MessageType[]>(
-    [
-      {
-        message: props.welcomeMessage ?? defaultWelcomeMessage,
-        type: 'apiMessage'
-      }
-    ]
-  );
+  const [messages, setMessages] = useState<MessageType[]>([]);
   const [pendingMessages, setPendingMessages] = useState<MessageType[]>([]);
 
   const [chatId, setChatId] = useState(props.chatId);
@@ -75,6 +73,13 @@ const Component = (props: Props): React.ReactElement => {
   const { wcAccount } = useSelector((state) => state.accountState);
 
   const submitTxRef = useRef(false);
+
+  const chatMessagesAreaRef = useRef<ChatMessagesAreaRef>(null);
+  const chatMessagesAreaRefCurrent = chatMessagesAreaRef.current;
+
+  const scrollToBottom = useCallback((delay?: number) => {
+    chatMessagesAreaRefCurrent?.scrollToBottom(delay);
+  }, [chatMessagesAreaRefCurrent]);
 
   /**
    * Add each chat message into localStorage
@@ -184,17 +189,16 @@ const Component = (props: Props): React.ReactElement => {
     });
     setLoading(false);
     setUserInput('');
-  }, [addChatMessage, props.errorMessage]);
+    scrollToBottom();
+  }, [addChatMessage, props.errorMessage, scrollToBottom]);
 
   const closeResponse = useCallback(() => {
     setLoading(false);
     setUserInput('');
     // setUploadedFiles([]);
     // hasSoundPlayed = false;
-    // setTimeout(() => {
-    //     scrollToBottom();
-    // }, 100);
-  }, []);
+    scrollToBottom(100);
+  }, [scrollToBottom]);
 
   const updateErrorMessage = useCallback((errorMessage: string) => {
     setMessages((prevMessages) => {
@@ -423,6 +427,7 @@ const Component = (props: Props): React.ReactElement => {
 
   const handleSubmit = useCallback(async (value: string, action?: IAction | undefined | null) => {
     setLoading(true);
+    scrollToBottom();
 
     setMessages((prevMessages) => {
       const messages: MessageType[] = [...prevMessages, { message: value, type: 'userMessage' }];
@@ -505,7 +510,7 @@ const Component = (props: Props): React.ReactElement => {
         setLoading(false);
         setUserInput('');
         // setUploadedFiles([]);
-        // scrollToBottom();
+        scrollToBottom();
       }
 
       if (result.error) {
@@ -528,7 +533,7 @@ const Component = (props: Props): React.ReactElement => {
         handleError();
       }
     }
-  }, [addChatMessage, chatId, fetchResponseFromEventStream, handleError, isChatFlowAvailableToStream, leadEmail, props.apiHost, props.chatflowConfig, props.chatflowid, props.onRequest, updateMetadata]);
+  }, [addChatMessage, chatId, fetchResponseFromEventStream, handleError, isChatFlowAvailableToStream, leadEmail, props.apiHost, props.chatflowConfig, props.chatflowid, props.onRequest, scrollToBottom, updateMetadata]);
 
   // // Auto scroll chat to bottom
   // createEffect(() => {
@@ -608,6 +613,33 @@ const Component = (props: Props): React.ReactElement => {
       setMessages([...filteredMessages]);
     }
   }, [props.chatflowid, props.welcomeMessage]);
+
+  const welcomeMessagesNode = useMemo(() => {
+    const userName = `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}`.trim();
+
+    return (
+      <>
+        <div className={'__welcome-first-line'}>
+          Hi {userName},
+        </div>
+
+        <div className={'__welcome-second-line'}>
+          How can I help? <br />
+          Anything, tell me your wish...
+        </div>
+      </>
+    );
+  }, [account?.info?.firstName, account?.info?.lastName]);
+
+  useEffect(() => {
+    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
+      setAccount(data);
+    });
+
+    return () => {
+      accountSub.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -779,16 +811,37 @@ const Component = (props: Props): React.ReactElement => {
 
   return (
     <Layout.WithSubHeaderOnly
-      backgroundStyle={'secondary'}
+      backgroundStyle={'primary'}
       className={CN(className)}
       onBack={goBack}
-      title={'AI Agent'}
+      title={'Tell Me Agent'}
     >
-      <ChatMessagesArea
-        className={'__message-area'}
-        loading={loading}
-        messages={messages}
-      />
+      <div className={CN('__message-area-wrapper', {
+        '-no-message': !messages.length
+      })}
+      >
+        {
+          !messages.length && (
+            <div className='__welcome-block'>
+              <GameAccountAvatar
+                avatarPath={account?.info.photoUrl || undefined}
+                className={'__user-avatar'}
+                hasBoxShadow
+                size={7}
+              />
+
+              {welcomeMessagesNode}
+            </div>
+          )
+        }
+
+        <ChatMessagesArea
+          className={'__message-area'}
+          loading={loading}
+          messages={messages}
+          ref={chatMessagesAreaRef}
+        />
+      </div>
 
       <ChatInputArea
         className={'__input-area'}
@@ -832,16 +885,76 @@ const AiAgent = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, to
       flexDirection: 'column'
     },
 
-    '.__message-area': {
+    '.ant-sw-sub-header-container': {
+      paddingTop: 12,
+      paddingBottom: 16
+    },
+
+    '.__message-area-wrapper': {
       flex: 1,
       overflow: 'auto'
     },
 
+    '.__message-area': {
+      height: '100%'
+    },
+
+    '.__message-area-wrapper.-no-message': {
+      position: 'relative',
+
+      '.__message-area': {
+        opacity: 0,
+        pointerEvents: 'none'
+      }
+    },
+
+    '.__welcome-block': {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      textAlign: 'center',
+      paddingLeft: 16,
+      paddingRight: 16
+    },
+
+    '.__user-avatar': {
+      borderWidth: 2,
+      width: 92,
+      height: 92,
+      minWidth: 92,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+      marginBottom: 24,
+
+      '.__inner': {
+        borderWidth: 4
+      },
+
+      '.__avatar-image': {
+        borderWidth: 2
+      }
+    },
+
+    '.__welcome-first-line': {
+      fontSize: 20,
+      lineHeight: '26px',
+      fontWeight: token.headingFontWeight,
+      color: token.colorTextDark1,
+      marginBottom: 8
+    },
+
+    '.__welcome-second-line': {
+      fontSize: 14,
+      lineHeight: '22px',
+      color: token.colorTextDark2
+    },
+
     '.__input-area': {
-      borderTop: '1px solid #aaa',
-      padding: 12,
-      paddingRight: 4,
-      background: '#fff'
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0
     }
   };
 });
