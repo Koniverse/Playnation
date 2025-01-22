@@ -6,13 +6,13 @@ import { Layout } from '@subwallet/extension-koni-ui/components';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
 import { cloneDeep } from 'lodash';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 
 import useDefaultNavigate from '../../hooks/router/useDefaultNavigate';
 import { ChatInputArea } from './parts/ChatInputArea';
-import { ChatMessagesArea } from './parts/ChatMessagesArea';
+import { ChatMessagesArea, ChatMessagesAreaRef } from './parts/ChatMessagesArea';
 import { FileUpload, IAction, IAgentReasoning, IncomingInput, MessageType, messageType } from './types';
 import { getCurrentChatId, getLocalStorageChatflow, isStreamAvailableQuery, sendMessageQuery, setCurrentChatId, setLocalStorageChatflow } from './utils';
 
@@ -54,6 +54,13 @@ const Component = (props: Props): React.ReactElement => {
   const [followUpPromptsStatus, setFollowUpPromptsStatus] = useState<boolean>(false);
   const [followUpPrompts, setFollowUpPrompts] = useState<string[]>([]);
   const [endStreamTrigger, setEndStreamTrigger] = useState<string | undefined>();
+
+  const chatMessagesAreaRef = useRef<ChatMessagesAreaRef>(null);
+  const chatMessagesAreaRefCurrent = chatMessagesAreaRef.current;
+
+  const scrollToBottom = useCallback((delay?: number) => {
+    chatMessagesAreaRefCurrent?.scrollToBottom(delay);
+  }, [chatMessagesAreaRefCurrent]);
 
   /**
    * Add each chat message into localStorage
@@ -163,17 +170,16 @@ const Component = (props: Props): React.ReactElement => {
     });
     setLoading(false);
     setUserInput('');
-  }, [addChatMessage, props.errorMessage]);
+    scrollToBottom();
+  }, [addChatMessage, props.errorMessage, scrollToBottom]);
 
   const closeResponse = useCallback(() => {
     setLoading(false);
     setUserInput('');
     // setUploadedFiles([]);
     // hasSoundPlayed = false;
-    // setTimeout(() => {
-    //     scrollToBottom();
-    // }, 100);
-  }, []);
+    scrollToBottom(100);
+  }, [scrollToBottom]);
 
   const updateErrorMessage = useCallback((errorMessage: string) => {
     setMessages((prevMessages) => {
@@ -401,6 +407,7 @@ const Component = (props: Props): React.ReactElement => {
 
   const handleSubmit = useCallback(async (value: string, action?: IAction | undefined | null) => {
     setLoading(true);
+    scrollToBottom();
 
     setMessages((prevMessages) => {
       const messages: MessageType[] = [...prevMessages, { message: value, type: 'userMessage' }];
@@ -483,7 +490,7 @@ const Component = (props: Props): React.ReactElement => {
         setLoading(false);
         setUserInput('');
         // setUploadedFiles([]);
-        // scrollToBottom();
+        scrollToBottom();
       }
 
       if (result.error) {
@@ -506,7 +513,7 @@ const Component = (props: Props): React.ReactElement => {
         handleError();
       }
     }
-  }, [addChatMessage, chatId, fetchResponseFromEventStream, handleError, isChatFlowAvailableToStream, leadEmail, props.apiHost, props.chatflowConfig, props.chatflowid, props.onRequest, updateMetadata]);
+  }, [addChatMessage, chatId, fetchResponseFromEventStream, handleError, isChatFlowAvailableToStream, leadEmail, props.apiHost, props.chatflowConfig, props.chatflowid, props.onRequest, scrollToBottom, updateMetadata]);
 
   // // Auto scroll chat to bottom
   // createEffect(() => {
@@ -650,15 +657,16 @@ const Component = (props: Props): React.ReactElement => {
 
   return (
     <Layout.WithSubHeaderOnly
-      backgroundStyle={'secondary'}
+      backgroundStyle={'primary'}
       className={CN(className)}
       onBack={goBack}
-      title={'AI Agent'}
+      title={'Tell Me Agent'}
     >
       <ChatMessagesArea
         className={'__message-area'}
         loading={loading}
         messages={messages}
+        ref={chatMessagesAreaRef}
       />
 
       <ChatInputArea
@@ -703,16 +711,21 @@ const AiAgent = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, to
       flexDirection: 'column'
     },
 
+    '.ant-sw-sub-header-container': {
+      paddingTop: 12,
+      paddingBottom: 16
+    },
+
     '.__message-area': {
       flex: 1,
       overflow: 'auto'
     },
 
     '.__input-area': {
-      borderTop: '1px solid #aaa',
-      padding: 12,
-      paddingRight: 4,
-      background: '#fff'
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0
     }
   };
 });
