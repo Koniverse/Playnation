@@ -6,6 +6,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
@@ -59,7 +60,9 @@ function Component (props: Props): React.ReactElement<Props> {
         </div>
       </div>
       <div className='__message-content-block'>
-        <ReactMarkdown>{message.message}</ReactMarkdown>
+        <ReactMarkdown
+          rehypePlugins={[rehypeRaw]}
+        >{message.message}</ReactMarkdown>
       </div>
     </div>
   );

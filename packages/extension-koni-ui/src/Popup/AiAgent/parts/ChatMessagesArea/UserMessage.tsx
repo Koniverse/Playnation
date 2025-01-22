@@ -5,6 +5,8 @@ import { MessageType } from '@subwallet/extension-koni-ui/Popup/AiAgent/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
@@ -19,7 +21,9 @@ function Component (props: Props): React.ReactElement<Props> {
       className={CN(className)}
     >
       <div className={'__message-content-block'}>
-        {message.message}
+        <ReactMarkdown
+          rehypePlugins={[rehypeRaw]}
+        >{message.message}</ReactMarkdown>
       </div>
     </div>
   );
@@ -29,7 +33,7 @@ export const UserMessage = styled(Component)<Props>(({ theme: { token } }: Props
   return {
     display: 'flex',
     justifyContent: 'flex-end',
-    pageLeft: 32,
+    paddingLeft: 32,
 
     '.__message-content-block': {
       overflow: 'hidden',
@@ -43,7 +47,24 @@ export const UserMessage = styled(Component)<Props>(({ theme: { token } }: Props
       paddingTop: 13,
       fontSize: token.fontSize,
       lineHeight: token.lineHeight,
-      color: token.colorTextDark1
+      color: token.colorTextDark1,
+
+      '> *': {
+        marginBottom: 0
+      },
+
+      '> * + *': {
+        marginTop: 12
+      },
+
+      'ul, ol': {
+        'list-style-position': 'inside',
+        paddingLeft: 4,
+
+        'li::marker': {
+          marginRight: 8
+        }
+      }
     }
   };
 });

@@ -28,6 +28,10 @@ function Component (props: Props): React.ReactElement<Props> {
     });
   }, [notify]);
 
+  const _onSubmit = useCallback((innerHtml: string, textContent: string, innerText: string, nodes: NodeList) => {
+    onSubmit(innerHtml);
+  }, [onSubmit]);
+
   return (
     <div
       className={CN(className)}
@@ -36,7 +40,7 @@ function Component (props: Props): React.ReactElement<Props> {
         attachButton={false}
         disabled={disabled}
         onChange={onInputChange}
-        onSend={onSubmit}
+        onSend={_onSubmit}
         placeholder={'Type your question'}
         ref={inputRef}
         sendButton={false}
@@ -63,8 +67,8 @@ function Component (props: Props): React.ReactElement<Props> {
 export const ChatInputArea = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return {
     padding: 12,
-    backgroundColor: token.colorTextLight5,
-    borderColor: token.colorTextLight4,
+    backgroundColor: 'rgba(240, 251, 255, 0.65)',
+    borderTop: '2px solid #fff',
     backdropFilter: 'blur(4px)',
     backfaceVisibility: 'hidden',
     borderTopLeftRadius: 32,
