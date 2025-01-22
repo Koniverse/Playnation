@@ -27,7 +27,8 @@ const transformTransferData = (message: string): AiTransactionData => {
     value: BigN(amount).shiftedBy(18).toFixed(0),
     to: recipientAddress,
     networkKey: 'storyOdyssey_testnet',
-    tokenSlug: 'storyOdyssey_testnet-NATIVE-IP'
+    tokenSlug: 'storyOdyssey_testnet-NATIVE-IP',
+    ignoreWarnings: true
   };
 
   return {

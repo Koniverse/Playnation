@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
-import { RequestTransfer } from '@subwallet/extension-base/background/KoniTypes';
+import { ExtrinsicStatus, RequestTransfer } from '@subwallet/extension-base/background/KoniTypes';
+import { SWTransactionBrief, SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import { Layout } from '@subwallet/extension-koni-ui/components';
 import { useSelector } from '@subwallet/extension-koni-ui/hooks';
-import { makeTransfer } from '@subwallet/extension-koni-ui/messaging';
+import { makeTransfer, subscribeTransactionById } from '@subwallet/extension-koni-ui/messaging';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { AiTransactionData, transformAiMessageData } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
@@ -38,7 +39,8 @@ interface AiTransactionInfo extends AiTransactionData {
 }
 
 const pendingTxMessage = 'Transaction have creating...';
-const approvingTxMessage = 'Transaction have approving...';
+const submitTxMessage = "Your transaction has been submitted, please wait while it's being processed";
+const successTxMessage = 'Your transaction has completed with hash: ';
 
 const Component = (props: Props): React.ReactElement => {
   const { className } = props;
@@ -665,15 +667,81 @@ const Component = (props: Props): React.ReactElement => {
     }
   }, [messages]);
 
-  const onSubmitTx = useCallback((aiTransactionInfo: AiTransactionInfo) => {
+  const onSubmitTx = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
     if (wcAccount) {
       if (aiTransactionInfo.type === 'transfer') {
         submitTxRef.current = true;
 
-        return makeTransfer({
+        // setPendingMessages((prevMessages) => {
+        //   const messages: MessageType[] = [...prevMessages, { message: pendingTxMessage, type: 'apiMessage' }];
+        //
+        //   addChatMessage(messages);
+        //
+        //   return messages;
+        // });
+      }
+
+      let submitFunc: Promise<SWTransactionResponse> | undefined;
+
+      if (aiTransactionInfo.type === 'transfer') {
+        submitFunc = makeTransfer({
           from: wcAccount.address,
           ...aiTransactionInfo.data as Omit<RequestTransfer, 'from'>
-        })
+        });
+      }
+
+      if (submitFunc) {
+        submitFunc
+          .then((rs) => {
+            if (rs.errors.length) {
+              setPendingMessages((prevMessages) => {
+                const messages: MessageType[] = [...prevMessages, { message: rs.errors[0].message, type: 'apiMessage' }];
+
+                addChatMessage(messages);
+
+                return messages;
+              });
+            }
+
+            if (rs.id) {
+              const handleResult = (data: SWTransactionBrief) => {
+                if (data.status === ExtrinsicStatus.SUBMITTING) {
+                  setPendingMessages((prevMessages) => {
+                    const messages: MessageType[] = [...prevMessages, { message: submitTxMessage, type: 'apiMessage' }];
+
+                    addChatMessage(messages);
+
+                    return messages;
+                  });
+                } else if (data.status === ExtrinsicStatus.SUCCESS) {
+                  setPendingMessages((prevMessages) => {
+                    const messages: MessageType[] = [...prevMessages, { message: successTxMessage + data.extrinsicHash, type: 'apiMessage' }];
+
+                    addChatMessage(messages);
+
+                    return messages;
+                  });
+                }
+              };
+
+              subscribeTransactionById({ id: rs.id }, handleResult)
+                .then(handleResult)
+                .catch(console.error);
+            }
+          })
+          .catch((err: Error) => {
+            setPendingMessages((prevMessages) => {
+              if (prevMessages.length) {
+                const messages: MessageType[] = [...prevMessages, { message: err.message, type: 'apiMessage' }];
+
+                addChatMessage(messages);
+
+                return messages;
+              } else {
+                return prevMessages;
+              }
+            });
+          })
           .finally(() => {
             submitTxRef.current = false;
           });
@@ -681,19 +749,13 @@ const Component = (props: Props): React.ReactElement => {
     }
 
     return Promise.resolve(undefined);
-  }, [wcAccount]);
+  }, [wcAccount, addChatMessage]);
 
   useEffect(() => {
-    if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
-      onSubmitTx(aiTransactionInfo)
-        .then((rs) => {
-          if (rs) {
-            // Handle tx response
-          }
-        })
-        .catch(console.error);
+    if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current) {
+      onSubmitTx(aiTransactionInfo).catch(console.error);
     }
-  }, [aiTransactionInfo, onSubmitTx, startChat]);
+  }, [aiTransactionInfo, onSubmitTx]);
 
   // if not loading and have pendingMessages, update messages to show
   useEffect(() => {

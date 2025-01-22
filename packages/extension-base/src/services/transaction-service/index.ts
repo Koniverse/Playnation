@@ -296,6 +296,8 @@ export default class TransactionService {
         ...transaction,
         ...data
       };
+
+      this.transactionSubject.next(this.transactions);
     }
   }
 

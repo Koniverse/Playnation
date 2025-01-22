@@ -12,3 +12,7 @@ export interface RequestMintNft {
   chain: string;
   signature: string;
 }
+
+export interface RequestSubscribeTransactionById {
+  id: string;
+}
