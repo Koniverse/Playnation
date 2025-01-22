@@ -75,6 +75,7 @@ export class BookaSdk {
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
   private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
   private addressLinkedSubject = new BehaviorSubject<string | undefined>(undefined);
+  private addressLinkingSubject = new BehaviorSubject<string | undefined>(undefined);
 
   // Special cases
   // Check if the account is banned
@@ -283,6 +284,18 @@ export class BookaSdk {
 
   async fetchMetadata () {
     return await this.getRequest<AppMetadata>(`${GAME_API_HOST}/api/metadata/fetch`);
+  }
+
+  subscribeAddressLinking (): BehaviorSubject<string | undefined> {
+    return this.addressLinkingSubject;
+  }
+
+  get addressLinking () {
+    return this.addressLinkingSubject.value;
+  }
+
+  setAddressLinking (address?: string) {
+    this.addressLinkingSubject.next(address);
   }
 
   async reloadAccount () {

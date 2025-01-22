@@ -30,21 +30,26 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
 
   const onCheckingLinkedAccount = useCallback(() => {
     const func = async () => {
-      await cloudStorage.setItem(cloudStorageKey, 'showed');
+      try {
+        await cloudStorage.setItem(cloudStorageKey, 'showed');
 
-      const addressMinted = await apiSDK.getMintedAddress();
+        const addressMinted = await apiSDK.getMintedAddress();
 
-      if (addressMinted) {
-        await apiSDK.setAccountAddress(addressMinted);
-        await apiSDK.getStatsOfAddress();
-        inactiveModal(modalId);
-      } else {
-        inactiveModal(modalId);
-        const _wcAddress = wcAccount?.address;
+        if (addressMinted) {
+          await apiSDK.setAccountAddress(addressMinted);
+          await apiSDK.getStatsOfAddress();
+          inactiveModal(modalId);
+        } else {
+          inactiveModal(modalId);
+          const _wcAddress = wcAccount?.address;
 
-        if (_wcAddress) {
-          onSubmitAddressLinking(_wcAddress);
+          if (_wcAddress) {
+            onSubmitAddressLinking(_wcAddress);
+          }
         }
+      } catch (e) {
+        inactiveModal(modalId);
+        console.error(e);
       }
     };
 

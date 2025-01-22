@@ -4,7 +4,8 @@
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { CONFIRM_LINKING_ACCOUNT_MODAL } from '@subwallet/extension-koni-ui/constants';
-import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
+import { useSelector, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toShort } from '@subwallet/extension-koni-ui/utils';
@@ -27,6 +28,8 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
   const { inactiveModal } = useContext(ModalContext);
   const [loading, setLoading] = useState(false);
   const { token } = useTheme() as Theme;
+  const { wcAccount } = useSelector((state) => state.accountState);
+  const { disconnectWithoutConfirmModal } = useContext(WalletConnectContext);
 
   const onSubmitLinkingAccount = useCallback(() => {
     const func = async () => {
@@ -65,8 +68,9 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
   }, [setAddressLinking, inactiveModal, addressLinking, onErrorHandler]);
 
   const onCancel = useCallback(() => {
+    wcAccount && disconnectWithoutConfirmModal(wcAccount).catch(console.error);
     inactiveModal(modalId);
-  }, [inactiveModal]);
+  }, [disconnectWithoutConfirmModal, inactiveModal, wcAccount]);
 
   const footerModal = useMemo(() => {
     return (
@@ -109,6 +113,7 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
       className={CN(className)}
       footer={footerModal}
       id={modalId}
+      onCancel={onCancel}
       title={t('Link your account')}
     >
       <div className='ant-sw-modal-confirm-body'>

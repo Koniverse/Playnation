@@ -102,8 +102,10 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
   }, [closeWaiting, getWcAddress, inactiveModal, notify, onSubmitAddressLinking, openWaiting, t]);
 
   const onCancel = useCallback(() => {
-    inactiveModal(modalId);
-  }, [inactiveModal]);
+    wcAccount && disconnectWithoutConfirmModal(wcAccount).then(() => {
+      inactiveModal(modalId);
+    }).catch(console.error);
+  }, [disconnectWithoutConfirmModal, inactiveModal, wcAccount]);
 
   const footerModal = useMemo(() => {
     return (

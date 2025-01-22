@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { WC_DEFAULT_CHAIN_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
-import { SWStorage } from '@subwallet/extension-base/storage';
-import { ConfirmLinkingAccountModal, EmptyList, ExistedAddressModal, GameAccountAvatar, OnChainProfileModal } from '@subwallet/extension-koni-ui/components';
+import { EmptyList, GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
 import WalletConnectStats from '@subwallet/extension-koni-ui/components/EmptyList/WalletConnectStats';
 import NFTListModal from '@subwallet/extension-koni-ui/components/Modal/NFTListModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { ADDRESS_EXISTED_MODAL, CONFIRM_LINKING_ACCOUNT_MODAL, ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useNotification, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
@@ -26,11 +24,6 @@ import { stringToHex } from '@polkadot/util';
 
 type Props = ThemeProps;
 const apiSDK = BookaSdk.instance;
-const cloudStorage = SWStorage.instance;
-const cloudStorageKey = 'on-chain-profile-modal';
-const onChainProfileAlterModal = ON_CHAIN_PROFILE_MODAL;
-const addressExitedModal = ADDRESS_EXISTED_MODAL;
-const confirmLinkingAddress = CONFIRM_LINKING_ACCOUNT_MODAL;
 const nftListModalId = 'nft-list-modal';
 
 const showEmptyList = false;
@@ -39,10 +32,9 @@ const Component: React.FC<Props> = (props: Props) => {
   const { className } = props;
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
-  const [addressLinking, setAddressLinking] = useState<string | undefined>(undefined);
   const [addressLinked, setAddressLinked] = useState<string | undefined>(apiSDK.addressLinked);
   const { connectWC, requireWC, waitingSigningModal: { close: closeWaiting, open: openWaiting } } = useContext(WalletConnectContext);
-  const { activeModal, inactiveModal } = useContext(ModalContext);
+  const { activeModal } = useContext(ModalContext);
   const notify = useNotification();
   const { t } = useTranslation();
 
@@ -57,29 +49,19 @@ const Component: React.FC<Props> = (props: Props) => {
 
   const currentPoint = account?.attributes.accumulatePoint || 0;
 
-  const onShowOnChainProfileModal = useCallback(async () => {
-    try {
-      const status = await cloudStorage.getItem(cloudStorageKey);
-
-      if (!status) {
-        activeModal(onChainProfileAlterModal);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+  const openNftModal = useCallback(() => {
+    activeModal(nftListModalId);
   }, [activeModal]);
 
-  const onShowAddressExistedModal = useCallback(() => {
-    inactiveModal(onChainProfileAlterModal);
-    inactiveModal(confirmLinkingAddress);
-    activeModal(addressExitedModal);
-  }, [activeModal, inactiveModal]);
+  const onShareButton = useCallback(() => {
+    console.log('Share button clicked');
+  }, []);
 
   const connectWalletConnect = useCallback(() => {
     const fnc = async () => {
       try {
         await requireWC();
-        const address = await connectWC();
+        const address = await connectWC(true, true);
 
         const message = `Approve use this address to set linked address: ${address}`;
 
@@ -93,7 +75,7 @@ const Component: React.FC<Props> = (props: Props) => {
             method: 'personal_sign'
           });
 
-          setAddressLinking(address);
+          apiSDK.setAddressLinking(address);
           closeWaiting();
         } catch (e) {
           closeWaiting();
@@ -118,14 +100,6 @@ const Component: React.FC<Props> = (props: Props) => {
     fnc().catch(console.error);
   }, [closeWaiting, connectWC, notify, openWaiting, requireWC, t]);
 
-  const openNftModal = useCallback(() => {
-    activeModal(nftListModalId);
-  }, [activeModal]);
-
-  const onShareButton = useCallback(() => {
-    console.log('Share button clicked');
-  }, []);
-
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount()
       .subscribe((data) => {
@@ -142,16 +116,6 @@ const Component: React.FC<Props> = (props: Props) => {
       addressLinkedSub.unsubscribe();
     };
   }, []);
-
-  useEffect(() => {
-    if (addressLinking) {
-      activeModal(confirmLinkingAddress);
-    }
-  }, [activeModal, addressLinking]);
-
-  useEffect(() => {
-    onShowOnChainProfileModal().catch(console.error);
-  }, [onShowOnChainProfileModal]);
 
   return (
     <div className={className}>
@@ -273,7 +237,7 @@ const Component: React.FC<Props> = (props: Props) => {
         </div>
       )}
 
-      {!wcAccount?.address && !addressLinked && (
+      {!addressLinked && (
         <div className='block-stats-info'>
           <WalletConnectStats
             className={'wallet-connect-stats'}
@@ -281,18 +245,6 @@ const Component: React.FC<Props> = (props: Props) => {
           />
         </div>
       )}
-
-      <OnChainProfileModal
-        onSubmitAddressLinking={setAddressLinking}
-      />
-      <ExistedAddressModal
-        onSubmitAddressLinking={setAddressLinking}
-      />
-      <ConfirmLinkingAccountModal
-        addressLinking={addressLinking}
-        onErrorHandler={onShowAddressExistedModal}
-        setAddressLinking={setAddressLinking}
-      />
       <NFTListModal />
     </div>
   );
