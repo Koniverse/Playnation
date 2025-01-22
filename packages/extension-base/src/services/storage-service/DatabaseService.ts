@@ -5,7 +5,7 @@ import { _ChainAsset } from '@subwallet/chain-list/types';
 import { APIItemState, ChainStakingMetadata, CrowdloanItem, MantaPayConfig, NftCollection, NftItem, NominatorMetadata, PriceJson, StakingItem, StakingType, TransactionHistoryItem } from '@subwallet/extension-base/background/KoniTypes';
 import { EventService } from '@subwallet/extension-base/services/event-service';
 import KoniDatabase, { IBalance, ICampaign, IChain, ICrowdloanItem, INft } from '@subwallet/extension-base/services/storage-service/databases';
-import { AssetStore, BalanceStore, ChainStore, CrowdloanStore, MetadataStore, MigrationStore, NftCollectionStore, NftStore, PriceStore, StakingStore, TransactionStore } from '@subwallet/extension-base/services/storage-service/db-stores';
+import { AiTransactionQuery, AiTransactionStore, AssetStore, BalanceStore, ChainStore, CrowdloanStore, MetadataStore, MigrationStore, NftCollectionStore, NftStore, PriceStore, StakingStore, TransactionStore } from '@subwallet/extension-base/services/storage-service/db-stores';
 import BaseStore from '@subwallet/extension-base/services/storage-service/db-stores/BaseStore';
 import CampaignStore from '@subwallet/extension-base/services/storage-service/db-stores/Campaign';
 import ChainStakingMetadataStore from '@subwallet/extension-base/services/storage-service/db-stores/ChainStakingMetadata';
@@ -14,7 +14,7 @@ import NominatorMetadataStore from '@subwallet/extension-base/services/storage-s
 import { HistoryQuery } from '@subwallet/extension-base/services/storage-service/db-stores/Transaction';
 import YieldPoolStore from '@subwallet/extension-base/services/storage-service/db-stores/YieldPoolStore';
 import YieldPositionStore from '@subwallet/extension-base/services/storage-service/db-stores/YieldPositionStore';
-import { BalanceItem, YieldPoolInfo, YieldPoolType, YieldPositionInfo } from '@subwallet/extension-base/types';
+import { AiTransactionLink, BalanceItem, YieldPoolInfo, YieldPoolType, YieldPositionInfo } from '@subwallet/extension-base/types';
 import { reformatAddress } from '@subwallet/extension-base/utils';
 import keyring from '@subwallet/ui-keyring';
 import { Subscription } from 'dexie';
@@ -63,7 +63,9 @@ export default class DatabaseService {
       nominatorMetadata: new NominatorMetadataStore(this._db.nominatorMetadata),
 
       mantaPay: new MantaPayStore(this._db.mantaPay),
-      campaign: new CampaignStore(this._db.campaign)
+      campaign: new CampaignStore(this._db.campaign),
+
+      aiTransaction: new AiTransactionStore(this._db.aiTransactions)
       // assetRef: new AssetRefStore(this._db.assetRef)
     };
   }
@@ -287,6 +289,18 @@ export default class DatabaseService {
 
   async getNominatorMetadata () {
     return this.stores.nominatorMetadata.getAll();
+  }
+
+  // Ai Transaction
+
+  async getAiTransactions (query?: AiTransactionQuery) {
+    return this.stores.aiTransaction.queryHistory(query);
+  }
+
+  async upsertAiTransactions (histories: AiTransactionLink[]) {
+    const cleanedHistory = histories.filter((x) => x && x.transactionId && x.aiMessageId);
+
+    return this.stores.aiTransaction.bulkUpsert(cleanedHistory);
   }
 
   async resetWallet (resetAll: boolean): Promise<void> {

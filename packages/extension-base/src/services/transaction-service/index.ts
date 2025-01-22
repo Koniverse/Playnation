@@ -145,6 +145,17 @@ export default class TransactionService {
     const isInternal = !transaction.url;
     const transactionId = getTransactionId(transaction.chainType, transaction.chain, isInternal, isWalletConnectRequest(transaction.id));
 
+    // Can handle on event `send` or `error`
+    if (transaction.aiMessageId) {
+      this.state.dbService.upsertAiTransactions([{
+        transactionId,
+        aiMessageId: transaction.aiMessageId
+      }])
+        .catch((e) => {
+          console.error('Error while saving AI transaction', e);
+        });
+    }
+
     return {
       ...transaction,
       createdAt: new Date().getTime(),

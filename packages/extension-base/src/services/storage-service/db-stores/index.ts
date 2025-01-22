@@ -13,3 +13,6 @@ export { default as MigrationStore } from './Migration';
 export { default as MetadataStore } from './Metadata';
 export { default as ChainStore } from './Chain';
 export { default as AssetStore } from './Asset';
+
+export { default as AiTransactionStore } from './AiTransaction';
+export type { AiTransactionQuery } from './AiTransaction';

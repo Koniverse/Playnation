@@ -2,11 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
+import { RequestTransfer } from '@subwallet/extension-base/background/KoniTypes';
 import { Layout } from '@subwallet/extension-koni-ui/components';
+import { useSelector } from '@subwallet/extension-koni-ui/hooks';
+import { getAiTransactionHistories, makeTransfer } from '@subwallet/extension-koni-ui/messaging';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { AiTransactionData, transformAiMessageData } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
 import { cloneDeep } from 'lodash';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -27,6 +31,11 @@ type Props = ThemeProps & {
 }
 
 const defaultWelcomeMessage = 'Hi there! How can I help?';
+
+interface AiTransactionInfo extends AiTransactionData {
+  aiMessageId?: string;
+  transactionId?: string;
+}
 
 const Component = (props: Props): React.ReactElement => {
   const { className } = props;
@@ -54,6 +63,12 @@ const Component = (props: Props): React.ReactElement => {
   const [followUpPromptsStatus, setFollowUpPromptsStatus] = useState<boolean>(false);
   const [followUpPrompts, setFollowUpPrompts] = useState<string[]>([]);
   const [endStreamTrigger, setEndStreamTrigger] = useState<string | undefined>();
+
+  const [aiTransactionInfo, setAiTransactionInfo] = useState<AiTransactionInfo>({ type: 'unknown' });
+
+  const { wcAccount } = useSelector((state) => state.accountState);
+
+  const submitTxRef = useRef(false);
 
   /**
    * Add each chat message into localStorage
@@ -627,6 +642,67 @@ const Component = (props: Props): React.ReactElement => {
     // note: check the dependency carefully
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endStreamTrigger]);
+
+  useEffect(() => {
+    if (messages.length) {
+      const lastMessage = messages[messages.length - 1];
+
+      if (lastMessage.type === 'apiMessage') {
+        const converted = transformAiMessageData(lastMessage.message);
+
+        console.log('converted', converted);
+        setAiTransactionInfo({ ...converted, aiMessageId: lastMessage.messageId });
+      } else {
+        setAiTransactionInfo({ type: 'unknown' });
+      }
+    } else {
+      setAiTransactionInfo({ type: 'unknown' });
+    }
+  }, [messages]);
+
+  const onSubmitTx = useCallback((aiTransactionInfo: AiTransactionInfo) => {
+    if (wcAccount) {
+      if (aiTransactionInfo.type === 'transfer') {
+        submitTxRef.current = true;
+
+        return makeTransfer({
+          from: wcAccount.address,
+          aiMessageId: aiTransactionInfo.aiMessageId,
+          ...aiTransactionInfo.data as Omit<RequestTransfer, 'from'>
+        })
+          .finally(() => {
+            submitTxRef.current = false;
+          });
+      }
+    }
+
+    return undefined;
+  }, [wcAccount]);
+
+  useEffect(() => {
+    if (aiTransactionInfo.type !== 'unknown' && !submitTxRef.current) {
+      getAiTransactionHistories({
+        aiMessageId: aiTransactionInfo.aiMessageId as string
+      })
+        .then((rs) => {
+          return !rs.histories.length;
+        })
+        .then((canSubmit) => {
+          if (canSubmit) {
+            return onSubmitTx(aiTransactionInfo);
+          }
+
+          return undefined;
+        })
+        .then((rs) => {
+          if (rs) {
+            // Handle tx response
+          }
+        })
+        .catch(console.error);
+      // do something
+    }
+  }, [aiTransactionInfo, onSubmitTx]);
 
   // if not loading and have pendingMessages, update messages to show
   useEffect(() => {

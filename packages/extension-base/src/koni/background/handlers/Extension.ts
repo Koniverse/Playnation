@@ -42,7 +42,7 @@ import { isProposalExpired, isSupportWalletConnectChain, isSupportWalletConnectN
 import { ResultApproveWalletConnectSession, WalletConnectNotSupportRequest, WalletConnectSessionRequest } from '@subwallet/extension-base/services/wallet-connect-service/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { AccountsStore } from '@subwallet/extension-base/stores';
-import { BalanceJson, BuyServiceInfo, BuyTokenInfo, NominationPoolInfo, RequestMintNft, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestWalletConnectCancelSessionPromise, RequestWalletConnectGetSessionPromise, RequestWCSendTransactionRequest, RequestWCSignMessageRequest, ResponseWCSendTransactionRequest, ResponseWCSignMessageRequest, StorageDataInterface, TokenSpendingApprovalParams } from '@subwallet/extension-base/types';
+import { BalanceJson, BuyServiceInfo, BuyTokenInfo, NominationPoolInfo, RequestGetAiTransactionHistory, RequestMintNft, RequestUnlockDotCheckCanMint, RequestUnlockDotSubscribeMintedData, RequestWalletConnectCancelSessionPromise, RequestWalletConnectGetSessionPromise, RequestWCSendTransactionRequest, RequestWCSignMessageRequest, ResponseGetAiTransactionHistory, ResponseWCSendTransactionRequest, ResponseWCSignMessageRequest, StorageDataInterface, TokenSpendingApprovalParams } from '@subwallet/extension-base/types';
 import { CommonOptimalPath } from '@subwallet/extension-base/types/service-base';
 import { SwapPair, SwapQuoteResponse, SwapRequest, SwapRequestResult, SwapSubmitParams, ValidateSwapProcessParams } from '@subwallet/extension-base/types/swap';
 import { BN_ZERO, convertSubjectInfoToAddresses, createTransactionFromRLP, isSameAddress, MODULE_SUPPORT, reformatAddress, signatureToHex, Transaction as QrTransaction, uniqueStringArray } from '@subwallet/extension-base/utils';
@@ -1707,7 +1707,7 @@ export default class KoniExtension {
   }
 
   private async makeTransfer (inputData: RequestTransfer): Promise<SWTransactionResponse> {
-    const { from, networkKey, to, tokenSlug, transferAll, value } = inputData;
+    const { aiMessageId, from, networkKey, to, tokenSlug, transferAll, value } = inputData;
     const transferTokenInfo = this.#koniState.chainService.getAssetBySlug(tokenSlug);
     const [errors, ,] = validateTransferRequest(transferTokenInfo, from, to, value, transferAll);
 
@@ -1792,6 +1792,8 @@ export default class KoniExtension {
     };
 
     return this.#koniState.transactionService.handleTransaction({
+      // Another transaction want to use with ai must add `aiMessageId`
+      aiMessageId,
       errors,
       warnings,
       address: from,
@@ -4265,6 +4267,16 @@ export default class KoniExtension {
 
   /* Mint NFT */
 
+  /* Ai transaction */
+
+  private async getAiTransactionHistory (request: RequestGetAiTransactionHistory): Promise<ResponseGetAiTransactionHistory> {
+    const transactions = await this.#koniState.dbService.getAiTransactions(request);
+
+    return {
+      histories: transactions
+    };
+  }
+
   // --------------------------------------------------------------
   // eslint-disable-next-line @typescript-eslint/require-await
   public async handle<TMessageType extends MessageTypes> (id: string, type: TMessageType, request: RequestTypes[TMessageType], port: chrome.runtime.Port): Promise<ResponseType<TMessageType>> {
@@ -4810,6 +4822,13 @@ export default class KoniExtension {
         return this.odysseyMintNft(request as RequestMintNft);
 
         /* Mint NFT */
+
+        /* Ai transaction */
+
+      case 'pri(ai.transaction.histories)':
+        return this.getAiTransactionHistory(request as RequestGetAiTransactionHistory);
+
+        /* Ai transaction */
 
       // Default
       default:

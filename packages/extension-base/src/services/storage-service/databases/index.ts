@@ -3,7 +3,7 @@
 
 import { _AssetRef, _ChainAsset, _ChainInfo } from '@subwallet/chain-list/types';
 import { CampaignData, ChainStakingMetadata, CrowdloanItem, MetadataItem, NftCollection, NftItem, NominatorMetadata, PriceJson, StakingItem, TransactionHistoryItem } from '@subwallet/extension-base/background/KoniTypes';
-import { BalanceItem, YieldPoolInfo, YieldPositionInfo } from '@subwallet/extension-base/types';
+import { AiTransactionLink, BalanceItem, YieldPoolInfo, YieldPositionInfo } from '@subwallet/extension-base/types';
 import Dexie, { Table, Transaction } from 'dexie';
 
 export const DEFAULT_DATABASE = 'SubWalletDB_v2';
@@ -31,6 +31,7 @@ export interface IKeyValue {
 }
 export interface INft extends NftItem, DefaultAddressDoc {}
 export interface ITransactionHistoryItem extends TransactionHistoryItem, DefaultAddressDoc, DefaultChainDoc {}
+export type IAiTransactionItem = AiTransactionLink;
 
 // TODO: refactor this
 export interface IMigration {
@@ -75,6 +76,8 @@ export default class KoniDatabase extends Dexie {
 
   public keyValue!: Table<IKeyValue, object>;
 
+  public aiTransactions!: Table<IAiTransactionItem, object>;
+
   private schemaVersion: number;
 
   public constructor (name = DEFAULT_DATABASE, schemaVersion = 11) {
@@ -118,6 +121,11 @@ export default class KoniDatabase extends Dexie {
 
     this.conditionalVersion(6, {
       keyValue: 'key'
+    });
+
+    // AI transaction table to keep a track of AI messages which is used to create transaction
+    this.conditionalVersion(7, {
+      aiTransactions: 'aiMessageId, transactionId'
     });
   }
 

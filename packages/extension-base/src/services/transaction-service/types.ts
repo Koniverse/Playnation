@@ -25,12 +25,13 @@ export interface SWTransaction extends ValidateTransactionResponse, Partial<Pick
   transaction: SubmittableExtrinsic | TransactionConfig;
   additionalValidator?: (inputTransaction: SWTransactionResponse) => Promise<void>;
   eventsHandler?: (eventEmitter: TransactionEmitter) => void;
+  aiMessageId?: string;
 }
 
 export type SWTransactionResult = Omit<SWTransaction, 'transaction' | 'additionalValidator' | 'eventsHandler'>
 
 type SwInputBase = Pick<SWTransaction, 'address' | 'url' | 'data' | 'extrinsicType' | 'chain' | 'chainType' | 'ignoreWarnings' | 'transferNativeAmount'>
-& Partial<Pick<SWTransaction, 'additionalValidator' | 'eventsHandler'>>;
+& Partial<Pick<SWTransaction, 'additionalValidator' | 'eventsHandler' | 'aiMessageId'>>;
 
 export interface SWTransactionInput extends SwInputBase, Partial<Pick<SWTransaction, 'estimateFee'>> {
   id?: string;
