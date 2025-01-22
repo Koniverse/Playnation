@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
-import { Layout } from '@subwallet/extension-koni-ui/components';
+import { GameAccountAvatar, Layout } from '@subwallet/extension-koni-ui/components';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
 import { cloneDeep } from 'lodash';
@@ -27,18 +29,14 @@ type Props = ThemeProps & {
 }
 
 const defaultWelcomeMessage = 'Hi there! How can I help?';
+const apiSDK = BookaSdk.instance;
 
 const Component = (props: Props): React.ReactElement => {
   const { className } = props;
+  const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
+
   const { goBack } = useDefaultNavigate();
-  const [messages, setMessages] = useState<MessageType[]>(
-    [
-      {
-        message: props.welcomeMessage ?? defaultWelcomeMessage,
-        type: 'apiMessage'
-      }
-    ]
-  );
+  const [messages, setMessages] = useState<MessageType[]>([]);
   const [pendingMessages, setPendingMessages] = useState<MessageType[]>([]);
 
   const [chatId, setChatId] = useState(props.chatId);
@@ -594,6 +592,33 @@ const Component = (props: Props): React.ReactElement => {
     }
   }, [props.chatflowid, props.welcomeMessage]);
 
+  const welcomeMessagesNode = useMemo(() => {
+    const userName = `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}`.trim();
+
+    return (
+      <>
+        <div className={'__welcome-first-line'}>
+          Hi {userName},
+        </div>
+
+        <div className={'__welcome-second-line'}>
+          How can I help? <br />
+          Anything, tell me your wish...
+        </div>
+      </>
+    );
+  }, [account?.info?.firstName, account?.info?.lastName]);
+
+  useEffect(() => {
+    const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
+      setAccount(data);
+    });
+
+    return () => {
+      accountSub.unsubscribe();
+    };
+  }, []);
+
   useEffect(() => {
     (async () => {
       // Determine if particular chatflow is available for streaming
@@ -662,12 +687,32 @@ const Component = (props: Props): React.ReactElement => {
       onBack={goBack}
       title={'Tell Me Agent'}
     >
-      <ChatMessagesArea
-        className={'__message-area'}
-        loading={loading}
-        messages={messages}
-        ref={chatMessagesAreaRef}
-      />
+      <div className={CN('__message-area-wrapper', {
+        '-no-message': !messages.length
+      })}
+      >
+        {
+          !messages.length && (
+            <div className='__welcome-block'>
+              <GameAccountAvatar
+                avatarPath={account?.info.photoUrl || undefined}
+                className={'__user-avatar'}
+                hasBoxShadow
+                size={7}
+              />
+
+              {welcomeMessagesNode}
+            </div>
+          )
+        }
+
+        <ChatMessagesArea
+          className={'__message-area'}
+          loading={loading}
+          messages={messages}
+          ref={chatMessagesAreaRef}
+        />
+      </div>
 
       <ChatInputArea
         className={'__input-area'}
@@ -716,9 +761,64 @@ const AiAgent = styled(WrapperComponent)<ThemeProps>(({ theme: { extendToken, to
       paddingBottom: 16
     },
 
-    '.__message-area': {
+    '.__message-area-wrapper': {
       flex: 1,
       overflow: 'auto'
+    },
+
+    '.__message-area': {
+      height: '100%'
+    },
+
+    '.__message-area-wrapper.-no-message': {
+      position: 'relative',
+
+      '.__message-area': {
+        opacity: 0,
+        pointerEvents: 'none'
+      }
+    },
+
+    '.__welcome-block': {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      textAlign: 'center',
+      paddingLeft: 16,
+      paddingRight: 16
+    },
+
+    '.__user-avatar': {
+      borderWidth: 2,
+      width: 92,
+      height: 92,
+      minWidth: 92,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+      marginBottom: 24,
+
+      '.__inner': {
+        borderWidth: 4
+      },
+
+      '.__avatar-image': {
+        borderWidth: 2
+      }
+    },
+
+    '.__welcome-first-line': {
+      fontSize: 20,
+      lineHeight: '26px',
+      fontWeight: token.headingFontWeight,
+      color: token.colorTextDark1,
+      marginBottom: 8
+    },
+
+    '.__welcome-second-line': {
+      fontSize: 14,
+      lineHeight: '22px',
+      color: token.colorTextDark2
     },
 
     '.__input-area': {
