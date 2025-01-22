@@ -4,7 +4,7 @@
 import { WalletConnect } from '@subwallet/extension-koni-ui/components';
 import { ButtonProps, Icon } from '@subwallet/react-ui';
 import { CheckCircle } from 'phosphor-react';
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import EmptyList from './EmptyList';
@@ -12,14 +12,12 @@ import EmptyList from './EmptyList';
 interface Props {
   modalId?: string;
   className?: string;
+  handleWalletConnect: () => void;
 }
 
 const WalletConnectStats: React.FC<Props> = (props: Props) => {
   const { t } = useTranslation();
-  const { className } = props;
-
-  const handleWalletConnect = useCallback(() => {
-  }, []);
+  const { className, handleWalletConnect } = props;
 
   const buttonProps = useMemo((): ButtonProps => {
     return {

@@ -389,8 +389,8 @@ export interface IAirdropNftMinting {
     id: number;
     name: string;
     type?: string;
-    start: Date;
-    end: Date;
+    start?: Date;
+    end?: Date;
     boxCount?: number,
     note?: string
   }[];

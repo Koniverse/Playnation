@@ -35,6 +35,10 @@ const CACHE_KEYS = {
   airdropNftList: 'data--airdrop-nft-list-cache'
 };
 
+const CLOUD_KEYS = {
+  addressLinked: 'data--address-linked'
+};
+
 function parseCache<T> (key: string): T | undefined {
   const data = localStorage.getItem(key);
 
@@ -70,6 +74,7 @@ export class BookaSdk {
   private airdropNftMintSubject = new BehaviorSubject<IAirdropNftMinting[]>([]);
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
   private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
+  private addressLinkedSubject = new BehaviorSubject<string | undefined>(undefined);
 
   // Special cases
   // Check if the account is banned
@@ -108,6 +113,12 @@ export class BookaSdk {
 
       localStorage.setItem('cache-version', cacheVersion);
     }
+
+    storage.getItem(CLOUD_KEYS.addressLinked).then((addressLinked_) => {
+      if (addressLinked_) {
+        this.addressLinkedSubject.next(addressLinked_);
+      }
+    }).catch(console.error);
   }
 
   public get waitForSync () {
@@ -172,6 +183,10 @@ export class BookaSdk {
 
   public get airdropNftMintList () {
     return this.airdropNftMintSubject.value;
+  }
+
+  get addressLinked (): string | undefined {
+    return this.addressLinkedSubject.value;
   }
 
   private getRequestHeader (needAuthorize = true) {
@@ -286,6 +301,10 @@ export class BookaSdk {
 
   subscribeAccount () {
     return this.accountSubject;
+  }
+
+  subscribeAddressLinked () {
+    return this.addressLinkedSubject;
   }
 
   async fetchEnergyConfig () {
@@ -1125,7 +1144,10 @@ export class BookaSdk {
   async setAccountAddress (address: string) {
     const data = await this.postRequest<{ status: boolean }>(`${GAME_API_HOST}/api/integrated-profile/set-account-address`, { address });
 
-    return data.status;
+    if (data.status) {
+      this.addressLinkedSubject.next(address);
+      await storage.setItem(CLOUD_KEYS.addressLinked, address);
+    }
   }
 
   async getStatsOfAddress () {

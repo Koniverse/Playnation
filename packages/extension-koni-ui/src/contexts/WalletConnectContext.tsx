@@ -29,6 +29,7 @@ type SuccessCallback = (address: string) => void;
 export interface WalletConnectContextType {
   connectWC: (showSuccessModal?: boolean) => Promise<string>;
   disconnectWC: (wcAccount: AccountJson) => (() => Promise<void>);
+  disconnectWithoutConfirmModal: (wcAccount: AccountJson) => Promise<void>;
   requireWC: () => Promise<void>;
   waitingSigningModal: {
     open: () => void;
@@ -39,6 +40,7 @@ export interface WalletConnectContextType {
 export const WalletConnectContext = React.createContext<WalletConnectContextType>({
   connectWC: () => Promise.resolve(''),
   disconnectWC: () => () => Promise.resolve(),
+  disconnectWithoutConfirmModal: () => Promise.resolve(),
   requireWC: () => Promise.resolve(),
   waitingSigningModal: {
     close: noop,
@@ -234,6 +236,14 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
     };
   }, [handleDisconnectModal]);
 
+  const disconnectWithoutConfirmModal = useCallback(async (wcAccount: AccountJson) => {
+    const topic = wcAccount.wcTopic;
+
+    if (topic) {
+      await disconnectWalletConnectConnection(topic);
+    }
+  }, []);
+
   const requireWC = useCallback(() => {
     return handleRequireModal();
   }, [handleRequireModal]);
@@ -249,12 +259,13 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
   const contextValue = useMemo((): WalletConnectContextType => ({
     connectWC,
     disconnectWC,
+    disconnectWithoutConfirmModal,
     requireWC,
     waitingSigningModal: {
       close: closeWaiting,
       open: openWaiting
     }
-  }), [closeWaiting, connectWC, disconnectWC, openWaiting, requireWC]);
+  }), [closeWaiting, connectWC, disconnectWC, disconnectWithoutConfirmModal, openWaiting, requireWC]);
 
   useEffect(() => {
     if (projectId) {
