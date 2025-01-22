@@ -451,3 +451,21 @@ export interface NftMintingLog {
   notify?: boolean,
   extrinsicHash?: string,
 }
+
+export enum AccountIntegratedProfileStatus {
+  NOT_SYNCED = 'not_synced',
+  SYNCING = 'syncing',
+  SYNCED = 'synced',
+}
+
+export interface IntegratedProfileResult {
+  totalTransactions: number;
+  totalStakeVerioTransactions: number;
+  totalSwapPiperXTransactions: number;
+  offset: number;
+  totalBadgeNFTsOwned: number;
+  status: AccountIntegratedProfileStatus | null;
+  syncedAt?: Date | null;
+  telegramId?: number;
+  loginCount?: number;
+}
