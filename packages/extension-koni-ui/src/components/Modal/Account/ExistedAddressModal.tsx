@@ -115,7 +115,6 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           disabled={loading}
           icon={(
             <Icon
-              customSize={'20px'}
               phosphorIcon={XCircle}
               weight='fill'
             />
@@ -123,7 +122,6 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           onClick={onCancel}
           schema={'secondary'}
           shape={'round'}
-          size={'sm'}
         >
           {t('Cancel')}
         </Button>
@@ -131,9 +129,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           block={true}
           icon={(
             <Icon
-              customSize={'20px'}
               phosphorIcon={CheckCircle}
-              weight='fill'
             />
           )}
           loading={loading}
