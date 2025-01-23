@@ -85,7 +85,7 @@ const Component: React.FC<Props> = (props: Props) => {
     const fnc = async () => {
       try {
         await requireWC();
-        const address = await connectWC(true, true);
+        const address = await connectWC();
 
         const message = `Approve use this address to set linked address: ${address}`;
 

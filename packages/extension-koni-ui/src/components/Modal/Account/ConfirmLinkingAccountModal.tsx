@@ -69,8 +69,9 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
 
   const onCancel = useCallback(() => {
     wcAccount && disconnectWithoutConfirmModal(wcAccount).catch(console.error);
+    setAddressLinking(undefined);
     inactiveModal(modalId);
-  }, [disconnectWithoutConfirmModal, inactiveModal, wcAccount]);
+  }, [disconnectWithoutConfirmModal, inactiveModal, setAddressLinking, wcAccount]);
 
   const footerModal = useMemo(() => {
     return (
