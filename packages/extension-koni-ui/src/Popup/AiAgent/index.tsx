@@ -68,7 +68,7 @@ const Component = (props: Props): React.ReactElement => {
   const [endStreamTrigger, setEndStreamTrigger] = useState<string | undefined>();
   const startChat = useMemo(() => !!endStreamTrigger, [endStreamTrigger]);
 
-  const [aiTransactionInfo, setAiTransactionInfo] = useState<AiTransactionInfo>({ type: 'unknown' });
+  const [aiTransactionInfo, setAiTransactionInfo] = useState<AiTransactionInfo | undefined>(undefined);
 
   const { wcAccount } = useSelector((state) => state.accountState);
 
@@ -101,6 +101,14 @@ const Component = (props: Props): React.ReactElement => {
 
     setLocalStorageChatflow(props.chatflowid, chatId, { chatHistory: messages });
   }, [chatId, props.chatflowid]);
+
+  const addPendingMessage = useCallback((message: MessageType) => {
+    setPendingMessages((prevMessages) => {
+      const messages: MessageType[] = [...prevMessages, { ...message, isManualMessage: true }];
+
+      return messages;
+    });
+  }, []);
 
   const abortMessage = useCallback(() => {
     setIsMessageStopping(false);
@@ -577,35 +585,17 @@ const Component = (props: Props): React.ReactElement => {
           .then((rs) => {
             if (rs.errors.length) {
               // Handle error
-              setPendingMessages((prevMessages) => {
-                const messages: MessageType[] = [...prevMessages, { message: rs.errors[0].message, type: 'apiMessage' }];
-
-                addChatMessage(messages);
-
-                return messages;
-              });
+              addPendingMessage({ message: rs.errors[0].message, type: 'apiMessage' });
             }
 
             if (rs.id) {
               const handleResult = (data: SWTransactionBrief) => {
                 if (data.status === ExtrinsicStatus.SUBMITTING) {
                   // Handle on submit
-                  setPendingMessages((prevMessages) => {
-                    const messages: MessageType[] = [...prevMessages, { message: submitTxMessage, type: 'apiMessage' }];
-
-                    addChatMessage(messages);
-
-                    return messages;
-                  });
+                  addPendingMessage({ message: submitTxMessage, type: 'apiMessage' });
                 } else if (data.status === ExtrinsicStatus.SUCCESS) {
                   // Handle on success
-                  setPendingMessages((prevMessages) => {
-                    const messages: MessageType[] = [...prevMessages, { message: successTxMessage + data.extrinsicHash, type: 'apiMessage' }];
-
-                    addChatMessage(messages);
-
-                    return messages;
-                  });
+                  addPendingMessage({ message: successTxMessage + data.extrinsicHash, type: 'apiMessage' });
                 }
               };
 
@@ -616,17 +606,7 @@ const Component = (props: Props): React.ReactElement => {
           })
           .catch((err: Error) => {
             // Handle error
-            setPendingMessages((prevMessages) => {
-              if (prevMessages.length) {
-                const messages: MessageType[] = [...prevMessages, { message: err.message, type: 'apiMessage' }];
-
-                addChatMessage(messages);
-
-                return messages;
-              } else {
-                return prevMessages;
-              }
-            });
+            addPendingMessage({ message: err.message, type: 'apiMessage' });
           })
           .finally(() => {
             submitTxRef.current = false;
@@ -635,7 +615,7 @@ const Component = (props: Props): React.ReactElement => {
     }
 
     return Promise.resolve(undefined);
-  }, [wcAccount, addChatMessage]);
+  }, [addPendingMessage, wcAccount]);
 
   useEffect(() => {
     const chatflowData = getLocalStorageChatflow(props.chatflowid);
@@ -705,6 +685,11 @@ const Component = (props: Props): React.ReactElement => {
     }
   }, [props.chatflowid, props.welcomeMessage]);
 
+  const onClickConnectWallet = useCallback(() => {
+    // todo: add logic to connect wallet here
+    alert('Connect Wallet');
+  }, []);
+
   const welcomeMessagesNode = useMemo(() => {
     const userName = `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}`.trim();
 
@@ -761,34 +746,30 @@ const Component = (props: Props): React.ReactElement => {
 
   useEffect(() => {
     if (endStreamTrigger) {
-      // do some logic before stream end
+      // do some logic after stream end
 
-      if (messages.length && messages[messages.length - 1] && messages[messages.length - 1].message.startsWith('Hmm, I\'m not sure.')) {
-        // demo
-        console.log('Hmm, I\'m not sure.');
-      }
+      const updateAiTransactionInfo = () => {
+        if (messages.length) {
+          const lastMessage = messages[messages.length - 1];
+
+          if (lastMessage.type === 'apiMessage') {
+            const converted = transformAiMessageData(lastMessage.message);
+
+            setAiTransactionInfo({ ...converted, aiMessageId: lastMessage.messageId });
+          } else {
+            setAiTransactionInfo(undefined);
+          }
+        } else {
+          setAiTransactionInfo(undefined);
+        }
+      };
+
+      updateAiTransactionInfo();
     }
 
     // note: check the dependency carefully
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endStreamTrigger]);
-
-  useEffect(() => {
-    if (messages.length) {
-      const lastMessage = messages[messages.length - 1];
-
-      if (lastMessage.type === 'apiMessage') {
-        const converted = transformAiMessageData(lastMessage.message);
-
-        console.log('converted', converted);
-        setAiTransactionInfo({ ...converted, aiMessageId: lastMessage.messageId });
-      } else {
-        setAiTransactionInfo({ type: 'unknown' });
-      }
-    } else {
-      setAiTransactionInfo({ type: 'unknown' });
-    }
-  }, [messages]);
 
   useEffect(() => {
     if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
@@ -847,6 +828,7 @@ const Component = (props: Props): React.ReactElement => {
           className={'__message-area'}
           loading={loading}
           messages={messages}
+          onClickConnectWallet={onClickConnectWallet}
           ref={chatMessagesAreaRef}
         />
       </div>

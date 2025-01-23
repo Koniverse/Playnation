@@ -3,7 +3,9 @@
 
 import { MessageType } from '@subwallet/extension-koni-ui/Popup/AiAgent/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
+import { Wallet } from 'phosphor-react';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -11,10 +13,11 @@ import styled from 'styled-components';
 
 type Props = ThemeProps & {
   message: MessageType;
+  onClickConnectWallet: VoidFunction;
 };
 
 function Component (props: Props): React.ReactElement<Props> {
-  const { className, message } = props;
+  const { className, message, onClickConnectWallet } = props;
 
   return (
     <div
@@ -63,6 +66,29 @@ function Component (props: Props): React.ReactElement<Props> {
         <ReactMarkdown
           rehypePlugins={[rehypeRaw]}
         >{message.message}</ReactMarkdown>
+
+        {
+          message.appTriggeredAction === 'requestUserConnectWallet' && (
+            <Button
+              block={true}
+              className={'__connect-wallet-button'}
+              icon={
+                (
+                  <Icon
+                    customSize={'20px'}
+                    phosphorIcon={Wallet}
+                    weight={'fill'}
+                  />
+                )
+              }
+              onClick={onClickConnectWallet}
+              shape={'round'}
+              size={'sm'}
+            >
+               Connect Wallet
+            </Button>
+          )
+        }
       </div>
     </div>
   );
@@ -85,6 +111,17 @@ export const BotMessage = styled(Component)<Props>(({ theme: { token } }: Props)
       fontSize: 12,
       lineHeight: '20px',
       color: token.colorTextDark3
+    },
+
+    '.__connect-wallet-button': {
+      '.anticon': {
+        width: '1em',
+        height: '1em'
+      },
+
+      '.ant-btn-content-wrapper': {
+        fontSize: 14
+      }
     },
 
     '.__message-content-block': {
