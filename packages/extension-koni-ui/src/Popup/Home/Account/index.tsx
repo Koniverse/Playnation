@@ -29,7 +29,6 @@ const onChainProfileAlterModal = ON_CHAIN_PROFILE_MODAL;
 const addressExitedModal = 'address-existed-modal';
 const nftListModalId = 'nft-list-modal';
 
-
 const Component: React.FC<Props> = (props: Props) => {
   const { className } = props;
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
@@ -174,7 +173,7 @@ const Component: React.FC<Props> = (props: Props) => {
       <div className={'block-info-account'}>
         <div className={'left-block-info-account'}>
           <div className={'left-block-info-account-label'}>You have</div>
-          <div className={'left-block-info-account-value'}>{toDisplayNumber(currentPoint)}</div>
+          <div className={'left-block-info-account-value'}>{toDisplayNumber(accountIntegrationProfile?.accumulatePoint)}</div>
           <div className={'left-block-info-account-unit'}>Story Point (SP)</div>
         </div>
         <div className={'block-info-account-separator'}></div>
@@ -184,7 +183,7 @@ const Component: React.FC<Props> = (props: Props) => {
           <div className={'right-block-info-account-unit'}>days</div>
         </div>
       </div>
-      {accountIntegrationProfile && (
+      {accountIntegrationProfile && wcAccount && (
         <div className='block-stats-info'>
           <div className={'block-stats'}>
             <div className={'block-stats-left'}>Your IPventure Stats</div>
