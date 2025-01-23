@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { RequestTransfer } from '@subwallet/extension-base/background/KoniTypes';
+import { IpAssetParams } from '@subwallet/extension-koni-ui/connector/booka/types';
 import BigN from 'bignumber.js';
 
 export interface AiTransactionData {
-  type: 'transfer' | 'unknown';
+  type: 'transfer' | 'mint' | 'unknown';
   data?: any;
 }
 
@@ -37,15 +38,56 @@ const transformTransferData = (message: string): AiTransactionData => {
   };
 };
 
+const transformMintData = (message: string): AiTransactionData => {
+  const jsonMatch = message.match(/```json([\s\S]*?)```/)?.[1]?.trim();
+
+  const defaultResult: AiTransactionData = {
+    type: 'unknown'
+  };
+
+  if (!jsonMatch) {
+    return defaultResult;
+  }
+
+  try {
+    const jsonObject = JSON.parse(jsonMatch) as {
+      name: string,
+      description?: string,
+      asset_link: string
+    };
+
+    if (!jsonObject?.name || !jsonObject?.asset_link) {
+      return defaultResult;
+    }
+
+    const data: IpAssetParams = {
+      name: jsonObject.name,
+      description: jsonObject.description || '',
+      assetUrl: jsonObject.asset_link
+    };
+
+    return {
+      type: 'mint',
+      data
+    };
+  } catch (e) {
+    return {
+      type: 'unknown'
+    };
+  }
+};
+
 export const transformAiMessageData = (message: string): AiTransactionData => {
   const firstLine = message.split('\n')[0];
   const isConfirmation = firstLine.startsWith('## IP') && firstLine.includes('confirmation');
 
   if (isConfirmation) {
-    const isTransfer = message.includes('transfer');
-
-    if (isTransfer) {
+    // is transfer
+    if (message.includes('transfer')) {
       return transformTransferData(message);
+      // is minting
+    } else if (message.includes('asset minting')) {
+      return transformMintData(message);
     } else {
       return {
         type: 'unknown'

@@ -562,7 +562,7 @@ const Component = (props: Props): React.ReactElement => {
     return chainInfo ? getExplorerLink(chainInfo, txHash, 'tx') || '' : '';
   }, [chainInfoMap]);
 
-  const onSubmitTx = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
+  const onSubmitTransferTx = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
     if (wcAccount) {
       if (aiTransactionInfo.type === 'transfer') {
         submitTxRef.current = true;
@@ -637,6 +637,10 @@ const Component = (props: Props): React.ReactElement => {
 
     return Promise.resolve(undefined);
   }, [addPendingMessage, getExplorerUrl, wcAccount]);
+
+  const onSubmitMintTx = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
+    return Promise.resolve(undefined);
+  }, []);
 
   useEffect(() => {
     const chatflowData = getLocalStorageChatflow(props.chatflowid);
@@ -794,9 +798,13 @@ const Component = (props: Props): React.ReactElement => {
 
   useEffect(() => {
     if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
-      onSubmitTx(aiTransactionInfo).catch(console.error);
+      if (aiTransactionInfo.type === 'transfer') {
+        onSubmitTransferTx(aiTransactionInfo).catch(console.error);
+      } else if (aiTransactionInfo.type === 'mint') {
+        onSubmitMintTx(aiTransactionInfo).catch(console.error);
+      }
     }
-  }, [aiTransactionInfo, onSubmitTx, startChat]);
+  }, [aiTransactionInfo, onSubmitMintTx, onSubmitTransferTx, startChat]);
 
   // if not loading and have pendingMessages, update messages to show
   useEffect(() => {
