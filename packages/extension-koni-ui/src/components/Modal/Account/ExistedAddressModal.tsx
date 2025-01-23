@@ -79,6 +79,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
         } catch (e) {
           closeWaiting();
           inactiveModal(modalId);
+          onSubmitAddressLinking(undefined);
           setLoading(false);
 
           const error = e as Error;
@@ -103,9 +104,10 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
 
   const onCancel = useCallback(() => {
     wcAccount && disconnectWithoutConfirmModal(wcAccount).then(() => {
+      onSubmitAddressLinking(undefined);
       inactiveModal(modalId);
     }).catch(console.error);
-  }, [disconnectWithoutConfirmModal, inactiveModal, wcAccount]);
+  }, [disconnectWithoutConfirmModal, inactiveModal, onSubmitAddressLinking, wcAccount]);
 
   const footerModal = useMemo(() => {
     return (

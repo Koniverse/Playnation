@@ -1161,7 +1161,9 @@ export class BookaSdk {
   async setAccountAddress (address: string) {
     const data = await this.postRequest<{ status: boolean }>(`${GAME_API_HOST}/api/integrated-profile/set-account-address`, { address });
 
-    if (data.status) {
+    if (!data.status) {
+      throw new Error('Address already registered');
+    } else {
       this.addressLinkedSubject.next(address);
       await storage.setItem(CLOUD_KEYS.addressLinked, address);
     }

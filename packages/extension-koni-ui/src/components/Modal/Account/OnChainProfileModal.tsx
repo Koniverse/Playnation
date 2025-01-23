@@ -48,6 +48,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           }
         }
       } catch (e) {
+        onSubmitAddressLinking(undefined);
         inactiveModal(modalId);
         console.error(e);
       }

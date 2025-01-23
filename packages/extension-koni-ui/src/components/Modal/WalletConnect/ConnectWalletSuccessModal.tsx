@@ -1,9 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AccountJson } from '@subwallet/extension-base/background/types';
 import { CONNECT_WALLET_SUCCESS_MODAL } from '@subwallet/extension-koni-ui/constants';
-import { useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Field, Icon, ModalContext, PageIcon, SwModal } from '@subwallet/react-ui';
@@ -16,14 +14,12 @@ import styled, { useTheme } from 'styled-components';
 interface Props extends ThemeProps {
   address: string;
   callback: (address: string) => void;
-  disconnectWhenCancel?: (wcAccount: AccountJson) => Promise<void>;
 }
 
 const modalId = CONNECT_WALLET_SUCCESS_MODAL;
 
 function Component (props: Props): React.ReactElement<Props> {
-  const { address, callback, className = '', disconnectWhenCancel } = props;
-  const { wcAccount } = useSelector((state) => state.accountState);
+  const { address, callback, className = '' } = props;
   const { t } = useTranslation();
   const { token } = useTheme() as Theme;
 
@@ -36,10 +32,9 @@ function Component (props: Props): React.ReactElement<Props> {
 
   const onClose = useCallback(() => {
     inactiveModal(modalId);
-    wcAccount && disconnectWhenCancel && disconnectWhenCancel(wcAccount).catch(console.error);
     // eslint-disable-next-line node/no-callback-literal
     callback('');
-  }, [callback, disconnectWhenCancel, inactiveModal, wcAccount]);
+  }, [callback, inactiveModal]);
 
   const modalFooter = useMemo(() => {
     return (
