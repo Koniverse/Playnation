@@ -76,7 +76,7 @@ const Component: React.FC<Props> = (props: Props) => {
       return 0;
     }
 
-    const remainingValue = profile.totalTransactions - profile.totalSwapPiperXTransactions - profile.totalStakeVerioTransactions - profile.totalBadgeNFTsOwned;
+    const remainingValue = profile.totalTransactions - profile.totalSwapPiperXTransactions - profile.totalStakeVerioTransactions;
 
     return remainingValue < 0 ? 0 : remainingValue;
   }, [accountIntegrationProfile]);
