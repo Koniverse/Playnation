@@ -97,6 +97,11 @@ export const BotMessage = styled(Component)<Props>(({ theme: { token } }: Props)
       lineHeight: token.lineHeight,
       color: token.colorTextDark1,
 
+      a: {
+        color: '#426F8C',
+        textDecoration: 'underline'
+      },
+
       '> *': {
         marginBottom: 0
       },
