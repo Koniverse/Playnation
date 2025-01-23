@@ -29,6 +29,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
   const { connectWC, disconnectWithoutConfirmModal, requireWC, waitingSigningModal: { close: closeWaiting, open: openWaiting } } = useContext(WalletConnectContext);
   const { inactiveModal } = useContext(ModalContext);
   const [loading, setLoading] = useState(false);
+  const [wcAddress, setWCAddress] = useState();
   const { token } = useTheme() as Theme;
 
   const getWcAddress = useCallback(async (): Promise<string | null> => {
@@ -60,6 +61,8 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
 
       inactiveModal(modalId);
       const _wcAddress = await getWcAddress();
+
+      setWCAddress(_wcAddress);
 
       if (_wcAddress) {
         const message = `Approve use this address to set linked address: ${_wcAddress}`;
@@ -115,6 +118,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           disabled={loading}
           icon={(
             <Icon
+              customSize={'20px'}
               phosphorIcon={XCircle}
               weight='fill'
             />
@@ -122,6 +126,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           onClick={onCancel}
           schema={'secondary'}
           shape={'round'}
+          size={'sm'}
         >
           {t('Cancel')}
         </Button>
@@ -129,12 +134,15 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           block={true}
           icon={(
             <Icon
+              customSize={'20px'}
               phosphorIcon={CheckCircle}
+              weight='fill'
             />
           )}
           loading={loading}
           onClick={onCheckingLinkedAccount}
           shape={'round'}
+          size={'sm'}
         >
           {t('Change account')}
         </Button>
@@ -166,7 +174,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           <div
             className={'__sub-title-modal'}
           >
-            {t('Your Telegram ID is linked to account {wallet address}. Connect to this account and try again')}
+            {t(`Your Telegram ID is linked to account ${wcAddress || ''}. Connect to this account and try again`)}
           </div>
         </div>
       </div>
@@ -184,6 +192,10 @@ const ExistedAddressModal = styled(Component)<Props>(({ theme: { extendToken, to
 
     '.ant-sw-modal-body': {
       padding: `${token.padding}px ${token.paddingXS}px`
+    },
+
+    '.ant-sw-sub-header-title-content': {
+      lineHeight: token.lineHeightHeading3
     },
 
     '.ant-sw-modal-confirm-body': {
@@ -234,7 +246,7 @@ const ExistedAddressModal = styled(Component)<Props>(({ theme: { extendToken, to
     },
 
     '.__sub-title-modal': {
-      alignText: 'center',
+      textAlign: 'center',
       fontSize: token.fontSizeHeading6,
       lineHeight: token.lineHeightHeading6,
       fontWeight: 500,
