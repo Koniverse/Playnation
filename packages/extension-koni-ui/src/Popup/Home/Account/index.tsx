@@ -235,18 +235,21 @@ const Component: React.FC<Props> = (props: Props) => {
             <div className={'block-content3'}>
               <div className={'block-content-label'}>
                 <div className={'nft-label'}>NFT</div>
-                <div
-                  className={'nft-arrow-icon'}
-                  onClick={openNftModal}
-                >
-                  <Icon
-                    customSize={'20px'}
-                    phosphorIcon={ArrowSquareIn}
-                    weight={'fill'}
-                  />
-                </div>
+                {!!accountIntegrationProfile?.erc721ContractList?.length &&
+                  <div
+                    className={'nft-arrow-icon'}
+                    onClick={openNftModal}
+                  >
+                    <Icon
+                      customSize={'20px'}
+                      phosphorIcon={ArrowSquareIn}
+                      weight={'fill'}
+                    />
+                  </div>
+                }
               </div>
-              <div className={'block-content-value'}>{toDisplayNumber(accountIntegrationProfile?.totalBadgeNFTsOwned)}</div>
+              <div
+                className={'block-content-value'}>{toDisplayNumber(accountIntegrationProfile?.totalBadgeNFTsOwned)}</div>
               <div className={'block-content-unit'}>NFTs</div>
             </div>
             <div className={'block-content4'}>
@@ -294,7 +297,9 @@ const Component: React.FC<Props> = (props: Props) => {
           />
         </div>
       )}
-      <NFTListModal />
+      <NFTListModal
+        erc721ContractList={accountIntegrationProfile?.erc721ContractList}
+      />
     </div>
   );
 };
