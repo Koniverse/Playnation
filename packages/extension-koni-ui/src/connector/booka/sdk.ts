@@ -36,6 +36,10 @@ const CACHE_KEYS = {
   accountIntegrationProfile: 'data--account-integration-profile-cache'
 };
 
+const CLOUD_KEYS = {
+  addressLinked: 'data--address-linked'
+};
+
 function parseCache<T> (key: string): T | undefined {
   const data = localStorage.getItem(key);
 
@@ -71,6 +75,8 @@ export class BookaSdk {
   private airdropNftMintSubject = new BehaviorSubject<IAirdropNftMinting[]>([]);
   private checkEligibility = new BehaviorSubject<AirdropEligibility[]>([]);
   private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
+  private addressLinkedSubject = new BehaviorSubject<string | undefined>(undefined);
+  private addressLinkingSubject = new BehaviorSubject<string | undefined>(undefined);
   private accountIntegrationProfile = new BehaviorSubject<IntegratedProfileResult>({} as IntegratedProfileResult);
 
   // Special cases
@@ -112,6 +118,12 @@ export class BookaSdk {
 
       localStorage.setItem('cache-version', cacheVersion);
     }
+
+    storage.getItem(CLOUD_KEYS.addressLinked).then((addressLinked_) => {
+      if (addressLinked_) {
+        this.addressLinkedSubject.next(addressLinked_);
+      }
+    }).catch(console.error);
   }
 
   public get waitForSync () {
@@ -176,6 +188,10 @@ export class BookaSdk {
 
   public get airdropNftMintList () {
     return this.airdropNftMintSubject.value;
+  }
+
+  get addressLinked (): string | undefined {
+    return this.addressLinkedSubject.value;
   }
 
   private getRequestHeader (needAuthorize = true) {
@@ -274,6 +290,18 @@ export class BookaSdk {
     return await this.getRequest<AppMetadata>(`${GAME_API_HOST}/api/metadata/fetch`);
   }
 
+  subscribeAddressLinking (): BehaviorSubject<string | undefined> {
+    return this.addressLinkingSubject;
+  }
+
+  get addressLinking () {
+    return this.addressLinkingSubject.value;
+  }
+
+  setAddressLinking (address?: string) {
+    this.addressLinkingSubject.next(address);
+  }
+
   async reloadAccount () {
     const account = this.account;
     const newAccountData = await this.getRequest<Omit<BookaAccount, 'token'>>(`${GAME_API_HOST}/api/account/get-attribute`);
@@ -290,6 +318,10 @@ export class BookaSdk {
 
   subscribeAccount () {
     return this.accountSubject;
+  }
+
+  subscribeAddressLinked () {
+    return this.addressLinkedSubject;
   }
 
   async fetchEnergyConfig () {
@@ -1129,7 +1161,10 @@ export class BookaSdk {
   async setAccountAddress (address: string) {
     const data = await this.postRequest<{ status: boolean }>(`${GAME_API_HOST}/api/integrated-profile/set-account-address`, { address });
 
-    return data.status;
+    if (data.status) {
+      this.addressLinkedSubject.next(address);
+      await storage.setItem(CLOUD_KEYS.addressLinked, address);
+    }
   }
 
   async getStatsOfAddress () {

@@ -1,15 +1,16 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { SWStorage } from '@subwallet/extension-base/storage';
-import { EmptyList, GameAccountAvatar, OnChainProfileModal } from '@subwallet/extension-koni-ui/components';
+import { WC_DEFAULT_CHAIN_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { EmptyList, GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
 import WalletConnectStats from '@subwallet/extension-koni-ui/components/EmptyList/WalletConnectStats';
 import NFTListModal from '@subwallet/extension-koni-ui/components/Modal/NFTListModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, IntegratedProfileResult } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useNotification, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
+import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { copyToClipboard, toDisplayNumber, toShort } from '@subwallet/extension-koni-ui/utils';
@@ -20,21 +21,21 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { stringToHex } from '@polkadot/util';
+
 type Props = ThemeProps;
 const apiSDK = BookaSdk.instance;
-const cloudStorage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
-const cloudStorageKey = 'on-chain-profile-modal';
-const onChainProfileAlterModal = ON_CHAIN_PROFILE_MODAL;
-const addressExitedModal = 'address-existed-modal';
 const nftListModalId = 'nft-list-modal';
 
 const Component: React.FC<Props> = (props: Props) => {
   const { className } = props;
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
+  const [addressLinked, setAddressLinked] = useState<string | undefined>(apiSDK.addressLinked);
+  const { connectWC, requireWC, waitingSigningModal: { close: closeWaiting, open: openWaiting } } = useContext(WalletConnectContext);
   const [accountIntegrationProfile, setAccountIntegrationProfile] = useState<IntegratedProfileResult | undefined>();
-  const { activeModal, inactiveModal } = useContext(ModalContext);
+  const { activeModal } = useContext(ModalContext);
   const notify = useNotification();
   const { t } = useTranslation();
 
@@ -48,23 +49,6 @@ const Component: React.FC<Props> = (props: Props) => {
   }, [wcAccount?.address, notify, t]);
 
   const currentPoint = account?.attributes.accumulatePoint || 0;
-
-  const onShowOnChainProfileModal = useCallback(async () => {
-    try {
-      const status = await cloudStorage.getItem(cloudStorageKey);
-
-      if (!status) {
-        activeModal(onChainProfileAlterModal);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }, [activeModal]);
-
-  const onShowAddressExistedModal = useCallback(() => {
-    inactiveModal(onChainProfileAlterModal);
-    activeModal(addressExitedModal);
-  }, [activeModal, inactiveModal]);
 
   const openNftModal = useCallback(() => {
     activeModal(nftListModalId);
@@ -97,25 +81,70 @@ const Component: React.FC<Props> = (props: Props) => {
     return remainingValue < 0 ? 0 : remainingValue;
   }, [accountIntegrationProfile]);
 
+  const connectWalletConnect = useCallback(() => {
+    const fnc = async () => {
+      try {
+        await requireWC();
+        const address = await connectWC(true, true);
+
+        const message = `Approve use this address to set linked address: ${address}`;
+
+        openWaiting();
+
+        try {
+          await wcSignMessageRequest({
+            address: address,
+            chainId: WC_DEFAULT_CHAIN_ID,
+            payload: stringToHex(message),
+            method: 'personal_sign'
+          });
+
+          apiSDK.setAddressLinking(address);
+          closeWaiting();
+        } catch (e) {
+          closeWaiting();
+
+          const error = e as Error;
+
+          console.error('Fail to get signature', error);
+
+          if (error.message.toLowerCase().includes('user rejected'.toLowerCase())) {
+            notify({
+              message: t('You’ve rejected this request'),
+              type: 'error',
+              duration: null
+            });
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    fnc().catch(console.error);
+  }, [closeWaiting, connectWC, notify, openWaiting, requireWC, t]);
+
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount()
       .subscribe((data) => {
         setAccount(data);
       });
 
+    const addressLinkedSub = apiSDK.subscribeAddressLinked()
+      .subscribe((data) => {
+        setAddressLinked(data);
+      });
+
     return () => {
       accountSub.unsubscribe();
+      addressLinkedSub.unsubscribe();
     };
   }, []);
 
   useEffect(() => {
-    onShowOnChainProfileModal().catch(console.error);
-  }, [onShowOnChainProfileModal]);
-
-  useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = apiSDK.getStatsOfAddress();
+        const data = await apiSDK.getStatsOfAddress();
 
         setAccountIntegrationProfile(data);
       } catch (error) {
@@ -148,9 +177,9 @@ const Component: React.FC<Props> = (props: Props) => {
         />
 
         <div className='account-name'>{account?.info.telegramUsername}</div>
-        {wcAccount && <div className='account-address-wrapper'>
+        {addressLinked && <div className='account-address-wrapper'>
           <div className='account-address'>
-            ({toShort(wcAccount.address, 12, 5)})
+            ({toShort(addressLinked, 12, 5)})
           </div>
 
           <div className='account-address-copy-button-wrapper'>
@@ -173,7 +202,7 @@ const Component: React.FC<Props> = (props: Props) => {
       <div className={'block-info-account'}>
         <div className={'left-block-info-account'}>
           <div className={'left-block-info-account-label'}>You have</div>
-          <div className={'left-block-info-account-value'}>{toDisplayNumber(accountIntegrationProfile?.accumulatePoint)}</div>
+          <div className={'left-block-info-account-value'}>{toDisplayNumber(currentPoint)}</div>
           <div className={'left-block-info-account-unit'}>Story Point (SP)</div>
         </div>
         <div className={'block-info-account-separator'}></div>
@@ -183,7 +212,7 @@ const Component: React.FC<Props> = (props: Props) => {
           <div className={'right-block-info-account-unit'}>days</div>
         </div>
       </div>
-      {accountIntegrationProfile && wcAccount && (
+      {!!addressLinked && accountIntegrationProfile && (
         <div className='block-stats-info'>
           <div className={'block-stats'}>
             <div className={'block-stats-left'}>Your IPventure Stats</div>
@@ -257,39 +286,22 @@ const Component: React.FC<Props> = (props: Props) => {
         </div>
       )}
 
-      {!wcAccount && (
+      {!addressLinked && (
         <div className='block-stats-info'>
           <WalletConnectStats
             className={'wallet-connect-stats'}
+            handleWalletConnect={connectWalletConnect}
           />
         </div>
       )}
-
-      <OnChainProfileModal
-        content={<>
-          <div>New feature</div>
-        </>}
-        onErrorHandler={onShowAddressExistedModal}
-      />
-      <OnChainProfileModal
-        content={
-          <div>
-            <div>Address existed</div>
-          </div>
-        }
-        isNeedConnectWallet={true}
-        modalId={addressExitedModal}
-        onErrorHandler={onShowAddressExistedModal}
-      />
-      <NFTListModal
-        erc721ContractList={accountIntegrationProfile?.erc721ContractList}
-      />
+      <NFTListModal />
     </div>
   );
 };
 
 const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return {
+    // account
     paddingTop: token.paddingXXS,
     paddingLeft: token.paddingXS,
     paddingRight: token.paddingXS,

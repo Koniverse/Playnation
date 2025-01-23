@@ -1,18 +1,13 @@
 // Copyright 2019-2022 @polkadot/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AccountJson } from '@subwallet/extension-base/background/types';
-import { Layout, WalletConnect } from '@subwallet/extension-koni-ui/components';
+import { Layout } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
-import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
-import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
-import { useNotification, useSelector } from '@subwallet/extension-koni-ui/hooks';
-import { noop } from '@subwallet/extension-koni-ui/utils';
 import { ButtonProps, Icon, ModalContext, Tooltip } from '@subwallet/react-ui';
 import { Export, FadersHorizontal, MagnifyingGlass } from 'phosphor-react';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -23,7 +18,6 @@ type Props = {
   showGiftIcon?: boolean;
   showFilterIcon?: boolean;
   showSearchIcon?: boolean;
-  showConnectIcon?: boolean;
   onClickFilterIcon?: () => void;
   onClickSearchIcon?: () => void;
   showTabBar?: boolean
@@ -33,24 +27,12 @@ type Props = {
   className?: string;
 };
 
-const telegramConnector = TelegramConnector.instance;
-
 const Component = (props: Props) => {
-  const { backgroundImages, backgroundStyle, children, className, onClickFilterIcon, onClickSearchIcon, onTabSelected, showConnectIcon = true, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar } = props;
-
+  const { backgroundImages, backgroundStyle, children, className, onClickFilterIcon, onClickSearchIcon, onTabSelected, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar } = props;
   const navigate = useNavigate();
-  // @ts-ignore
-  const [isVisitedInvitationScreen, setIsVisitedInvitationScreen] = useLocalStorage(VISIT_INVITATION_SCREEN_FLAG, false);
-  // @ts-ignore
+  const [, setIsVisitedInvitationScreen] = useLocalStorage(VISIT_INVITATION_SCREEN_FLAG, false);
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
-  const { connectWC, disconnectWC } = useContext(WalletConnectContext);
-
-  const { wcAccount } = useSelector((state) => state.accountState);
-
-  const notify = useNotification();
-
-  const [connectLoading, setConnectLoading] = useState(false);
 
   const onOpenCustomizeModal = useCallback(() => {
     activeModal(CUSTOMIZE_MODAL);
@@ -60,46 +42,6 @@ const Component = (props: Props) => {
     navigate('/home/invite');
     setIsVisitedInvitationScreen(true);
   }, [navigate, setIsVisitedInvitationScreen]);
-
-  const onConnectWallet = useCallback(() => {
-    setConnectLoading(true);
-
-    connectWC()
-      .then((address: string) => {
-        console.debug('connectWC result', address);
-      })
-      .catch((e: Error) => {
-        if (e.message?.toLowerCase().includes('Unsupported chains'.toLowerCase())) {
-          telegramConnector.showPopup({
-            message: t('Your chosen wallet hasn’t supported Story Odyssey Testnet. Add network to your wallet or change to another wallet'),
-            buttons: [{
-              type: 'ok',
-              text: t('Got it')
-            }]
-          }, noop);
-
-          return;
-        }
-
-        notify({
-          type: 'error',
-          message: e.message
-        });
-      })
-      .finally(() => {
-        setConnectLoading(false);
-      });
-  }, [connectWC, notify, t]);
-
-  const onDisconnectWallet = useCallback((wcAccount: AccountJson) => {
-    return () => {
-      setConnectLoading(true);
-      disconnectWC(wcAccount)()
-        .finally(() => {
-          setConnectLoading(false);
-        });
-    };
-  }, [disconnectWC]);
 
   const headerIcons = useMemo<ButtonProps[]>(() => {
     const icons: ButtonProps[] = [];
@@ -155,27 +97,8 @@ const Component = (props: Props) => {
       });
     }
 
-    if (showConnectIcon) {
-      icons.push({
-        icon: (
-          <Icon
-            customIcon={(
-              <WalletConnect
-                height='1em'
-                width='1em'
-              />
-            )}
-            iconColor={wcAccount ? '#bf1616' : undefined}
-            type='customIcon'
-          />
-        ),
-        onClick: wcAccount ? onDisconnectWallet(wcAccount) : onConnectWallet,
-        loading: connectLoading
-      });
-    }
-
     return icons;
-  }, [showFilterIcon, showSearchIcon, showGiftIcon, showConnectIcon, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, t, onOpenInvite, wcAccount, onDisconnectWallet, onConnectWallet, connectLoading]);
+  }, [showFilterIcon, showSearchIcon, showGiftIcon, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, t, onOpenInvite]);
 
   const onClickListIcon = useCallback(() => {
     navigate('/settings/list');
