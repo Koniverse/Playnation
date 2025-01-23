@@ -162,6 +162,10 @@ const ConfirmLinkingAccountModal = styled(Component)<Props>(({ theme: { extendTo
       padding: `${token.padding}px ${token.paddingXS}px`
     },
 
+    '.ant-sw-sub-header-title-content': {
+      lineHeight: token.lineHeightHeading3
+    },
+
     '.ant-sw-modal-confirm-body': {
       background: extendToken.colorBgGradient,
       borderRadius: 24,
@@ -211,8 +215,8 @@ const ConfirmLinkingAccountModal = styled(Component)<Props>(({ theme: { extendTo
     },
 
     '.__sub-title-modal': {
-      fontSize: token.fontSizeHeading6,
-      lineHeight: token.lineHeightHeading6,
+      fontSize: token.fontSizeSM,
+      lineHeight: token.lineHeightSM,
       fontWeight: 500,
       color: token.colorTextDark2,
       textAlign: 'center'
