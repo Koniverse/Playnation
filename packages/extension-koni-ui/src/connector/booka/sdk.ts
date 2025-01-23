@@ -6,7 +6,7 @@ import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate, wait } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, APIResponse, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, IAirdropNftMinting, IntegratedProfileResult, LeaderboardPerson, NftMintingEligibility, NftMintingLog, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, APIResponse, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, IAirdropNftMinting, IntegratedProfileResult, IpAssetParams, IpAssetResponse, LeaderboardPerson, NftMintingEligibility, NftMintingLog, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -1182,6 +1182,10 @@ export class BookaSdk {
 
   subscribeAccountIntegrationProfile () {
     return this.accountIntegrationProfile;
+  }
+
+  registerIPAsset (ipParams: IpAssetParams) {
+    return this.postRequest<IpAssetResponse>(`${GAME_API_HOST}/api/ip-asset/register`, ipParams);
   }
 
   // Singleton
