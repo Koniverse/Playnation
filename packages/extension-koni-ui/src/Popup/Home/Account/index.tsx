@@ -6,11 +6,9 @@ import { EmptyList, GameAccountAvatar } from '@subwallet/extension-koni-ui/compo
 import WalletConnectStats from '@subwallet/extension-koni-ui/components/EmptyList/WalletConnectStats';
 import NFTListModal from '@subwallet/extension-koni-ui/components/Modal/NFTListModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { BookaAccount, IntegratedProfileResult } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useNotification, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
@@ -27,13 +25,8 @@ import { stringToHex } from '@polkadot/util';
 
 type Props = ThemeProps;
 const apiSDK = BookaSdk.instance;
-const cloudStorage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
-const cloudStorageKey = 'on-chain-profile-modal';
-const onChainProfileAlterModal = ON_CHAIN_PROFILE_MODAL;
-const addressExitedModal = 'address-existed-modal';
 const nftListModalId = 'nft-list-modal';
-
 
 const Component: React.FC<Props> = (props: Props) => {
   const { className } = props;
@@ -41,9 +34,8 @@ const Component: React.FC<Props> = (props: Props) => {
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
   const [addressLinked, setAddressLinked] = useState<string | undefined>(apiSDK.addressLinked);
   const { connectWC, requireWC, waitingSigningModal: { close: closeWaiting, open: openWaiting } } = useContext(WalletConnectContext);
-  const { activeModal } = useContext(ModalContext);
   const [accountIntegrationProfile, setAccountIntegrationProfile] = useState<IntegratedProfileResult | undefined>();
-  const { activeModal, inactiveModal } = useContext(ModalContext);
+  const { activeModal } = useContext(ModalContext);
   const notify = useNotification();
   const { t } = useTranslation();
 
@@ -150,13 +142,9 @@ const Component: React.FC<Props> = (props: Props) => {
   }, []);
 
   useEffect(() => {
-    onShowOnChainProfileModal().catch(console.error);
-  }, [onShowOnChainProfileModal]);
-
-  useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = apiSDK.getStatsOfAddress();
+        const data = await apiSDK.getStatsOfAddress();
 
         setAccountIntegrationProfile(data);
       } catch (error) {
