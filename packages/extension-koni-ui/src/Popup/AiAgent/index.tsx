@@ -416,6 +416,7 @@ const Component = (props: Props): React.ReactElement => {
       async onclose () {
         setEndStreamTrigger(`${Date.now()}`);
         closeResponse();
+        scrollToBottom(150);
       },
       onerror (err) {
         console.error('EventSource Error: ', err);
@@ -423,10 +424,11 @@ const Component = (props: Props): React.ReactElement => {
         throw err;
       }
     });
-  }, [abortMessage, closeResponse, handleError, props.apiHost, updateErrorMessage, updateLastMessage, updateLastMessageAction, updateLastMessageAgentReasoning, updateLastMessageArtifacts, updateLastMessageFileAnnotations, updateLastMessageSourceDocuments, updateLastMessageUsedTools, updateMetadata]);
+  }, [abortMessage, closeResponse, handleError, props.apiHost, scrollToBottom, updateErrorMessage, updateLastMessage, updateLastMessageAction, updateLastMessageAgentReasoning, updateLastMessageArtifacts, updateLastMessageFileAnnotations, updateLastMessageSourceDocuments, updateLastMessageUsedTools, updateMetadata]);
 
   const handleSubmit = useCallback(async (value: string, action?: IAction | undefined | null) => {
     setLoading(true);
+    setUserInput('');
     scrollToBottom();
 
     setMessages((prevMessages) => {
@@ -508,7 +510,7 @@ const Component = (props: Props): React.ReactElement => {
         updateMetadata(data, value);
 
         setLoading(false);
-        setUserInput('');
+        // setUserInput('');
         // setUploadedFiles([]);
         scrollToBottom();
       }
@@ -806,13 +808,14 @@ const Component = (props: Props): React.ReactElement => {
 
           return allMessages;
         });
+        scrollToBottom(150);
       }
     }, 500);
 
     return () => {
       clearTimeout(timeOut);
     };
-  }, [addChatMessage, loading, pendingMessages]);
+  }, [addChatMessage, loading, pendingMessages, scrollToBottom]);
 
   return (
     <Layout.WithSubHeaderOnly

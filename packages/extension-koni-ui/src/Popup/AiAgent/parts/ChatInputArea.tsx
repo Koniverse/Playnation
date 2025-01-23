@@ -6,8 +6,8 @@ import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { Paperclip } from 'phosphor-react';
-import React, { useCallback, useRef } from 'react';
+import { ArrowCircleUp, Paperclip } from 'phosphor-react';
+import React, { useCallback, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
@@ -21,6 +21,7 @@ function Component (props: Props): React.ReactElement<Props> {
   const { className, disabled, inputValue, onInputChange, onSubmit } = props;
   const inputRef = useRef(null);
   const notify = useNotification();
+  const [textContent, setTextContent] = useState<string>('');
 
   const onUpload = useCallback(() => {
     notify({
@@ -28,38 +29,68 @@ function Component (props: Props): React.ReactElement<Props> {
     });
   }, [notify]);
 
-  const _onSubmit = useCallback((innerHtml: string, textContent: string, innerText: string, nodes: NodeList) => {
-    onSubmit(innerHtml);
-  }, [onSubmit]);
+  const _onInputChange = useCallback((innerHtml: string, textContent: string, innerText: string, nodes: NodeList) => {
+    // todo: may modify the content before passing to the parent
+    onInputChange(innerHtml);
+    setTextContent(textContent);
+  }, [onInputChange]);
+
+  const _onSubmit = useCallback(() => {
+    onSubmit(inputValue);
+    setTextContent('');
+  }, [inputValue, onSubmit]);
+
+  const hasTextContent = !!(textContent?.trim());
 
   return (
     <div
       className={CN(className)}
     >
-      <MessageInput
-        attachButton={false}
-        disabled={disabled}
-        onChange={onInputChange}
-        onSend={_onSubmit}
-        placeholder={'Type your question'}
-        ref={inputRef}
-        sendButton={false}
-        value={inputValue}
-      />
+      <div className='__input-wrapper'>
+        <Button
+          className={'__upload-button'}
+          icon={(
+            <Icon
+              customSize={'20px'}
+              phosphorIcon={Paperclip}
+            />
+          )}
+          onClick={onUpload}
+          shape={'round'}
+          size={'sm'}
+          type={'ghost'}
+        />
 
-      <Button
-        className={'__upload-button'}
-        icon={(
-          <Icon
-            customSize={'20px'}
-            phosphorIcon={Paperclip}
+        <MessageInput
+          attachButton={false}
+          disabled={disabled}
+          onChange={_onInputChange}
+          placeholder={'Type your question'}
+          ref={inputRef}
+          sendButton={false}
+          sendOnReturnDisabled={true}
+          value={inputValue}
+        />
+      </div>
+
+      {
+        hasTextContent && (
+          <Button
+            className={'__submit-button'}
+            icon={(
+              <Icon
+                customSize={'24px'}
+                phosphorIcon={ArrowCircleUp}
+                weight={'fill'}
+              />
+            )}
+            onClick={_onSubmit}
+            shape={'round'}
+            size={'sm'}
+            type={'ghost'}
           />
-        )}
-        onClick={onUpload}
-        shape={'round'}
-        size={'sm'}
-        type={'ghost'}
-      />
+        )
+      }
     </div>
   );
 }
@@ -67,13 +98,29 @@ function Component (props: Props): React.ReactElement<Props> {
 export const ChatInputArea = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return {
     padding: 12,
-    backgroundColor: 'rgba(240, 251, 255, 0.65)',
-    borderTop: '2px solid #fff',
+    backgroundColor: 'rgba(31, 31, 35, 0.06)',
+    borderTop: '1px solid rgba(255, 255, 255, 0.65)',
     backdropFilter: 'blur(4px)',
     backfaceVisibility: 'hidden',
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     paddingBottom: 30,
+    display: 'flex',
+    alignItems: 'flex-end',
+
+    '.__input-wrapper': {
+      position: 'relative',
+      flex: 1
+    },
+
+    '.__upload-button': {
+      position: 'absolute',
+      left: 2,
+      bottom: 2,
+      minWidth: '40px !important',
+      height: 40,
+      zIndex: 10
+    },
 
     '.cs-message-input--disabled': {
       opacity: 0.4
@@ -86,7 +133,8 @@ export const ChatInputArea = styled(Component)<Props>(({ theme: { token } }: Pro
     '.cs-message-input__content-editor-wrapper': {
       background: '#fff',
       borderRadius: 26,
-      padding: 16,
+      paddingLeft: 44,
+      paddingRight: 16,
       paddingTop: 11,
       paddingBottom: 11
     },
@@ -109,12 +157,12 @@ export const ChatInputArea = styled(Component)<Props>(({ theme: { token } }: Pro
       color: token.colorTextDark4
     },
 
-    '.__upload-button': {
-      position: 'absolute',
-      right: 10,
-      bottom: 32,
+    '.__submit-button': {
+      marginLeft: 8,
       minWidth: '40px !important',
-      height: 40
+      height: 40,
+      borderRadius: '100%',
+      backgroundColor: 'rgba(31, 31, 35, 0.12) !important'
     }
   };
 });
