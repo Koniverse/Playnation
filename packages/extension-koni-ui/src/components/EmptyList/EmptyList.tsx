@@ -13,21 +13,24 @@ interface Props extends ThemeProps {
   emptyTitle?: string,
   emptyMessage?: string,
   buttonProps?: ButtonProps;
+  customIcon?: React.ReactNode
 }
 
 const Component: React.FC<Props> = (props: Props) => {
-  const { buttonProps, className, emptyMessage, emptyTitle, phosphorIcon } = props;
+  const { buttonProps, className, customIcon, emptyMessage, emptyTitle, phosphorIcon } = props;
 
   return (
     <div className={CN(className, 'empty-list')}>
       <div className={'empty_icon_wrapper'}>
 
         <div className='empty_icon'>
-          <Icon
-            customSize={'60px'}
-            phosphorIcon={phosphorIcon}
-            weight={'fill'}
-          />
+          {customIcon || (
+            <Icon
+              customSize={'60px'}
+              phosphorIcon={phosphorIcon}
+              weight={'fill'}
+            />
+          )}
         </div>
       </div>
 

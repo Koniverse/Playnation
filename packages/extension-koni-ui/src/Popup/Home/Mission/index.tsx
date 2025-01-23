@@ -87,8 +87,8 @@ const Component = ({ className }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const [taskCategoryMap, setTaskCategoryMap] = useState<Record<number, TaskCategory>>({});
   const [taskCategoryInfoMap, setTaskCategoryInfoMap] = useState<Record<number, TaskCategoryInfo>>({});
-  const [account, setAccount] = useState(apiSDK.account);
-  const [energyConfig, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
+  const [, setAccount] = useState(apiSDK.account);
+  const [, setEnergyConfig] = useState<EnergyConfig | undefined>(apiSDK.energyConfig);
   const [reloadAccount, setReloadAccount] = useState<number>(0);
   const { setContainerClass } = useContext(HomeContext);
   const [isOpenWidget, setIsOpenWidget] = useState<boolean>(false);

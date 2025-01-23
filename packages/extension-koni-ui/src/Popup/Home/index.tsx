@@ -2,23 +2,27 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
+import { SWStorage } from '@subwallet/extension-base/storage';
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, InitRewardsModal, InitRewardsModalProps, Layout, LoadingScreen } from '@subwallet/extension-koni-ui/components';
+import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, ConfirmLinkingAccountModal, ExistedAddressModal, InitRewardsModal, InitRewardsModalProps, Layout, LoadingScreen, OnChainProfileModal } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, NftMintingLog } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, CONFIRM_SHOW_MINTING_FAILED_MODAL, homeScreensLayoutBackgroundImages } from '@subwallet/extension-koni-ui/constants';
+import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, ADDRESS_EXISTED_MODAL, CONFIRM_LINKING_ACCOUNT_MODAL, CONFIRM_SHOW_MINTING_FAILED_MODAL, homeScreensLayoutBackgroundImages, ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
+import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
 import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
+import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle, Gift } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Outlet } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -30,19 +34,26 @@ export const GlobalSearchTokenModalId = 'globalSearchToken';
 const apiSDK = BookaSdk.instance;
 const metadataHandler = MetadataHandler.instance;
 let isAddPointShowed = false; // Use let instead of ref to avoid reload all components
+const cloudStorage = SWStorage.instance;
+const cloudStorageKey = 'on-chain-profile-modal';
+const onChainProfileAlterModal = ON_CHAIN_PROFILE_MODAL;
+const addressExitedModal = ADDRESS_EXISTED_MODAL;
+const confirmLinkingAddress = CONFIRM_LINKING_ACCOUNT_MODAL;
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
-  const { activeModal, inactiveModal } = useContext(ModalContext);
   const chainsByAccountType = useGetChainSlugsByAccountType();
   const tokenGroupStructure = useTokenGroup(chainsByAccountType);
   const accountBalance = useAccountBalance(tokenGroupStructure.tokenGroupMap);
+  const { activeModal, inactiveModal } = useContext(ModalContext);
+  const { disconnectWithoutConfirmModal } = useContext(WalletConnectContext);
+  const [addressLinking, setAddressLinking] = useState<string | undefined>(apiSDK.addressLinking);
   const [containerClass, setContainerClass] = useState<string | undefined>();
   const [addRewardModalProps, setAddRewardModalProps] = useState<AddRewardsModalProps | undefined>();
   const [initRewardModalProps, setInitRewardModalProps] = useState<InitRewardsModalProps | undefined>();
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
   const { alertModal } = useContext(WalletModalContext);
   const { t } = useTranslation();
-
+  const { wcAccount } = useSelector((state: RootState) => state.accountState);
   const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>();
   const [mintFailedLogIds, setMintFailedLogIds] = useLocalStorage<number[]>(CONFIRM_SHOW_MINTING_FAILED_MODAL, []);
 
@@ -124,6 +135,28 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     });
   }, [alertModal, mintingLog, setMintFailedLogIds, t]);
 
+  const onShowOnChainProfileModal = useCallback(async () => {
+    try {
+      const status = await cloudStorage.getItem(cloudStorageKey);
+
+      if (!status) {
+        if (wcAccount?.address) {
+          await disconnectWithoutConfirmModal(wcAccount);
+        }
+
+        activeModal(onChainProfileAlterModal);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [activeModal, disconnectWithoutConfirmModal, wcAccount]);
+
+  const onShowAddressExistedModal = useCallback(() => {
+    inactiveModal(onChainProfileAlterModal);
+    inactiveModal(confirmLinkingAddress);
+    activeModal(addressExitedModal);
+  }, [activeModal, inactiveModal]);
+
   useEffect(() => {
     const fetchMintingLog = async () => {
       try {
@@ -150,8 +183,14 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         setAccount(data);
       });
 
+    const addressLinkingSub = apiSDK.subscribeAddressLinking()
+      .subscribe((data) => {
+        setAddressLinking(data);
+      });
+
     return () => {
       accountSub.unsubscribe();
+      addressLinkingSub.unsubscribe();
     };
   }, []);
 
@@ -237,6 +276,16 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     }
   }, [account, closeInitRewardModal, onCancelRewardModal, onOkRewardModal, openInitRewardModal, openAddRewardsModal, closeAddRewardsModal]);
 
+  useEffect(() => {
+    if (addressLinking) {
+      activeModal(confirmLinkingAddress);
+    }
+  }, [activeModal, addressLinking]);
+
+  useEffect(() => {
+    onShowOnChainProfileModal().catch(console.error);
+  }, [onShowOnChainProfileModal]);
+
   return (
     <>
       {!account && <LoadingScreen />}
@@ -262,6 +311,18 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         onCancel={onCloseGlobalSearchToken}
         sortedTokenSlugs={tokenGroupStructure.sortedTokenSlugs}
         tokenBalanceMap={accountBalance.tokenBalanceMap}
+      />
+
+      <OnChainProfileModal
+        onSubmitAddressLinking={setAddressLinking}
+      />
+      <ExistedAddressModal
+        onSubmitAddressLinking={setAddressLinking}
+      />
+      <ConfirmLinkingAccountModal
+        addressLinking={addressLinking}
+        onErrorHandler={onShowAddressExistedModal}
+        setAddressLinking={setAddressLinking}
       />
       {firstBanner && <CampaignBannerModal banner={firstBanner} />}
       {

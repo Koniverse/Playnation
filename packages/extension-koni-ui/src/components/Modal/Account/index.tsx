@@ -9,3 +9,6 @@ export { default as DeriveAccountModal } from './DeriveAccountModal';
 export { default as ImportAccountModal } from './ImportAccountModal';
 export { default as ImportSeedModal } from './ImportSeedModal';
 export { default as NewSeedModal } from './NewSeedModal';
+export { default as OnChainProfileModal } from './OnChainProfileModal';
+export { default as ExistedAddressModal } from './ExistedAddressModal';
+export { default as ConfirmLinkingAccountModal } from './ConfirmLinkingAccountModal';
