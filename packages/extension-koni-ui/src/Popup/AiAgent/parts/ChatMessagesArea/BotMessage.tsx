@@ -93,6 +93,9 @@ export const BotMessage = styled(Component)<Props>(({ theme: { token } }: Props)
       padding: '12px 16px 20px 16px',
       borderRadius: '4px 16px 16px 16px',
       backgroundColor: token.colorTextLight4,
+      fontSize: token.fontSize,
+      lineHeight: token.lineHeight,
+      color: token.colorTextDark1,
 
       '> *': {
         marginBottom: 0
