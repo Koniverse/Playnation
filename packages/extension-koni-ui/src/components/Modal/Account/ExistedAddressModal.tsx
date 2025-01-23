@@ -79,6 +79,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
         } catch (e) {
           closeWaiting();
           inactiveModal(modalId);
+          onSubmitAddressLinking(undefined);
           setLoading(false);
 
           const error = e as Error;
@@ -103,9 +104,10 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
 
   const onCancel = useCallback(() => {
     wcAccount && disconnectWithoutConfirmModal(wcAccount).then(() => {
+      onSubmitAddressLinking(undefined);
       inactiveModal(modalId);
     }).catch(console.error);
-  }, [disconnectWithoutConfirmModal, inactiveModal, wcAccount]);
+  }, [disconnectWithoutConfirmModal, inactiveModal, onSubmitAddressLinking, wcAccount]);
 
   const footerModal = useMemo(() => {
     return (
@@ -135,6 +137,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           loading={loading}
           onClick={onCheckingLinkedAccount}
           shape={'round'}
+          size={'sm'}
         >
           {t('Change account')}
         </Button>
@@ -166,7 +169,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           <div
             className={'__sub-title-modal'}
           >
-            {t('Your Telegram ID is linked to account {wallet address}. Connect to this account and try again')}
+            {t(`Your Telegram ID is linked to account ${wcAccount?.address || ''}. Connect to this account and try again`)}
           </div>
         </div>
       </div>
@@ -184,6 +187,10 @@ const ExistedAddressModal = styled(Component)<Props>(({ theme: { extendToken, to
 
     '.ant-sw-modal-body': {
       padding: `${token.padding}px ${token.paddingXS}px`
+    },
+
+    '.ant-sw-sub-header-title-content': {
+      lineHeight: token.lineHeightHeading3
     },
 
     '.ant-sw-modal-confirm-body': {
@@ -234,7 +241,7 @@ const ExistedAddressModal = styled(Component)<Props>(({ theme: { extendToken, to
     },
 
     '.__sub-title-modal': {
-      alignText: 'center',
+      textAlign: 'center',
       fontSize: token.fontSizeHeading6,
       lineHeight: token.lineHeightHeading6,
       fontWeight: 500,

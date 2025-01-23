@@ -48,6 +48,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           }
         }
       } catch (e) {
+        onSubmitAddressLinking(undefined);
         inactiveModal(modalId);
         console.error(e);
       }
@@ -63,6 +64,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           block={true}
           icon={(
             <Icon
+              customSize={'20px'}
               phosphorIcon={CheckCircle}
               weight='fill'
             />
@@ -70,6 +72,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           loading={loading}
           onClick={onCheckingLinkedAccount}
           shape={'round'}
+          size={'sm'}
         >
           {t('Got it')}
         </Button>
@@ -122,6 +125,10 @@ const OnChainProfileModal = styled(Component)<Props>(({ theme: { extendToken, to
       padding: `${token.padding}px ${token.paddingXS}px`
     },
 
+    '.ant-sw-sub-header-title-content': {
+      lineHeight: token.lineHeightHeading3
+    },
+
     '.ant-sw-modal-confirm-body': {
       background: extendToken.colorBgGradient,
       borderRadius: 24,
@@ -164,20 +171,20 @@ const OnChainProfileModal = styled(Component)<Props>(({ theme: { extendToken, to
 
     '.__title-modal': {
       fontSize: token.fontSizeHeading5,
-      lineHeight: token.lineHeightHeading5,
+      lineHeight: token.lineHeightHeading3,
       color: token.colorText,
       fontWeight: 600
     },
 
     '.__sub-title-modal': {
       fontSize: token.fontSizeHeading6,
-      lineHeight: token.lineHeightHeading6,
+      lineHeight: token.lineHeightSM,
       fontWeight: 500,
       color: token.colorTextDark2,
       paddingInlineStart: token.paddingSM,
 
       li: {
-        listStyle: 'inside',
+        listStyle: 'disc',
         textAlign: 'center'
       }
     },

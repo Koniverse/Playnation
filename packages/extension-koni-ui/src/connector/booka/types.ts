@@ -472,6 +472,7 @@ export interface NFTTokenData {
 
 export interface IntegratedProfileResult {
   totalTransactions: number;
+  accumulatePoint: number;
   totalStakeVerioTransactions: number;
   totalSwapPiperXTransactions: number;
   offset: number;
@@ -480,7 +481,12 @@ export interface IntegratedProfileResult {
   syncedAt?: Date | null;
   telegramId?: number;
   loginCount?: number;
-  erc721ContractList?: NFTTokenData[]
+  erc721ContractList?: NFTTokenData[];
+  nftLastUpdated?: Date;
+  transactionLastUpdated?: Date;
+  nftExisted: boolean;
+  transactionExisted: boolean;
+  transactionOffset: number;
 }
 
 export interface IpAssetParams {
