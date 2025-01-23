@@ -42,11 +42,11 @@ const Component: React.FC<Props> = (props: Props) => {
   useSetCurrentPage('/home/account');
 
   const onCopyAddress = useCallback(() => {
-    copyToClipboard(wcAccount?.address || '');
+    copyToClipboard(addressLinked || '');
     notify({
       message: t('Copied to clipboard')
     });
-  }, [wcAccount?.address, notify, t]);
+  }, [addressLinked, notify, t]);
 
   const currentPoint = account?.attributes.accumulatePoint || 0;
 
