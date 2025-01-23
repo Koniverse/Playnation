@@ -6,7 +6,7 @@ import { GameState } from '@playnation/game-sdk/dist/types';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { createPromiseHandler, detectTranslate, wait } from '@subwallet/extension-base/utils';
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, APIResponse, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, IAirdropNftMinting, LeaderboardPerson, NftMintingEligibility, NftMintingLog, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, APIResponse, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, IAirdropNftMinting, IntegratedProfileResult, LeaderboardPerson, NftMintingEligibility, NftMintingLog, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
@@ -32,7 +32,8 @@ const CACHE_KEYS = {
   rankInfoMap: 'data--rank-info-map-cache',
   leaderboardConfigSubject: 'data--leaderboard-config-list-cache',
   airdropCampaignList: 'data--airdrop-campaign-list-cache',
-  airdropNftList: 'data--airdrop-nft-list-cache'
+  airdropNftList: 'data--airdrop-nft-list-cache',
+  accountIntegrationProfile: 'data--account-integration-profile-cache'
 };
 
 const CLOUD_KEYS = {
@@ -76,6 +77,7 @@ export class BookaSdk {
   private leaderboardConfigSubject = new BehaviorSubject<Record<string, object>>({});
   private addressLinkedSubject = new BehaviorSubject<string | undefined>(undefined);
   private addressLinkingSubject = new BehaviorSubject<string | undefined>(undefined);
+  private accountIntegrationProfile = new BehaviorSubject<IntegratedProfileResult>({} as IntegratedProfileResult);
 
   // Special cases
   // Check if the account is banned
@@ -95,6 +97,7 @@ export class BookaSdk {
       const airdropNftMintList = parseCache<IAirdropNftMinting[]>(CACHE_KEYS.airdropNftList);
       const rankInfoMap = parseCache<Record<AccountRankType, RankInfo>>(CACHE_KEYS.rankInfoMap);
       const leaderboardConfigSubject = parseCache<Record<string, object>>(CACHE_KEYS.leaderboardConfigSubject);
+      const accountIntegrationProfile = parseCache<IntegratedProfileResult>(CACHE_KEYS.accountIntegrationProfile);
 
       account && this.accountSubject.next(account);
       taskCategoryList && this.taskCategoryListSubject.next(taskCategoryList);
@@ -105,6 +108,7 @@ export class BookaSdk {
       airdropCampaignList && this.airdropCampaignSubject.next(airdropCampaignList);
       airdropNftMintList && this.airdropNftMintSubject.next(airdropNftMintList);
       leaderboardConfigSubject && this.leaderboardConfigSubject.next(leaderboardConfigSubject);
+      accountIntegrationProfile && this.accountIntegrationProfile.next(accountIntegrationProfile);
     } else {
       console.debug('Clearing cache');
       storage.removeItems(Object.keys(CACHE_KEYS).concat(['cache-version'])).catch(console.error);
@@ -1164,9 +1168,18 @@ export class BookaSdk {
   }
 
   async getStatsOfAddress () {
-    await wait(1000);
+    const data = await this.getRequest<IntegratedProfileResult>(`${GAME_API_HOST}/api/integrated-profile/account-profile-stats`);
 
-    return {};
+    if (data) {
+      this.accountIntegrationProfile.next(data);
+      localStorage.setItem(CACHE_KEYS.accountIntegrationProfile, JSON.stringify(data));
+    }
+
+    return data || {} as IntegratedProfileResult;
+  }
+
+  subscribeAccountIntegrationProfile () {
+    return this.accountIntegrationProfile;
   }
 
   // Singleton
