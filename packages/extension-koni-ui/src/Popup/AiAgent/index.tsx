@@ -4,11 +4,13 @@
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
 import { ExtrinsicStatus, RequestTransfer } from '@subwallet/extension-base/background/KoniTypes';
 import { SWTransactionBrief, SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
+import { getExplorerLink } from '@subwallet/extension-base/services/transaction-service/utils';
 import { GameAccountAvatar, Layout } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { makeTransfer, subscribeTransactionById } from '@subwallet/extension-koni-ui/messaging';
+import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { AiTransactionData, transformAiMessageData } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
@@ -41,13 +43,11 @@ interface AiTransactionInfo extends AiTransactionData {
   transactionId?: string;
 }
 
-const pendingTxMessage = 'Transaction have creating...';
-const submitTxMessage = "Your transaction has been submitted, please wait while it's being processed";
-const successTxMessage = 'Your transaction has completed with hash: ';
-
 const Component = (props: Props): React.ReactElement => {
   const { className } = props;
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
+
+  const chainInfoMap = useSelector((state: RootState) => state.chainStore.chainInfoMap);
 
   const { goBack } = useDefaultNavigate();
   const [messages, setMessages] = useState<MessageType[]>([]);
@@ -556,19 +556,21 @@ const Component = (props: Props): React.ReactElement => {
   //     }
   // });
 
+  const getExplorerUrl = useCallback((txHash: string) => {
+    const chainInfo = chainInfoMap.storyOdyssey_testnet;
+
+    return chainInfo ? getExplorerLink(chainInfo, txHash, 'tx') || '' : '';
+  }, [chainInfoMap]);
+
   const onSubmitTx = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
     if (wcAccount) {
       if (aiTransactionInfo.type === 'transfer') {
         submitTxRef.current = true;
 
         // Handle message when create transaction
-        // setPendingMessages((prevMessages) => {
-        //   const messages: MessageType[] = [...prevMessages, { message: pendingTxMessage, type: 'apiMessage' }];
-        //
-        //   addChatMessage(messages);
-        //
-        //   return messages;
-        // });
+        addPendingMessage({
+          message: 'Your transfer is being processed...', type: 'apiMessage'
+        });
       }
 
       let submitFunc: Promise<SWTransactionResponse> | undefined;
@@ -585,17 +587,35 @@ const Component = (props: Props): React.ReactElement => {
           .then((rs) => {
             if (rs.errors.length) {
               // Handle error
-              addPendingMessage({ message: rs.errors[0].message, type: 'apiMessage' });
+              // addPendingMessage({ message: rs.errors[0].message, type: 'apiMessage' });
             }
 
             if (rs.id) {
               const handleResult = (data: SWTransactionBrief) => {
+                let messageToResponse: string | undefined;
+
                 if (data.status === ExtrinsicStatus.SUBMITTING) {
                   // Handle on submit
-                  addPendingMessage({ message: submitTxMessage, type: 'apiMessage' });
+                  messageToResponse = 'Your transaction has been submitted! Let’s give it a moment for the network to process...';
                 } else if (data.status === ExtrinsicStatus.SUCCESS) {
                   // Handle on success
-                  addPendingMessage({ message: successTxMessage + data.extrinsicHash, type: 'apiMessage' });
+                  const explorerUrl = getExplorerUrl(data.extrinsicHash);
+
+                  messageToResponse = `All done! Your transaction is completed, and here’s the link for you to view on the explorer: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>`;
+                } else if (data.status === ExtrinsicStatus.FAIL) {
+                  const explorerUrl = getExplorerUrl(data.extrinsicHash);
+
+                  messageToResponse = `Oops, the transaction has failed. You can view it on the explorer: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>. Would you like to try again?`;
+                } else if (data.status === ExtrinsicStatus.UNKNOWN) {
+                  messageToResponse = 'Hmmm, there seems to be some unknown errors that get in the way. I’d suggest you come back at a later time and try again!';
+                } else if (data.status === ExtrinsicStatus.TIMEOUT) {
+                  const explorerUrl = getExplorerUrl(data.extrinsicHash);
+
+                  messageToResponse = `Uh oh, the transaction has timed out. This is due to the transaction taking much longer than expected. You can check your address on the explorer to see if the transaction is completed or not: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>`;
+                }
+
+                if (messageToResponse) {
+                  addPendingMessage({ message: messageToResponse, type: 'apiMessage' });
                 }
               };
 
@@ -606,7 +626,8 @@ const Component = (props: Props): React.ReactElement => {
           })
           .catch((err: Error) => {
             // Handle error
-            addPendingMessage({ message: err.message, type: 'apiMessage' });
+            addPendingMessage({ message: 'Oops, the transaction has failed. Seems like the network is having some connection issues. Would you like to try again?', type: 'apiMessage' });
+            console.log('Tx error', err);
           })
           .finally(() => {
             submitTxRef.current = false;
@@ -615,7 +636,7 @@ const Component = (props: Props): React.ReactElement => {
     }
 
     return Promise.resolve(undefined);
-  }, [addPendingMessage, wcAccount]);
+  }, [addPendingMessage, getExplorerUrl, wcAccount]);
 
   useEffect(() => {
     const chatflowData = getLocalStorageChatflow(props.chatflowid);
