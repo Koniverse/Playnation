@@ -482,3 +482,39 @@ export interface IntegratedProfileResult {
   loginCount?: number;
   erc721ContractList?: NFTTokenData[]
 }
+
+export interface IpAssetParams {
+  name: string,
+  description?: string,
+  assetUrl: string,
+}
+
+export interface IpAssetResponse {
+  data: {
+    ipId: string;
+    ipMeta: {
+      tags: string[];
+      media: string[];
+      title: string;
+      ipType: string;
+      creators: string[];
+      createdAt: string;
+      attributes: any[];
+      description: string;
+      watermarkImg: string;
+      relationships: any[];
+    };
+    txHash: string;
+    address: string;
+    nftMeta: {
+      name: string;
+      image: string;
+      description: string;
+    };
+    pilType: number;
+    accountId: number;
+    ipExplorerURL: string;
+  };
+  action: string;
+  timestamp: number;
+}
