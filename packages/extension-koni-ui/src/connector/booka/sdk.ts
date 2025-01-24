@@ -1207,7 +1207,7 @@ export class BookaSdk {
         });
       };
 
-      return (await Promise.all([checkWhiteList(), checkAccountMinted(), checkAccountPoint()])).some((condition) => condition);
+      return (await Promise.all([checkWhiteList()])).some((condition) => condition);
     } catch (e) {
       console.error(e);
 
