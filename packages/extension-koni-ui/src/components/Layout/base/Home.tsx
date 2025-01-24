@@ -5,6 +5,7 @@ import { Layout } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
+import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ButtonProps, Icon, ModalContext, Tooltip } from '@subwallet/react-ui';
 import { Export, FadersHorizontal, MagnifyingGlass } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo } from 'react';
@@ -33,6 +34,7 @@ const Component = (props: Props) => {
   const [, setIsVisitedInvitationScreen] = useLocalStorage(VISIT_INVITATION_SCREEN_FLAG, false);
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
+  const notify = useNotification();
 
   const onOpenCustomizeModal = useCallback(() => {
     activeModal(CUSTOMIZE_MODAL);
@@ -101,8 +103,11 @@ const Component = (props: Props) => {
   }, [showFilterIcon, showSearchIcon, showGiftIcon, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, t, onOpenInvite]);
 
   const onClickLeftButton = useCallback(() => {
-    navigate('/ai-agent');
-  }, [navigate]);
+    // navigate('/ai-agent');
+    notify({
+      message: 'Coming soon!'
+    });
+  }, [notify]);
 
   return (
     <Layout.Base
