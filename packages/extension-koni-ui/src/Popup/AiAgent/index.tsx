@@ -562,6 +562,11 @@ const Component = (props: Props): React.ReactElement => {
     return chainInfo ? getExplorerLink(chainInfo, txHash, 'tx') || '' : '';
   }, [chainInfoMap]);
 
+  const clearCurrentAiTransactionInfo = useCallback(() => {
+    // todo: may do more logic
+    setAiTransactionInfo(undefined);
+  }, []);
+
   const onSubmitTransferTx = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
     if (wcAccount) {
       if (aiTransactionInfo.type === 'transfer') {
@@ -825,13 +830,15 @@ const Component = (props: Props): React.ReactElement => {
 
   useEffect(() => {
     if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
+      clearCurrentAiTransactionInfo();
+
       if (aiTransactionInfo.type === 'transfer') {
         onSubmitTransferTx(aiTransactionInfo).catch(console.error);
       } else if (aiTransactionInfo.type === 'mint') {
         onSubmitMintTx(aiTransactionInfo).catch(console.error);
       }
     }
-  }, [aiTransactionInfo, onSubmitMintTx, onSubmitTransferTx, startChat]);
+  }, [aiTransactionInfo, clearCurrentAiTransactionInfo, onSubmitMintTx, onSubmitTransferTx, startChat]);
 
   // if not loading and have pendingMessages, update messages to show
   useEffect(() => {
