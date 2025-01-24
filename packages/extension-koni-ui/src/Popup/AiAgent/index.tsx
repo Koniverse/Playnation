@@ -71,7 +71,7 @@ const Component = (props: Props): React.ReactElement => {
   const startChat = useMemo(() => !!endStreamTrigger, [endStreamTrigger]);
 
   const [aiTransactionInfo, setAiTransactionInfo] = useState<AiTransactionInfo | undefined>(undefined);
-  const [aiTransactionInfoCached, setAiTransactionInfoCached] = useState<AiTransactionInfo | undefined>(undefined);
+  const [pendingTransferTransactionInfo, setPendingTransferTransactionInfo] = useState<AiTransactionInfo | undefined>(undefined);
 
   const { wcAccount } = useSelector((state) => state.accountState);
 
@@ -565,9 +565,8 @@ const Component = (props: Props): React.ReactElement => {
     return chainInfo ? getExplorerLink(chainInfo, txHash, 'tx') || '' : '';
   }, [chainInfoMap]);
 
-  const clearCurrentAiTransactionInfo = useCallback((aiTransactionInfo: AiTransactionInfo) => {
+  const clearCurrentAiTransactionInfo = useCallback(() => {
     // todo: may do more logic
-    setAiTransactionInfoCached(aiTransactionInfo);
     setAiTransactionInfo(undefined);
   }, []);
 
@@ -843,28 +842,31 @@ const Component = (props: Props): React.ReactElement => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endStreamTrigger]);
 
+  const isWalletConnect = !!wcAccount?.address;
+
   useEffect(() => {
     if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
-      clearCurrentAiTransactionInfo(aiTransactionInfo);
+      clearCurrentAiTransactionInfo();
 
       if (aiTransactionInfo.type === 'transfer') {
-        if (wcAccount?.address) {
+        if (isWalletConnect) {
           onSubmitTransferTx(aiTransactionInfo).catch(console.error);
         } else {
           addPendingMessage({ message: 'Alright, let\'s first connect your wallet and then we can proceed with the transaction', type: 'apiMessage', appTriggeredAction: 'requestUserConnectWallet' });
+          setPendingTransferTransactionInfo(aiTransactionInfo);
         }
       } else if (aiTransactionInfo.type === 'mint') {
         onSubmitMintTx(aiTransactionInfo).catch(console.error);
       }
     }
-  }, [addPendingMessage, aiTransactionInfo, clearCurrentAiTransactionInfo, onSubmitMintTx, onSubmitTransferTx, startChat, wcAccount?.address]);
+  }, [addPendingMessage, aiTransactionInfo, clearCurrentAiTransactionInfo, onSubmitMintTx, onSubmitTransferTx, startChat, isWalletConnect]);
 
   useEffect(() => {
-    if (wcAccount?.address && aiTransactionInfoCached) {
-      setAiTransactionInfo(aiTransactionInfoCached);
-      setAiTransactionInfoCached(undefined);
+    if (isWalletConnect && pendingTransferTransactionInfo) {
+      setPendingTransferTransactionInfo(undefined);
+      onSubmitTransferTx(pendingTransferTransactionInfo).catch(console.error);
     }
-  }, [aiTransactionInfoCached, wcAccount?.address]);
+  }, [isWalletConnect, onSubmitTransferTx, pendingTransferTransactionInfo]);
 
   // if not loading and have pendingMessages, update messages to show
   useEffect(() => {
