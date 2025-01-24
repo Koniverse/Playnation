@@ -601,6 +601,8 @@ const Component = (props: Props): React.ReactElement => {
               if (rs.errors[0].message.toLowerCase().includes('rejected by user')) {
                 addPendingMessage({ message: 'Hmm, seems like you cancelled the transaction. Let me know if you want to resume it!', type: 'apiMessage' });
               }
+
+              return;
             }
 
             if (rs.id) {
