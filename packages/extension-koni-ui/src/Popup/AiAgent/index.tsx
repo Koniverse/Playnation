@@ -594,8 +594,12 @@ const Component = (props: Props): React.ReactElement => {
         submitFunc
           .then((rs) => {
             if (rs.errors.length) {
+              console.log('Tx error', rs.errors);
+
               // Handle error
-              // addPendingMessage({ message: rs.errors[0].message, type: 'apiMessage' });
+              if (rs.errors[0].message.toLowerCase().includes('rejected by user')) {
+                addPendingMessage({ message: 'Hmm, seems like you cancelled the transaction. Let me know if you want to resume it!', type: 'apiMessage' });
+              }
             }
 
             if (rs.id) {
@@ -634,7 +638,7 @@ const Component = (props: Props): React.ReactElement => {
           })
           .catch((err: Error) => {
             // Handle error
-            addPendingMessage({ message: 'Oops, the transaction has failed. Seems like the network is having some connection issues. Would you like to try again?', type: 'apiMessage' });
+            addPendingMessage({ message: `Oops, the transaction has failed. ${err.message}. Would you like to try again?`, type: 'apiMessage' });
             console.log('Tx error', err);
           })
           .finally(() => {
