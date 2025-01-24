@@ -81,6 +81,7 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
           disabled={loading}
           icon={(
             <Icon
+              customSize={'20px'}
               phosphorIcon={XCircle}
               weight='fill'
             />
@@ -88,6 +89,7 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
           onClick={onCancel}
           schema={'secondary'}
           shape={'round'}
+          size={'sm'}
         >
           {t('Cancel')}
         </Button>
@@ -95,6 +97,7 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
           block={true}
           icon={(
             <Icon
+              customSize={'20px'}
               phosphorIcon={CheckCircle}
               weight='fill'
             />
@@ -102,8 +105,9 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
           loading={loading}
           onClick={onSubmitLinkingAccount}
           shape={'round'}
+          size={'sm'}
         >
-          {t('Agree')}
+          {t('Confirm')}
         </Button>
       </>
     );
@@ -161,6 +165,11 @@ const ConfirmLinkingAccountModal = styled(Component)<Props>(({ theme: { extendTo
 
     '.ant-sw-modal-body': {
       padding: `${token.padding}px ${token.paddingXS}px`
+    },
+
+    '.ant-field-content-wrapper': {
+      display: 'flex',
+      justifyContent: 'center'
     },
 
     '.ant-sw-sub-header-title-content': {

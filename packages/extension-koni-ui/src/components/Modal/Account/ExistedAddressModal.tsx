@@ -152,7 +152,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
       footer={footerModal}
       id={modalId}
       onCancel={onCancel}
-      title={t('Failed to complete')}
+      title={t('Wrong account')}
     >
       <div className='ant-sw-modal-confirm-body'>
         <div className={'__icon-modal'}>
@@ -169,7 +169,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           <div
             className={'__sub-title-modal'}
           >
-            {t(`Your Telegram ID is linked to account ${wcAccount?.address || ''}. Connect to this account and try again`)}
+            {t('The account you’re using is linked to another Telegram ID. Change account and try again')}
           </div>
         </div>
       </div>
