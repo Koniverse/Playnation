@@ -639,7 +639,7 @@ const Component = (props: Props): React.ReactElement => {
           })
           .catch((err: Error) => {
             // Handle error
-            addPendingMessage({ message: err.message, type: 'apiMessage' });
+            addPendingMessage({ message: `Oops, the transaction has failed. Would you like to try again?<pre>${err.message}</pre>`, type: 'apiMessage' });
             console.log('Tx error', err);
           })
           .finally(() => {

@@ -15,7 +15,7 @@ import styled, { useTheme } from 'styled-components';
 
 type Props = ThemeProps;
 const cloudStorage = SWStorage.instance;
-const cloudStorageKey = 'on-chat-ai-modal';
+const cloudStorageKey = 'new-chat-ai-modal';
 const modalId = NEW_CHAT_AI_MODAL;
 
 function Component ({ className }: Props): React.ReactElement<Props> {
@@ -40,7 +40,13 @@ function Component ({ className }: Props): React.ReactElement<Props> {
   }, [inactiveModal, navigate]);
 
   const onCancel = useCallback(() => {
-    inactiveModal(modalId);
+    const func = async () => {
+      await cloudStorage.setItem(cloudStorageKey, 'showed');
+    };
+
+    func().then(() => {
+      inactiveModal(modalId);
+    }).catch(console.error);
   }, [inactiveModal]);
 
   const footerModal = useMemo(() => {
@@ -85,7 +91,7 @@ function Component ({ className }: Props): React.ReactElement<Props> {
       closable={true}
       footer={footerModal}
       id={modalId}
-      onCancel={onNavigateToChatAi}
+      onCancel={onCancel}
       title={t('Tell Me is here!')}
     >
       <div className='ant-sw-modal-confirm-body'>
