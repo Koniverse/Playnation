@@ -9,24 +9,20 @@ import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { BookaAccount, NftMintingLog } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, ADDRESS_EXISTED_MODAL, CONFIRM_LINKING_ACCOUNT_MODAL, CONFIRM_SHOW_MINTING_FAILED_MODAL, homeScreensLayoutBackgroundImages, NEW_CHAT_AI_MODAL, ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, ADDRESS_EXISTED_MODAL, CONFIRM_LINKING_ACCOUNT_MODAL, homeScreensLayoutBackgroundImages, NEW_CHAT_AI_MODAL, ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
-import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
-import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CheckCircle, Gift } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Outlet } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useLocalStorage } from 'usehooks-ts';
 
 type Props = ThemeProps;
 
@@ -53,12 +49,9 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const [addRewardModalProps, setAddRewardModalProps] = useState<AddRewardsModalProps | undefined>();
   const [initRewardModalProps, setInitRewardModalProps] = useState<InitRewardsModalProps | undefined>();
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
-  const { alertModal } = useContext(WalletModalContext);
-  const { t } = useTranslation();
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
-  const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>();
-  const [mintFailedLogIds, setMintFailedLogIds] = useLocalStorage<number[]>(CONFIRM_SHOW_MINTING_FAILED_MODAL, []);
-  const [pendingFetching, setPendingFetching] = useState(true);
+  // const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>();
+  // const [mintFailedLogIds, setMintFailedLogIds] = useLocalStorage<number[]>(CONFIRM_SHOW_MINTING_FAILED_MODAL, []);
 
   const isGlobalModalActive = useMemo(() => checkActive(GlobalSearchTokenModalId), [checkActive]);
 
@@ -107,38 +100,38 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     closeAddRewardsModal();
   }, [closeAddRewardsModal]);
 
-  const handleMintingFailedModal = useCallback(() => {
-    const handleConfirmOrCancel = () => {
-      setMintFailedLogIds((prevIds) => {
-        if (mintingLog?.id && !prevIds.includes(mintingLog.id)) {
-          return [...prevIds, mintingLog.id];
-        }
-
-        return prevIds;
-      });
-      alertModal.close();
-    };
-
-    alertModal.open({
-      className: 'general-confirmation-modal modal-revert-header',
-      title: t('Badge minting failed'),
-      iconProps: {
-        phosphorIcon: Gift,
-        weight: 'fill'
-      },
-      contentTitle: t('Mint your badge again'),
-      content: (
-        t('Due to technical issues, your badge wasn’t minted in Phase 1. Click the Mint tab to mint your badge again on December 6')
-      ),
-      okButton: {
-        icon: CheckCircle,
-        iconWeight: 'fill',
-        text: t('I understand'),
-        onClick: handleConfirmOrCancel
-      },
-      onCancel: handleConfirmOrCancel
-    });
-  }, [alertModal, mintingLog, setMintFailedLogIds, t]);
+  // const handleMintingFailedModal = useCallback(() => {
+  //   const handleConfirmOrCancel = () => {
+  //     setMintFailedLogIds((prevIds) => {
+  //       if (mintingLog?.id && !prevIds.includes(mintingLog.id)) {
+  //         return [...prevIds, mintingLog.id];
+  //       }
+  //
+  //       return prevIds;
+  //     });
+  //     alertModal.close();
+  //   };
+  //
+  //   alertModal.open({
+  //     className: 'general-confirmation-modal modal-revert-header',
+  //     title: t('Badge minting failed'),
+  //     iconProps: {
+  //       phosphorIcon: Gift,
+  //       weight: 'fill'
+  //     },
+  //     contentTitle: t('Mint your badge again'),
+  //     content: (
+  //       t('Due to technical issues, your badge wasn’t minted in Phase 1. Click the Mint tab to mint your badge again on December 6')
+  //     ),
+  //     okButton: {
+  //       icon: CheckCircle,
+  //       iconWeight: 'fill',
+  //       text: t('I understand'),
+  //       onClick: handleConfirmOrCancel
+  //     },
+  //     onCancel: handleConfirmOrCancel
+  //   });
+  // }, [alertModal, mintingLog, setMintFailedLogIds, t]);
 
   const onShowOnChainProfileModal = useCallback(async () => {
     try {
@@ -178,29 +171,29 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     activeModal(addressExitedModal);
   }, [activeModal, inactiveModal]);
 
-  useEffect(() => {
-    const fetchMintingLog = async () => {
-      setPendingFetching(true);
+  // useEffect(() => {
+  //   const fetchMintingLog = async () => {
+  //     setPendingFetching(true);
+  //
+  //     try {
+  //       const mintingLog = await apiSDK.getNftMintingLog();
+  //
+  //       setMintingLog(mintingLog);
+  //     } catch (error) {
+  //       console.error('Error fetching minting log:', error);
+  //     }
+  //   };
+  //
+  //   fetchMintingLog().catch(console.error).finally(() => {
+  //     setPendingFetching(false);
+  //   });
+  // }, []);
 
-      try {
-        const mintingLog = await apiSDK.getNftMintingLog();
-
-        setMintingLog(mintingLog);
-      } catch (error) {
-        console.error('Error fetching minting log:', error);
-      }
-    };
-
-    fetchMintingLog().catch(console.error).finally(() => {
-      setPendingFetching(false);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (mintingLog?.notify && !mintFailedLogIds.includes(mintingLog.id)) {
-      handleMintingFailedModal();
-    }
-  }, [handleMintingFailedModal, mintFailedLogIds, mintingLog?.id, mintingLog?.notify, navigate]);
+  // useEffect(() => {
+  //   if (mintingLog?.notify && !mintFailedLogIds.includes(mintingLog.id)) {
+  //     handleMintingFailedModal();
+  //   }
+  // }, [handleMintingFailedModal, mintFailedLogIds, mintingLog?.id, mintingLog?.notify, navigate]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount()
@@ -308,12 +301,10 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   }, [activeModal, addressLinking]);
 
   useEffect(() => {
-    if (!pendingFetching && !isGlobalModalActive) {
-      onShowNewChatAiModal().then(async () => {
-        await onShowOnChainProfileModal();
-      }).catch(console.error);
-    }
-  }, [isGlobalModalActive, onShowNewChatAiModal, onShowOnChainProfileModal, pendingFetching]);
+    onShowNewChatAiModal().then(async () => {
+      await onShowOnChainProfileModal();
+    }).catch(console.error);
+  }, [isGlobalModalActive, onShowNewChatAiModal, onShowOnChainProfileModal]);
 
   return (
     <>
