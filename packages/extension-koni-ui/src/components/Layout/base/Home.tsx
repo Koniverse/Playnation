@@ -34,6 +34,7 @@ const Component = (props: Props) => {
   const [, setIsVisitedInvitationScreen] = useLocalStorage(VISIT_INVITATION_SCREEN_FLAG, false);
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
+  // @ts-ignore
   const notify = useNotification();
 
   const onOpenCustomizeModal = useCallback(() => {
@@ -103,11 +104,11 @@ const Component = (props: Props) => {
   }, [showFilterIcon, showSearchIcon, showGiftIcon, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, t, onOpenInvite]);
 
   const onClickLeftButton = useCallback(() => {
-    // navigate('/ai-agent');
-    notify({
-      message: 'Coming soon!'
-    });
-  }, [notify]);
+    navigate('/ai-agent');
+    // notify({
+    //   message: 'Coming soon!'
+    // });
+  }, [navigate]);
 
   return (
     <Layout.Base
