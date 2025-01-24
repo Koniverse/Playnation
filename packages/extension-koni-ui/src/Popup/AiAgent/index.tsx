@@ -7,7 +7,7 @@ import { SWTransactionBrief, SWTransactionResponse } from '@subwallet/extension-
 import { getExplorerLink } from '@subwallet/extension-base/services/transaction-service/utils';
 import { GameAccountAvatar, Layout } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { BookaAccount, IpAssetParams } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { makeTransfer, subscribeTransactionById } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
@@ -569,7 +569,7 @@ const Component = (props: Props): React.ReactElement => {
 
         // Handle message when create transaction
         addPendingMessage({
-          message: 'Your transfer is being processed...', type: 'apiMessage'
+          message: 'Your transaction is being processed...', type: 'apiMessage'
         });
       }
 
@@ -639,8 +639,35 @@ const Component = (props: Props): React.ReactElement => {
   }, [addPendingMessage, getExplorerUrl, wcAccount]);
 
   const onSubmitMintTx = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
+    if (aiTransactionInfo.type !== 'mint') {
+      return Promise.resolve(undefined);
+    }
+
+    submitTxRef.current = true;
+    addPendingMessage({
+      message: 'Your transaction is being processed...', type: 'apiMessage'
+    });
+
+    const ipParams = aiTransactionInfo.data as IpAssetParams;
+
+    try {
+      const response = await apiSDK.registerIPAsset(ipParams);
+
+      const explorerUrl = response.ipExplorerURL;
+
+      addPendingMessage({
+        message: `All done! Your transaction is completed, and here’s the link for you to view on the explorer: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>`,
+        type: 'apiMessage'
+      });
+    } catch (e) {
+      console.log('onSubmitMintTx error', e);
+      addPendingMessage({ message: 'Oops, the transaction has failed. Would you like to try again?', type: 'apiMessage' });
+    }
+
+    submitTxRef.current = false;
+
     return Promise.resolve(undefined);
-  }, []);
+  }, [addPendingMessage]);
 
   useEffect(() => {
     const chatflowData = getLocalStorageChatflow(props.chatflowid);
