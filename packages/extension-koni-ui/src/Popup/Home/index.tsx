@@ -4,13 +4,13 @@
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, ConfirmLinkingAccountModal, ExistedAddressModal, InitRewardsModal, InitRewardsModalProps, Layout, LoadingScreen, OnChainProfileModal } from '@subwallet/extension-koni-ui/components';
+import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, ConfirmLinkingAccountModal, ExistedAddressModal, InitRewardsModal, InitRewardsModalProps, Layout, LoadingScreen, NewAiChatModal, OnChainProfileModal } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, NftMintingLog } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, ADDRESS_EXISTED_MODAL, CONFIRM_LINKING_ACCOUNT_MODAL, CONFIRM_SHOW_MINTING_FAILED_MODAL, homeScreensLayoutBackgroundImages, ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, ADDRESS_EXISTED_MODAL, CONFIRM_LINKING_ACCOUNT_MODAL, CONFIRM_SHOW_MINTING_FAILED_MODAL, homeScreensLayoutBackgroundImages, NEW_CHAT_AI_MODAL, ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
@@ -35,8 +35,10 @@ const apiSDK = BookaSdk.instance;
 const metadataHandler = MetadataHandler.instance;
 let isAddPointShowed = false; // Use let instead of ref to avoid reload all components
 const cloudStorage = SWStorage.instance;
-const cloudStorageKey = 'on-chain-profile-modal';
+const onChainProfileCloudKey = 'on-chain-profile-modal';
+const onNewChatAiCloudKey = 'new-chat-ai-modal';
 const onChainProfileAlterModal = ON_CHAIN_PROFILE_MODAL;
+const onNewChatAiModal = NEW_CHAT_AI_MODAL;
 const addressExitedModal = ADDRESS_EXISTED_MODAL;
 const confirmLinkingAddress = CONFIRM_LINKING_ACCOUNT_MODAL;
 
@@ -44,7 +46,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const chainsByAccountType = useGetChainSlugsByAccountType();
   const tokenGroupStructure = useTokenGroup(chainsByAccountType);
   const accountBalance = useAccountBalance(tokenGroupStructure.tokenGroupMap);
-  const { activeModal, inactiveModal } = useContext(ModalContext);
+  const { activeModal, checkActive, inactiveModal } = useContext(ModalContext);
   const { disconnectWithoutConfirmModal } = useContext(WalletConnectContext);
   const [addressLinking, setAddressLinking] = useState<string | undefined>(apiSDK.addressLinking);
   const [containerClass, setContainerClass] = useState<string | undefined>();
@@ -56,6 +58,9 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
   const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>();
   const [mintFailedLogIds, setMintFailedLogIds] = useLocalStorage<number[]>(CONFIRM_SHOW_MINTING_FAILED_MODAL, []);
+  const [pendingFetching, setPendingFetching] = useState(true);
+
+  const isGlobalModalActive = useMemo(() => checkActive(GlobalSearchTokenModalId), [checkActive]);
 
   const banners = useGetBannerByScreen('home');
 
@@ -137,7 +142,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   const onShowOnChainProfileModal = useCallback(async () => {
     try {
-      const status = await cloudStorage.getItem(cloudStorageKey);
+      const status = await cloudStorage.getItem(onChainProfileCloudKey);
 
       if (!status) {
         if (wcAccount?.address) {
@@ -151,6 +156,22 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     }
   }, [activeModal, disconnectWithoutConfirmModal, wcAccount]);
 
+  const onShowNewChatAiModal = useCallback(async () => {
+    try {
+      const status = await cloudStorage.getItem(onNewChatAiCloudKey);
+
+      if (!status) {
+        const isPassed = await apiSDK.checkAccountAvailableBetaVersion();
+
+        if (isPassed) {
+          activeModal(onNewChatAiModal);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [activeModal]);
+
   const onShowAddressExistedModal = useCallback(() => {
     inactiveModal(onChainProfileAlterModal);
     inactiveModal(confirmLinkingAddress);
@@ -159,6 +180,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
   useEffect(() => {
     const fetchMintingLog = async () => {
+      setPendingFetching(true);
+
       try {
         const mintingLog = await apiSDK.getNftMintingLog();
 
@@ -168,7 +191,9 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       }
     };
 
-    fetchMintingLog().catch(console.error);
+    fetchMintingLog().catch(console.error).finally(() => {
+      setPendingFetching(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -283,8 +308,12 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   }, [activeModal, addressLinking]);
 
   useEffect(() => {
-    onShowOnChainProfileModal().catch(console.error);
-  }, [onShowOnChainProfileModal]);
+    if (!pendingFetching && !isGlobalModalActive) {
+      onShowNewChatAiModal().then(async () => {
+        await onShowOnChainProfileModal();
+      }).catch(console.error);
+    }
+  }, [isGlobalModalActive, onShowNewChatAiModal, onShowOnChainProfileModal, pendingFetching]);
 
   return (
     <>
@@ -324,6 +353,9 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         onErrorHandler={onShowAddressExistedModal}
         setAddressLinking={setAddressLinking}
       />
+
+      <NewAiChatModal />
+
       {firstBanner && <CampaignBannerModal banner={firstBanner} />}
       {
         !!addRewardModalProps && (

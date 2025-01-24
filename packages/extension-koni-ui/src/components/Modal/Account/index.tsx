@@ -12,3 +12,4 @@ export { default as NewSeedModal } from './NewSeedModal';
 export { default as OnChainProfileModal } from './OnChainProfileModal';
 export { default as ExistedAddressModal } from './ExistedAddressModal';
 export { default as ConfirmLinkingAccountModal } from './ConfirmLinkingAccountModal';
+export { default as NewAiChatModal } from './NewAiChatModal';

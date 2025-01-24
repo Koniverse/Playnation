@@ -20,6 +20,7 @@ export const STORY_BADGE_HOST = process.env.STORY_BADGE_HOST || 'http://localhos
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
 
+const ACCOUNT_POINT_AVAILABLE_IN_BETA = 15000;
 // Increase of changing the cache version, we need to clear the cache
 // From version 1.2 use localStorage instead of cloudStorage for cache
 const cacheVersion = '1.2';
@@ -1178,6 +1179,32 @@ export class BookaSdk {
     }
 
     return data || {} as IntegratedProfileResult;
+  }
+
+  async checkAccountAvailableBetaVersion () {
+    try {
+      const checkWhiteList = async () => {
+        const data = await this.getRequest<{ status: boolean }>(`${GAME_API_HOST}/api/integrated-profile/check-telegram-whitelist`);
+
+        return !!data?.status;
+      };
+
+      const checkAccountMinted = async () => {
+        return !!(await this.getMintedAddress());
+      };
+
+      const checkAccountPoint = async () => {
+        return new Promise<boolean>((resolve) => {
+          resolve(!!(this.account && this.account?.attributes.point >= ACCOUNT_POINT_AVAILABLE_IN_BETA));
+        });
+      };
+
+      return (await Promise.all([checkWhiteList(), checkAccountMinted(), checkAccountPoint()])).every((condition) => condition);
+    } catch (e) {
+      console.error(e);
+
+      return false;
+    }
   }
 
   subscribeAccountIntegrationProfile () {
