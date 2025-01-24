@@ -1195,7 +1195,15 @@ export class BookaSdk {
 
       const checkAccountPoint = async () => {
         return new Promise<boolean>((resolve) => {
-          resolve(!!(this.account && this.account?.attributes.point >= ACCOUNT_POINT_AVAILABLE_IN_BETA));
+          if (this.account) {
+            resolve((this.account.attributes.accumulatePoint >= ACCOUNT_POINT_AVAILABLE_IN_BETA));
+          } else {
+            this.subscribeAccount().subscribe((account) => {
+              if (account) {
+                resolve(account.attributes.accumulatePoint >= ACCOUNT_POINT_AVAILABLE_IN_BETA);
+              }
+            });
+          }
         });
       };
 

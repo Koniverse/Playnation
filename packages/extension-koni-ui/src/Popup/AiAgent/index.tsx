@@ -638,7 +638,7 @@ const Component = (props: Props): React.ReactElement => {
           })
           .catch((err: Error) => {
             // Handle error
-            addPendingMessage({ message: `Oops, the transaction has failed. ${err.message}. Would you like to try again?`, type: 'apiMessage' });
+            addPendingMessage({ message: err.message, type: 'apiMessage' });
             console.log('Tx error', err);
           })
           .finally(() => {
