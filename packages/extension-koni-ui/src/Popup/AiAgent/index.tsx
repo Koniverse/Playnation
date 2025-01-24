@@ -8,6 +8,7 @@ import { getExplorerLink } from '@subwallet/extension-base/services/transaction-
 import { GameAccountAvatar, Layout } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, IpAssetParams } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { makeTransfer, subscribeTransactionById } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
@@ -15,7 +16,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { AiTransactionData, transformAiMessageData } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
 import { cloneDeep } from 'lodash';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -58,6 +59,7 @@ const Component = (props: Props): React.ReactElement => {
   const [userInput, setUserInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false);
+  const { connectWC, requireWC } = useContext(WalletConnectContext);
 
   const [leadEmail, setLeadEmail] = useState('');
   const [isLeadSaved, setIsLeadSaved] = useState(false);
@@ -69,6 +71,7 @@ const Component = (props: Props): React.ReactElement => {
   const startChat = useMemo(() => !!endStreamTrigger, [endStreamTrigger]);
 
   const [aiTransactionInfo, setAiTransactionInfo] = useState<AiTransactionInfo | undefined>(undefined);
+  const [aiTransactionInfoCached, setAiTransactionInfoCached] = useState<AiTransactionInfo | undefined>(undefined);
 
   const { wcAccount } = useSelector((state) => state.accountState);
 
@@ -562,8 +565,9 @@ const Component = (props: Props): React.ReactElement => {
     return chainInfo ? getExplorerLink(chainInfo, txHash, 'tx') || '' : '';
   }, [chainInfoMap]);
 
-  const clearCurrentAiTransactionInfo = useCallback(() => {
+  const clearCurrentAiTransactionInfo = useCallback((aiTransactionInfo: AiTransactionInfo) => {
     // todo: may do more logic
+    setAiTransactionInfoCached(aiTransactionInfo);
     setAiTransactionInfo(undefined);
   }, []);
 
@@ -742,10 +746,21 @@ const Component = (props: Props): React.ReactElement => {
     }
   }, [props.chatflowid, props.welcomeMessage]);
 
-  const onClickConnectWallet = useCallback(() => {
-    // todo: add logic to connect wallet here
-    alert('Connect Wallet');
-  }, []);
+  const onClickConnectWallet = useCallback(async () => {
+    try {
+      await requireWC();
+
+      addPendingMessage({ message: 'It might take a little while for the WalletConnect modal to pop up. Please be patient...', type: 'apiMessage' });
+
+      return await connectWC();
+    } catch (e) {
+      const error = e as Error;
+
+      addPendingMessage({ message: error.message, type: 'apiMessage' });
+
+      return null;
+    }
+  }, [addPendingMessage, connectWC, requireWC]);
 
   const welcomeMessagesNode = useMemo(() => {
     const userName = `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}`.trim();
@@ -830,15 +845,26 @@ const Component = (props: Props): React.ReactElement => {
 
   useEffect(() => {
     if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
-      clearCurrentAiTransactionInfo();
+      clearCurrentAiTransactionInfo(aiTransactionInfo);
 
       if (aiTransactionInfo.type === 'transfer') {
-        onSubmitTransferTx(aiTransactionInfo).catch(console.error);
+        if (wcAccount?.address) {
+          onSubmitTransferTx(aiTransactionInfo).catch(console.error);
+        } else {
+          addPendingMessage({ message: 'Alright, let\'s first connect your wallet and then we can proceed with the transaction', type: 'apiMessage', appTriggeredAction: 'requestUserConnectWallet' });
+        }
       } else if (aiTransactionInfo.type === 'mint') {
         onSubmitMintTx(aiTransactionInfo).catch(console.error);
       }
     }
-  }, [aiTransactionInfo, clearCurrentAiTransactionInfo, onSubmitMintTx, onSubmitTransferTx, startChat]);
+  }, [addPendingMessage, aiTransactionInfo, clearCurrentAiTransactionInfo, onSubmitMintTx, onSubmitTransferTx, startChat, wcAccount?.address]);
+
+  useEffect(() => {
+    if (wcAccount?.address && aiTransactionInfoCached) {
+      setAiTransactionInfo(aiTransactionInfoCached);
+      setAiTransactionInfoCached(undefined);
+    }
+  }, [aiTransactionInfoCached, wcAccount?.address]);
 
   // if not loading and have pendingMessages, update messages to show
   useEffect(() => {
