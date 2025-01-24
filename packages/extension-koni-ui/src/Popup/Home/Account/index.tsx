@@ -212,7 +212,7 @@ const Component: React.FC<Props> = (props: Props) => {
           <div className={'right-block-info-account-unit'}>{!accountProfile?.loginCount || accountProfile?.loginCount < 2 ? 'day' : 'days'}</div>
         </div>
       </div>
-      {!!addressLinked && accountProfile && (
+      {!!addressLinked && !!(accountProfile?.totalTransactions || accountProfile?.totalBadgeNFTsOwned) && (
         <div className='block-stats-info'>
           <div className={'block-stats'}>
             <div className={'block-stats-left'}>Your IPventure Stats</div>
@@ -249,7 +249,8 @@ const Component: React.FC<Props> = (props: Props) => {
                 }
               </div>
               <div
-                className={'block-content-value'}>{toDisplayNumber(accountProfile?.totalBadgeNFTsOwned)}</div>
+                className={'block-content-value'}
+              >{toDisplayNumber(accountProfile?.totalBadgeNFTsOwned)}</div>
               <div className={'block-content-unit'}>{accountProfile?.totalBadgeNFTsOwned > 1 ? 'NFTs' : 'NFT'}</div>
             </div>
             <div className={'block-content4'}>
@@ -279,7 +280,7 @@ const Component: React.FC<Props> = (props: Props) => {
         </div>
       )}
 
-      {!accountProfile && wcAccount && (
+      {(!accountProfile?.totalTransactions && !accountProfile?.totalBadgeNFTsOwned) && wcAccount && (
         <div className='block-stats-info'>
           <div className={'empty-list-label'}>Your IPventure Stats</div>
           <EmptyList
@@ -309,8 +310,8 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
   return {
     // account
     paddingTop: token.paddingXXS,
-    paddingLeft: token.paddingXS,
-    paddingRight: token.paddingXS,
+    paddingLeft: token.padding,
+    paddingRight: token.padding,
     paddingBottom: 24,
 
     '.block-info-account': {
@@ -509,7 +510,8 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
         paddingRight: 19,
         paddingLeft: 19,
         '.empty_title': {
-          marginBottom: 0
+          marginBottom: 0,
+          fontSize: token.fontSizeLG
         }
       }
     },
@@ -542,7 +544,7 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
       lineHeight: token.lineHeightHeading3,
       fontWeight: token.headingFontWeight,
       color: token.colorTextDark1,
-      marginBottom: token.marginXXS
+      marginTop: token.marginSM
     },
 
     '.account-address-wrapper': {
