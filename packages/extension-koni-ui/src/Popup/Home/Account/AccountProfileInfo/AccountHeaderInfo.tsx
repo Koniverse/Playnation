@@ -37,7 +37,7 @@ function Component ({ activeDays, className, point }: Props) {
           {t('Active day')}
         </div>
         <div className='__header-part-value'>
-          {activeDays}
+          {!activeDays || activeDays === 0 ? 1 : activeDays}
         </div>
         <div className='__value-symbol'>
           {t('days')}
