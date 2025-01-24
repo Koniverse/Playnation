@@ -85,7 +85,7 @@ function Component (props: Props): React.ReactElement<Props> {
               shape={'round'}
               size={'sm'}
             >
-               Connect Wallet
+              Connect wallet
             </Button>
           )
         }
