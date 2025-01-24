@@ -538,6 +538,7 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
     },
 
     '.account-name': {
+      marginTop: 12,
       fontSize: token.fontSizeHeading4,
       lineHeight: token.lineHeightHeading3,
       fontWeight: token.headingFontWeight,

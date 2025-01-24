@@ -423,11 +423,12 @@ const Component = (props: Props): React.ReactElement => {
             closeResponse();
             break;
         }
+
+        scrollToBottom(150);
       },
       async onclose () {
         setEndStreamTrigger(`${Date.now()}`);
         closeResponse();
-        scrollToBottom(150);
       },
       onerror (err) {
         console.error('EventSource Error: ', err);
