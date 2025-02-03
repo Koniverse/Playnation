@@ -123,7 +123,7 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
 
     if (rs.error) {
       telegramConnector.showPopup({
-        message: rs.error
+        message: 'This email is used by another Telegram ID. Use another email and try again'
       }, () => {
         onLogoutMythAccount();
       });
