@@ -122,17 +122,37 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     });
 
     if (rs.error) {
-      telegramConnector.showPopup({
-        message: 'This email is used by another Telegram ID. Use another email and try again'
-      }, () => {
-        onLogoutMythAccount();
-      });
+      // Cast the type because the error is a string but the data is actually an object
+      let errorObject: { message?: string; status?: number; name?: string } | null = null;
+
+      if (typeof rs.error === 'string') {
+        errorObject = { message: rs.error };
+      } else {
+        errorObject = rs.error as { message?: string; status?: number; name?: string };
+      }
+
+      const errorMessage = errorObject?.message;
+
+      if (errorMessage && (errorMessage.includes('Email existed linked') || errorMessage.includes('Cannot change email'))) {
+        telegramConnector.showPopup({
+          message: 'This email is used by another Telegram ID. Use another email and try again'
+        }, () => {
+          onLogoutMythAccount();
+        });
+      } else {
+        telegramConnector.showPopup({
+          message: errorMessage || ''
+        }, () => {
+          onLogoutMythAccount();
+        });
+      }
+
       console.error(rs.error);
     } else if (rs.success) {
       setIsLinked(rs.success);
       setLinkData(rs.data);
     }
-  }, [authContext.token, tokenData?.email]);
+  }, [authContext.token, onLogoutMythAccount, tokenData?.email]);
 
   const linkMythAccount = useCallback(async (path: string) => {
     if (!tokenData?.email || !authContext.token) {
