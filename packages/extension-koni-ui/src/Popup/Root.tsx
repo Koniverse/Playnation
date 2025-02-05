@@ -2,15 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
-import {
-  AUTHENTICATE_LOGOUT_REDIRECT,
-  AUTHENTICATE_REDIRECT_URI,
-  AUTHORIZATION_ENDPOINT,
-  CLIENT_ID,
-  LOGOUT_ENDPOINT,
-  TOKEN_ENDPOINT,
-  VISIT_LOGIN_CTA_FLAG
-} from '@subwallet/extension-koni-ui/constants';
+import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, VISIT_LOGIN_CTA_FLAG } from '@subwallet/extension-koni-ui/constants';
+import { VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE } from '@subwallet/extension-koni-ui/constants/localStorageDefaultValue';
 import { AuthenticationMythProvider, LOCAL_LOGGED_IN_PROMISE_KEY, LOCAL_NAVIGATE_AFTER_LOGIN_KEY } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { SecurityContextProvider } from '@subwallet/extension-koni-ui/contexts/SecurityContext';
 import { WalletModalContextProvider } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
@@ -25,10 +18,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AuthProvider, TAuthConfig, TRefreshTokenExpiredEvent } from 'react-oauth2-code-pkce';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+import { useLocalStorage } from 'usehooks-ts';
 
 import { BookaSdk } from '../connector/booka/sdk';
-import {useLocalStorage} from "usehooks-ts";
-import {VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE} from "@subwallet/extension-koni-ui/constants/localStorageDefaultValue";
 
 changeHeaderLogo(<Logo2D />);
 
@@ -168,14 +160,16 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     // Check if account is newly created and shoe login CTA
     if (pathName === '/' && !redirectTarget) {
       let shouldShowLoginCTA = !isVisitedLoginCTA;
-      const userCreated = BookaSdk.instance.account?.info?.createdAt
+      const userCreated = BookaSdk.instance.account?.info?.createdAt;
+
       if (userCreated && !isVisitedLoginCTA) {
-        try  {
+        try {
           const createTime = new Date(userCreated).getTime();
           const now = new Date().getTime();
 
           // Show only in 10 minutes after account created
           shouldShowLoginCTA = ((now - createTime) < 3600000) && !isVisitedLoginCTA;
+
           if (!shouldShowLoginCTA) {
             setIsVisitedLoginCTA(true);
           }
@@ -196,7 +190,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     } else {
       return null;
     }
-  }, [location.pathname, dataLoaded]);
+  }, [location.pathname, dataLoaded, isVisitedLoginCTA, setIsVisitedLoginCTA]);
 
   if (rootLoading || redirectPath) {
     return <>{redirectPath && <Navigate to={redirectPath} />}</>;

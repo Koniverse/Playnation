@@ -22,7 +22,13 @@ export default function useDefaultNavigate () {
 
   const goBack = useCallback(
     (urlToBack?: string, state?: unknown) => {
-      typeof urlToBack === 'string' ? navigate(urlToBack, { state }) : navigate(RouteState.prevDifferentPathNum);
+      if (typeof urlToBack === 'string') {
+        navigate(urlToBack, { state });
+      } else if (window.history.length > 1) {
+        navigate(RouteState.prevDifferentPathNum);
+      } else {
+        navigate(DEFAULT_ROUTER_PATH);
+      }
     },
     [navigate]
   );
