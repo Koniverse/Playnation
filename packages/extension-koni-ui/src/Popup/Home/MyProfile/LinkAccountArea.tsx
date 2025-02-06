@@ -4,7 +4,7 @@
 import { MythButton } from '@subwallet/extension-koni-ui/components/Mythical';
 import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { openInNewTab, toShort } from '@subwallet/extension-koni-ui/utils';
+import { openInNewTab } from '@subwallet/extension-koni-ui/utils';
 import React, { useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -17,7 +17,7 @@ type Props = ThemeProps & {
 
 const Component = ({ className, doLinkAccount, isLinked, isLoading }: Props): React.ReactElement => {
   const { t } = useTranslation();
-  const { account, mythicalWallet } = useContext(AuthenticationMythContext);
+  const { account } = useContext(AuthenticationMythContext);
   const openContactSupport = useCallback(() => {
     openInNewTab('https://support.rivals.game/hc/en-us/requests/new')();
   }, []);
@@ -39,7 +39,7 @@ const Component = ({ className, doLinkAccount, isLinked, isLoading }: Props): Re
               />
               <div className={'__linked-account-text'}>
                 <span className={'__linked-account-gmail'}>{account?.email}</span>
-                {mythicalWallet?.address && <span className={'__linked-account-address'}>&nbsp;({toShort(mythicalWallet.address, 3, 3)})</span>}
+                {/* {mythicalWallet?.address && <span className={'__linked-account-address'}>&nbsp;({toShort(mythicalWallet.address, 3, 3)})</span>} */}
               </div>
             </div>
           </div>
