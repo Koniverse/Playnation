@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
-import { useNotification } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { copyToClipboard, toDisplayNumber, toShort } from '@subwallet/extension-koni-ui/utils';
-import React, { useCallback, useContext } from 'react';
+import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
@@ -14,44 +13,44 @@ type Props = ThemeProps;
 const Component = ({ className }: Props): React.ReactElement => {
   const { t } = useTranslation();
   const { mythicalWallet } = useContext(AuthenticationMythContext);
-  const notify = useNotification();
+  // const notify = useNotification();
 
-  const onCopy = useCallback(() => {
-    copyToClipboard(mythicalWallet?.address || '');
-    notify({
-      message: t('Copied to clipboard')
-    });
-  }, [mythicalWallet?.address, notify, t]);
+  // const onCopy = useCallback(() => {
+  //   copyToClipboard(mythicalWallet?.address || '');
+  //   notify({
+  //     message: t('Copied to clipboard')
+  //   });
+  // }, [mythicalWallet?.address, notify, t]);
 
   return (
     <div className={className}>
       <div className='__info-item'>
-        <div className='__info-label'>{t('Your Wallet')}</div>
-        <div className='__info-value __wallet-address-wrapper'>
-          <div className='__wallet-address'>{toShort(mythicalWallet?.address || '')}</div>
+        {/* <div className='__info-label'>{t('Your Wallet')}</div> */}
+        {/* <div className='__info-value __wallet-address-wrapper'> */}
+        {/*  <div className='__wallet-address'>{toShort(mythicalWallet?.address || '')}</div> */}
 
-          <button
-            className={'__copy-button'}
-            onClick={onCopy}
-          >
-            <svg
-              fill='none'
-              height='20'
-              viewBox='0 0 20 20'
-              width='20'
-              xmlns='http://www.w3.org/2000/svg'
-            >
-              <path
-                d='M5.83317 5.00008V2.50008C5.83317 2.03985 6.20627 1.66675 6.6665 1.66675H16.6665C17.1267 1.66675 17.4998 2.03985 17.4998 2.50008V14.1667C17.4998 14.627 17.1267 15.0001 16.6665 15.0001H14.1665V17.4993C14.1665 17.96 13.7916 18.3334 13.3275 18.3334H3.33888C2.87549 18.3334 2.5 17.9629 2.5 17.4993L2.50217 5.83414C2.50225 5.37351 2.8772 5.00008 3.34118 5.00008H5.83317ZM7.49983 5.00008H14.1665V13.3334H15.8332V3.33341H7.49983V5.00008Z'
-                fill='#28C89F'
-              />
-            </svg>
-          </button>
-        </div>
+        {/*  <button */}
+        {/*    className={'__copy-button'} */}
+        {/*    onClick={onCopy} */}
+        {/*  > */}
+        {/*    <svg */}
+        {/*      fill='none' */}
+        {/*      height='20' */}
+        {/*      viewBox='0 0 20 20' */}
+        {/*      width='20' */}
+        {/*      xmlns='http://www.w3.org/2000/svg' */}
+        {/*    > */}
+        {/*      <path */}
+        {/*        d='M5.83317 5.00008V2.50008C5.83317 2.03985 6.20627 1.66675 6.6665 1.66675H16.6665C17.1267 1.66675 17.4998 2.03985 17.4998 2.50008V14.1667C17.4998 14.627 17.1267 15.0001 16.6665 15.0001H14.1665V17.4993C14.1665 17.96 13.7916 18.3334 13.3275 18.3334H3.33888C2.87549 18.3334 2.5 17.9629 2.5 17.4993L2.50217 5.83414C2.50225 5.37351 2.8772 5.00008 3.34118 5.00008H5.83317ZM7.49983 5.00008H14.1665V13.3334H15.8332V3.33341H7.49983V5.00008Z' */}
+        {/*        fill='#28C89F' */}
+        {/*      /> */}
+        {/*    </svg> */}
+        {/*  </button> */}
+        {/* </div> */}
       </div>
 
       <div className='__info-item'>
-        <div className='__info-label'>{t('Current Balance')}</div>
+        <div className='__info-label'>{t('Your Current Balance')}</div>
         <div className='__info-value __token-value-wrapper'>
           <span className={'__token-value'}>{toDisplayNumber(mythicalWallet?.balanceInMyth)}</span>
           <span className={'__token-symbol'}>&nbsp;Myth</span>
@@ -63,7 +62,7 @@ const Component = ({ className }: Props): React.ReactElement => {
 
 export const WalletInfoArea = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
-    minHeight: 156,
+    minHeight: 89,
     backgroundImage: 'url(/images/mythical/my-profile-wallet-info-background.png)',
     backgroundPosition: 'top center',
     backgroundSize: 'calc(100% + 10px) 100%',
