@@ -47,21 +47,27 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
         }
 
         await apiSDK.setAccountAddress(addressLinking);
+
+        setAddressLinking(undefined);
+        inactiveModal(modalId);
+        setLoading(false);
         await apiSDK.getStatsOfAddress();
       } catch (e) {
-        setLoading(false);
+        console.error(e);
 
         const error = e as Error;
 
+        inactiveModal(modalId);
+        setLoading(false);
+
         if (error.message.toLowerCase().includes('Address already registered'.toLowerCase()) ||
         error.message.toLowerCase().includes('minted address'.toLowerCase())) {
+          setAddressLinking('');
           onErrorHandler && onErrorHandler();
+        } else {
+          setAddressLinking(undefined);
         }
       }
-
-      setAddressLinking(undefined);
-      inactiveModal(modalId);
-      setLoading(false);
     };
 
     func().catch(console.error);

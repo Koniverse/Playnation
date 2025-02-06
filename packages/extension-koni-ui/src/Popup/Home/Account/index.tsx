@@ -13,7 +13,7 @@ import { useNotification, useSetCurrentPage } from '@subwallet/extension-koni-ui
 import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { copyToClipboard, toDisplayNumber, toShort } from '@subwallet/extension-koni-ui/utils';
+import { copyToClipboard, toDisplayNumber, toShort, validateSignature } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext } from '@subwallet/react-ui';
 import { ArrowSquareIn, Copy, ShareNetwork, SmileySad } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -82,7 +82,7 @@ const Component: React.FC<Props> = (props: Props) => {
   }, [accountProfile]);
 
   const connectWalletConnect = useCallback(() => {
-    const fnc = async () => {
+    (async () => {
       try {
         await requireWC();
         const address = await connectWC();
@@ -92,12 +92,16 @@ const Component: React.FC<Props> = (props: Props) => {
         openWaiting();
 
         try {
-          await wcSignMessageRequest({
+          const { signature } = await wcSignMessageRequest({
             address: address,
             chainId: WC_DEFAULT_CHAIN_ID,
             payload: stringToHex(message),
             method: 'personal_sign'
           });
+
+          if (!validateSignature(address, message, signature)) {
+            throw new Error('Invalid signature');
+          }
 
           apiSDK.setAddressLinking(address);
           closeWaiting();
@@ -115,13 +119,19 @@ const Component: React.FC<Props> = (props: Props) => {
               duration: null
             });
           }
+
+          if (error.message.toLowerCase().includes('Invalid signature'.toLowerCase())) {
+            notify({
+              message: t('Invalid signature'),
+              type: 'error',
+              duration: null
+            });
+          }
         }
       } catch (e) {
         console.error(e);
       }
-    };
-
-    fnc().catch(console.error);
+    })().catch(console.error);
   }, [closeWaiting, connectWC, notify, openWaiting, requireWC, t]);
 
   useEffect(() => {
@@ -249,7 +259,8 @@ const Component: React.FC<Props> = (props: Props) => {
                 }
               </div>
               <div
-                className={'block-content-value'}>{toDisplayNumber(accountProfile?.totalBadgeNFTsOwned)}</div>
+                className={'block-content-value'}
+              >{toDisplayNumber(accountProfile?.totalBadgeNFTsOwned)}</div>
               <div className={'block-content-unit'}>{accountProfile?.totalBadgeNFTsOwned > 1 ? 'NFTs' : 'NFT'}</div>
             </div>
             <div className={'block-content4'}>
