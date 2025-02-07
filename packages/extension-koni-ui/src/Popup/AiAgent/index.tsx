@@ -909,14 +909,14 @@ const Component = (props: Props): React.ReactElement => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endStreamTrigger]);
 
-  const isLinkedAddress = !!wcAccount?.address && isSameAddress(wcAccount.address, addressLinked || '');
+  const isAddressLinked = !!wcAccount?.address && isSameAddress(wcAccount.address, addressLinked || '');
 
   useEffect(() => {
     if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
       clearCurrentAiTransactionInfo();
 
       if (aiTransactionInfo.type === 'transfer') {
-        if (isLinkedAddress) {
+        if (isAddressLinked) {
           onSubmitTransferTx(aiTransactionInfo).catch(console.error);
         } else {
           addPendingMessage({ message: 'Alright, let\'s first connect your wallet and then we can proceed with the transaction', type: 'apiMessage', appTriggeredAction: 'requestUserConnectWallet' });
@@ -926,14 +926,14 @@ const Component = (props: Props): React.ReactElement => {
         onSubmitMintTx(aiTransactionInfo).catch(console.error);
       }
     }
-  }, [addPendingMessage, aiTransactionInfo, clearCurrentAiTransactionInfo, onSubmitMintTx, onSubmitTransferTx, startChat, isLinkedAddress]);
+  }, [addPendingMessage, aiTransactionInfo, clearCurrentAiTransactionInfo, onSubmitMintTx, onSubmitTransferTx, startChat, isAddressLinked]);
 
   useEffect(() => {
-    if (isLinkedAddress && pendingTransferTransactionInfo) {
+    if (isAddressLinked && pendingTransferTransactionInfo) {
       setPendingTransferTransactionInfo(undefined);
       onSubmitTransferTx(pendingTransferTransactionInfo).catch(console.error);
     }
-  }, [isLinkedAddress, onSubmitTransferTx, pendingTransferTransactionInfo]);
+  }, [isAddressLinked, onSubmitTransferTx, pendingTransferTransactionInfo]);
 
   // if not loading and have pendingMessages, update messages to show
   useEffect(() => {
