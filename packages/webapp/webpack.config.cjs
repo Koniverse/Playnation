@@ -110,7 +110,9 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
     },
     output: {
       chunkFilename: '[name]-[contenthash].js',
-      filename: '[name]-[contenthash].js',
+      filename: (x) => {
+        return x.chunk.name === 'service-worker' ? 'service-worker.js' : '[name]-[contenthash].js';
+      },
       globalObject: '(typeof self !== \'undefined\' ? self : this)',
       path: path.join(__dirname, 'build'),
       publicPath: '/'
@@ -206,6 +208,7 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
 };
 
 module.exports = createConfig({
+  'service-worker': './src/serviceWorker.ts',
   fallback: ['./src/fallback.ts', './src/webRunner.ts', './src/index.tsx']
 }, {
   'manta-extension-sdk': './manta-extension-sdk-empty.ts'

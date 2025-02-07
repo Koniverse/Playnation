@@ -3,4 +3,20 @@
 
 import { createView, Popup } from '@subwallet/extension-koni-ui';
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js?v=3').then((registration) => {
+      console.log('SW registered: ', registration);
+    }).catch((registrationError) => {
+      console.log('SW registration failed: ', registrationError);
+    });
+  });
+}
+
+await Notification.requestPermission().then((result) => {
+  if (result === 'granted') {
+    // const x = new Notification('Hello, world!');
+  }
+});
+
 createView(Popup);
