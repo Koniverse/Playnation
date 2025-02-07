@@ -37,10 +37,6 @@ const CACHE_KEYS = {
   accountIntegrationProfile: 'data--account-integration-profile-cache'
 };
 
-const CLOUD_KEYS = {
-  addressLinked: 'data--address-linked'
-};
-
 function parseCache<T> (key: string): T | undefined {
   const data = localStorage.getItem(key);
 
@@ -119,12 +115,6 @@ export class BookaSdk {
 
       localStorage.setItem('cache-version', cacheVersion);
     }
-
-    storage.getItem(CLOUD_KEYS.addressLinked).then((addressLinked_) => {
-      if (addressLinked_) {
-        this.addressLinkedSubject.next(addressLinked_);
-      }
-    }).catch(console.error);
   }
 
   public get waitForSync () {
@@ -612,6 +602,8 @@ export class BookaSdk {
       if (account) {
         this.accountSubject.next(account);
         localStorage.setItem(CACHE_KEYS.account, JSON.stringify(account));
+        this.addressLinkedSubject.next(account.info.address);
+
         this.syncHandler.resolve();
 
         await Promise.all([
@@ -1166,7 +1158,6 @@ export class BookaSdk {
       throw new Error('Address already registered');
     } else {
       this.addressLinkedSubject.next(address);
-      await storage.setItem(CLOUD_KEYS.addressLinked, address);
     }
   }
 
@@ -1206,6 +1197,8 @@ export class BookaSdk {
           }
         });
       };
+
+      await this.waitForSync;
 
       return (await Promise.all([checkWhiteList()])).some((condition) => condition);
     } catch (e) {
