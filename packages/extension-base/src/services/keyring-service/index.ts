@@ -8,11 +8,12 @@ import { SWStorage } from '@subwallet/extension-base/storage';
 import { CurrentAccountStore } from '@subwallet/extension-base/stores';
 import { createPromiseHandler } from '@subwallet/extension-base/utils';
 import { InjectedAccountWithMeta } from '@subwallet/extension-inject/types';
+import { KeyringState } from '@subwallet/extension-base/background/KoniTypes';
+import KoniState from '@subwallet/extension-base/koni/background/handlers/State';
 import { keyring } from '@subwallet/ui-keyring';
-import { SubjectInfo } from '@subwallet/ui-keyring/observable/types';
 import { BehaviorSubject } from 'rxjs';
 
-import { stringShorten } from '@polkadot/util';
+import { AccountContext } from './context/account-context';
 
 const cloudStorage = SWStorage.instance;
 
@@ -29,6 +30,7 @@ export class KeyringService {
   private currentWCAddress = '';
 
   readonly keyringStateSubject = new BehaviorSubject<KeyringState>({
+  private readonly stateSubject = new BehaviorSubject<KeyringState>({
     isReady: false,
     hasMasterPassword: false,
     isLocked: false,
@@ -65,28 +67,22 @@ export class KeyringService {
 
       if (beforeAddresses.length > afterAddresses.length) {
         const removedAddresses = beforeAddresses.filter((address) => !afterAddresses.includes(address));
+  public readonly context: AccountContext;
 
-        // Remove account
-        removedAddresses.forEach((address) => {
-          this.eventService.emit('account.remove', address);
-        });
-      } else if (beforeAddresses.length < afterAddresses.length) {
-        const addedAddresses = afterAddresses.filter((address) => !beforeAddresses.includes(address));
-
-        // Add account
-        addedAddresses.forEach((address) => {
-          this.eventService.emit('account.add', address);
-        });
-      } else {
-        // Handle case update later
-      }
-
-      this.beforeAccount = { ...subjectInfo };
-    });
+  constructor (private state: KoniState) {
+    this.context = new AccountContext(this.state, this);
   }
 
   get keyringState () {
-    return this.keyringStateSubject.value;
+    return this.stateSubject.value;
+  }
+
+  public keyringStateSubscribe (callback: (state: KeyringState) => void) {
+    return this.stateSubject.subscribe(callback);
+  }
+
+  public eventInjectReady () {
+    this.state.eventService.emit('inject.ready', true);
   }
 
   async setUsingCustomPassword (usingCustomPassword: boolean) {
@@ -96,6 +92,11 @@ export class KeyringService {
   }
 
   updateKeyringState (isReady = true) {
+  public eventRemoveAccountProxy (proxyId: string) {
+    this.state.eventService.emit('accountProxy.remove', proxyId);
+  }
+
+  public updateKeyringState (isReady = true) {
     if (!this.keyringState.isReady && isReady) {
       Promise.all([this.eventService.waitCryptoReady, this.checkUsingCustomPassword]).then(() => {
         this.eventService.emit('keyring.ready', true);
@@ -116,24 +117,19 @@ export class KeyringService {
         isReady: isReady
       });
     }
-  }
+      this.state.eventService.waitCryptoReady
+        .then(() => {
+          this.state.eventService.emit('keyring.ready', true);
+          this.state.eventService.emit('account.ready', true);
+        })
+        .catch(console.error);
+    }
 
-  get accounts (): SubjectInfo {
-    return this.accountSubject.value;
-  }
-
-  get addresses (): SubjectInfo {
-    return this.addressesSubject.value;
-  }
-
-  get currentAccount (): CurrentAccountInfo {
-    return this.currentAccountSubject.value;
-  }
-
-  setCurrentAccount (currentAccountData: CurrentAccountInfo) {
-    this.currentAccountSubject.next(currentAccountData);
-    this.eventService.emit('account.updateCurrent', currentAccountData);
-    this.currentAccountStore.set('CurrentAccountInfo', currentAccountData);
+    this.stateSubject.next({
+      hasMasterPassword: !!keyring.keyring?.hasMasterPassword,
+      isLocked: !!keyring.keyring?.isLocked,
+      isReady: isReady
+    });
   }
 
   public lock () {
@@ -230,27 +226,15 @@ export class KeyringService {
   }
 
   /* Reset */
-  async resetWallet (resetAll: boolean) {
+  public async resetWallet (resetAll: boolean) {
     keyring.resetWallet(resetAll);
+    this.context.resetWallet();
     await new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();
       }, 1500);
     });
     this.updateKeyringState();
-    this.currentAccountSubject.next({ address: ALL_ACCOUNT_KEY, currentGenesisHash: null });
   }
   /* Reset */
-
-  /* Others */
-  removeNoneHardwareGenesisHash () {
-    const pairs = keyring.getPairs();
-
-    const needUpdatePairs = pairs.filter(({ meta: { genesisHash, isHardware } }) => !isHardware && genesisHash && genesisHash !== '');
-
-    needUpdatePairs.forEach((pair) => {
-      keyring.saveAccountMeta(pair, { ...pair.meta, genesisHash: '' });
-    });
-  }
-  /* Others */
 }

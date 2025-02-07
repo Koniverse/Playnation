@@ -3,19 +3,28 @@
 
 import { SwapError } from '@subwallet/extension-base/background/errors/SwapError';
 import { TransactionError } from '@subwallet/extension-base/background/errors/TransactionError';
-import { BasicTxErrorType } from '@subwallet/extension-base/background/KoniTypes';
 import KoniState from '@subwallet/extension-base/koni/background/handlers/State';
 import { ServiceStatus, ServiceWithProcessInterface, StoppableServiceInterface } from '@subwallet/extension-base/services/base/types';
 import { ChainService } from '@subwallet/extension-base/services/chain-service';
 import { EventService } from '@subwallet/extension-base/services/event-service';
+import { AssetHubSwapHandler } from '@subwallet/extension-base/services/swap-service/handler/asset-hub';
 import { SwapBaseInterface } from '@subwallet/extension-base/services/swap-service/handler/base-handler';
 import { ChainflipSwapHandler } from '@subwallet/extension-base/services/swap-service/handler/chainflip-handler';
 import { HydradxHandler } from '@subwallet/extension-base/services/swap-service/handler/hydradx-handler';
 import { _PROVIDER_TO_SUPPORTED_PAIR_MAP, getSwapAltToken, SWAP_QUOTE_TIMEOUT_MAP } from '@subwallet/extension-base/services/swap-service/utils';
+import { BasicTxErrorType } from '@subwallet/extension-base/types';
 import { CommonOptimalPath, DEFAULT_FIRST_STEP, MOCK_STEP_FEE } from '@subwallet/extension-base/types/service-base';
 import { _SUPPORTED_SWAP_PROVIDERS, OptimalSwapPathParams, QuoteAskResponse, SwapErrorType, SwapPair, SwapProviderId, SwapQuote, SwapQuoteResponse, SwapRequest, SwapRequestResult, SwapStepType, SwapSubmitParams, SwapSubmitStepData, ValidateSwapProcessParams } from '@subwallet/extension-base/types/swap';
 import { createPromiseHandler, PromiseHandler } from '@subwallet/extension-base/utils';
 import { BehaviorSubject } from 'rxjs';
+
+import { SimpleSwapHandler } from './handler/simpleswap-handler';
+
+export const _isChainSupportedByProvider = (providerSlug: SwapProviderId, chain: string) => {
+  const supportedChains = _PROVIDER_TO_SUPPORTED_PAIR_MAP[providerSlug];
+
+  return supportedChains ? supportedChains.includes(chain) : false;
+};
 
 export class SwapService implements ServiceWithProcessInterface, StoppableServiceInterface {
   protected readonly state: KoniState;
@@ -40,7 +49,7 @@ export class SwapService implements ServiceWithProcessInterface, StoppableServic
 
     await Promise.all(Object.values(this.handlers).map(async (handler) => {
       // temporary solution to reduce number of requests to providers, will work as long as there's only 1 provider for 1 chain
-      if (!_PROVIDER_TO_SUPPORTED_PAIR_MAP[handler.providerSlug].includes(swappingSrcChain)) {
+      if (!_isChainSupportedByProvider(handler.providerSlug, swappingSrcChain)) {
         return;
       }
 
@@ -113,8 +122,6 @@ export class SwapService implements ServiceWithProcessInterface, StoppableServic
       selectedQuote: swapQuoteResponse.optimalQuote
     });
 
-    console.log('optimalProcess', optimalProcess);
-
     return {
       process: optimalProcess,
       quote: swapQuoteResponse
@@ -142,7 +149,7 @@ export class SwapService implements ServiceWithProcessInterface, StoppableServic
 
       quoteError = preferredErrorResp?.error || defaultErrorResp?.error;
     } else {
-      selectedQuote = availableQuotes[0];
+      selectedQuote = availableQuotes.find((quote) => quote.provider.id === request.currentQuote?.id) || availableQuotes[0];
       aliveUntil = selectedQuote?.aliveUntil || (+Date.now() + SWAP_QUOTE_TIMEOUT_MAP.default);
     }
 
@@ -172,6 +179,19 @@ export class SwapService implements ServiceWithProcessInterface, StoppableServic
 
         case SwapProviderId.HYDRADX_MAINNET:
           this.handlers[providerId] = new HydradxHandler(this.chainService, this.state.balanceService, false);
+          break;
+
+        case SwapProviderId.POLKADOT_ASSET_HUB:
+          this.handlers[providerId] = new AssetHubSwapHandler(this.chainService, this.state.balanceService, 'statemint');
+          break;
+        case SwapProviderId.KUSAMA_ASSET_HUB:
+          this.handlers[providerId] = new AssetHubSwapHandler(this.chainService, this.state.balanceService, 'statemine');
+          break;
+        case SwapProviderId.ROCOCO_ASSET_HUB:
+          this.handlers[providerId] = new AssetHubSwapHandler(this.chainService, this.state.balanceService, 'rococo_assethub');
+          break;
+        case SwapProviderId.SIMPLE_SWAP:
+          this.handlers[providerId] = new SimpleSwapHandler(this.chainService, this.state.balanceService);
           break;
 
         default:

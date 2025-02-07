@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-web-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AbstractAddressJson, AccountJson } from '@subwallet/extension-base/background/types';
+import { AbstractAddressJson, AccountJson } from '@subwallet/extension-base/types';
 import { BackIcon } from '@subwallet/extension-web-ui/components';
 import { BaseModal } from '@subwallet/extension-web-ui/components/Modal/BaseModal';
 import { useFilterModal, useFormatAddress, useGetChainInfoByGenesisHash, useSelector } from '@subwallet/extension-web-ui/hooks';
@@ -61,7 +61,7 @@ const getGroupPriority = (item: AccountItem): number => {
 const checkLedger = (account: AccountJson, networkGenesisHash?: string): boolean => {
   const isEvmAddress = isEthereumAddress(account.address);
 
-  return !networkGenesisHash || !account.isHardware || isEvmAddress || (account.availableGenesisHashes || []).includes(networkGenesisHash);
+  return !networkGenesisHash || !account.isHardware || account.isGeneric || isEvmAddress || (account.availableGenesisHashes || []).includes(networkGenesisHash);
 };
 
 const Component: React.FC<Props> = (props: Props) => {

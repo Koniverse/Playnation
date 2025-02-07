@@ -2,14 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { GearApi } from '@gear-js/api';
-import { _ChainAsset, _ChainInfo } from '@subwallet/chain-list/types';
+import { _AssetType, _ChainAsset, _ChainInfo } from '@subwallet/chain-list/types';
 import { getPSP22ContractPromise } from '@subwallet/extension-base/koni/api/contract-handler/wasm';
 import { getWasmContractGasLimit } from '@subwallet/extension-base/koni/api/contract-handler/wasm/utils';
+import { estimateTonTxFee } from '@subwallet/extension-base/services/balance-service/helpers/subscribe/ton/utils';
 import { _TRANSFER_CHAIN_GROUP } from '@subwallet/extension-base/services/chain-service/constants';
-import { _EvmApi, _SubstrateApi } from '@subwallet/extension-base/services/chain-service/types';
-import { _getContractAddressOfToken, _getTokenOnChainAssetId, _getTokenOnChainInfo, _getXcmAssetMultilocation, _isBridgedToken, _isChainEvmCompatible, _isNativeToken, _isTokenGearSmartContract, _isTokenTransferredByEvm, _isTokenWasmSmartContract } from '@subwallet/extension-base/services/chain-service/utils';
+import { _EvmApi, _SubstrateApi, _TonApi } from '@subwallet/extension-base/services/chain-service/types';
+import { _getContractAddressOfToken, _getTokenOnChainAssetId, _getTokenOnChainInfo, _getXcmAssetMultilocation, _isBridgedToken, _isChainEvmCompatible, _isChainTonCompatible, _isNativeToken, _isTokenGearSmartContract, _isTokenTransferredByEvm, _isTokenTransferredByTon, _isTokenWasmSmartContract } from '@subwallet/extension-base/services/chain-service/utils';
 import { calculateGasFeeParams } from '@subwallet/extension-base/services/fee-service/utils';
-import { getGRC20ContractPromise } from '@subwallet/extension-base/utils';
+import { getGRC20ContractPromise, getVFTContractPromise } from '@subwallet/extension-base/utils';
+import { keyring } from '@subwallet/ui-keyring';
+import { internal } from '@ton/core';
+import { Address } from '@ton/ton';
 import BigN from 'bignumber.js';
 import { TransactionConfig } from 'web3-core';
 
@@ -61,13 +65,16 @@ export const createTransferExtrinsic = async ({ from, networkKey, substrateApi, 
     transfer = contractPromise.tx['psp22::transfer']({ gasLimit }, to, value, {});
     transferAmount = value;
   } else if (_isTokenGearSmartContract(tokenInfo) && (api instanceof GearApi)) {
-    const contractPromise = getGRC20ContractPromise(api, _getContractAddressOfToken(tokenInfo));
+    const contractPromise = tokenInfo.assetType === _AssetType.GRC20
+      ? getGRC20ContractPromise(api, _getContractAddressOfToken(tokenInfo))
+      : getVFTContractPromise(api, _getContractAddressOfToken(tokenInfo));
     const transaction = await contractPromise
-      .transfer(u8aToHex(decodeAddress(to)), BigInt(value)) // Create transfer transaction
+      .service
+      .transfer(u8aToHex(decodeAddress(to)), value) // Create transfer transaction
       .withAccount(from) // Set sender account
       .calculateGas(); // Add account arg to extrinsic
 
-    transfer = transaction.tx;
+    transfer = transaction.extrinsic;
     transferAmount = value;
   } else if (_TRANSFER_CHAIN_GROUP.acala.includes(networkKey)) {
     if (!_isNativeToken(tokenInfo)) {
@@ -118,7 +125,7 @@ export const createTransferExtrinsic = async ({ from, networkKey, substrateApi, 
   return [transfer, transferAmount || value];
 };
 
-export const getTransferMockTxFee = async (address: string, chainInfo: _ChainInfo, tokenInfo: _ChainAsset, api: _SubstrateApi | _EvmApi): Promise<BigN> => {
+export const getTransferMockTxFee = async (address: string, chainInfo: _ChainInfo, tokenInfo: _ChainAsset, api: _SubstrateApi | _EvmApi | _TonApi): Promise<BigN> => {
   try {
     let estimatedFee;
 
@@ -139,6 +146,18 @@ export const getTransferMockTxFee = async (address: string, chainInfo: _ChainInf
       } else {
         estimatedFee = new BigN(priority.gasPrice).multipliedBy(gasLimit);
       }
+    } else if (_isChainTonCompatible(chainInfo) && _isTokenTransferredByTon(tokenInfo)) {
+      const mockWalletContract = keyring.getPair(address).ton.currentContract;
+      const tonApi = api as _TonApi;
+      const maxBlance = await tonApi.getBalance(Address.parse(address));
+      const mockMessage =
+        internal({
+          to: address, // anyAddress
+          value: maxBlance, // estimate value
+          bounce: false // anyMode
+        });
+
+      estimatedFee = new BigN((await estimateTonTxFee(tonApi, [mockMessage], mockWalletContract)).toString());
     } else {
       const substrateApi = api as _SubstrateApi;
       const chainApi = await substrateApi.isReady;
