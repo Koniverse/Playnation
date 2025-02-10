@@ -5,20 +5,25 @@ import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event
 import { ExtrinsicStatus, RequestTransfer } from '@subwallet/extension-base/background/KoniTypes';
 import { SWTransactionBrief, SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import { getExplorerLink } from '@subwallet/extension-base/services/transaction-service/utils';
+import { WC_DEFAULT_CHAIN_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { isSameAddress } from '@subwallet/extension-base/utils';
 import { GameAccountAvatar, Layout } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, IpAssetParams } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
-import { useSelector } from '@subwallet/extension-koni-ui/hooks';
-import { makeTransfer, subscribeTransactionById } from '@subwallet/extension-koni-ui/messaging';
+import { useNotification, useSelector, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { makeTransfer, subscribeTransactionById, wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { AiTransactionData, transformAiMessageData } from '@subwallet/extension-koni-ui/utils';
+import { AiTransactionData, noop, transformAiMessageData, validateSignature } from '@subwallet/extension-koni-ui/utils';
 import CN from 'classnames';
 import { cloneDeep } from 'lodash';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
+
+import { stringToHex } from '@polkadot/util';
 
 import useDefaultNavigate from '../../hooks/router/useDefaultNavigate';
 import { ChatInputArea } from './parts/ChatInputArea';
@@ -38,6 +43,7 @@ type Props = ThemeProps & {
 
 const defaultWelcomeMessage = 'Hi there! How can I help?';
 const apiSDK = BookaSdk.instance;
+const telegramConnector = TelegramConnector.instance;
 
 interface AiTransactionInfo extends AiTransactionData {
   aiMessageId?: string;
@@ -46,6 +52,9 @@ interface AiTransactionInfo extends AiTransactionData {
 
 const Component = (props: Props): React.ReactElement => {
   const { className } = props;
+  const notify = useNotification();
+  const { t } = useTranslation();
+
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
 
   const chainInfoMap = useSelector((state: RootState) => state.chainStore.chainInfoMap);
@@ -55,18 +64,18 @@ const Component = (props: Props): React.ReactElement => {
   const [pendingMessages, setPendingMessages] = useState<MessageType[]>([]);
 
   const [chatId, setChatId] = useState(props.chatId);
-  const [isMessageStopping, setIsMessageStopping] = useState(false);
+  const [, setIsMessageStopping] = useState(false);
   const [userInput, setUserInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [addressLinked, setAddressLinked] = useState<string | undefined>(apiSDK.addressLinked);
   const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false);
-  const { connectWC, requireWC } = useContext(WalletConnectContext);
+  const { connectWC, requireWC, waitingSigningModal: { close: closeWaiting, open: openWaiting } } = useContext(WalletConnectContext);
 
   const [leadEmail, setLeadEmail] = useState('');
-  const [isLeadSaved, setIsLeadSaved] = useState(false);
+  const [, setIsLeadSaved] = useState(false);
 
   // follow-up prompts
-  const [followUpPromptsStatus, setFollowUpPromptsStatus] = useState<boolean>(false);
-  const [followUpPrompts, setFollowUpPrompts] = useState<string[]>([]);
+  const [, setFollowUpPrompts] = useState<string[]>([]);
   const [endStreamTrigger, setEndStreamTrigger] = useState<string | undefined>();
   const startChat = useMemo(() => !!endStreamTrigger, [endStreamTrigger]);
 
@@ -752,21 +761,72 @@ const Component = (props: Props): React.ReactElement => {
     }
   }, [props.chatflowid, props.welcomeMessage]);
 
-  const onClickConnectWallet = useCallback(async () => {
-    try {
-      await requireWC();
+  const onClickConnectWallet = useCallback(() => {
+    (async () => {
+      try {
+        await requireWC();
 
-      addPendingMessage({ message: 'It might take a little while for the WalletConnect modal to pop up. Please be patient...', type: 'apiMessage' });
+        addPendingMessage({ message: 'It might take a little while for the WalletConnect modal to pop up. Please be patient...', type: 'apiMessage' });
 
-      return await connectWC();
-    } catch (e) {
-      const error = e as Error;
+        const address = await connectWC();
 
-      addPendingMessage({ message: error.message, type: 'apiMessage' });
+        const message = `Approve use this address to set linked address: ${address}`;
 
-      return null;
-    }
-  }, [addPendingMessage, connectWC, requireWC]);
+        openWaiting();
+
+        const { signature } = await wcSignMessageRequest({
+          address: address,
+          chainId: WC_DEFAULT_CHAIN_ID,
+          payload: stringToHex(message),
+          method: 'personal_sign'
+        });
+
+        if (!validateSignature(address, message, signature)) {
+          throw new Error('Invalid signature');
+        }
+
+        if (apiSDK.addressLinked) {
+          if (apiSDK.addressLinked !== address) {
+            notify({
+              message: t('This address is different from the linked address'),
+              type: 'error',
+              duration: 8
+            });
+          }
+        } else {
+          apiSDK.setAddressLinking(address);
+        }
+
+        closeWaiting();
+      } catch (e) {
+        closeWaiting();
+        const error = e as Error;
+
+        if (error.message.toLowerCase().includes('user rejected'.toLowerCase())) {
+          notify({
+            message: t('You’ve rejected this request'),
+            type: 'error',
+            duration: null
+          });
+        }
+
+        if (error.message.toLowerCase().includes('Invalid signature'.toLowerCase())) {
+          notify({
+            message: t('Invalid signature'),
+            type: 'error',
+            duration: null
+          });
+        }
+
+        if (error.message?.toLowerCase().includes('Unsupported chains'.toLowerCase())) {
+          telegramConnector.showPopup({
+            message: t('Your chosen wallet hasn’t supported Story Odyssey Testnet. Add network to your wallet or change to another wallet'),
+            buttons: [{ type: 'ok', text: t('Got it') }]
+          }, noop);
+        }
+      }
+    })().catch(console.error);
+  }, [closeWaiting, connectWC, notify, openWaiting, requireWC, t]);
 
   const welcomeMessagesNode = useMemo(() => {
     const userName = `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}`.trim();
@@ -849,14 +909,14 @@ const Component = (props: Props): React.ReactElement => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endStreamTrigger]);
 
-  const isWalletConnect = !!wcAccount?.address;
+  const isAddressLinked = !!wcAccount?.address && isSameAddress(wcAccount.address, addressLinked || '');
 
   useEffect(() => {
     if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
       clearCurrentAiTransactionInfo();
 
       if (aiTransactionInfo.type === 'transfer') {
-        if (isWalletConnect) {
+        if (isAddressLinked) {
           onSubmitTransferTx(aiTransactionInfo).catch(console.error);
         } else {
           addPendingMessage({ message: 'Alright, let\'s first connect your wallet and then we can proceed with the transaction', type: 'apiMessage', appTriggeredAction: 'requestUserConnectWallet' });
@@ -866,14 +926,14 @@ const Component = (props: Props): React.ReactElement => {
         onSubmitMintTx(aiTransactionInfo).catch(console.error);
       }
     }
-  }, [addPendingMessage, aiTransactionInfo, clearCurrentAiTransactionInfo, onSubmitMintTx, onSubmitTransferTx, startChat, isWalletConnect]);
+  }, [addPendingMessage, aiTransactionInfo, clearCurrentAiTransactionInfo, onSubmitMintTx, onSubmitTransferTx, startChat, isAddressLinked]);
 
   useEffect(() => {
-    if (isWalletConnect && pendingTransferTransactionInfo) {
+    if (isAddressLinked && pendingTransferTransactionInfo) {
       setPendingTransferTransactionInfo(undefined);
       onSubmitTransferTx(pendingTransferTransactionInfo).catch(console.error);
     }
-  }, [isWalletConnect, onSubmitTransferTx, pendingTransferTransactionInfo]);
+  }, [isAddressLinked, onSubmitTransferTx, pendingTransferTransactionInfo]);
 
   // if not loading and have pendingMessages, update messages to show
   useEffect(() => {
@@ -895,6 +955,16 @@ const Component = (props: Props): React.ReactElement => {
       clearTimeout(timeOut);
     };
   }, [addChatMessage, loading, pendingMessages, scrollToBottom]);
+
+  useEffect(() => {
+    const accountAddressLinked = apiSDK.subscribeAddressLinked().subscribe((address) => {
+      setAddressLinked(address);
+    });
+
+    return () => {
+      accountAddressLinked.unsubscribe();
+    };
+  }, []);
 
   return (
     <Layout.WithSubHeaderOnly

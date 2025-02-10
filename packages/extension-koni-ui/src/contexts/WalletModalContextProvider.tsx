@@ -1,10 +1,11 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AlertModal, AttachAccountModal, ClaimDappStakingRewardsModal, CreateAccountModal, DeriveAccountModal, ImportAccountModal, ImportSeedModal, LeaderboardModal, NewSeedModal, RemindBackupSeedPhraseModal, RequestCameraAccessModal, RequestCreatePasswordModal } from '@subwallet/extension-koni-ui/components';
+import { AlertModal, AttachAccountModal, ClaimDappStakingRewardsModal, ConfirmLinkingAccountModal, CreateAccountModal, DeriveAccountModal, ExistedAddressModal, ImportAccountModal, ImportSeedModal, LeaderboardModal, NewSeedModal, OnChainProfileModal, RemindBackupSeedPhraseModal, RequestCameraAccessModal, RequestCreatePasswordModal } from '@subwallet/extension-koni-ui/components';
 import { LeaderboardModalProps } from '@subwallet/extension-koni-ui/components/Leaderboard/LeaderboardModal';
 import { CustomizeModal } from '@subwallet/extension-koni-ui/components/Modal/Customize/CustomizeModal';
-import { EARNING_INSTRUCTION_MODAL, GLOBAL_ALERT_MODAL, LEADERBOARD_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
+import { ADDRESS_EXISTED_MODAL, CONFIRM_LINKING_ACCOUNT_MODAL, EARNING_INSTRUCTION_MODAL, GLOBAL_ALERT_MODAL, LEADERBOARD_MODAL, ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { useAlert, useGetConfig, useSetSessionLatest } from '@subwallet/extension-koni-ui/hooks';
 import Confirmations from '@subwallet/extension-koni-ui/Popup/Confirmations';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
@@ -81,6 +82,10 @@ export const usePredefinedModal = () => {
 };
 
 const alertModalId = GLOBAL_ALERT_MODAL;
+const onChainProfileAlterModal = ON_CHAIN_PROFILE_MODAL;
+const addressExitedModal = ADDRESS_EXISTED_MODAL;
+const confirmLinkingAddress = CONFIRM_LINKING_ACCOUNT_MODAL;
+const apiSDK = BookaSdk.instance;
 
 export const WalletModalContextProvider = ({ children }: Props) => {
   const { activeModal, hasActiveModal, inactiveAll, inactiveModal, inactiveModals } = useContext(ModalContext);
@@ -91,6 +96,7 @@ export const WalletModalContextProvider = ({ children }: Props) => {
   const { onHandleSessionLatest, setTimeBackUp } = useSetSessionLatest();
   const [leaderboardModalProps, setLeaderboardModalProps] = useState<LeaderboardModalProps | undefined>();
   const { alertProps, closeAlert, openAlert, setAlertProps } = useAlert(alertModalId);
+  const [addressLinking, setAddressLinking] = useState<string | undefined>(apiSDK.addressLinking);
 
   useExcludeModal('confirmations');
   useExcludeModal(EARNING_INSTRUCTION_MODAL);
@@ -123,6 +129,27 @@ export const WalletModalContextProvider = ({ children }: Props) => {
     }
   }), [closeAlert, closeLeaderboardModal, openAlert, openLeaderboardModal, setAlertProps]);
 
+  const onShowAddressExistedModal = useCallback(() => {
+    inactiveModal(onChainProfileAlterModal);
+    inactiveModal(confirmLinkingAddress);
+    activeModal(addressExitedModal);
+  }, [activeModal, inactiveModal]);
+
+  const setAddressLinking_ = useCallback((address?: string) => {
+    apiSDK.setAddressLinking(address);
+  }, []);
+
+  useEffect(() => {
+    const addressLinkingSub = apiSDK.subscribeAddressLinking()
+      .subscribe((data) => {
+        setAddressLinking(data);
+      });
+
+    return () => {
+      addressLinkingSub.unsubscribe();
+    };
+  }, []);
+
   useEffect(() => {
     if (hasMasterPassword && isLocked) {
       inactiveAll();
@@ -147,6 +174,12 @@ export const WalletModalContextProvider = ({ children }: Props) => {
   useEffect(() => {
     onHandleSessionLatest();
   }, [onHandleSessionLatest]);
+
+  useEffect(() => {
+    if (addressLinking) {
+      activeModal(confirmLinkingAddress);
+    }
+  }, [activeModal, addressLinking]);
 
   // todo: will remove ClaimDappStakingRewardsModal after Astar upgrade to v3
 
@@ -189,6 +222,17 @@ export const WalletModalContextProvider = ({ children }: Props) => {
             />
           )
         }
+        <OnChainProfileModal
+          onSubmitAddressLinking={setAddressLinking_}
+        />
+        <ExistedAddressModal
+          onSubmitAddressLinking={setAddressLinking_}
+        />
+        <ConfirmLinkingAccountModal
+          addressLinking={addressLinking}
+          onErrorHandler={onShowAddressExistedModal}
+          setAddressLinking={setAddressLinking_}
+        />
         {
           !!alertProps && (
             <AlertModal

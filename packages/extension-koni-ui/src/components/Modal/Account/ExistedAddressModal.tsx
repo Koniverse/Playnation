@@ -8,6 +8,7 @@ import { useNotification, useSelector, useTranslation } from '@subwallet/extensi
 import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { validateSignature } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle, SmileySad, XCircle } from 'phosphor-react';
@@ -67,12 +68,16 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
         openWaiting();
 
         try {
-          await wcSignMessageRequest({
+          const { signature } = await wcSignMessageRequest({
             address: _wcAddress,
             chainId: WC_DEFAULT_CHAIN_ID,
             payload: stringToHex(message),
             method: 'personal_sign'
           });
+
+          if (!validateSignature(_wcAddress, message, signature)) {
+            throw new Error('Invalid signature');
+          }
 
           onSubmitAddressLinking(_wcAddress);
           closeWaiting();
@@ -89,6 +94,14 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           if (error.message.toLowerCase().includes('user rejected'.toLowerCase())) {
             notify({
               message: t('You’ve rejected this request'),
+              type: 'error',
+              duration: null
+            });
+          }
+
+          if (error.message.toLowerCase().includes('Invalid signature'.toLowerCase())) {
+            notify({
+              message: t('Invalid signature'),
               type: 'error',
               duration: null
             });
