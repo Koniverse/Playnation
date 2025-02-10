@@ -4,7 +4,7 @@
 import { AssetLogoMap, ChainLogoMap } from '@subwallet/chain-list';
 import { _ChainAsset, _ChainInfo } from '@subwallet/chain-list/types';
 import { LATEST_CHAIN_PATCH_FETCHING_INTERVAL, md5HashChainAsset, md5HashChainInfo } from '@subwallet/extension-base/services/chain-online-service/constants';
-import { ChainService, filterAssetInfoMap } from '@subwallet/extension-base/services/chain-service';
+import { ChainService, forceChainAssetMap } from '@subwallet/extension-base/services/chain-service';
 import { _ChainApiStatus, _ChainConnectionStatus, _ChainState } from '@subwallet/extension-base/services/chain-service/types';
 import { fetchPatchData, PatchInfo, randomizeProvider } from '@subwallet/extension-base/services/chain-service/utils';
 import { EventService } from '@subwallet/extension-base/services/event-service';
@@ -99,7 +99,6 @@ export class ChainOnlineService {
       const currentPatchVersion = (await this.settingService.getChainlistSetting())?.patchVersion || '';
 
       const oldChainInfoMap: Record<string, _ChainInfo> = structuredClone(this.chainService.getChainInfoMap());
-      const oldAssetRegistry: Record<string, _ChainAsset> = structuredClone(this.chainService.getAssetRegistry());
       let chainInfoMap: Record<string, _ChainInfo> = structuredClone(this.chainService.getChainInfoMap());
       let assetRegistry: Record<string, _ChainAsset> = structuredClone(this.chainService.getAssetRegistry());
       const currentChainStateMap: Record<string, _ChainState> = structuredClone(this.chainService.getChainStateMap());
@@ -134,7 +133,7 @@ export class ChainOnlineService {
         }
 
         if (latestAssetInfo && Object.keys(latestAssetInfo).length > 0) {
-          assetRegistry = filterAssetInfoMap(oldChainInfoMap, Object.assign({}, oldAssetRegistry, latestAssetInfo), addedChain);
+          assetRegistry = forceChainAssetMap;
         }
 
         // 3. validate data before write

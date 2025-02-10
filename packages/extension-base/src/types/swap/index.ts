@@ -73,13 +73,13 @@ export enum SwapProviderId {
 }
 
 export const _SUPPORTED_SWAP_PROVIDERS: SwapProviderId[] = [
-  SwapProviderId.CHAIN_FLIP_TESTNET,
-  SwapProviderId.CHAIN_FLIP_MAINNET,
-  SwapProviderId.POLKADOT_ASSET_HUB,
-  SwapProviderId.KUSAMA_ASSET_HUB,
-  SwapProviderId.ROCOCO_ASSET_HUB,
-  SwapProviderId.SIMPLE_SWAP,
-  SwapProviderId.UNISWAP
+  // SwapProviderId.CHAIN_FLIP_TESTNET,
+  // SwapProviderId.CHAIN_FLIP_MAINNET,
+  // SwapProviderId.POLKADOT_ASSET_HUB,
+  // SwapProviderId.KUSAMA_ASSET_HUB,
+  // SwapProviderId.ROCOCO_ASSET_HUB,
+  // SwapProviderId.SIMPLE_SWAP,
+  // SwapProviderId.UNISWAP
 ];
 
 export interface SwapProvider {

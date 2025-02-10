@@ -222,7 +222,9 @@ const OTHER_ACTIONS: ExtrinsicType[] = [
   ExtrinsicType.TRANSFER_XCM,
   ExtrinsicType.SEND_NFT,
   ExtrinsicType.SWAP,
-  ExtrinsicType.CROWDLOAN
+  ExtrinsicType.CROWDLOAN,
+  ExtrinsicType.REMARK_WITH_EVENT,
+  ExtrinsicType.MINT_NFT
 ];
 
 export const getAccountTransactionActions = (signMode: AccountSignMode, networkType: AccountChainType, type?: KeypairType, _meta?: KeyringPair$Meta, _specialNetwork?: string): ExtrinsicType[] => {

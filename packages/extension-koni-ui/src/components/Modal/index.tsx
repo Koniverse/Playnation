@@ -13,8 +13,8 @@ export { default as RequestCreatePasswordModal } from './RequestCreatePasswordMo
 export { default as ResetWalletModal } from './ResetWalletModal';
 export { default as TonWalletContractSelectorModal } from './TonWalletContractSelectorModal';
 export { SortingModal } from './SortingModal';
-export { InitRewardsModal } from './InitRewardsModal';
 
+export * from './InitRewardsModal';
 export * from './Global';
 export * from './Account';
 export * from './AddressBook';

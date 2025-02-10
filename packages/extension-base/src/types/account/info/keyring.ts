@@ -118,6 +118,7 @@ export enum AccountSignMode {
   READ_ONLY = 'readonly',
   ALL_ACCOUNT = 'all',
   INJECTED = 'injected',
+  WALLET_CONNECT = 'wallet-connect',
   UNKNOWN = 'unknown'
 }
 

@@ -24,38 +24,19 @@ import { logger as createLogger } from '@polkadot/util/logger';
 import { HexString, Logger } from '@polkadot/util/types';
 import { ExtraInfo } from '@polkadot-api/merkleize-metadata';
 
-const filterChainInfoMap = (data: Record<string, _ChainInfo>, ignoredChains: string[]): Record<string, _ChainInfo> => {
-  return Object.fromEntries(
-    Object.entries(data)
-      .filter(([slug, info]) => !info.bitcoinInfo && !ignoredChains.includes(slug))
-  );
-};
+const forceChainInfoMap = (() => {
+  const enableList = [
+    'storyOdyssey_testnet'
+  ];
 
-const ignoredList = [
-  'bevm',
-  'bevmTest',
-  'bevm_testnet',
-  'layerEdge_testnet',
-  'merlinEvm',
-  'botanixEvmTest',
-  'syscoin_evm',
-  'syscoin_evm_testnet',
-  'rollux_evm',
-  'rollux_testnet',
-  'boolAlpha',
-  'boolBeta_testnet',
-  'core',
-  'satoshivm',
-  'satoshivm_testnet',
-  'storyPartner_testnet'
-];
+  return Object.fromEntries(enableList.map((slug) => {
+    return [slug, ChainInfoMap[slug]];
+  }));
+})();
 
-export const filterAssetInfoMap = (chainInfo: Record<string, _ChainInfo>, assets: Record<string, _ChainAsset>, addedChains?: string[]): Record<string, _ChainAsset> => {
-  return Object.fromEntries(
-    Object.entries(assets)
-      .filter(([, info]) => chainInfo[info.originChain] || addedChains?.includes(info.originChain))
-  );
-};
+export const forceChainAssetMap = Object.fromEntries(Object.entries(ChainAssetMap).filter(([slug, asset]) => {
+  return forceChainInfoMap[asset.originChain];
+}));
 
 export class ChainService {
   private dataMap: _DataMap = {
@@ -1090,7 +1071,7 @@ export class ChainService {
 
   private async initChains () {
     const storedChainSettings = await this.dbService.getAllChainStore();
-    const defaultChainInfoMap = filterChainInfoMap(ChainInfoMap, ignoredList);
+    const defaultChainInfoMap = forceChainInfoMap;
     const storedChainSettingMap: Record<string, IChain> = {};
 
     storedChainSettings.forEach((chainStoredSetting) => {
@@ -1303,7 +1284,7 @@ export class ChainService {
 
   private async initAssetRegistry (deprecatedCustomChainMap: Record<string, string>) {
     const storedAssetRegistry = await this.dbService.getAllAssetStore();
-    const latestAssetRegistry = filterAssetInfoMap(this.getChainInfoMap(), ChainAssetMap);
+    const latestAssetRegistry = forceChainAssetMap;
     const availableChains = Object.values(this.dataMap.chainInfoMap)
       .filter((info) => (info.chainStatus === _ChainStatus.ACTIVE))
       .map((chainInfo) => chainInfo.slug);

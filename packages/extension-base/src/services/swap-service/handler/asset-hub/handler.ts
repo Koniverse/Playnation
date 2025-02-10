@@ -32,6 +32,8 @@ export class AssetHubSwapHandler implements SwapBaseInterface {
         ? SwapProviderId.KUSAMA_ASSET_HUB
         : SwapProviderId.ROCOCO_ASSET_HUB;
 
+    console.log('chainInfo', chainInfo, chain);
+
     this.swapBaseHandler = new SwapBaseHandler({
       balanceService,
       chainService,

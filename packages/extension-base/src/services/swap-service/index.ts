@@ -252,7 +252,7 @@ export class SwapService implements ServiceWithProcessInterface, StoppableServic
         from: assetRef.srcAsset,
         to: assetRef.destAsset,
         metadata: {
-          alternativeAsset: getSwapAltToken(fromAsset)
+          alternativeAsset: fromAsset ? getSwapAltToken(fromAsset) : undefined
         }
       } as SwapPair;
     });

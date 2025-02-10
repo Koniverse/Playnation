@@ -14,7 +14,7 @@ import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-export const GAME_API_HOST = 'https://sp-odyssey-dev-api.playnation.app';
+export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
 export const STORY_BADGE_HOST = process.env.STORY_BADGE_HOST || 'http://localhost:3000';
 const storage = SWStorage.instance;
@@ -591,9 +591,9 @@ export class BookaSdk {
     this.accountSubject.next(undefined);
 
     const syncData = {
-      address: '0x37e5cFbc742d36f9448b8930Fd224527Fd9e79d7',
-      referralCode: '',
-      initData: 'query_id=AAF-y8wdAwAAAH7LzB2zyjsu&user=%7B%22id%22%3A6942411646%2C%22first_name%22%3A%22.%20__%22%2C%22last_name%22%3A%22Thiendekaco%22%2C%22username%22%3A%22thiendekaco%22%2C%22language_code%22%3A%22vi%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2Fcy_iPPjPPBNAEOvOMJgwHWAQICIGn-Gf2yRVgJtVT2na58I210s4qgaoVWJM-8DR.svg%22%7D&auth_date=1739155916&signature=uTiSaz95MeYtXXx-MQ7L7Atjm1B-0YyHJeJuuBI6GLYcMFsZ5cwcmKGLBvwNJpGlFm7ZszOeysOvy0L2Xkt0CQ&hash=20cf32e225245f01ba13b66446fcdd9ff7e6c021c7a6a1842addc12090197fe9'
+      address,
+      referralCode,
+      initData
     };
 
     try {

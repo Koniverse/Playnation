@@ -38,6 +38,10 @@ const filterWcAccount = (accounts: AccountJson[]): AccountJson | null => {
   return accounts.find((account) => !!account.wcTopic) || null;
 };
 
+const filterWcAccountInAccountProxies = (accountProxies: AccountProxy[]): AccountJson | null => {
+  return accountProxies.map((ap) => ap.accounts).flat().find((account) => !!account.wcTopic) || null;
+};
+
 const accountStateSlice = createSlice({
   initialState,
   name: 'accountState',
@@ -90,6 +94,7 @@ const accountStateSlice = createSlice({
         ...state,
         accounts: payload.reduce((accounts, ap) => [...accounts, ...ap.accounts], [] as AccountJson[]),
         accountProxies: payload,
+        wcAccount: filterWcAccountInAccountProxies(payload),
         reduxStatus: ReduxStatus.READY
       };
     },
