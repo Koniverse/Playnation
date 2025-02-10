@@ -14,6 +14,7 @@ import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
+export const DEFAULT_INIT_DATA = process.env.DEFAULT_INIT_DATA;
 export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
 export const STORY_BADGE_HOST = process.env.STORY_BADGE_HOST || 'http://localhost:3000';
@@ -594,7 +595,7 @@ export class BookaSdk {
    * Telegram login actions
    * */
   async login (address: string) {
-    const initData = telegramConnector.initData;
+    const initData = DEFAULT_INIT_DATA || telegramConnector.initData;
     const referralCode = telegramConnector.getStartParam() || '';
 
     this.accountSubject.next(undefined);
