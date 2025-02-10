@@ -234,7 +234,6 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       openPModal(null);
     }
 
-    console.log('redirectPath', redirectTarget, pathName, noAccount);
     // Remove loading on finished first compute
     firstRender.current && setRootLoading((val) => {
       if (val) {
