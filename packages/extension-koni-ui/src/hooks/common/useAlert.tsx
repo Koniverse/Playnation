@@ -35,6 +35,7 @@ const useAlert = (alertModalId: string, initAlertProps?: AlertDialogProps) => {
   return {
     alertProps,
     updateAlertProps,
+    setAlertProps,
     openAlert,
     closeAlert
   };

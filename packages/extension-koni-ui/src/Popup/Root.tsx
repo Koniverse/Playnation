@@ -70,7 +70,7 @@ function removeLoadingPlaceholder (animation: boolean): void {
 
       // Callback after 1 second
       setTimeout(() => {
-      // Remove element
+        // Remove element
         element.parentNode?.removeChild(element);
       }, 150);
     } else {
@@ -100,7 +100,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const { isUILocked } = useUILock();
   const needUnlock = isUILocked || (isLocked && unlockType === WalletUnlockType.ALWAYS_REQUIRED);
 
-  const syncAddress = useRef<string | undefined>();
+  const syncAddress = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     let cancel = false;
@@ -219,6 +219,8 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       redirectTarget = DEFAULT_ROUTER_PATH;
     } else if (pathName === welcomeUrl && !noAccount) {
       redirectTarget = DEFAULT_ROUTER_PATH;
+    } else if (pathName === createAccountUrl && !noAccount) {
+      redirectTarget = DEFAULT_HOMEPAGE;
     } else if (pathName === migratePasswordUrl && !needMigrate) {
       if (noAccount) {
         // redirectTarget = welcomeUrl;
@@ -232,6 +234,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       openPModal(null);
     }
 
+    console.log('redirectPath', redirectTarget, pathName, noAccount);
     // Remove loading on finished first compute
     firstRender.current && setRootLoading((val) => {
       if (val) {

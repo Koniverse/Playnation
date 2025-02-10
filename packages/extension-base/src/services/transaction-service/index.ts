@@ -3,10 +3,6 @@
 
 import { EvmProviderError } from '@subwallet/extension-base/background/errors/EvmProviderError';
 import { TransactionError } from '@subwallet/extension-base/background/errors/TransactionError';
-import { BasicTxErrorType, ChainType, EvmProviderErrorType, EvmSendTransactionRequest, ExtrinsicStatus, ExtrinsicType, NotificationType, TransactionAdditionalInfo, TransactionDirection, TransactionHistoryItem } from '@subwallet/extension-base/background/KoniTypes';
-import { AccountJson } from '@subwallet/extension-base/background/types';
-import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
-import { checkBalanceWithTransactionFee, checkSigningAccountForTransaction, checkSupportForTransaction, estimateFeeForTransaction } from '@subwallet/extension-base/core/logic-validation/transfer';
 import { AmountData, ChainType, EvmProviderErrorType, EvmSendTransactionRequest, ExtrinsicStatus, ExtrinsicType, NotificationType, TransactionAdditionalInfo, TransactionDirection, TransactionHistoryItem } from '@subwallet/extension-base/background/KoniTypes';
 import { ALL_ACCOUNT_KEY, fetchBlockedConfigObjects, fetchLastestBlockedActionsAndFeatures, getPassConfigId } from '@subwallet/extension-base/constants';
 import { checkBalanceWithTransactionFee, checkSigningAccountForTransaction, checkSupportForAction, checkSupportForFeature, checkSupportForTransaction, estimateFeeForTransaction } from '@subwallet/extension-base/core/logic-validation/transfer';
@@ -15,7 +11,7 @@ import { cellToBase64Str, externalMessage, getTransferCellPromise } from '@subwa
 import { TonTransactionConfig } from '@subwallet/extension-base/services/balance-service/transfer/ton-transfer';
 import { _isPolygonChainBridge } from '@subwallet/extension-base/services/balance-service/transfer/xcm/polygonBridge';
 import { ChainService } from '@subwallet/extension-base/services/chain-service';
-import { _getAssetDecimals, _getAssetSymbol, _getEvmChainId, _isChainEvmCompatible } from '@subwallet/extension-base/services/chain-service/utils';
+import { _getAssetDecimals, _getAssetSymbol, _getChainNativeTokenBasicInfo, _getEvmChainId, _isChainEvmCompatible } from '@subwallet/extension-base/services/chain-service/utils';
 import { EventService } from '@subwallet/extension-base/services/event-service';
 import { HistoryService } from '@subwallet/extension-base/services/history-service';
 import { ClaimAvailBridgeNotificationMetadata } from '@subwallet/extension-base/services/inapp-notification-service/interfaces';
@@ -26,10 +22,7 @@ import { getBaseTransactionInfo, getTransactionId, isSubstrateTransaction, isTon
 import { SWTransaction, SWTransactionInput, SWTransactionResponse, TransactionEmitter, TransactionEventMap, TransactionEventResponse, ValidateTransactionResponseInput } from '@subwallet/extension-base/services/transaction-service/types';
 import { getExplorerLink, parseTransactionData } from '@subwallet/extension-base/services/transaction-service/utils';
 import { isWalletConnectRequest } from '@subwallet/extension-base/services/wallet-connect-service/helpers';
-import { Web3Transaction } from '@subwallet/extension-base/signers/types';
-import { LeavePoolAdditionalData, SpecialYieldPoolInfo } from '@subwallet/extension-base/types';
-import { anyNumberToBN, reformatAddress } from '@subwallet/extension-base/utils';
-import { AccountJson, BasicTxErrorType, BasicTxWarningCode, LeavePoolAdditionalData, RequestStakePoolingBonding, RequestYieldStepSubmit, SpecialYieldPoolInfo, SubmitJoinNominationPool, Web3Transaction, YieldPoolType } from '@subwallet/extension-base/types';
+import { AccountJson, BasicTxErrorType, BasicTxWarningCode, LeavePoolAdditionalData, SpecialYieldPoolInfo, SubmitJoinNominationPool, Web3Transaction } from '@subwallet/extension-base/types';
 import { _isRuntimeUpdated, anyNumberToBN, pairToAccount, reformatAddress } from '@subwallet/extension-base/utils';
 import { mergeTransactionAndSignature } from '@subwallet/extension-base/utils/eth/mergeTransactionAndSignature';
 import { isContractAddress, parseContractInput } from '@subwallet/extension-base/utils/eth/parseTransaction';
@@ -368,8 +361,8 @@ export default class TransactionService {
       startBlock: startBlock || 0
     };
 
-    // const nativeAsset = _getChainNativeTokenBasicInfo(chainInfo);
-    // const baseNativeAmount = { value: '0', decimals: nativeAsset.decimals, symbol: nativeAsset.symbol };
+    const nativeAsset = _getChainNativeTokenBasicInfo(chainInfo);
+    const baseNativeAmount = { value: '0', decimals: nativeAsset.decimals, symbol: nativeAsset.symbol };
 
     // Fill data by extrinsicType
     switch (extrinsicType) {

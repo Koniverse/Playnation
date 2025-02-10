@@ -9,6 +9,7 @@ import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTransla
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { PhosphorIcon } from '@subwallet/extension-koni-ui/types';
 import { AccountSignMode } from '@subwallet/extension-koni-ui/types/account';
+import { KeypairType } from '@subwallet/keyring/types';
 import { Button, Icon, Logo } from '@subwallet/react-ui';
 import SwAvatar from '@subwallet/react-ui/es/sw-avatar';
 import CN from 'classnames';
@@ -16,8 +17,6 @@ import { CheckCircle, CopySimple, Eye, PencilSimpleLine, PuzzlePiece, QrCode, Sw
 import React, { Context, useCallback, useContext, useMemo } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import styled, { ThemeContext } from 'styled-components';
-
-import { KeypairType } from '@polkadot/util-crypto/types';
 
 export interface _AccountCardItem {
   className?: string;

@@ -1,8 +1,6 @@
 // Copyright 2019-2022 @subwallet/extension-base authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AuthRequestV2, ConfirmationDefinitions, ConfirmationMetadata, ConfirmationsQueue, ConfirmationsQueueItemOptions, ConfirmationType, RequestConfirmationComplete } from '@subwallet/extension-base/background/KoniTypes';
-import { AccountAuthType, AccountJson, AuthorizeRequest, MetadataRequest, RequestAuthorizeTab, RequestSign, ResponseSigning, SigningRequest } from '@subwallet/extension-base/background/types';
 import { AuthRequestV2, ConfirmationDefinitions, ConfirmationDefinitionsTon, ConfirmationsQueue, ConfirmationsQueueItemOptions, ConfirmationsQueueTon, ConfirmationType, ConfirmationTypeTon, RequestConfirmationComplete, RequestConfirmationCompleteTon } from '@subwallet/extension-base/background/KoniTypes';
 import { AccountAuthType, AuthorizeRequest, MetadataRequest, RequestAuthorizeTab, RequestSign, ResponseSigning, SigningRequest } from '@subwallet/extension-base/background/types';
 import { ChainService } from '@subwallet/extension-base/services/chain-service';

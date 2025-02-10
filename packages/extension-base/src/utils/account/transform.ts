@@ -19,6 +19,8 @@ import { getSoloDerivationInfo } from './derive';
 export const createAccountProxyId = (_suri: string, derivationPath?: string) => {
   let data: string = _suri;
 
+  console.log('_suri:', _suri);
+
   if (mnemonicValidate(_suri)) {
     const entropy = mnemonicToEntropy(_suri);
 

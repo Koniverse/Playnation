@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { NotificationType } from '@subwallet/extension-base/background/KoniTypes';
-import { AccountProxyType, ResponseMnemonicValidateV2 } from '@subwallet/extension-base/types';
-import { AccountNameModal, CloseIcon, Layout, PageWrapper, PhraseNumberSelector, SeedPhraseInput } from '@subwallet/extension-koni-ui/components';
-import { ACCOUNT_NAME_MODAL, IMPORT_ACCOUNT_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { ResponseMnemonicValidateV2 } from '@subwallet/extension-base/types';
+import { CloseIcon, Layout, PageWrapper, PhraseNumberSelector, SeedPhraseInput } from '@subwallet/extension-koni-ui/components';
+import { IMPORT_ACCOUNT_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
-import { useAutoNavigateToCreatePassword, useCompleteCreateAccount, useDefaultNavigate, useFocusFormItem, useGoBackFromCreateAccount, useNotification, useTranslation, useUnlockChecker } from '@subwallet/extension-koni-ui/hooks';
-import { createAccountSuriV2, validateSeedV2 } from '@subwallet/extension-koni-ui/messaging';
+import { useAutoNavigateToCreatePassword, useDefaultNavigate, useFocusFormItem, useGoBackFromCreateAccount, useNotification, useTranslation, useUnlockChecker } from '@subwallet/extension-koni-ui/hooks';
+import { validateSeedV2 } from '@subwallet/extension-koni-ui/messaging';
 import { FormCallbacks, FormFieldData, FormRule, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { convertFieldToObject, noop, simpleCheckForm } from '@subwallet/extension-koni-ui/utils';
-import { Button, Form, Icon, Input, ModalContext } from '@subwallet/react-ui';
+import { Button, Form, Icon, Input } from '@subwallet/react-ui';
 import { wordlists } from 'bip39';
 import CN from 'classnames';
 import { CheckCircle, Eye, EyeSlash, FileArrowDown, XCircle } from 'phosphor-react';
@@ -28,7 +28,6 @@ const FooterIcon = (
 
 const formName = 'import-seed-phrase-form';
 const fieldNamePrefix = 'seed-phrase-';
-const accountNameModalId = ACCOUNT_NAME_MODAL;
 
 interface FormState extends Record<`seed-phrase-${number}`, string> {
   phraseNumber: string;
@@ -45,9 +44,8 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   const { goHome } = useDefaultNavigate();
   const notify = useNotification();
 
-  const onComplete = useCompleteCreateAccount();
+  // const onComplete = useCompleteCreateAccount();
   const onBack = useGoBackFromCreateAccount(IMPORT_ACCOUNT_MODAL);
-  const { activeModal, inactiveModal } = useContext(ModalContext);
   const { alertModal } = useContext(WalletModalContext);
 
   const [form] = Form.useForm<FormState>();
@@ -55,8 +53,8 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   const phraseNumber = Form.useWatch('phraseNumber', form);
 
   const [submitting, setSubmitting] = useState(false);
-  const [accountCreating, setAccountCreating] = useState(false);
-  const [seedValidationResponse, setSeedValidationResponse] = useState<undefined | ResponseMnemonicValidateV2>();
+  // const [, setAccountCreating] = useState(false);
+  const [, setSeedValidationResponse] = useState<undefined | ResponseMnemonicValidateV2>();
   const [disabled, setDisabled] = useState(true);
   const [showSeed, setShowSeed] = useState(false);
   const checkUnlock = useUnlockChecker();
@@ -166,14 +164,13 @@ const Component: React.FC<Props> = ({ className }: Props) => {
                   icon: CheckCircle,
                   iconWeight: 'fill',
                   onClick: () => {
-                    activeModal(accountNameModalId);
                     alertModal.close();
                   },
                   schema: 'primary'
                 }
               });
             } else {
-              activeModal(accountNameModalId);
+              alertModal.close();
             }
           })
             .catch((error: Error): void => {
@@ -191,36 +188,35 @@ const Component: React.FC<Props> = ({ className }: Props) => {
           // Unlock is cancelled
         });
     }
-  }, [t, checkUnlock, alertModal, activeModal, notify]);
+  }, [t, checkUnlock, alertModal, notify]);
 
-  const onCreateAccount = useCallback((accountName: string) => {
-    if (!seedValidationResponse) {
-      return;
-    }
-
-    setAccountCreating(true);
-    createAccountSuriV2({
-      name: accountName,
-      suri: seedValidationResponse.mnemonic,
-      type: seedValidationResponse.mnemonicTypes === 'ton' ? 'ton-native' : undefined,
-      isAllowed: true
-    })
-      .then(() => {
-        onComplete();
-      })
-      .catch((error: Error): void => {
-        notify({
-          message: error.message,
-          type: 'error'
-        });
-      })
-      .finally(() => {
-        setSeedValidationResponse(undefined);
-        setAccountCreating(false);
-        setSubmitting(false);
-        inactiveModal(accountNameModalId);
-      });
-  }, [inactiveModal, notify, onComplete, seedValidationResponse]);
+  // const onCreateAccount = useCallback((accountName: string) => {
+  //   if (!seedValidationResponse) {
+  //     return;
+  //   }
+  //
+  //   setAccountCreating(true);
+  //   createAccountSuriV2({
+  //     name: accountName,
+  //     suri: seedValidationResponse.mnemonic,
+  //     type: seedValidationResponse.mnemonicTypes === 'ton' ? 'ton-native' : undefined,
+  //     isAllowed: true
+  //   })
+  //     .then(() => {
+  //       onComplete();
+  //     })
+  //     .catch((error: Error): void => {
+  //       notify({
+  //         message: error.message,
+  //         type: 'error'
+  //       });
+  //     })
+  //     .finally(() => {
+  //       setSeedValidationResponse(undefined);
+  //       setAccountCreating(false);
+  //       setSubmitting(false);
+  //     });
+  // }, [notify, onComplete, seedValidationResponse]);
 
   const toggleShow = useCallback(() => {
     setShowSeed((value) => !value);
@@ -325,13 +321,6 @@ const Component: React.FC<Props> = ({ className }: Props) => {
           </Form>
         </div>
       </Layout.WithSubHeaderOnly>
-      <AccountNameModal
-        accountType={seedValidationResponse
-          ? seedValidationResponse.mnemonicTypes === 'general' ? AccountProxyType.UNIFIED : AccountProxyType.SOLO
-          : undefined}
-        isLoading={accountCreating}
-        onSubmit={onCreateAccount}
-      />
     </PageWrapper>
   );
 };

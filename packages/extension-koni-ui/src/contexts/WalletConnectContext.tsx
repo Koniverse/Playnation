@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AccountJson } from '@subwallet/extension-base/background/types';
+import { AccountJson } from '@subwallet/extension-base/types';
 import { ConnectWalletSuccessModal, DisconnectWalletConnectModalContent, RequireConnectWalletModalContent, WalletConnectWaitingSigningModal } from '@subwallet/extension-koni-ui/components';
 import { CONNECT_WALLET_SUCCESS_MODAL, DISCONNECT_WALLET_CONNECT_MODAL, REQUIRE_CONNECT_WALLET_MODAL, WALLET_CONNECT_WAITING_SIGNING_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { useConfirmModal } from '@subwallet/extension-koni-ui/hooks';

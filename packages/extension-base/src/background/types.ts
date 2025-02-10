@@ -10,10 +10,9 @@ import type { JsonRpcResponse } from '@polkadot/rpc-provider/types';
 import type { SignerPayloadJSON, SignerPayloadRaw } from '@polkadot/types/types';
 import type { HexString } from '@polkadot/util/types';
 
-import { KoniRequestSignatures, NetworkJson } from '@subwallet/extension-base/background/KoniTypes';
+import { ConfirmationMetadata, KoniRequestSignatures, NetworkJson } from '@subwallet/extension-base/background/KoniTypes';
 import { AuthUrls } from '@subwallet/extension-base/services/request-service/types';
 import { AccountJson } from '@subwallet/extension-base/types';
-import { ConfirmationMetadata, CurrentNetworkInfo, KoniRequestSignatures, NetworkJson } from '@subwallet/extension-base/background/KoniTypes';
 
 import { TypeRegistry } from '@polkadot/types';
 
@@ -32,45 +31,6 @@ type IsNull<T, K extends keyof T> = { [K1 in Exclude<keyof T, K>]: T[K1] } & T[K
 type NullKeys<T> = { [K in keyof T]: IsNull<T, K> }[keyof T];
 
 export type SeedLengths = 12 | 24;
-
-export interface AbstractAddressJson extends KeyringPair$Meta {
-  address: string;
-  type?: KeypairType;
-  whenCreated?: number;
-  name?: string;
-}
-
-export interface AccountJson extends AbstractAddressJson {
-  accountIndex?: number;
-  addressOffset?: number;
-  availableGenesisHashes?: string[];
-  genesisHash?: string | null;
-  isExternal?: boolean;
-  isHardware?: boolean;
-  isHidden?: boolean;
-  isInjected?: boolean;
-  isMasterAccount?: boolean;
-  isMasterPassword?: boolean;
-  isReadOnly?: boolean;
-  isSubWallet?: boolean; // import from SubWallet
-  pendingMigrate?: boolean;
-  originGenesisHash?: string | null;
-  parentAddress?: string;
-  source?: string;
-  suri?: string;
-  wcTopic?: string;
-}
-
-export interface AddressJson extends AbstractAddressJson {
-  isRecent?: boolean;
-  recentChainSlugs?: string[];
-}
-
-// all Accounts and the address of the current Account
-export interface AccountsWithCurrentAddress {
-  accounts: AccountJson[];
-  currentAddress?: string;
-}
 
 export interface CurrentAccountInfo {
   address: string;

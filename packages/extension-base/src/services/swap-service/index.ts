@@ -10,7 +10,6 @@ import { EventService } from '@subwallet/extension-base/services/event-service';
 import { AssetHubSwapHandler } from '@subwallet/extension-base/services/swap-service/handler/asset-hub';
 import { SwapBaseInterface } from '@subwallet/extension-base/services/swap-service/handler/base-handler';
 import { ChainflipSwapHandler } from '@subwallet/extension-base/services/swap-service/handler/chainflip-handler';
-import { HydradxHandler } from '@subwallet/extension-base/services/swap-service/handler/hydradx-handler';
 import { _PROVIDER_TO_SUPPORTED_PAIR_MAP, getSwapAltToken, SWAP_QUOTE_TIMEOUT_MAP } from '@subwallet/extension-base/services/swap-service/utils';
 import { BasicTxErrorType } from '@subwallet/extension-base/types';
 import { CommonOptimalPath, DEFAULT_FIRST_STEP, MOCK_STEP_FEE } from '@subwallet/extension-base/types/service-base';
@@ -163,14 +162,6 @@ export class SwapService implements ServiceWithProcessInterface, StoppableServic
         case SwapProviderId.CHAIN_FLIP_MAINNET:
           this.handlers[providerId] = new ChainflipSwapHandler(this.chainService, this.state.balanceService, false);
 
-          break;
-
-        case SwapProviderId.HYDRADX_TESTNET:
-          this.handlers[providerId] = new HydradxHandler(this.chainService, this.state.balanceService);
-          break;
-
-        case SwapProviderId.HYDRADX_MAINNET:
-          this.handlers[providerId] = new HydradxHandler(this.chainService, this.state.balanceService, false);
           break;
 
         case SwapProviderId.POLKADOT_ASSET_HUB:

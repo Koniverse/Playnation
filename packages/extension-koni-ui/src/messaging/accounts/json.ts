@@ -2,11 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { RequestBatchJsonGetAccountInfo, RequestBatchRestoreV2, RequestJsonGetAccountInfo, RequestJsonRestoreV2, ResponseBatchJsonGetAccountInfo, ResponseJsonGetAccountInfo } from '@subwallet/extension-base/types';
+import { KeyringPair$Json } from '@subwallet/keyring/types';
 
 import { sendMessage } from '../base';
 
 export async function parseInfoSingleJson (request: RequestJsonGetAccountInfo): Promise<ResponseJsonGetAccountInfo> {
   return sendMessage('pri(accounts.json.info)', request);
+}
+
+export async function jsonGetAccountInfo (json: KeyringPair$Json): Promise<ResponseJsonGetAccountInfo> {
+  return sendMessage('pri(accounts.json.info)', { json, password: '' });
 }
 
 export async function jsonRestoreV2 (request: RequestJsonRestoreV2): Promise<string[]> {

@@ -11,9 +11,9 @@ import { Recoded } from '@subwallet/extension-koni-ui/types';
 import { isAccountAll } from '@subwallet/extension-koni-ui/utils/account/accountAll';
 import reformatAddress from '@subwallet/extension-koni-ui/utils/account/reformatAddress';
 import { decodeAddress } from '@subwallet/keyring';
+import { KeypairType } from '@subwallet/keyring/types';
 
 import { isEthereumAddress } from '@polkadot/util-crypto';
-import { KeypairType } from '@polkadot/util-crypto/types';
 
 import { findAccountByAddress } from './account/account';
 

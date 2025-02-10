@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BasicInputWrapper } from '@subwallet/extension-koni-ui/components/Field/Base';
+import { AccountSelectorModal } from '@subwallet/extension-koni-ui/components/Modal/Selector';
 import { useSelectModalInputHelper, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { AccountAddressItemType, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toShort } from '@subwallet/extension-koni-ui/utils';
@@ -10,8 +11,6 @@ import CN from 'classnames';
 import { CaretDown } from 'phosphor-react';
 import React, { ForwardedRef, forwardRef, useCallback, useContext, useMemo } from 'react';
 import styled from 'styled-components';
-
-import { AccountSelectorModal } from '../Modal';
 
 interface Props extends ThemeProps, BasicInputWrapper {
   items: AccountAddressItemType[];

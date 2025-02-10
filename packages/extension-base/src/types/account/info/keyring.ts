@@ -73,6 +73,8 @@ export interface AccountInjectData {
   isInjected?: boolean;
   /** Account's source */
   source?: string;
+
+  wcTopic?: string;
 }
 
 /**

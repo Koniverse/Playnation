@@ -5,7 +5,7 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils';
 import KoniState from '@subwallet/extension-base/koni/background/handlers/State';
 import WalletConnectService from '@subwallet/extension-base/services/wallet-connect-service';
 import { WalletConnectSendTransactionParams } from '@subwallet/extension-base/types';
-import { ethNumberToHex, isSameAddress } from '@subwallet/extension-base/utils';
+import { ethNumberToHex } from '@subwallet/extension-base/utils';
 import { SignClientTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
 import { TransactionConfig } from 'web3-core';
@@ -14,7 +14,7 @@ import { numberToHex } from '@polkadot/util';
 import { HexString } from '@polkadot/util/types';
 
 import { WALLET_CONNECT_EIP155_NAMESPACE } from '../constants';
-import { getEip155MessageAddress, getWCId, parseRequestParams } from '../helpers';
+import { getWCId, parseRequestParams } from '../helpers';
 import { EIP155_SIGNING_METHODS } from '../types';
 
 export default class Eip155RequestHandler {
@@ -24,12 +24,6 @@ export default class Eip155RequestHandler {
   constructor (koniState: KoniState, walletConnectService: WalletConnectService) {
     this.#koniState = koniState;
     this.#walletConnectService = walletConnectService;
-  }
-
-  #checkAccount (address: string, accounts: string[]) {
-    if (!accounts.find((account) => isSameAddress(account, address))) {
-      throw new Error(getSdkError('UNSUPPORTED_ACCOUNTS').message + ' ' + address);
-    }
   }
 
   #handleError (topic: string, id: number, e: unknown) {

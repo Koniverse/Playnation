@@ -8,7 +8,7 @@ import { DataContext } from '@subwallet/extension-koni-ui/contexts/DataContext';
 import { TransactionContext } from '@subwallet/extension-koni-ui/contexts/TransactionContext';
 import { useAlert, useChainChecker, useNavigateOnChangeAccount, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { ManageChainsParam, Theme, ThemeProps, TransactionFormBaseProps } from '@subwallet/extension-koni-ui/types';
-import { detectTransactionPersistKey } from '@subwallet/extension-koni-ui/utils';
+import { detectTransactionPersistKey, noop } from '@subwallet/extension-koni-ui/utils';
 import { ButtonProps, ModalContext, SwSubHeader } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React, { useCallback, useContext, useDeferredValue, useEffect, useMemo, useState } from 'react';
@@ -158,6 +158,7 @@ function Component ({ className }: Props) {
       >
         <TransactionContext.Provider value={{
           defaultData,
+          setIsDisableHeader: noop,
           needPersistData,
           persistData: setStorage,
           onDone,

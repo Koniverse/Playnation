@@ -26,6 +26,7 @@ export const TRANSACTION_TITLE_MAP: Record<ExtrinsicType, string> = {
   [ExtrinsicType.JOIN_YIELD_POOL]: detectTranslate('Start earning'), // TODO: Change this
   [ExtrinsicType.EVM_EXECUTE]: detectTranslate('Execute'),
   [ExtrinsicType.UNKNOWN]: detectTranslate('Unknown'),
+  [ExtrinsicType.REMARK_WITH_EVENT]: detectTranslate('Remark'),
 
   [ExtrinsicType.MINT_VDOT]: detectTranslate('Mint vDOT'), // TODO: Change this
   [ExtrinsicType.MINT_VMANTA]: detectTranslate('Mint vMANTA'), // TODO: Change this

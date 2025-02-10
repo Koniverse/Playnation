@@ -5,14 +5,12 @@ import type { KeypairType } from '@subwallet/keyring/types';
 
 import { _ChainAsset } from '@subwallet/chain-list/types';
 import { _getAssetOriginChain, _getMultiChainAsset } from '@subwallet/extension-base/services/chain-service/utils';
-import { TON_CHAINS } from '@subwallet/extension-base/services/earning-service/constants';
-import { AccountActions, AccountProxyType } from '@subwallet/extension-base/types';
 import { RECEIVE_MODAL_ACCOUNT_SELECTOR, RECEIVE_MODAL_TOKEN_SELECTOR } from '@subwallet/extension-koni-ui/constants';
-import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useGetChainSlugsByAccount, useHandleLedgerGenericAccountWarning, useHandleTonAccountWarning } from '@subwallet/extension-koni-ui/hooks';
 import { useChainAssets } from '@subwallet/extension-koni-ui/hooks/assets';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
-import { AccountAddressItemType, ReceiveModalProps } from '@subwallet/extension-koni-ui/types';
+import { AccountAddressItemType } from '@subwallet/extension-koni-ui/types';
+import { ReceiveModalProps } from '@subwallet/extension-koni-ui/types/component';
 import { getReformatedAddressRelatedToChain } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext } from '@subwallet/react-ui';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -36,8 +34,8 @@ export default function useCoreReceiveModalHelper (tokenGroupSlug?: string): Hoo
   const assetRegistryMap = useSelector((state: RootState) => state.assetRegistry.assetRegistry);
   const chainInfoMap = useSelector((state: RootState) => state.chainStore.chainInfoMap);
   const [selectedChain, setSelectedChain] = useState<string | undefined>();
-  const [selectedAccountAddressItem, setSelectedAccountAddressItem] = useState<AccountAddressItemType | undefined>();
-  const { addressQrModal } = useContext(WalletModalContext);
+  const [, setSelectedAccountAddressItem] = useState<AccountAddressItemType | undefined>();
+  // const { addressQrModal } = useContext(WalletModalContext);
   const chainSupported = useGetChainSlugsByAccount();
   const onHandleTonAccountWarning = useHandleTonAccountWarning();
   const onHandleLedgerGenericAccountWarning = useHandleLedgerGenericAccountWarning();
@@ -53,15 +51,15 @@ export default function useCoreReceiveModalHelper (tokenGroupSlug?: string): Hoo
 
   const openAddressQrModal = useCallback((address: string, accountType: KeypairType, accountProxyId: string, chainSlug: string, closeCallback?: VoidCallback, showQrBack = true) => {
     const processFunction = () => {
-      addressQrModal.open({
-        address,
-        chainSlug,
-        onBack: showQrBack ? addressQrModal.close : undefined,
-        onCancel: () => {
-          addressQrModal.close();
-          closeCallback?.();
-        }
-      });
+      // addressQrModal.open({
+      //   address,
+      //   chainSlug,
+      //   onBack: showQrBack ? addressQrModal.close : undefined,
+      //   onCancel: () => {
+      //     addressQrModal.close();
+      //     closeCallback?.();
+      //   }
+      // });
     };
 
     onHandleTonAccountWarning(accountType, () => {
@@ -70,7 +68,7 @@ export default function useCoreReceiveModalHelper (tokenGroupSlug?: string): Hoo
         chainSlug
       }, processFunction);
     });
-  }, [accountProxies, addressQrModal, onHandleLedgerGenericAccountWarning, onHandleTonAccountWarning]);
+  }, [accountProxies, onHandleLedgerGenericAccountWarning, onHandleTonAccountWarning]);
 
   /* --- token Selector */
 
@@ -277,39 +275,39 @@ export default function useCoreReceiveModalHelper (tokenGroupSlug?: string): Hoo
   }, [activeModal, chainInfoMap, chainSupported, currentAccountProxy, isAllAccount, openAddressQrModal, specificChain, tokenGroupSlug, tokenSelectorItems]);
 
   useEffect(() => {
-    if (addressQrModal.checkActive() && selectedAccountAddressItem) {
-      addressQrModal.update((prev) => {
-        if (!prev || !TON_CHAINS.includes(prev.chainSlug)) {
-          return prev;
-        }
-
-        const targetAddress = accountSelectorItems.find((i) => i.accountProxyId === selectedAccountAddressItem.accountProxyId)?.address;
-
-        if (targetAddress) {
-          return {
-            ...prev,
-            address: targetAddress
-          };
-        }
-
-        const selectedAccount = accountSelectorItems.find((item) => item.accountName === selectedAccountAddressItem.accountName);
-        const isSoloAccount = selectedAccount?.accountProxyType === AccountProxyType.SOLO;
-        const hasTonChangeWalletContractVersion = selectedAccount?.accountActions?.includes(AccountActions.TON_CHANGE_WALLET_CONTRACT_VERSION);
-        const latestAddress = selectedAccount?.address;
-
-        if (isSoloAccount && hasTonChangeWalletContractVersion && latestAddress) {
-          setSelectedAccountAddressItem(selectedAccount);
-
-          return {
-            ...prev,
-            address: latestAddress
-          };
-        }
-
-        return prev;
-      });
-    }
-  }, [accountSelectorItems, addressQrModal, selectedAccountAddressItem]);
+    // if (addressQrModal.checkActive() && selectedAccountAddressItem) {
+    //   addressQrModal.update((prev) => {
+    //     if (!prev || !TON_CHAINS.includes(prev.chainSlug)) {
+    //       return prev;
+    //     }
+    //
+    //     const targetAddress = accountSelectorItems.find((i) => i.accountProxyId === selectedAccountAddressItem.accountProxyId)?.address;
+    //
+    //     if (targetAddress) {
+    //       return {
+    //         ...prev,
+    //         address: targetAddress
+    //       };
+    //     }
+    //
+    //     const selectedAccount = accountSelectorItems.find((item) => item.accountName === selectedAccountAddressItem.accountName);
+    //     const isSoloAccount = selectedAccount?.accountProxyType === AccountProxyType.SOLO;
+    //     const hasTonChangeWalletContractVersion = selectedAccount?.accountActions?.includes(AccountActions.TON_CHANGE_WALLET_CONTRACT_VERSION);
+    //     const latestAddress = selectedAccount?.address;
+    //
+    //     if (isSoloAccount && hasTonChangeWalletContractVersion && latestAddress) {
+    //       setSelectedAccountAddressItem(selectedAccount);
+    //
+    //       return {
+    //         ...prev,
+    //         address: latestAddress
+    //       };
+    //     }
+    //
+    //     return prev;
+    //   });
+    // }
+  }, []);
 
   return useMemo(() => ({
     onOpenReceive,

@@ -3,9 +3,10 @@
 
 import { AccountProxyType } from '@subwallet/extension-base/types';
 import { detectTranslate, isSameAddress } from '@subwallet/extension-base/utils';
-import { AccountNameModal, Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
+import { Layout, PageWrapper } from '@subwallet/extension-koni-ui/components';
 import CloseIcon from '@subwallet/extension-koni-ui/components/Icon/CloseIcon';
 import DualLogo from '@subwallet/extension-koni-ui/components/Logo/DualLogo';
+import AccountNameModal from '@subwallet/extension-koni-ui/components/Modal/Account/AccountNameModal';
 import QrScannerErrorNotice from '@subwallet/extension-koni-ui/components/Qr/Scanner/ErrorNotice';
 import { ACCOUNT_NAME_MODAL, ATTACH_ACCOUNT_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import useCompleteCreateAccount from '@subwallet/extension-koni-ui/hooks/account/useCompleteCreateAccount';

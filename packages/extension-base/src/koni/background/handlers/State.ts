@@ -6,9 +6,6 @@ import { EvmProviderError } from '@subwallet/extension-base/background/errors/Ev
 import { TransactionError } from '@subwallet/extension-base/background/errors/TransactionError';
 import { withErrorLog } from '@subwallet/extension-base/background/handlers/helpers';
 import { isSubscriptionRunning, unsubscribe } from '@subwallet/extension-base/background/handlers/subscriptions';
-import { AccountRefMap, AddTokenRequestExternal, AmountData, APIItemState, ApiMap, AuthRequestV2, BasicTxErrorType, ChainStakingMetadata, ChainType, ConfirmationMetadata, ConfirmationsQueue, CrowdloanItem, CrowdloanJson, CurrencyType, CurrentAccountInfo, EvmProviderErrorType, EvmSendTransactionParams, EvmSendTransactionRequest, EvmSignatureRequest, ExternalRequestPromise, ExternalRequestPromiseStatus, ExtrinsicType, MantaAuthorizationContext, MantaPayConfig, MantaPaySyncState, NftCollection, NftItem, NftJson, NominatorMetadata, RequestAccountExportPrivateKey, RequestCheckPublicAndSecretKey, RequestConfirmationComplete, RequestCrowdloanContributions, RequestSettingsType, ResponseAccountExportPrivateKey, ResponseCheckPublicAndSecretKey, ServiceInfo, StakingItem, StakingJson, StakingRewardItem, StakingRewardJson, StakingType, UiSettings } from '@subwallet/extension-base/background/KoniTypes';
-import { AccountJson, RequestAuthorizeTab, RequestRpcSend, RequestRpcSubscribe, RequestRpcUnsubscribe, RequestSign, ResponseRpcListProviders, ResponseSigning } from '@subwallet/extension-base/background/types';
-import { ALL_ACCOUNT_KEY, ALL_GENESIS_HASH, MANTA_PAY_BALANCE_INTERVAL, REMIND_EXPORT_ACCOUNT } from '@subwallet/extension-base/constants';
 import { AddTokenRequestExternal, AmountData, APIItemState, ApiMap, AuthRequestV2, ChainStakingMetadata, ChainType, ConfirmationsQueue, ConfirmationsQueueTon, CrowdloanItem, CrowdloanJson, CurrencyType, EvmProviderErrorType, EvmSendTransactionParams, EvmSendTransactionRequest, EvmSignatureRequest, ExternalRequestPromise, ExternalRequestPromiseStatus, ExtrinsicType, MantaAuthorizationContext, MantaPayConfig, MantaPaySyncState, NftCollection, NftItem, NftJson, NominatorMetadata, RequestAccountExportPrivateKey, RequestConfirmationComplete, RequestConfirmationCompleteTon, RequestCrowdloanContributions, RequestSettingsType, ResponseAccountExportPrivateKey, ServiceInfo, SingleModeJson, StakingItem, StakingJson, StakingRewardItem, StakingRewardJson, StakingType, UiSettings } from '@subwallet/extension-base/background/KoniTypes';
 import { RequestAuthorizeTab, RequestRpcSend, RequestRpcSubscribe, RequestRpcUnsubscribe, RequestSign, ResponseRpcListProviders, ResponseSigning } from '@subwallet/extension-base/background/types';
 import { EnvConfig, MANTA_PAY_BALANCE_INTERVAL, REMIND_EXPORT_ACCOUNT } from '@subwallet/extension-base/constants';
@@ -19,9 +16,10 @@ import BuyService from '@subwallet/extension-base/services/buy-service';
 import CampaignService from '@subwallet/extension-base/services/campaign-service';
 import { ChainOnlineService } from '@subwallet/extension-base/services/chain-online-service';
 import { ChainService } from '@subwallet/extension-base/services/chain-service';
-import { _DEFAULT_MANTA_ZK_CHAIN, _MANTA_ZK_CHAIN_GROUP } from '@subwallet/extension-base/services/chain-service/constants';
+import { _DEFAULT_MANTA_ZK_CHAIN, _MANTA_ZK_CHAIN_GROUP, _PREDEFINED_SINGLE_MODES } from '@subwallet/extension-base/services/chain-service/constants';
 import { _ChainState, _NetworkUpsertParams, _ValidateCustomAssetRequest } from '@subwallet/extension-base/services/chain-service/types';
 import { _getEvmChainId, _getSubstrateGenesisHash, _getTokenOnChainAssetId, _isAssetFungibleToken, _isChainEnabled, _isChainTestNet, _parseMetadataForSmartContractAsset } from '@subwallet/extension-base/services/chain-service/utils';
+import EarningService from '@subwallet/extension-base/services/earning-service/service';
 import { EventService } from '@subwallet/extension-base/services/event-service';
 import FeeService from '@subwallet/extension-base/services/fee-service/service';
 import { calculateGasFeeParams } from '@subwallet/extension-base/services/fee-service/utils';
@@ -124,6 +122,7 @@ export default class KoniState {
   readonly historyService: HistoryService;
   readonly priceService: PriceService;
   readonly balanceService: BalanceService;
+  readonly earningService: EarningService;
   readonly migrationService: MigrationService;
   readonly subscanService: SubscanService;
   readonly walletConnectService: WalletConnectService;
@@ -161,6 +160,7 @@ export default class KoniState {
     this.migrationService = new MigrationService(this, this.eventService);
 
     this.campaignService = new CampaignService(this);
+    this.earningService = new EarningService(this);
     this.mktCampaignService = new MktCampaignService(this);
     this.buyService = new BuyService(this);
     this.transactionService = new TransactionService(this);

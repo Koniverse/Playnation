@@ -32,3 +32,13 @@ export interface RequestCheckCrossChainTransfer extends RequestBaseTransfer {
 }
 
 export type RequestCrossChainTransfer = InternalRequestSign<RequestCheckCrossChainTransfer>;
+
+export interface RequestMintNft {
+  address: string;
+  chain: string;
+  signature: string;
+}
+
+export interface RequestSubscribeTransactionById {
+  id: string;
+}

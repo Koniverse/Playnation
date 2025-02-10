@@ -160,6 +160,8 @@ export class AccountMnemonicHandler extends AccountBaseHandler {
       }
     });
 
+    console.log('accountsCreateSuriV2 redirectTag', addressDict);
+
     return addressDict;
   }
 

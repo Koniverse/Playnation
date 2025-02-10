@@ -3,6 +3,7 @@
 
 import { _DEFAULT_CHAINS } from '@subwallet/chain-list';
 import { _SubstrateChainType } from '@subwallet/chain-list/types';
+import { SingleModeJson, ThemeNames } from '@subwallet/extension-base/background/KoniTypes';
 
 export const API_AUTO_CONNECT_MS = 3000;
 export const API_CONNECT_TIMEOUT = 30000;
@@ -275,6 +276,14 @@ export const EVM_PASS_CONNECT_STATUS: Record<string, string[]> = {
 
 export const EVM_REFORMAT_DECIMALS = {
   acala: ['acala_evm', 'karura_evm']
+};
+
+export const _PREDEFINED_SINGLE_MODES: Record<string, SingleModeJson> = {
+  subspace: {
+    networkKeys: ['subspace_gemini_2a', 'subspace_test', 'subspace_gemini_3a'],
+    theme: ThemeNames.DEFAULT,
+    autoTriggerDomain: 'subspace.network'
+  }
 };
 
 export const LATEST_CHAIN_DATA_FETCHING_INTERVAL = 120000;

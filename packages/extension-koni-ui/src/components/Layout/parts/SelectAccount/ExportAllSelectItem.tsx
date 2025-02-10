@@ -5,14 +5,13 @@ import { AccountChainType, AccountProxy, AccountProxyType } from '@subwallet/ext
 import { AccountProxyAvatar } from '@subwallet/extension-koni-ui/components';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { PhosphorIcon } from '@subwallet/extension-koni-ui/types';
+import { KeypairType } from '@subwallet/keyring/types';
 import { Icon } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle, Eye, GitCommit, Needle, QrCode, Question, Strategy, Swatches } from 'phosphor-react';
 import { IconWeight } from 'phosphor-react/src/lib';
 import React, { Context, useCallback, useContext, useMemo } from 'react';
 import styled, { ThemeContext } from 'styled-components';
-
-import { KeypairType } from '@polkadot/util-crypto/types';
 
 type AccountProxyTypeIcon = {
   className?: string;
