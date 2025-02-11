@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { RequestTransfer } from '@subwallet/extension-base/background/KoniTypes';
+import { RequestTransfer } from '@subwallet/extension-base/types';
 import { IpAssetParams } from '@subwallet/extension-koni-ui/connector/booka/types';
 import BigN from 'bignumber.js';
 
@@ -37,9 +37,9 @@ const transformTransferData = (message: string): AiTransactionData => {
     const data: Omit<RequestTransfer, 'from'> = {
       value: BigN(amount).shiftedBy(18).toFixed(0),
       to: recipientAddress,
-      networkKey: 'storyOdyssey_testnet',
-      tokenSlug: 'storyOdyssey_testnet-NATIVE-IP',
-      ignoreWarnings: true
+      networkKey: 'story_protocol',
+      tokenSlug: 'story_protocol-NATIVE-IP',
+      ignoreWarnings: []
     };
 
     return {

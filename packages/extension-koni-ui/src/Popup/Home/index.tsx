@@ -13,7 +13,8 @@ import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types
 import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, homeScreensLayoutBackgroundImages, NEW_CHAT_AI_MODAL, ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
-import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
+import { useAccountBalance, useGetBannerByScreen, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
+import { useGetChainSlugsByAccountType } from '@subwallet/extension-koni-ui/hooks/screen/home/useGetChainSlugsByAccountType';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';

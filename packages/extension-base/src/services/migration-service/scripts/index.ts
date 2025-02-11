@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-koni authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import EnableStoryProtocolMainnet from '@subwallet/extension-base/services/migration-service/scripts/EnableStoryProtocolMainnet';
 import EnableStoryProtocolTestnet from '@subwallet/extension-base/services/migration-service/scripts/EnableStoryProtocolTestnet';
 
 import BaseMigrationJob from '../Base';
@@ -39,5 +40,6 @@ export default <Record<string, typeof BaseMigrationJob>>{
   // '1.2.10-p3': BeforeVaraCampaign,
   // '1.2.10-p4': BeforeCreditcoinCampaign,
   // '1.2.10-p5': BeforeCreditcoinCampaign2,
-  '1.2.10-p7': EnableStoryProtocolTestnet
+  '1.2.10-p7': EnableStoryProtocolTestnet,
+  '1.2.10-p8': EnableStoryProtocolMainnet
 };

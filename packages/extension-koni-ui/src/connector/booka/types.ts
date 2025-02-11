@@ -152,6 +152,7 @@ export type TaskCategoryInfo = {
   id: number;
   completeCount: number;
   tasks: Task[];
+  minPoint?: number;
 }
 
 export interface GamePlay {

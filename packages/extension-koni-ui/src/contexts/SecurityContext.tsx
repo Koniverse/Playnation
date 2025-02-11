@@ -1,20 +1,16 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { NotificationType } from '@subwallet/extension-base/background/KoniTypes';
-import { PASSWORD_UPDATE_TIME_BIO_LOCAL, PASSWORD_UPDATE_TIME_CLOUD, REMIND_BIOMETRIC_TIME, REMIND_PASSWORD_TIME } from '@subwallet/extension-base/constants';
+import { PASSWORD_UPDATE_TIME_BIO_LOCAL, PASSWORD_UPDATE_TIME_CLOUD, REMIND_BIOMETRIC_TIME } from '@subwallet/extension-base/constants';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import { AlertModal } from '@subwallet/extension-koni-ui/components';
 import { UNLOCK_MODAL_ID } from '@subwallet/extension-koni-ui/components/Modal/UnlockModal';
-import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BiometricHandler } from '@subwallet/extension-koni-ui/connector/telegram/BiometricHandler';
-import { useAlert, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useAlert } from '@subwallet/extension-koni-ui/hooks';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ModalContext } from '@subwallet/react-ui';
-import { CheckCircle, ShieldStar, XCircle } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 
 interface SecurityContextProviderProps {
   children?: React.ReactElement;
@@ -35,7 +31,6 @@ export interface SecurityContextProps {
 
 export const SecurityContext = React.createContext<SecurityContextProps>({} as SecurityContextProps);
 
-const bookaSdk = BookaSdk.instance;
 const biometricHandler = BiometricHandler.instance;
 const cloudStorage = SWStorage.instance;
 
@@ -61,20 +56,17 @@ const updateLocalTokenFlag = async () => {
 };
 
 const PASSPARD_ALERT_MODAL_ID = 'password_alert_modal_id';
-const createPasswordUrl = '/keyring/create-password';
 
 export function SecurityContextProvider ({ children }: SecurityContextProviderProps): React.ReactElement {
-  const { hasMasterPassword, useCustomPassword } = useSelector((state: RootState) => state.accountState);
+  const { useCustomPassword } = useSelector((state: RootState) => state.accountState);
   const [supportBiometric, setSupportBiometric] = useState(false);
   const [usingBiometric, setUsingBiometric] = useState(false);
   const [isTokenUpdateToDate, setIsTokenUpdateToDate] = useState(true);
   const [requireSyncPassword, setRequireSyncPassword] = useState(false);
-  const [remindBiometricLastTime, setRemindBiometricLastTime] = useState(localStorage.getItem(REMIND_BIOMETRIC_TIME));
+  const [remindBiometricLastTime] = useState(localStorage.getItem(REMIND_BIOMETRIC_TIME));
   const { activeModal, checkActive } = useContext(ModalContext);
 
-  const { alertProps, closeAlert, openAlert } = useAlert(PASSPARD_ALERT_MODAL_ID);
-  const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { alertProps } = useAlert(PASSPARD_ALERT_MODAL_ID);
 
   useEffect(() => {
     Promise.all([biometricHandler.isSupportBiometric(), biometricHandler.checkUsingBiometric(), checkTokenUpToDate()])

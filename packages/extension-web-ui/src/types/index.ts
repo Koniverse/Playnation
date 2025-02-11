@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { NotificationType } from '@subwallet/extension-base/background/KoniTypes';
-import { AccountJson } from '@subwallet/extension-base/background/types';
+import { AccountJson } from '@subwallet/extension-base/types';
 import { ButtonSchema } from '@subwallet/react-ui/es/button/button';
 import { Icon as _PhosphorIcon, IconProps } from 'phosphor-react';
 import React from 'react';
@@ -126,6 +126,10 @@ export interface SigData {
   signature: `0x${string}`;
 }
 
+export interface SubstrateSigData extends SigData {
+  signedTransaction?: `0x${string}`;
+}
+
 export * from './account';
 export * from './balance';
 export * from './buy';
@@ -139,6 +143,7 @@ export * from './form';
 export * from './history';
 export * from './hook';
 export * from './ledger';
+export * from './metadata';
 export * from './missionPool';
 export * from './navigation';
 export * from './scanner';

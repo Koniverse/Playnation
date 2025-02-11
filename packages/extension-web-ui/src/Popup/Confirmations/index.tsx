@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ConfirmationDefinitions, ExtrinsicType } from '@subwallet/extension-base/background/KoniTypes';
-import { AccountJson, AuthorizeRequest, MetadataRequest, SigningRequest } from '@subwallet/extension-base/background/types';
+import { AuthorizeRequest, MetadataRequest, SigningRequest } from '@subwallet/extension-base/background/types';
 import { WalletConnectNotSupportRequest, WalletConnectSessionRequest } from '@subwallet/extension-base/services/wallet-connect-service/types';
+import { AccountJson } from '@subwallet/extension-base/types';
 import { detectTranslate } from '@subwallet/extension-base/utils';
 import { AlertModal } from '@subwallet/extension-web-ui/components';
 import { isProductionMode, NEED_SIGN_CONFIRMATION } from '@subwallet/extension-web-ui/constants';
@@ -32,7 +33,6 @@ const titleMap: Record<ConfirmationType, string> = {
   evmSignatureRequest: detectTranslate('Signature request'),
   metadataRequest: detectTranslate('Update metadata'),
   signingRequest: detectTranslate('Signature request'),
-  switchNetworkRequest: detectTranslate('Add network request'),
   connectWCRequest: detectTranslate('WalletConnect'),
   notSupportWCRequest: detectTranslate('WalletConnect')
 } as Record<ConfirmationType, string>;
@@ -71,14 +71,20 @@ const Component = function ({ className }: Props) {
         const _isMessage = isRawPayload(request.request.payload);
 
         account = request.account;
+        const isEthereum = isEthereumAddress(account.address);
 
         if (account.isHardware) {
-          if (_isMessage) {
-            canSign = false;
+          if (account.isGeneric) {
+            canSign = !isEthereum;
           } else {
-            const payload = request.request.payload as SignerPayloadJSON;
+            if (_isMessage) {
+              canSign = true;
+            } else {
+              const payload = request.request.payload as SignerPayloadJSON;
 
-            canSign = !!account.availableGenesisHashes?.includes(payload.genesisHash);
+              // Valid even with evm ledger account (evm - availableGenesisHashes is empty)
+              canSign = !!account.availableGenesisHashes?.includes(payload.genesisHash);
+            }
           }
         } else {
           canSign = true;
@@ -132,13 +138,6 @@ const Component = function ({ className }: Props) {
         return (
           <EvmSignatureConfirmation
             request={confirmation.item as ConfirmationDefinitions['evmSignatureRequest'][0]}
-            type={confirmation.type}
-          />
-        );
-      case 'evmWatchTransactionRequest':
-        return (
-          <EvmTransactionConfirmation
-            request={confirmation.item as ConfirmationDefinitions['evmWatchTransactionRequest'][0]}
             type={confirmation.type}
           />
         );
