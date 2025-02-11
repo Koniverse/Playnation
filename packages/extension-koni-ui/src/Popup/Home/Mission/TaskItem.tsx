@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
-import { WC_DEFAULT_CHAIN_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { WC_DEFAULT_CHAIN_TESTNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { createPromiseHandler, isSameAddress } from '@subwallet/extension-base/utils';
 import { GamePoint } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
@@ -127,7 +127,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
 
         const { signature } = await wcSignMessageRequest({
           address: address,
-          chainId: WC_DEFAULT_CHAIN_ID,
+          chainId: WC_DEFAULT_CHAIN_TESTNET_ID,
           payload: stringToHex(message),
           method: 'personal_sign'
         });

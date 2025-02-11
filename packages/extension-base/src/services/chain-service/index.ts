@@ -24,6 +24,7 @@ import { Logger } from '@polkadot/util/types';
 
 const forceChainInfoMap = (() => {
   const enableList = [
+    'story_protocol',
     'storyOdyssey_testnet'
   ];
 

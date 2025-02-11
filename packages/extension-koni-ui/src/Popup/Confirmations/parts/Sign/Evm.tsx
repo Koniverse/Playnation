@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ConfirmationDefinitions, ConfirmationResult, EvmSendTransactionRequest, ExtrinsicType } from '@subwallet/extension-base/background/KoniTypes';
-import { WC_DEFAULT_CHAIN_ID, WC_USER_REJECT_MESSAGE } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { WC_DEFAULT_CHAIN_TESTNET_ID, WC_USER_REJECT_MESSAGE } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { CONFIRMATION_QR_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { InjectContext } from '@subwallet/extension-koni-ui/contexts/InjectContext';
@@ -61,7 +61,7 @@ const apiSDK = BookaSdk.instance;
 const Component: React.FC<Props> = (props: Props) => {
   const { className, extrinsicType, id, payload, txExpirationTime, type } = props;
   const { payload: { account, canSign, hashPayload } } = payload;
-  const chainId = (payload.payload as EvmSendTransactionRequest)?.chainId || WC_DEFAULT_CHAIN_ID;
+  const chainId = (payload.payload as EvmSendTransactionRequest)?.chainId || WC_DEFAULT_CHAIN_TESTNET_ID;
 
   const { t } = useTranslation();
   const notify = useNotification();

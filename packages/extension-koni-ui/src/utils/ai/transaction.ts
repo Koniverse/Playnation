@@ -37,8 +37,8 @@ const transformTransferData = (message: string): AiTransactionData => {
     const data: Omit<RequestTransfer, 'from'> = {
       value: BigN(amount).shiftedBy(18).toFixed(0),
       to: recipientAddress,
-      networkKey: 'storyOdyssey_testnet',
-      tokenSlug: 'storyOdyssey_testnet-NATIVE-IP',
+      networkKey: 'story_protocol',
+      tokenSlug: 'story_protocol-NATIVE-IP',
       ignoreWarnings: true
     };
 

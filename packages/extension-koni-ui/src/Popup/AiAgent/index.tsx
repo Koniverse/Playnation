@@ -5,7 +5,7 @@ import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event
 import { ExtrinsicStatus, RequestTransfer } from '@subwallet/extension-base/background/KoniTypes';
 import { SWTransactionBrief, SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import { getExplorerLink } from '@subwallet/extension-base/services/transaction-service/utils';
-import { WC_DEFAULT_CHAIN_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { WC_DEFAULT_CHAIN_MAINNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { GameAccountAvatar, Layout } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
@@ -570,7 +570,7 @@ const Component = (props: Props): React.ReactElement => {
   // });
 
   const getExplorerUrl = useCallback((txHash: string) => {
-    const chainInfo = chainInfoMap.storyOdyssey_testnet;
+    const chainInfo = chainInfoMap.story_protocol;
 
     return chainInfo ? getExplorerLink(chainInfo, txHash, 'tx') || '' : '';
   }, [chainInfoMap]);
@@ -776,7 +776,7 @@ const Component = (props: Props): React.ReactElement => {
 
         const { signature } = await wcSignMessageRequest({
           address: address,
-          chainId: WC_DEFAULT_CHAIN_ID,
+          chainId: WC_DEFAULT_CHAIN_MAINNET_ID,
           payload: stringToHex(message),
           method: 'personal_sign'
         });
@@ -820,13 +820,13 @@ const Component = (props: Props): React.ReactElement => {
 
         if (error.message?.toLowerCase().includes('Unsupported chains'.toLowerCase())) {
           telegramConnector.showPopup({
-            message: t('Your chosen wallet hasn’t supported Story Odyssey Testnet. Add network to your wallet or change to another wallet'),
+            message: t('Your chosen wallet hasn’t supported Story Protocol. Add network to your wallet or change to another wallet'),
             buttons: [{ type: 'ok', text: t('Got it') }]
           }, noop);
         }
       }
     })().catch(console.error);
-  }, [closeWaiting, connectWC, notify, openWaiting, requireWC, t]);
+  }, [addPendingMessage, closeWaiting, connectWC, notify, openWaiting, requireWC, t]);
 
   const welcomeMessagesNode = useMemo(() => {
     const userName = `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}`.trim();

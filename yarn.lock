@@ -6604,14 +6604,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subwallet/chain-list@npm:0.2.93":
-  version: 0.2.93
-  resolution: "@subwallet/chain-list@npm:0.2.93"
+"@subwallet/chain-list@npm:0.2.99-beta.17":
+  version: 0.2.99-beta.17
+  resolution: "@subwallet/chain-list@npm:0.2.99-beta.17"
   dependencies:
     "@polkadot/dev": 0.67.167
     "@polkadot/util": ^12.5.1
     eventemitter3: ^5.0.1
-  checksum: e618b88b667858336291f487747a4cfd8c718af3b6dda369c316f511d18e2e64297441aed7a1f48b3eb2381685898471109519a7bc6916ef2179500805dfe588
+    ts-md5: ^1.3.1
+  checksum: 32129f62ce8a6f1360dd43dfd02cfd265c0423f8db984ae362a0f5f3096a9a752c2053d9488826d53a566cd6959e0cc325917a27d8f4b88282292db3d6bff5bd
   languageName: node
   linkType: hard
 
@@ -6651,7 +6652,7 @@ __metadata:
     "@reduxjs/toolkit": ^1.9.1
     "@sora-substrate/type-definitions": ^1.17.7
     "@substrate/connect": ^0.8.9
-    "@subwallet/chain-list": 0.2.93
+    "@subwallet/chain-list": 0.2.99-beta.17
     "@subwallet/extension-base": ^1.2.10-0
     "@subwallet/extension-chains": ^1.2.10-0
     "@subwallet/extension-dapp": ^1.2.10-0
@@ -6790,7 +6791,7 @@ __metadata:
     "@polkadot/util-crypto": ^12.6.2
     "@ramonak/react-progress-bar": ^5.0.3
     "@reduxjs/toolkit": ^1.9.1
-    "@subwallet/chain-list": 0.2.93
+    "@subwallet/chain-list": 0.2.99-beta.17
     "@subwallet/extension-base": ^1.2.10-0
     "@subwallet/extension-chains": ^1.2.10-0
     "@subwallet/extension-dapp": ^1.2.10-0
@@ -6936,7 +6937,7 @@ __metadata:
     "@polkadot/util-crypto": ^12.6.2
     "@ramonak/react-progress-bar": ^5.0.3
     "@reduxjs/toolkit": ^1.9.1
-    "@subwallet/chain-list": 0.2.70
+    "@subwallet/chain-list": 0.2.99-beta.17
     "@subwallet/extension-base": ^1.2.10-0
     "@subwallet/extension-chains": ^1.2.10-0
     "@subwallet/extension-dapp": ^1.2.10-0
@@ -27325,6 +27326,13 @@ __metadata:
   dependencies:
     tslib: ^2.1.0
   checksum: bb07d56fe4aae69d8860e0301dfdee2d375281159054bc24bf1e49e513fb0835bf7f70a11351344d213a79199c5e695f37ebbf5a447188a377ce0cd81d91ddb5
+  languageName: node
+  linkType: hard
+
+"ts-md5@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "ts-md5@npm:1.3.1"
+  checksum: 88fc4df837e17949fef92a8e71a0691b20e2f8b02a002876a162a102e7c9d364f1eb00cbd217f9578fec5fa07bb66ffa14ed054cdfe164486fab2173c8e9ea23
   languageName: node
   linkType: hard
 
