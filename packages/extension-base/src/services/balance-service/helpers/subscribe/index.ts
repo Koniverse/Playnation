@@ -3,13 +3,13 @@
 
 import { _AssetType, _ChainAsset, _ChainInfo } from '@subwallet/chain-list/types';
 import { APIItemState, ExtrinsicType } from '@subwallet/extension-base/background/KoniTypes';
-import { AccountJson } from '@subwallet/extension-base/background/types';
-import { _EvmApi, _SubstrateApi } from '@subwallet/extension-base/services/chain-service/types';
-import { _getSubstrateGenesisHash, _isChainEvmCompatible, _isPureEvmChain } from '@subwallet/extension-base/services/chain-service/utils';
-import { BalanceItem } from '@subwallet/extension-base/types';
-import { categoryAddresses, filterAssetsByChainAndType } from '@subwallet/extension-base/utils';
+import { _EvmApi, _SubstrateApi, _TonApi } from '@subwallet/extension-base/services/chain-service/types';
+import { _getSubstrateGenesisHash, _isChainBitcoinCompatible, _isChainEvmCompatible, _isChainTonCompatible, _isPureEvmChain, _isPureTonChain } from '@subwallet/extension-base/services/chain-service/utils';
+import { AccountJson, BalanceItem } from '@subwallet/extension-base/types';
+import { categoryAddresses, filterAssetsByChainAndType, pairToAccount } from '@subwallet/extension-base/utils';
 import keyring from '@subwallet/ui-keyring';
 
+import { subscribeTonBalance } from './ton/ton';
 import { subscribeEVMBalance } from './evm';
 import { subscribeSubstrateBalance } from './substrate';
 
@@ -27,11 +27,7 @@ export const getAccountJsonByAddress = (address: string): AccountJson | null => 
     const pair = keyring.getPair(address);
 
     if (pair) {
-      return {
-        address: pair.address,
-        type: pair.type,
-        ...pair.meta
-      };
+      return pairToAccount(pair);
     } else {
       return null;
     }
@@ -44,27 +40,34 @@ export const getAccountJsonByAddress = (address: string): AccountJson | null => 
 
 /** Filter addresses to subscribe by chain info */
 const filterAddress = (addresses: string[], chainInfo: _ChainInfo): [string[], string[]] => {
-  const isEvmChain = _isChainEvmCompatible(chainInfo);
-  const [substrateAddresses, evmAddresses] = categoryAddresses(addresses);
+  const { bitcoin, evm, substrate, ton } = categoryAddresses(addresses);
 
-  if (isEvmChain) {
-    return [evmAddresses, substrateAddresses];
+  if (_isChainEvmCompatible(chainInfo)) {
+    return [evm, [...bitcoin, ...substrate, ...ton]];
+  } else if (_isChainBitcoinCompatible(chainInfo)) {
+    return [bitcoin, [...evm, ...substrate, ...ton]];
+  } else if (_isChainTonCompatible(chainInfo)) {
+    return [ton, [...bitcoin, ...evm, ...substrate]];
   } else {
     const fetchList: string[] = [];
     const unfetchList: string[] = [];
 
-    substrateAddresses.forEach((address) => {
+    substrate.forEach((address) => {
       const account = getAccountJsonByAddress(address);
 
       if (account) {
         if (account.isHardware) {
-          const availGen = account.availableGenesisHashes || [];
-          const gen = _getSubstrateGenesisHash(chainInfo);
-
-          if (availGen.includes(gen)) {
+          if (account.isGeneric) {
             fetchList.push(address);
           } else {
-            unfetchList.push(address);
+            const availGen = account.availableGenesisHashes || [];
+            const gen = _getSubstrateGenesisHash(chainInfo);
+
+            if (availGen.includes(gen)) {
+              fetchList.push(address);
+            } else {
+              unfetchList.push(address);
+            }
           }
         } else {
           fetchList.push(address);
@@ -74,8 +77,40 @@ const filterAddress = (addresses: string[], chainInfo: _ChainInfo): [string[], s
       }
     });
 
-    return [fetchList, [...unfetchList, ...evmAddresses]];
+    return [fetchList, [...unfetchList, ...bitcoin, ...evm, ...ton]];
   }
+};
+
+const handleUnsupportedOrPendingAddresses = (
+  addresses: string[],
+  chainSlug: string,
+  chainAssetMap: Record<string, _ChainAsset>,
+  state: APIItemState,
+  callback: (rs: BalanceItem[]) => void
+) => {
+  const tokens = filterAssetsByChainAndType(chainAssetMap, chainSlug, [
+    _AssetType.NATIVE,
+    _AssetType.ERC20,
+    _AssetType.PSP22,
+    _AssetType.LOCAL,
+    _AssetType.GRC20,
+    _AssetType.VFT
+  ]);
+
+  const now = new Date().getTime();
+
+  Object.values(tokens).forEach((token) => {
+    const items: BalanceItem[] = addresses.map((address): BalanceItem => ({
+      address,
+      tokenSlug: token.slug,
+      free: '0',
+      locked: '0',
+      state,
+      timestamp: now
+    }));
+
+    callback(items);
+  });
 };
 
 // main subscription, use for multiple chains, multiple addresses and multiple tokens
@@ -87,6 +122,7 @@ export function subscribeBalance (
   _chainInfoMap: Record<string, _ChainInfo>,
   substrateApiMap: Record<string, _SubstrateApi>,
   evmApiMap: Record<string, _EvmApi>,
+  tonApiMap: Record<string, _TonApi>,
   callback: (rs: BalanceItem[]) => void,
   extrinsicType?: ExtrinsicType
 ) {
@@ -100,22 +136,13 @@ export function subscribeBalance (
     const [useAddresses, notSupportAddresses] = filterAddress(addresses, chainInfo);
 
     if (notSupportAddresses.length) {
-      const tokens = filterAssetsByChainAndType(chainAssetMap, chainSlug, [_AssetType.NATIVE, _AssetType.ERC20, _AssetType.PSP22, _AssetType.LOCAL, _AssetType.GRC20]);
-
-      const now = new Date().getTime();
-
-      Object.values(tokens).forEach((token) => {
-        const items: BalanceItem[] = notSupportAddresses.map((address): BalanceItem => ({
-          address,
-          tokenSlug: token.slug,
-          free: '0',
-          locked: '0',
-          state: APIItemState.NOT_SUPPORT,
-          timestamp: now
-        }));
-
-        callback(items);
-      });
+      handleUnsupportedOrPendingAddresses(
+        notSupportAddresses,
+        chainSlug,
+        chainAssetMap,
+        APIItemState.NOT_SUPPORT,
+        callback
+      );
     }
 
     const evmApi = evmApiMap[chainSlug];
@@ -128,6 +155,29 @@ export function subscribeBalance (
         chainInfo,
         evmApi
       });
+    }
+
+    const tonApi = tonApiMap[chainSlug];
+
+    if (_isPureTonChain(chainInfo)) {
+      return subscribeTonBalance({
+        addresses: useAddresses,
+        assetMap: chainAssetMap,
+        callback,
+        chainInfo,
+        tonApi
+      });
+    }
+
+    // If the chain is not ready, return pending state
+    if (!substrateApiMap[chainSlug].isApiReady) {
+      handleUnsupportedOrPendingAddresses(
+        useAddresses,
+        chainSlug,
+        chainAssetMap,
+        APIItemState.PENDING,
+        callback
+      );
     }
 
     const substrateApi = await substrateApiMap[chainSlug].isReady;

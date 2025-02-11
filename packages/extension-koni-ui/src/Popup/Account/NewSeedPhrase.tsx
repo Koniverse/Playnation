@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CloseIcon, Layout, PageWrapper, WordPhrase } from '@subwallet/extension-koni-ui/components';
-import { SeedPhraseTermModal } from '@subwallet/extension-koni-ui/components/Modal/TermsAndConditions/SeedPhraseTermModal';
 import { CONFIRM_TERM_SEED_PHRASE, DEFAULT_ACCOUNT_TYPES, DEFAULT_ROUTER_PATH, NEW_SEED_MODAL, SEED_PREVENT_MODAL, SELECTED_ACCOUNT_TYPE, TERM_AND_CONDITION_SEED_PHRASE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { useAutoNavigateToCreatePassword, useCompleteCreateAccount, useDefaultNavigate, useGetDefaultAccountName, useIsPopup, useNotification, useTranslation, useUnlockChecker } from '@subwallet/extension-koni-ui/hooks';
 import { createAccountSuriV2, createSeedV2, windowOpen } from '@subwallet/extension-koni-ui/messaging';
@@ -77,13 +76,14 @@ const Component: React.FC<Props> = ({ className }: Props) => {
         createAccountSuriV2({
           name: accountName,
           suri: seedPhrase,
-          types: accountTypes,
+          type: accountTypes[0],
           isAllowed: true
         })
           .then(() => {
             onComplete();
           })
           .catch((error: Error): void => {
+            console.log('error', error);
             notify({
               message: error.message,
               type: 'error'
@@ -109,9 +109,9 @@ const Component: React.FC<Props> = ({ className }: Props) => {
   }, [_isConfirmedTermSeedPhrase, activeModal, inactiveModal]);
 
   useEffect(() => {
-    createSeedV2(undefined, undefined, DEFAULT_ACCOUNT_TYPES)
+    createSeedV2(undefined, undefined, 'general')
       .then((response): void => {
-        const phrase = response.seed;
+        const phrase = response.mnemonic;
 
         setSeedPhrase(phrase);
       })
@@ -167,7 +167,7 @@ const Component: React.FC<Props> = ({ className }: Props) => {
           />
         </div>
       </Layout.WithSubHeaderOnly>
-      <SeedPhraseTermModal onOk={_onCreate} />
+      {/* <SeedPhraseTermModal onOk={_onCreate} /> */}
     </PageWrapper>
   );
 };

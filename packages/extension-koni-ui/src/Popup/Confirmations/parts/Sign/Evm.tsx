@@ -7,7 +7,7 @@ import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { CONFIRMATION_QR_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
 import { InjectContext } from '@subwallet/extension-koni-ui/contexts/InjectContext';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
-import { useGetChainInfoByChainId, useLedger, useNotification } from '@subwallet/extension-koni-ui/hooks';
+import { useGetAccountByAddress, useGetChainInfoByChainId, useLedger, useNotification } from '@subwallet/extension-koni-ui/hooks';
 import useUnlockChecker from '@subwallet/extension-koni-ui/hooks/common/useUnlockChecker';
 import { completeConfirmation, wcSendTransactionRequest, wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { PhosphorIcon, SigData, ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -60,7 +60,7 @@ const apiSDK = BookaSdk.instance;
 
 const Component: React.FC<Props> = (props: Props) => {
   const { className, extrinsicType, id, payload, txExpirationTime, type } = props;
-  const { payload: { account, canSign, hashPayload } } = payload;
+  const { payload: { address, canSign, hashPayload } } = payload;
   const chainId = (payload.payload as EvmSendTransactionRequest)?.chainId || WC_DEFAULT_CHAIN_TESTNET_ID;
 
   const { t } = useTranslation();
@@ -72,9 +72,9 @@ const Component: React.FC<Props> = (props: Props) => {
 
   const chain = useGetChainInfoByChainId(chainId);
   const checkUnlock = useUnlockChecker();
-
+  const account = useGetAccountByAddress(address);
   const signMode = useMemo(() => getSignMode(account), [account]);
-  const isLedger = useMemo(() => signMode === AccountSignMode.LEDGER, [signMode]);
+  const isLedger = useMemo(() => signMode === AccountSignMode.LEGACY_LEDGER || signMode === AccountSignMode.GENERIC_LEDGER, [signMode]);
   const [showQuoteExpired, setShowQuoteExpired] = useState<boolean>(false);
   const isMessage = isEvmMessage(payload);
 
@@ -99,7 +99,8 @@ const Component: React.FC<Props> = (props: Props) => {
     switch (signMode) {
       case AccountSignMode.QR:
         return QrCode;
-      case AccountSignMode.LEDGER:
+      case AccountSignMode.LEGACY_LEDGER:
+      case AccountSignMode.GENERIC_LEDGER:
         return Swatches;
       case AccountSignMode.INJECTED:
         return Wallet;
@@ -157,7 +158,7 @@ const Component: React.FC<Props> = (props: Props) => {
     setLoading(true);
 
     setTimeout(() => {
-      const signPromise = isMessage ? ledgerSignMessage(u8aToU8a(hashPayload), account.accountIndex, account.addressOffset) : ledgerSignTransaction(hexToU8a(hashPayload), account.accountIndex, account.addressOffset);
+      const signPromise = isMessage ? ledgerSignMessage(u8aToU8a(hashPayload), account?.accountIndex, account?.addressOffset) : ledgerSignTransaction(hexToU8a(hashPayload), new Uint8Array(0), account?.accountIndex, account?.addressOffset, account?.address);
 
       signPromise
         .then(({ signature }) => {
@@ -168,17 +169,17 @@ const Component: React.FC<Props> = (props: Props) => {
           setLoading(false);
         });
     });
-  }, [account.accountIndex, account.addressOffset, hashPayload, isLedgerConnected, isMessage, ledger, ledgerSignMessage, ledgerSignTransaction, onApproveSignature, refreshLedger]);
+  }, [account?.accountIndex, account?.address, account?.addressOffset, hashPayload, isLedgerConnected, isMessage, ledger, ledgerSignMessage, ledgerSignTransaction, onApproveSignature, refreshLedger]);
 
   const onConfirmInject = useCallback(() => {
     if (evmWallet) {
       let promise: Promise<`0x${string}`>;
 
       if (isMessage) {
-        promise = evmWallet.request<`0x${string}`>({ method: payload.payload.type, params: [account.address, payload.payload.payload] });
+        promise = evmWallet.request<`0x${string}`>({ method: payload.payload.type, params: [account?.address || address, payload.payload.payload] });
       } else {
         promise = new Promise<`0x${string}`>((resolve, reject) => {
-          const { account, canSign, estimateGas, hashPayload, isToContract, parseData, ...transactionConfig } = payload.payload;
+          const { address, canSign, estimateGas, hashPayload, isToContract, parseData, ...transactionConfig } = payload.payload;
 
           evmWallet.request({
             method: 'wallet_switchEthereumChain',
@@ -207,7 +208,7 @@ const Component: React.FC<Props> = (props: Props) => {
           setLoading(false);
         });
     }
-  }, [account.address, chainId, evmWallet, isMessage, onApproveSignature, payload.payload]);
+  }, [account?.address, address, chainId, evmWallet, isMessage, onApproveSignature, payload.payload]);
 
   const onConfirmWalletConnect = useCallback(() => {
     if (extrinsicType === ExtrinsicType.MINT_NFT) {
@@ -219,13 +220,13 @@ const Component: React.FC<Props> = (props: Props) => {
     if (isMessage) {
       promise = wcSignMessageRequest({
         method: payload.payload.type,
-        address: account.address,
+        address: account?.address || address,
         payload: payload.payload.payload,
         chainId
       });
     } else {
       promise = wcSendTransactionRequest({
-        address: account.address,
+        address: account?.address || address,
         transaction: payload.payload,
         chainId
       });
@@ -261,7 +262,7 @@ const Component: React.FC<Props> = (props: Props) => {
       .finally(() => {
         setLoading(false);
       });
-  }, [extrinsicType, isMessage, openWaiting, payload.payload, account.address, chainId, closeWaiting, onApproveSignature, onCancel, notify, t]);
+  }, [extrinsicType, isMessage, openWaiting, payload.payload, account?.address, address, chainId, closeWaiting, onApproveSignature, onCancel, notify, t]);
 
   const onConfirm = useCallback(() => {
     removeTransactionPersist(extrinsicType);
@@ -282,7 +283,8 @@ const Component: React.FC<Props> = (props: Props) => {
       case AccountSignMode.QR:
         onConfirmQr();
         break;
-      case AccountSignMode.LEDGER:
+      case AccountSignMode.LEGACY_LEDGER:
+      case AccountSignMode.GENERIC_LEDGER:
         onConfirmLedger();
         break;
       case AccountSignMode.INJECTED:
@@ -359,7 +361,7 @@ const Component: React.FC<Props> = (props: Props) => {
         shape={'round'}
       >
         {
-          signMode !== AccountSignMode.LEDGER
+          !isLedger
             ? t('Approve')
             : !isLedgerConnected
               ? t('Refresh')
@@ -370,7 +372,7 @@ const Component: React.FC<Props> = (props: Props) => {
         signMode === AccountSignMode.QR && (
           <DisplayPayloadModal>
             <EvmQr
-              address={account.address}
+              address={account?.address || address}
               hashPayload={hashPayload}
               isMessage={isEvmMessage(payload)}
             />

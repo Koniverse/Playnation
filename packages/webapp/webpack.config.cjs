@@ -43,7 +43,8 @@ const packages = [
   'extension-dapp',
   'extension-inject',
   'extension-koni',
-  'extension-koni-ui'
+  'extension-koni-ui',
+  'subwallet-api-sdk'
 ];
 
 const polkadotDevOptions = require('@polkadot/dev/config/babel-config-webpack.cjs');
@@ -56,11 +57,23 @@ const _additionalEnv = {
   TRANSAK_TEST_MODE: JSON.stringify(false),
   BANXA_TEST_MODE: JSON.stringify(false),
   INFURA_API_KEY: JSON.stringify(process.env.INFURA_API_KEY),
-  INFURA_API_KEY_SECRET: JSON.stringify(process.env.INFURA_API_KEY_SECRET),
   GAME_API_HOST: JSON.stringify(process.env.GAME_API_HOST),
   TELEGRAM_WEBAPP_LINK: JSON.stringify(process.env.TELEGRAM_WEBAPP_LINK),
   KARURA_PLAYDROP_START_DATE: JSON.stringify(process.env.KARURA_PLAYDROP_START_DATE),
   KARURA_PLAYDROP_END_DATE: JSON.stringify(process.env.KARURA_PLAYDROP_END_DATE),
+  INFURA_API_KEY_SECRET: JSON.stringify(process.env.INFURA_API_KEY_SECRET),
+  CHAINFLIP_BROKER_API: JSON.stringify(process.env.CHAINFLIP_BROKER_API),
+  BITTENSOR_API_KEY_1: JSON.stringify(process.env.BITTENSOR_API_KEY_1),
+  BITTENSOR_API_KEY_2: JSON.stringify(process.env.BITTENSOR_API_KEY_2),
+  BITTENSOR_API_KEY_3: JSON.stringify(process.env.BITTENSOR_API_KEY_3),
+  BITTENSOR_API_KEY_4: JSON.stringify(process.env.BITTENSOR_API_KEY_4),
+  BITTENSOR_API_KEY_5: JSON.stringify(process.env.BITTENSOR_API_KEY_5),
+  BITTENSOR_API_KEY_6: JSON.stringify(process.env.BITTENSOR_API_KEY_6),
+  BITTENSOR_API_KEY_7: JSON.stringify(process.env.BITTENSOR_API_KEY_7),
+  BITTENSOR_API_KEY_8: JSON.stringify(process.env.BITTENSOR_API_KEY_8),
+  BITTENSOR_API_KEY_9: JSON.stringify(process.env.BITTENSOR_API_KEY_9),
+  BITTENSOR_API_KEY_10: JSON.stringify(process.env.BITTENSOR_API_KEY_10),
+  SIMPLE_SWAP_API_KEY: JSON.stringify(process.env.SIMPLE_SWAP_API_KEY)
 };
 
 const createConfig = (entry, alias = {}, useSplitChunk = false) => {
@@ -169,7 +182,7 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
       }),
       extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx'],
       fallback: {
-        crypto: require.resolve('crypto-browserify'),
+        crypto: false,
         path: require.resolve('path-browserify'),
         stream: require.resolve('stream-browserify'),
         os: require.resolve('os-browserify/browser'),

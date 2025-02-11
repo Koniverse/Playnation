@@ -75,13 +75,13 @@ const Component: React.FC<Props> = ({ className }: Props) => {
     // Auto create account if no account
     accounts.length === 0 && (async () => {
       // Create default account
-      const seedPhrase = await createSeedV2(undefined, undefined, [EVM_ACCOUNT_TYPE]);
+      const seedPhrase = await createSeedV2(undefined, undefined, 'general');
       const accountName = telegramConnector.userInfo?.username || 'Account 1';
 
       await createAccountSuriV2({
         name: accountName,
-        suri: seedPhrase.seed,
-        types: [EVM_ACCOUNT_TYPE],
+        suri: seedPhrase.mnemonic,
+        type: EVM_ACCOUNT_TYPE,
         isAllowed: true
       });
 

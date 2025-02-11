@@ -13,3 +13,4 @@ export { default as OnChainProfileModal } from './OnChainProfileModal';
 export { default as ExistedAddressModal } from './ExistedAddressModal';
 export { default as ConfirmLinkingAccountModal } from './ConfirmLinkingAccountModal';
 export { default as NewAiChatModal } from './NewAiChatModal';
+export { default as AccountNameModal } from './AccountNameModal';
