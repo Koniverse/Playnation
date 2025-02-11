@@ -11,6 +11,7 @@ export const NEW_SEED_MODAL = 'new-seed-modal';
 export const ON_CHAIN_PROFILE_MODAL = 'on_chain_profile_modal';
 export const NEW_CHAT_AI_MODAL = 'new-chat-ai-modal';
 export const ADDRESS_EXISTED_MODAL = 'address-existed-modal';
+export const ALERT_CHANGE_ACCOUNT_CONNECT_MODAL = 'alert_change_account_connect_modal';
 export const CONFIRM_LINKING_ACCOUNT_MODAL = 'confirm-linking-account-modal';
 export const IMPORT_SEED_MODAL = 'import-seed-modal';
 export const DERIVE_ACCOUNT_MODAL = 'derive-account-modal';
