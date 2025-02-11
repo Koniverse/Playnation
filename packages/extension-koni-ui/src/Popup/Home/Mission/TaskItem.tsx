@@ -8,13 +8,14 @@ import { GamePoint } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { ShareLeaderboard, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { ALERT_CHANGE_ACCOUNT_CONNECT_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useConfirmModal, useNotification, useSelector, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { customFormatDate, noop, toDisplayNumber, validateSignature } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
-import { Button, Icon, Image, SwModalFuncProps } from '@subwallet/react-ui';
+import { Button, Icon, Image, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle, SmileySad } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -31,15 +32,15 @@ type Props = {
 
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
+const alertChangeAccountModalId = ALERT_CHANGE_ACCOUNT_CONNECT_MODAL;
 
 const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const notify = useNotification();
 
   const { connectWC, requireWC, waitingSigningModal: { close: closeWaiting, open: openWaiting } } = useContext(WalletConnectContext);
-
   const { wcAccount } = useSelector((state) => state.accountState);
-
+  const { activeModal } = useContext(ModalContext);
   const [, setAccount] = useState(apiSDK.account);
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
@@ -140,11 +141,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
 
         if (apiSDK.addressLinked) {
           if (apiSDK.addressLinked !== address) {
-            notify({
-              message: t('This address is different from the linked address'),
-              type: 'error',
-              duration: 8
-            });
+            activeModal(alertChangeAccountModalId);
 
             return null;
           } else {
@@ -206,7 +203,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         return null;
       }
     }
-  }, [closeWaiting, connectWC, notify, openWaiting, requireWC, t, wcAccount]);
+  }, [activeModal, closeWaiting, connectWC, notify, openWaiting, requireWC, t, wcAccount]);
 
   const { handleSimpleConfirmModal: handleNoNftFoundModalProps } = useConfirmModal(noNftFoundModalProps);
 

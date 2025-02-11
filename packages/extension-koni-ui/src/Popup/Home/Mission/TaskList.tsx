@@ -1,8 +1,9 @@
 // Copyright 2019-2022 @subwallet/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import AlertChangeAccountConnectModal from '@subwallet/extension-koni-ui/components/Modal/Account/AlertChangeAccountConnectModal';
 import { TaskCategory, TaskCategoryInfo } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useSelector, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import TaskItem from '@subwallet/extension-koni-ui/Popup/Home/Mission/TaskItem';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import React, { useMemo } from 'react';
@@ -18,6 +19,7 @@ type Props = ThemeProps & {
 
 const Component = ({ actionReloadPoint, className, openWidget, reloadTask, taskCategoryInfoMap, taskCategoryMap }: Props): React.ReactElement => {
   const { t } = useTranslation();
+  const { wcAccount } = useSelector((state) => state.accountState);
 
   const taskCategoryInfoList = useMemo(() => {
     const checkInCatId = Object.values(taskCategoryMap).find((tci) => tci.slug === 'check_in')?.id;
@@ -75,6 +77,11 @@ const Component = ({ actionReloadPoint, className, openWidget, reloadTask, taskC
           )
         ))
       }
+      { wcAccount?.address && (
+        <AlertChangeAccountConnectModal
+          addressConnected={wcAccount.address}
+        />
+      )}
     </div>
   );
 };

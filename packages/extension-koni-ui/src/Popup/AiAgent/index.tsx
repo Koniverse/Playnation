@@ -2,21 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
-import { ExtrinsicStatus, RequestTransfer } from '@subwallet/extension-base/background/KoniTypes';
+import { ExtrinsicStatus } from '@subwallet/extension-base/background/KoniTypes';
 import { SWTransactionBrief, SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import { getExplorerLink } from '@subwallet/extension-base/services/transaction-service/utils';
 import { WC_DEFAULT_CHAIN_MAINNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { RequestTransfer } from '@subwallet/extension-base/types';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { GameAccountAvatar, Layout } from '@subwallet/extension-koni-ui/components';
+import AlertChangeAccountConnectModal from '@subwallet/extension-koni-ui/components/Modal/Account/AlertChangeAccountConnectModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, IpAssetParams } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { ALERT_CHANGE_ACCOUNT_CONNECT_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useNotification, useSelector, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { makeTransfer, subscribeTransactionById, wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { AiTransactionData, noop, transformAiMessageData, validateSignature } from '@subwallet/extension-koni-ui/utils';
+import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { cloneDeep } from 'lodash';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -50,6 +54,8 @@ interface AiTransactionInfo extends AiTransactionData {
   transactionId?: string;
 }
 
+const alertChangeAccountModalId = ALERT_CHANGE_ACCOUNT_CONNECT_MODAL;
+
 const Component = (props: Props): React.ReactElement => {
   const { className } = props;
   const notify = useNotification();
@@ -58,7 +64,7 @@ const Component = (props: Props): React.ReactElement => {
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
 
   const chainInfoMap = useSelector((state: RootState) => state.chainStore.chainInfoMap);
-
+  const { activeModal } = useContext(ModalContext);
   const { goBack } = useDefaultNavigate();
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [pendingMessages, setPendingMessages] = useState<MessageType[]>([]);
@@ -787,11 +793,7 @@ const Component = (props: Props): React.ReactElement => {
 
         if (apiSDK.addressLinked) {
           if (apiSDK.addressLinked !== address) {
-            notify({
-              message: t('This address is different from the linked address'),
-              type: 'error',
-              duration: 8
-            });
+            activeModal(alertChangeAccountModalId);
           }
         } else {
           apiSDK.setAddressLinking(address);
@@ -1008,6 +1010,12 @@ const Component = (props: Props): React.ReactElement => {
         onInputChange={setUserInput}
         onSubmit={handleSubmit}
       />
+
+      { wcAccount?.address && (
+        <AlertChangeAccountConnectModal
+          addressConnected={wcAccount.address}
+        />
+      )}
     </Layout.WithSubHeaderOnly>
   );
 };
