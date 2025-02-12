@@ -18,6 +18,7 @@ import { createPromiseHandler, PromiseHandler } from '@subwallet/extension-base/
 import subwalletApiSdk from '@subwallet/subwallet-api-sdk';
 import { BehaviorSubject } from 'rxjs';
 
+import { PiperXSwapHandler } from './handler/piperx';
 import { SimpleSwapHandler } from './handler/simpleswap-handler';
 import { UniswapHandler } from './handler/uniswap-handler';
 
@@ -44,24 +45,48 @@ export class SwapService implements ServiceWithProcessInterface, StoppableServic
     this.chainService = state.chainService;
   }
 
-  private async askProvidersForQuote (request: SwapRequest) {
+  private async askProvidersForQuote (request: SwapRequest): Promise<QuoteAskResponse[]> {
     const availableQuotes: QuoteAskResponse[] = [];
+    const swappingSrcChain = this.chainService.getAssetBySlug(request.pair.from).originChain;
 
-    const quotes = await subwalletApiSdk.swapApi?.fetchSwapQuoteData(request);
+    await Promise.all(Object.values(this.handlers).map(async (handler) => {
 
-    if (Array.isArray(quotes)) {
-      quotes.forEach((quoteData) => {
-        if (!(quoteData.quote && 'errorClass' in quoteData.quote)) {
-          availableQuotes.push({ quote: quoteData.quote as SwapQuote | undefined });
-        } else {
-          availableQuotes.push({
-            error: new SwapError(quoteData.quote.errorType as SwapErrorType, quoteData.quote.message)
-          });
-        }
-      });
-    }
+      // temporary solution to reduce number of requests to providers, will work as long as there's only 1 provider for 1 chain
+      if (!_isChainSupportedByProvider(handler.providerSlug, swappingSrcChain)) {
+        return;
+      }
 
-    return availableQuotes;
+      if (handler.init && handler.isReady === false) {
+        await handler.init();
+      }
+    // const quotes = await subwalletApiSdk.swapApi?.fetchSwapQuoteData(request);
+
+      const quote = await handler.getSwapQuote(request);
+
+      if (!(quote instanceof SwapError)) { // todo: can do better
+        availableQuotes.push({
+          quote
+        });
+      } else {
+        availableQuotes.push({
+          error: quote
+        });
+      }
+    }));
+
+    // if (Array.isArray(quotes)) {
+    //   quotes.forEach((quoteData) => {
+    //     if (!(quoteData.quote && 'errorClass' in quoteData.quote)) {
+    //       availableQuotes.push({ quote: quoteData.quote as SwapQuote | undefined });
+    //     } else {
+    //       availableQuotes.push({
+    //         error: new SwapError(quoteData.quote.errorType as SwapErrorType, quoteData.quote.message)
+    //       });
+    //     }
+    //   });
+    // }
+
+    return availableQuotes; // todo: need to propagate error for further handling
   }
 
   private getDefaultProcess (params: OptimalSwapPathParams): CommonOptimalPath {
@@ -179,6 +204,10 @@ export class SwapService implements ServiceWithProcessInterface, StoppableServic
         case SwapProviderId.UNISWAP:
           this.handlers[providerId] = new UniswapHandler(this.chainService, this.state.balanceService, this.state.requestService);
           break;
+        case SwapProviderId.PIPERX:
+          this.handlers[providerId] = new PiperXSwapHandler(this.chainService, this.state.balanceService);
+          break;
+
         default:
           throw new Error('Unsupported provider');
       }

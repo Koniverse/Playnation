@@ -69,7 +69,8 @@ export enum SwapProviderId {
   KUSAMA_ASSET_HUB = 'KUSAMA_ASSET_HUB',
   ROCOCO_ASSET_HUB = 'ROCOCO_ASSET_HUB',
   SIMPLE_SWAP = 'SIMPLE_SWAP',
-  UNISWAP = 'UNISWAP'
+  UNISWAP = 'UNISWAP',
+  PIPERX = 'PIPERX'
 }
 
 export const _SUPPORTED_SWAP_PROVIDERS: SwapProviderId[] = [
@@ -80,6 +81,7 @@ export const _SUPPORTED_SWAP_PROVIDERS: SwapProviderId[] = [
   // SwapProviderId.ROCOCO_ASSET_HUB,
   // SwapProviderId.SIMPLE_SWAP,
   // SwapProviderId.UNISWAP
+  SwapProviderId.PIPERX
 ];
 
 export interface SwapProvider {
@@ -148,6 +150,10 @@ export interface SimpleSwapValidationMetadata{
   chain: _ChainInfo;
 }
 
+export interface PiperXValidationMetadata{
+  chain: _ChainInfo;
+}
+
 export interface QuoteAskResponse {
   quote?: SwapQuote;
   error?: SwapError;
@@ -200,7 +206,7 @@ export interface OptimalSwapPathParams {
 
 export interface SwapEarlyValidation {
   error?: SwapErrorType;
-  metadata?: ChainflipPreValidationMetadata | HydradxPreValidationMetadata | AssetHubPreValidationMetadata;
+  metadata?: ChainflipPreValidationMetadata | HydradxPreValidationMetadata | AssetHubPreValidationMetadata | PiperXValidationMetadata;
 }
 
 export interface AssetHubSwapEarlyValidation extends SwapEarlyValidation {
