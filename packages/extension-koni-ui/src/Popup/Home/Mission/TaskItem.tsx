@@ -8,9 +8,10 @@ import { GamePoint } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { ShareLeaderboard, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { ALERT_CHANGE_ACCOUNT_CONNECT_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { ALERT_CHANGE_ACCOUNT_CONNECT_MODAL, COMPLETED_CONNECT_WALLET } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useConfirmModal, useNotification, useSelector, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useLocalStorage } from '@subwallet/extension-koni-ui/hooks/common/useLocalStorage';
 import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { customFormatDate, noop, toDisplayNumber, validateSignature } from '@subwallet/extension-koni-ui/utils';
@@ -46,6 +47,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
   const { t } = useTranslation();
   const [completed, setCompleted] = useState(!!task.completedAt);
   const { token } = useTheme() as Theme;
+  const [completedFullStepConnectAccount, setCompletedFullStepConnectAccount] = useLocalStorage<boolean>(COMPLETED_CONNECT_WALLET, true);
 
   const [checking, setChecking] = useState(task && task.airlyftType && !completed);
 
@@ -115,10 +117,14 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
   }), [className, t, token.colorIconHover]);
 
   const getWcAddress = useCallback(async (): Promise<string | null> => {
-    if (wcAccount && isSameAddress(wcAccount.address, apiSDK.addressLinked || '')) {
+    if (wcAccount && isSameAddress(wcAccount.address, apiSDK.addressLinked || '') && completedFullStepConnectAccount) {
       return wcAccount.address;
     } else {
       try {
+        if (apiSDK.addressLinked) {
+          setCompletedFullStepConnectAccount(false);
+        }
+
         await requireWC();
         const address = await connectWC();
 
@@ -140,6 +146,8 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         closeWaiting();
 
         if (apiSDK.addressLinked) {
+          localStorage.setItem(COMPLETED_CONNECT_WALLET, 'true');
+
           if (apiSDK.addressLinked !== address) {
             activeModal(alertChangeAccountModalId);
 
@@ -203,7 +211,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         return null;
       }
     }
-  }, [activeModal, closeWaiting, connectWC, notify, openWaiting, requireWC, t, wcAccount]);
+  }, [activeModal, closeWaiting, completedFullStepConnectAccount, connectWC, notify, openWaiting, requireWC, setCompletedFullStepConnectAccount, t, wcAccount]);
 
   const { handleSimpleConfirmModal: handleNoNftFoundModalProps } = useConfirmModal(noNftFoundModalProps);
 

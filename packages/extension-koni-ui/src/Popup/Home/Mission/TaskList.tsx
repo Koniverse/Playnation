@@ -78,9 +78,7 @@ const Component = ({ actionReloadPoint, className, openWidget, reloadTask, taskC
         ))
       }
       { wcAccount?.address && (
-        <AlertChangeAccountConnectModal
-          addressConnected={wcAccount.address}
-        />
+        <AlertChangeAccountConnectModal />
       )}
     </div>
   );
