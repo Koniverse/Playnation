@@ -50,7 +50,6 @@ export class SwapService implements ServiceWithProcessInterface, StoppableServic
     const swappingSrcChain = this.chainService.getAssetBySlug(request.pair.from).originChain;
 
     await Promise.all(Object.values(this.handlers).map(async (handler) => {
-
       // temporary solution to reduce number of requests to providers, will work as long as there's only 1 provider for 1 chain
       if (!_isChainSupportedByProvider(handler.providerSlug, swappingSrcChain)) {
         return;

@@ -8,13 +8,13 @@ import { _getPiperXEarlyValidationError } from '@subwallet/extension-base/core/l
 import { BalanceService } from '@subwallet/extension-base/services/balance-service';
 import { ChainService } from '@subwallet/extension-base/services/chain-service';
 import { _getChainNativeTokenSlug, _getContractAddressOfToken, _isNativeToken } from '@subwallet/extension-base/services/chain-service/utils';
-import { BaseStepDetail, BasicTxErrorType, CommonFeeComponent, CommonOptimalPath, CommonStepFeeInfo, CommonStepType, OptimalSwapPathParams, PiperXValidationMetadata, SwapBaseTxData, SwapEarlyValidation, SwapErrorType, SwapFeeType, SwapProviderId, SwapQuote, SwapRequest, SwapStepType, SwapSubmitParams, SwapSubmitStepData, ValidateSwapProcessParams } from '@subwallet/extension-base/types';
+import { BaseStepDetail, BasicTxErrorType, CommonFeeComponent, CommonOptimalPath, CommonStepFeeInfo, CommonStepType, HandleYieldStepData, OptimalSwapPathParams, PiperXValidationMetadata, SwapBaseTxData, SwapEarlyValidation, SwapErrorType, SwapFeeType, SwapProviderId, SwapQuote, SwapRequest, SwapStepType, SwapSubmitParams, SwapSubmitStepData, ValidateSwapProcessParams } from '@subwallet/extension-base/types';
 import { TransactionConfig } from 'web3-core';
 
 import { calculateSwapRate, SWAP_QUOTE_TIMEOUT_MAP } from '../../utils';
 import { SwapBaseHandler, SwapBaseInterface } from '../base-handler';
 import { WIP_ADDRESS } from './constant';
-import { v2RoutingExactInput, v2Swap } from './core';
+import { routingExactInput, swap, v2RouterTokenApproval } from './core';
 
 export class PiperXSwapHandler implements SwapBaseInterface {
   private swapBaseHandler: SwapBaseHandler;
@@ -99,9 +99,10 @@ export class PiperXSwapHandler implements SwapBaseInterface {
     const fromChainNativeTokenSlug = _getChainNativeTokenSlug(fromChain);
     const evmApi = this.chainService.getEvmApi(fromAsset.originChain);
 
+    const fromAmount = BigInt(request.fromAmount);
     const fromContract = _getContractAddressOfToken(fromAsset) || WIP_ADDRESS;
     const toContract = _getContractAddressOfToken(toAsset) || WIP_ADDRESS;
-    const router = await v2RoutingExactInput(fromContract, toContract, BigInt(request.fromAmount), evmApi);
+    const router = await routingExactInput(fromContract, toContract, fromAmount, request.address, evmApi);
 
     const defaultFeeToken = _isNativeToken(fromAsset) ? fromAsset.slug : fromChainNativeTokenSlug;
     const toAmount = router.maxAmountOut.toString();
@@ -137,6 +138,7 @@ export class PiperXSwapHandler implements SwapBaseInterface {
 
   generateOptimalProcess (params: OptimalSwapPathParams): Promise<CommonOptimalPath> {
     return this.swapBaseHandler.generateOptimalProcess(params, [
+      this.getApprovalStep,
       this.getSubmitStep
     ]);
   }
@@ -146,6 +148,19 @@ export class PiperXSwapHandler implements SwapBaseInterface {
       const submitStep = {
         name: 'Swap',
         type: SwapStepType.SWAP
+      };
+
+      return Promise.resolve([submitStep, params.selectedQuote.feeInfo]);
+    }
+
+    return Promise.resolve(undefined);
+  }
+
+  async getApprovalStep (params: OptimalSwapPathParams): Promise<[BaseStepDetail, CommonStepFeeInfo] | undefined> {
+    if (params.selectedQuote) {
+      const submitStep = {
+        name: 'Approve token',
+        type: CommonStepType.TOKEN_APPROVAL
       };
 
       return Promise.resolve([submitStep, params.selectedQuote.feeInfo]);
@@ -170,7 +185,7 @@ export class PiperXSwapHandler implements SwapBaseInterface {
           case CommonStepType.DEFAULT:
             return Promise.resolve([]);
           case CommonStepType.TOKEN_APPROVAL:
-            return Promise.reject(new TransactionError(BasicTxErrorType.UNSUPPORTED));
+            return Promise.resolve([]);
           default:
             return this.swapBaseHandler.validateSwapStep(params, isXcmOk, index);
         }
@@ -195,11 +210,37 @@ export class PiperXSwapHandler implements SwapBaseInterface {
     switch (type) {
       case CommonStepType.DEFAULT:
         return Promise.reject(new TransactionError(BasicTxErrorType.UNSUPPORTED));
+      case CommonStepType.TOKEN_APPROVAL:
+        return this.tokenApproveSpending(params);
       case SwapStepType.SWAP:
         return this.handleSubmitStep(params);
       default:
         return this.handleSubmitStep(params);
     }
+  }
+
+  private async tokenApproveSpending (params: SwapSubmitParams): Promise<HandleYieldStepData> {
+    const fromAsset = this.chainService.getAssetBySlug(params.quote.pair.from);
+    const fromContract = _getContractAddressOfToken(fromAsset) || WIP_ADDRESS;
+    const evmApi = this.chainService.getEvmApi(fromAsset.originChain);
+    const transactionConfig = await v2RouterTokenApproval(fromContract, BigInt(params.quote.fromAmount), params.address, evmApi);
+    const chain = fromAsset.originChain;
+
+    const _data = {
+      contractAddress: fromContract,
+      amount: params.quote.fromAmount,
+      from: params.address,
+      chain: chain
+    };
+
+    return Promise.resolve({
+      txChain: chain,
+      extrinsicType: ExtrinsicType.TOKEN_SPENDING_APPROVAL,
+      extrinsic: transactionConfig,
+      txData: _data,
+      transferNativeAmount: '0',
+      chainType: ChainType.EVM
+    });
   }
 
   public async handleSubmitStep (params: SwapSubmitParams): Promise<SwapSubmitStepData> {
@@ -223,7 +264,7 @@ export class PiperXSwapHandler implements SwapBaseInterface {
     const slippageBigInt = BigInt(Math.floor(params.slippage * 10000));
     const minReceive = (toAmountBigInt * (10000n - slippageBigInt)) / (10000n * BigInt(scaleFactor));
 
-    const extrinsic: TransactionConfig = await v2Swap(fromAmount, minReceive, params.quote.metadata as string[], params.address, BigInt(3000000000), evmApi);
+    const extrinsic: TransactionConfig = await swap(fromAmount, minReceive, params.quote.metadata as string[], params.address, BigInt(3000000000), evmApi);
 
     return {
       txChain: fromAsset.originChain,
