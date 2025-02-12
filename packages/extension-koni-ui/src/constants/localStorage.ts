@@ -40,5 +40,5 @@ export const SHOW_APP_POPUP = 'static.show-app-popup';
 export const LATEST_SESSION = 'general.latest-session';
 export const UPGRADE_FIREFOX_VERSION = 'general.updated-version-firefox';
 export const VISIT_INVITATION_SCREEN_FLAG = 'general.visit-invitation-screen-flag';
-
+export const COMPLETED_CONNECT_WALLET = 'general.completed-connect-wallet';
 export const ADDRESS_INPUT_AUTO_FORMAT_VALUE = 'component.address-input.auto-format-value'; // value: boolean

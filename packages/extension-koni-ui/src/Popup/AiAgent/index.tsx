@@ -13,9 +13,10 @@ import AlertChangeAccountConnectModal from '@subwallet/extension-koni-ui/compone
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, IpAssetParams } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { ALERT_CHANGE_ACCOUNT_CONNECT_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { ALERT_CHANGE_ACCOUNT_CONNECT_MODAL, COMPLETED_CONNECT_WALLET } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useNotification, useSelector, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useLocalStorage } from '@subwallet/extension-koni-ui/hooks/common/useLocalStorage';
 import { makeTransfer, subscribeTransactionById, wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
@@ -76,6 +77,7 @@ const Component = (props: Props): React.ReactElement => {
   const [addressLinked, setAddressLinked] = useState<string | undefined>(apiSDK.addressLinked);
   const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false);
   const { connectWC, requireWC, waitingSigningModal: { close: closeWaiting, open: openWaiting } } = useContext(WalletConnectContext);
+  const [completedFullStepConnectAccount, setCompletedFullStepConnectAccount] = useLocalStorage<boolean>(COMPLETED_CONNECT_WALLET, true);
 
   const [leadEmail, setLeadEmail] = useState('');
   const [, setIsLeadSaved] = useState(false);
@@ -770,6 +772,10 @@ const Component = (props: Props): React.ReactElement => {
   const onClickConnectWallet = useCallback(() => {
     (async () => {
       try {
+        if (apiSDK.addressLinked) {
+          setCompletedFullStepConnectAccount(false);
+        }
+
         await requireWC();
 
         addPendingMessage({ message: 'It might take a little while for the WalletConnect modal to pop up. Please be patient...', type: 'apiMessage' });
@@ -794,6 +800,8 @@ const Component = (props: Props): React.ReactElement => {
         if (apiSDK.addressLinked) {
           if (apiSDK.addressLinked !== address) {
             activeModal(alertChangeAccountModalId);
+          } else {
+            setCompletedFullStepConnectAccount(true);
           }
         } else {
           apiSDK.setAddressLinking(address);
@@ -828,7 +836,7 @@ const Component = (props: Props): React.ReactElement => {
         }
       }
     })().catch(console.error);
-  }, [addPendingMessage, closeWaiting, connectWC, notify, openWaiting, requireWC, t]);
+  }, [activeModal, addPendingMessage, closeWaiting, connectWC, notify, openWaiting, requireWC, setCompletedFullStepConnectAccount, t]);
 
   const welcomeMessagesNode = useMemo(() => {
     const userName = `${account?.info?.firstName || ''} ${account?.info?.lastName || ''}`.trim();
@@ -911,7 +919,7 @@ const Component = (props: Props): React.ReactElement => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endStreamTrigger]);
 
-  const isAddressLinked = !!wcAccount?.address && isSameAddress(wcAccount.address, addressLinked || '');
+  const isAddressLinked = !!wcAccount?.address && isSameAddress(wcAccount.address, addressLinked || '') && completedFullStepConnectAccount;
 
   useEffect(() => {
     if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
@@ -1011,10 +1019,8 @@ const Component = (props: Props): React.ReactElement => {
         onSubmit={handleSubmit}
       />
 
-      { wcAccount?.address && (
-        <AlertChangeAccountConnectModal
-          addressConnected={wcAccount.address}
-        />
+      { addressLinked && (
+        <AlertChangeAccountConnectModal />
       )}
     </Layout.WithSubHeaderOnly>
   );

@@ -8,6 +8,7 @@ import NFTListModal from '@subwallet/extension-koni-ui/components/Modal/NFTListM
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, IntegratedProfileResult } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { COMPLETED_CONNECT_WALLET } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useNotification, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
@@ -104,6 +105,7 @@ const Component: React.FC<Props> = (props: Props) => {
           }
 
           apiSDK.setAddressLinking(address);
+          localStorage.removeItem(COMPLETED_CONNECT_WALLET);
           closeWaiting();
         } catch (e) {
           closeWaiting();

@@ -1,6 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { ALERT_CHANGE_ACCOUNT_CONNECT_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useSelector, useTranslation } from '@subwallet/extension-koni-ui/hooks';
@@ -9,19 +10,19 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toShort } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CheckCircle, SmileySad, XCircle } from 'phosphor-react';
-import React, { useCallback, useContext, useMemo } from 'react';
+import { Plugs, SmileySad } from 'phosphor-react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 
-type Props = ThemeProps & {
-  addressConnected: string;
-}
+type Props = ThemeProps
 
 const modalId = ALERT_CHANGE_ACCOUNT_CONNECT_MODAL;
+const apiSDK = BookaSdk.instance;
 
-function Component ({ addressConnected, className }: Props): React.ReactElement<Props> {
+function Component ({ className }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const { wcAccount } = useSelector((state) => state.accountState);
+  const [addressLinked, setAddressLinked] = useState<string | undefined>(apiSDK.addressLinked);
   const { disconnectWithoutConfirmModal } = useContext(WalletConnectContext);
   const { inactiveModal } = useContext(ModalContext);
   const { token } = useTheme() as Theme;
@@ -32,37 +33,32 @@ function Component ({ addressConnected, className }: Props): React.ReactElement<
     }).catch(console.error);
   }, [disconnectWithoutConfirmModal, inactiveModal, wcAccount]);
 
+  useEffect(() => {
+    const subscription = apiSDK.subscribeAddressLinked().subscribe((address) => {
+      setAddressLinked(address);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   const footerModal = useMemo(() => {
     return (
-      <>
-        <Button
-          block={true}
-          icon={(
-            <Icon
-              phosphorIcon={XCircle}
-              weight='fill'
-            />
-          )}
-          onClick={onCancel}
-          schema={'secondary'}
-          shape={'round'}
-        >
-          {t('Cancel')}
-        </Button>
-        <Button
-          block={true}
-          icon={(
-            <Icon
-              phosphorIcon={CheckCircle}
-            />
-          )}
-          onClick={onCancel}
-          shape={'round'}
-          size={'sm'}
-        >
-          {t('Change account')}
-        </Button>
-      </>
+      <Button
+        block={true}
+        icon={(
+          <Icon
+            phosphorIcon={Plugs}
+            weight={'fill'}
+          />
+        )}
+        onClick={onCancel}
+        shape={'round'}
+        size={'sm'}
+      >
+        {t('Disconnect current account')}
+      </Button>
     );
   }, [onCancel, t]);
 
@@ -90,7 +86,7 @@ function Component ({ addressConnected, className }: Props): React.ReactElement<
           <div
             className={'__sub-title-modal'}
           >
-            {t(`Your Telegram ID is linked to account ${toShort(addressConnected)}. Connect to this account and try again`)}
+            {t(`Your Telegram ID is linked to account ${toShort(addressLinked || '')}. Disconnect current account and try again with account ${toShort(addressLinked || '')}`)}
           </div>
         </div>
       </div>
