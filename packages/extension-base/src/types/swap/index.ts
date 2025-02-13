@@ -70,7 +70,8 @@ export enum SwapProviderId {
   ROCOCO_ASSET_HUB = 'ROCOCO_ASSET_HUB',
   SIMPLE_SWAP = 'SIMPLE_SWAP',
   UNISWAP = 'UNISWAP',
-  PIPERX = 'PIPERX'
+  PIPERX_TESTNET= 'PIPERX_TESTNET',
+  PIPERX_MAINNET = 'PIPERX_MAINNET'
 }
 
 export const _SUPPORTED_SWAP_PROVIDERS: SwapProviderId[] = [
@@ -81,7 +82,8 @@ export const _SUPPORTED_SWAP_PROVIDERS: SwapProviderId[] = [
   // SwapProviderId.ROCOCO_ASSET_HUB,
   // SwapProviderId.SIMPLE_SWAP,
   // SwapProviderId.UNISWAP
-  SwapProviderId.PIPERX
+  SwapProviderId.PIPERX_TESTNET,
+  SwapProviderId.PIPERX_MAINNET
 ];
 
 export interface SwapProvider {

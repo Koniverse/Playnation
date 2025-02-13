@@ -203,8 +203,11 @@ export class SwapService implements ServiceWithProcessInterface, StoppableServic
         case SwapProviderId.UNISWAP:
           this.handlers[providerId] = new UniswapHandler(this.chainService, this.state.balanceService, this.state.requestService);
           break;
-        case SwapProviderId.PIPERX:
+        case SwapProviderId.PIPERX_TESTNET:
           this.handlers[providerId] = new PiperXSwapHandler(this.chainService, this.state.balanceService);
+          break;
+        case SwapProviderId.PIPERX_MAINNET:
+          this.handlers[providerId] = new PiperXSwapHandler(this.chainService, this.state.balanceService, false);
           break;
 
         default:
