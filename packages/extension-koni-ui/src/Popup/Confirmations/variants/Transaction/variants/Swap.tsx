@@ -202,7 +202,7 @@ const SwapTransactionConfirmation = styled(Component)<Props>(({ theme: { token }
       flex: '0 1 auto'
     },
     '.__quote-footer-label': {
-      color: token.colorTextTertiary,
+      color: token.colorTextLabel,
       fontSize: 12,
       fontWeight: token.bodyFontWeight,
       lineHeight: token.lineHeightSM
@@ -215,7 +215,7 @@ const SwapTransactionConfirmation = styled(Component)<Props>(({ theme: { token }
     },
     '.__recipient-item .__label': {
       fontSize: 14,
-      color: token.colorTextTertiary,
+      color: token.colorTextLabel,
       fontWeight: token.fontWeightStrong,
       lineHeight: token.lineHeight
     },
@@ -245,19 +245,19 @@ const SwapTransactionConfirmation = styled(Component)<Props>(({ theme: { token }
     },
     '.__quote-rate-confirm .__label': {
       fontSize: 14,
-      color: token.colorTextTertiary,
+      color: token.colorTextLabel,
       fontWeight: token.bodyFontWeight,
       lineHeight: token.lineHeight
     },
     '.__estimate-transaction-fee .__label': {
       fontSize: 14,
-      color: token.colorTextTertiary,
+      color: token.colorTextLabel,
       fontWeight: token.bodyFontWeight,
       lineHeight: token.lineHeight
     },
     '.-d-column .__label': {
       fontSize: 14,
-      color: token.colorTextTertiary,
+      color: token.colorTextLabel,
       fontWeight: token.bodyFontWeight,
       lineHeight: token.lineHeight
     }

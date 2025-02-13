@@ -591,9 +591,9 @@ export class BookaSdk {
     this.accountSubject.next(undefined);
 
     const syncData = {
-      address: '0xc78837DF431Df62043f4AB62B5e437F7394357A9',
-      referralCode: '',
-      initData: 'query_id=AAECPZ0AAwAAAAI9nQDBuYQ3&user=%7B%22id%22%3A6452755714%2C%22first_name%22%3A%22Crypto%F0%9F%90%BE%22%2C%22last_name%22%3A%22DUCK%F0%9F%90%A6%20SUI%22%2C%22username%22%3A%22HuntAirdrop1%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2F_1wISAyjpE9X4j6rTImQEBtMXMut6s8-3uY2ZKocAXMmLfRbY2_zga8EyjDXMvbF.svg%22%7D&auth_date=1739336915&signature=FPNuNOtXc_HSzZxfxWxLq61SVR44Rir1hiqtJryk_uDYgHo5AUqI5ziZfGTIEz4IM50SiGIUmOFE5r0PMTSSDQ&hash=f7e0ad6049220917579060e6bb2ff637e54c9222415d96bd69bc3377ceb07f78'
+      address,
+      referralCode,
+      initData
     };
 
     try {

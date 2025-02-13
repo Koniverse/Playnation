@@ -114,19 +114,18 @@ const SwapTransactionBlock = styled(Component)<Props>(({ theme: { token } }: Pro
       flex: 1
     },
     '.__quote-footer-label': {
-      color: token.colorTextTertiary,
+      color: token.colorTextLabel,
       fontSize: 12,
       fontWeight: token.bodyFontWeight,
       lineHeight: token.lineHeightSM
     },
     '.__amount-destination': {
-      color: token.colorTextDark4,
       fontSize: token.fontSizeLG,
       fontWeight: token.fontWeightStrong,
       lineHeight: token.lineHeightLG,
 
       '.ant-typography.ant-number-integer, .ant-typography.ant-number-decimal': {
-        color: `${token.colorTextDark4} !important`
+        color: `${token.colorTextDark2} !important`
       }
     },
     '&.swap-confirmation-container .__swap-route-container': {
