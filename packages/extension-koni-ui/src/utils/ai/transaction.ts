@@ -1,14 +1,45 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { RequestTransfer } from '@subwallet/extension-base/types';
+import { _parseAssetRefKey } from '@subwallet/extension-base/services/chain-service/utils';
+import { RequestTransfer, SwapRequest } from '@subwallet/extension-base/types';
 import { IpAssetParams } from '@subwallet/extension-koni-ui/connector/booka/types';
 import BigN from 'bignumber.js';
 
 export interface AiTransactionData {
-  type: 'transfer' | 'mint' | 'unknown';
+  type: 'transfer' | 'mint' | 'unknown' | 'swap';
   data?: any;
 }
+
+const USDT_STORY_TOKEN_SLUG = 'story_protocol-ERC20-USDT-0x674843C06FF83502ddb4D37c2E09C01cdA38cbc8';
+const USDC_STORY_TOKEN_SLUG = 'story_protocol-ERC20-USDC-0xF1815bd50389c46847f0Bda824eC8da914045D14';
+const PIP_TOKEN_SLUG = 'storyOdyssey_testnet-ERC20-PIP-0x6e990040Fd9b06F98eFb62A147201696941680b5';
+const IP_MAINNET_TOKEN_SLUG = 'story_protocol-NATIVE-IP';
+const IP_TESTNET_TOKEN_SLUG = 'storyOdyssey_testnet-NATIVE-IP';
+
+const TOKEN_SWAP_TESTNET = [PIP_TOKEN_SLUG, IP_TESTNET_TOKEN_SLUG];
+
+export interface SwapAiResponse {
+  amount: number;
+  slippage_tolerance: string;
+  token_to_receive: string;
+  token_to_swap: string;
+}
+
+const getTokenSlugBySymbol = (symbol: string, isTestnet = false): string | undefined => {
+  switch (symbol) {
+    case 'USDT':
+      return USDT_STORY_TOKEN_SLUG;
+    case 'USDC':
+      return USDC_STORY_TOKEN_SLUG;
+    case 'PIP':
+      return PIP_TOKEN_SLUG;
+    case 'IP':
+      return isTestnet ? IP_TESTNET_TOKEN_SLUG : IP_MAINNET_TOKEN_SLUG;
+    default:
+      return undefined;
+  }
+};
 
 const transformTransferData = (message: string): AiTransactionData => {
   const defaultResult: AiTransactionData = {
@@ -44,6 +75,49 @@ const transformTransferData = (message: string): AiTransactionData => {
 
     return {
       type: 'transfer',
+      data
+    };
+  } catch (e) {
+    return defaultResult;
+  }
+};
+
+const transformSwapData = (message: string): AiTransactionData => {
+  const defaultResult: AiTransactionData = {
+    type: 'unknown'
+  };
+
+  const jsonMatch = message.match(/```json([\s\S]*?)```/)?.[1]?.trim();
+
+  if (!jsonMatch) {
+    return defaultResult;
+  }
+
+  try {
+    const jsonObject = JSON.parse(jsonMatch) as SwapAiResponse;
+
+    const tokenTo = getTokenSlugBySymbol(jsonObject?.token_to_receive);
+    const tokenFrom = getTokenSlugBySymbol(jsonObject?.token_to_swap, TOKEN_SWAP_TESTNET.includes(tokenTo || ''));
+    const amount = jsonObject?.amount;
+    const slippageTolerance = jsonObject?.slippage_tolerance;
+
+    if (!tokenFrom || !tokenTo || typeof amount === undefined || !slippageTolerance) {
+      return defaultResult;
+    }
+
+    const data: Omit<SwapRequest, 'address'> = {
+      pair: {
+        slug: _parseAssetRefKey(tokenFrom, tokenTo),
+        from: tokenFrom,
+        to: tokenTo
+      },
+      fromAmount: amount?.toString(),
+      slippage: (Number.parseInt(slippageTolerance)) / 100,
+      recipient: undefined
+    };
+
+    return {
+      type: 'swap',
       data
     };
   } catch (e) {
@@ -89,7 +163,7 @@ const transformMintData = (message: string): AiTransactionData => {
 };
 
 export const transformAiMessageData = (message: string): AiTransactionData => {
-  const isConfirmation = message.split('\n').some((line) => line.startsWith('## IP') && line.includes('confirmation'));
+  const isConfirmation = message.split('\n').some((line) => (line.startsWith('## IP') || line.startsWith('## Swap')) && line.includes('confirmation'));
 
   if (isConfirmation) {
     // is transfer
@@ -98,6 +172,8 @@ export const transformAiMessageData = (message: string): AiTransactionData => {
       // is minting
     } else if (message.includes('asset minting')) {
       return transformMintData(message);
+    } else if (message.includes('swap')) {
+      return transformSwapData(message);
     } else {
       return {
         type: 'unknown'

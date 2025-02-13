@@ -6,7 +6,7 @@ import { ExtrinsicStatus } from '@subwallet/extension-base/background/KoniTypes'
 import { SWTransactionBrief, SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import { getExplorerLink } from '@subwallet/extension-base/services/transaction-service/utils';
 import { WC_DEFAULT_CHAIN_MAINNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
-import { RequestTransfer } from '@subwallet/extension-base/types';
+import { RequestTransfer, SwapRequest } from '@subwallet/extension-base/types';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { GameAccountAvatar, Layout } from '@subwallet/extension-koni-ui/components';
 import AlertChangeAccountConnectModal from '@subwallet/extension-koni-ui/components/Modal/Account/AlertChangeAccountConnectModal';
@@ -18,6 +18,7 @@ import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/Wall
 import { useNotification, useSelector, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { useLocalStorage } from '@subwallet/extension-koni-ui/hooks/common/useLocalStorage';
 import { makeTransfer, subscribeTransactionById, wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
+import { handleSwapRequest, handleSwapStep } from '@subwallet/extension-koni-ui/messaging/transaction/swap';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { AiTransactionData, noop, transformAiMessageData, validateSignature } from '@subwallet/extension-koni-ui/utils';
@@ -56,6 +57,7 @@ interface AiTransactionInfo extends AiTransactionData {
 }
 
 const alertChangeAccountModalId = ALERT_CHANGE_ACCOUNT_CONNECT_MODAL;
+const TRANSACTION_NEED_CONNECT_ACCOUNT = ['transfer', 'swap'];
 
 const Component = (props: Props): React.ReactElement => {
   const { className } = props;
@@ -670,6 +672,104 @@ const Component = (props: Props): React.ReactElement => {
     return Promise.resolve(undefined);
   }, [addPendingMessage, getExplorerUrl, wcAccount]);
 
+  const onSubmitSwapTx = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
+    if (wcAccount) {
+      if (aiTransactionInfo.type === 'swap') {
+        submitTxRef.current = true;
+
+        // Handle message when create transaction
+        addPendingMessage({
+          message: 'Your swap is being processed...', type: 'apiMessage'
+        });
+      }
+
+      let submitFunc: Promise<SWTransactionResponse> | undefined;
+
+      if (aiTransactionInfo.type === 'swap') {
+        const request: SwapRequest = {
+          ...aiTransactionInfo.data as SwapRequest,
+          address: wcAccount.address
+        };
+
+        console.log(request);
+
+        const swapRequestResult = await handleSwapRequest(request);
+
+        if (swapRequestResult.quote.optimalQuote) {
+          console.log('swapRequestResult', swapRequestResult);
+          addPendingMessage({ message: 'your transaction is in processing', type: 'apiMessage' });
+          submitFunc = handleSwapStep({
+            process: swapRequestResult.process,
+            currentStep: swapRequestResult.process.steps.length - 1,
+            quote: swapRequestResult.quote.optimalQuote,
+            address: wcAccount.address,
+            slippage: request.slippage
+          });
+        }
+      }
+
+      if (submitFunc) {
+        submitFunc
+          .then((rs) => {
+            if (rs.errors.length) {
+              console.log('Tx error', rs.errors);
+
+              // Handle error
+              if (rs.errors[0].message.toLowerCase().includes('rejected by user')) {
+                addPendingMessage({ message: 'Hmm, seems like you cancelled the transaction. Let me know if you want to resume it!', type: 'apiMessage' });
+              }
+
+              return;
+            }
+
+            if (rs.id) {
+              const handleResult = (data: SWTransactionBrief) => {
+                let messageToResponse: string | undefined;
+
+                if (data.status === ExtrinsicStatus.SUBMITTING) {
+                  // Handle on submit
+                  messageToResponse = 'Your transaction has been submitted! Let’s give it a moment for the network to process...';
+                } else if (data.status === ExtrinsicStatus.SUCCESS) {
+                  // Handle on success
+                  const explorerUrl = getExplorerUrl(data.extrinsicHash);
+
+                  messageToResponse = `All done! Your transaction is completed, and here’s the link for you to view on the explorer: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>`;
+                } else if (data.status === ExtrinsicStatus.FAIL) {
+                  const explorerUrl = getExplorerUrl(data.extrinsicHash);
+
+                  messageToResponse = `Oops, the transaction has failed. You can view it on the explorer: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>. Would you like to try again?`;
+                } else if (data.status === ExtrinsicStatus.UNKNOWN) {
+                  messageToResponse = 'Hmmm, there seems to be some unknown errors that get in the way. I’d suggest you come back at a later time and try again!';
+                } else if (data.status === ExtrinsicStatus.TIMEOUT) {
+                  const explorerUrl = getExplorerUrl(data.extrinsicHash);
+
+                  messageToResponse = `Uh oh, the transaction has timed out. This is due to the transaction taking much longer than expected. You can check your address on the explorer to see if the transaction is completed or not: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>`;
+                }
+
+                if (messageToResponse) {
+                  addPendingMessage({ message: messageToResponse, type: 'apiMessage' });
+                }
+              };
+
+              subscribeTransactionById({ id: rs.id }, handleResult)
+                .then(handleResult)
+                .catch(console.error);
+            }
+          })
+          .catch((err: Error) => {
+            // Handle error
+            addPendingMessage({ message: `Oops, the transaction has failed. Would you like to try again?<pre>${err.message}</pre>`, type: 'apiMessage' });
+            console.log('Tx error', err);
+          })
+          .finally(() => {
+            submitTxRef.current = false;
+          });
+      }
+    }
+
+    return Promise.resolve(undefined);
+  }, [addPendingMessage, getExplorerUrl, wcAccount]);
+
   const onSubmitMintTx = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
     if (aiTransactionInfo.type !== 'mint') {
       return Promise.resolve(undefined);
@@ -700,6 +800,20 @@ const Component = (props: Props): React.ReactElement => {
 
     return Promise.resolve(undefined);
   }, [addPendingMessage]);
+
+  const handleTransactionAI = useCallback(async (aiTransactionInfo: AiTransactionInfo) => {
+    if (!aiTransactionInfo) {
+      return;
+    }
+
+    if (aiTransactionInfo.type === 'transfer') {
+      await onSubmitTransferTx(aiTransactionInfo);
+    }
+
+    if (aiTransactionInfo.type === 'swap') {
+      await onSubmitSwapTx(aiTransactionInfo);
+    }
+  }, [onSubmitSwapTx, onSubmitTransferTx]);
 
   useEffect(() => {
     const chatflowData = getLocalStorageChatflow(props.chatflowid);
@@ -903,6 +1017,7 @@ const Component = (props: Props): React.ReactElement => {
           if (lastMessage.type === 'apiMessage') {
             const converted = transformAiMessageData(lastMessage.message);
 
+            console.log('converted', converted);
             setAiTransactionInfo({ ...converted, aiMessageId: lastMessage.messageId });
           } else {
             setAiTransactionInfo(undefined);
@@ -925,9 +1040,9 @@ const Component = (props: Props): React.ReactElement => {
     if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
       clearCurrentAiTransactionInfo();
 
-      if (aiTransactionInfo.type === 'transfer') {
+      if (TRANSACTION_NEED_CONNECT_ACCOUNT.includes(aiTransactionInfo.type)) {
         if (isAddressLinked) {
-          onSubmitTransferTx(aiTransactionInfo).catch(console.error);
+          handleTransactionAI(aiTransactionInfo).catch(console.error);
         } else {
           addPendingMessage({ message: 'Alright, let\'s first connect your wallet and then we can proceed with the transaction', type: 'apiMessage', appTriggeredAction: 'requestUserConnectWallet' });
           setPendingTransferTransactionInfo(aiTransactionInfo);
@@ -936,14 +1051,15 @@ const Component = (props: Props): React.ReactElement => {
         onSubmitMintTx(aiTransactionInfo).catch(console.error);
       }
     }
-  }, [addPendingMessage, aiTransactionInfo, clearCurrentAiTransactionInfo, onSubmitMintTx, onSubmitTransferTx, startChat, isAddressLinked]);
+  }, [addPendingMessage, aiTransactionInfo, clearCurrentAiTransactionInfo, handleTransactionAI, isAddressLinked, onSubmitMintTx, startChat]);
 
   useEffect(() => {
     if (isAddressLinked && pendingTransferTransactionInfo) {
       setPendingTransferTransactionInfo(undefined);
-      onSubmitTransferTx(pendingTransferTransactionInfo).catch(console.error);
+
+      handleTransactionAI(pendingTransferTransactionInfo).catch(console.error);
     }
-  }, [isAddressLinked, onSubmitTransferTx, pendingTransferTransactionInfo]);
+  }, [handleTransactionAI, isAddressLinked, pendingTransferTransactionInfo]);
 
   // if not loading and have pendingMessages, update messages to show
   useEffect(() => {
@@ -1027,7 +1143,7 @@ const Component = (props: Props): React.ReactElement => {
 };
 
 const WrapperComponent = (props: ThemeProps) => {
-  const chatflowid = '21ebace0-f17c-41a3-a7ef-93715ba99880';
+  const chatflowid = 'dfcf9c3f-0f99-4bb9-8872-cac2329a5393';
 
   const chatId = useMemo(() => {
     let result = getCurrentChatId(chatflowid);
@@ -1042,7 +1158,7 @@ const WrapperComponent = (props: ThemeProps) => {
 
   return (
     <Component
-      apiHost='https://agent-api.koni.studio'
+      apiHost='https://flowise-demo.koni.studio'
       chatId={chatId}
       chatflowid={chatflowid}
       {...props}
