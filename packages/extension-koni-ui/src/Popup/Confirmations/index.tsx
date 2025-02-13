@@ -299,11 +299,12 @@ const Confirmations = styled(Component)<Props>(({ theme: { token } }: ThemeProps
   display: 'flex',
   flexDirection: 'column',
   height: '100%',
+  backgroundColor: token.colorBgSecondary,
+  borderRadius: 24,
 
   '.confirmation-header': {
     paddingTop: token.sizeXS,
     paddingBottom: token.sizeXS,
-    backgroundColor: 'transparent',
     marginBottom: token.marginXS,
 
     h4: {

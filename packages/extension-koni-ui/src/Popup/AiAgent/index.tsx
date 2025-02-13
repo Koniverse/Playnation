@@ -21,7 +21,7 @@ import { makeTransfer, subscribeTransactionById, wcSignMessageRequest } from '@s
 import { handleSwapRequest, handleSwapStep } from '@subwallet/extension-koni-ui/messaging/transaction/swap';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { AiTransactionData, noop, transformAiMessageData, validateSignature } from '@subwallet/extension-koni-ui/utils';
+import { AiTransactionData, noop, SwapAiRequest, transformAiMessageData, validateSignature } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { cloneDeep } from 'lodash';
@@ -400,8 +400,6 @@ const Component = (props: Props): React.ReactElement => {
       async onmessage (ev) {
         const payload = JSON.parse(ev.data);
 
-        console.log('---Payload from Flowise', payload);
-
         switch (payload.event) {
           case 'start':
             setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }]);
@@ -579,8 +577,12 @@ const Component = (props: Props): React.ReactElement => {
   //     }
   // });
 
-  const getExplorerUrl = useCallback((txHash: string) => {
-    const chainInfo = chainInfoMap.story_protocol;
+  const getExplorerUrl = useCallback((txHash: string, isTestnet?: boolean) => {
+    let chainInfo = chainInfoMap.story_protocol;
+
+    if (isTestnet) {
+      chainInfo = chainInfoMap.storyOdyssey_testnet;
+    }
 
     return chainInfo ? getExplorerLink(chainInfo, txHash, 'tx') || '' : '';
   }, [chainInfoMap]);
@@ -679,7 +681,7 @@ const Component = (props: Props): React.ReactElement => {
 
         // Handle message when create transaction
         addPendingMessage({
-          message: 'Your swap is being processed...', type: 'apiMessage'
+          message: 'Your transaction is being processed…', type: 'apiMessage'
         });
       }
 
@@ -691,13 +693,9 @@ const Component = (props: Props): React.ReactElement => {
           address: wcAccount.address
         };
 
-        console.log(request);
-
         const swapRequestResult = await handleSwapRequest(request);
 
         if (swapRequestResult.quote.optimalQuote) {
-          console.log('swapRequestResult', swapRequestResult);
-          addPendingMessage({ message: 'your transaction is in processing', type: 'apiMessage' });
           submitFunc = handleSwapStep({
             process: swapRequestResult.process,
             currentStep: swapRequestResult.process.steps.length - 1,
@@ -707,6 +705,8 @@ const Component = (props: Props): React.ReactElement => {
           });
         }
       }
+
+      const isTestnet = (aiTransactionInfo.data as SwapAiRequest).isTestnet;
 
       if (submitFunc) {
         submitFunc
@@ -731,17 +731,17 @@ const Component = (props: Props): React.ReactElement => {
                   messageToResponse = 'Your transaction has been submitted! Let’s give it a moment for the network to process...';
                 } else if (data.status === ExtrinsicStatus.SUCCESS) {
                   // Handle on success
-                  const explorerUrl = getExplorerUrl(data.extrinsicHash);
+                  const explorerUrl = getExplorerUrl(data.extrinsicHash, isTestnet);
 
                   messageToResponse = `All done! Your transaction is completed, and here’s the link for you to view on the explorer: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>`;
                 } else if (data.status === ExtrinsicStatus.FAIL) {
-                  const explorerUrl = getExplorerUrl(data.extrinsicHash);
+                  const explorerUrl = getExplorerUrl(data.extrinsicHash, isTestnet);
 
                   messageToResponse = `Oops, the transaction has failed. You can view it on the explorer: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>. Would you like to try again?`;
                 } else if (data.status === ExtrinsicStatus.UNKNOWN) {
                   messageToResponse = 'Hmmm, there seems to be some unknown errors that get in the way. I’d suggest you come back at a later time and try again!';
                 } else if (data.status === ExtrinsicStatus.TIMEOUT) {
-                  const explorerUrl = getExplorerUrl(data.extrinsicHash);
+                  const explorerUrl = getExplorerUrl(data.extrinsicHash, isTestnet);
 
                   messageToResponse = `Uh oh, the transaction has timed out. This is due to the transaction taking much longer than expected. You can check your address on the explorer to see if the transaction is completed or not: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>`;
                 }

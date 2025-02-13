@@ -8,6 +8,7 @@ import { AlertBox, MetaInfo } from '@subwallet/extension-koni-ui/components';
 import { SwapRoute, SwapTransactionBlock } from '@subwallet/extension-koni-ui/components/Swap';
 import { BN_TEN, BN_ZERO } from '@subwallet/extension-koni-ui/constants';
 import { useGetAccountByAddress, useGetChainPrefixBySlug, useSelector } from '@subwallet/extension-koni-ui/hooks';
+import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Number } from '@subwallet/react-ui';
 import BigN from 'bignumber.js';
 import CN from 'classnames';
@@ -23,11 +24,12 @@ const Component: React.FC<Props> = (props: Props) => {
   const { className, transaction } = props;
   const assetRegistryMap = useSelector((state) => state.assetRegistry.assetRegistry);
   const { currencyData, priceMap } = useSelector((state) => state.price);
+  const { chainInfoMap } = useSelector((state: RootState) => state.chainStore);
   const [showQuoteExpired, setShowQuoteExpired] = useState<boolean>(false);
   const { t } = useTranslation();
   // @ts-ignore
   const data = transaction.data as SwapTxData;
-
+  const network = useMemo(() => chainInfoMap[transaction.chain], [chainInfoMap, transaction.chain]);
   const recipientAddress = data.recipient || data.address;
   const account = useGetAccountByAddress(recipientAddress);
   const toAssetInfo = useMemo(() => {
@@ -136,14 +138,14 @@ const Component: React.FC<Props> = (props: Props) => {
         </MetaInfo.Default>
         <SwapRoute swapRoute={data.quote.route} />
         {!showQuoteExpired && getWaitingTime > 0 && <AlertBox
-          className={'__swap-arrival-time'}
+          className={CN('__swap-arrival-time', 'alert-box')}
           description={t(`Swapping via ${data.provider.name} can take up to ${getWaitingTime} minutes. Make sure you review all information carefully before submitting.`)}
           title={t('Pay attention!')}
           type='warning'
         />}
         {!showQuoteExpired && isSwapXCM && (
           <AlertBox
-            className={'__swap-quote-expired'}
+            className={CN('__swap-quote-expired', 'alert-box')}
             description={t('The swap quote has been updated. Make sure to double-check all information before confirming the transaction.')}
             title={t('Pay attention!')}
             type='warning'
@@ -152,12 +154,19 @@ const Component: React.FC<Props> = (props: Props) => {
         {showQuoteExpired &&
           (
             <AlertBox
-              className={'__swap-quote-expired'}
+              className={CN('__swap-quote-expired', 'alert-box')}
               description={t('Swap quote expired. Cancel to get a new quote.')}
               title={t('Pay attention!')}
               type='warning'
             />)
         }
+        {!!transaction.estimateFee?.tooHigh && (
+          <AlertBox
+            className={CN('network-box', 'alert-box')}
+            description={t('Gas fees on {{networkName}} are high due to high demands, so gas estimates are less accurate.', { replace: { networkName: network?.name } })}
+            title={t('Pay attention!')}
+            type='warning'
+          />)}
 
       </MetaInfo>
     </div>
@@ -166,6 +175,10 @@ const Component: React.FC<Props> = (props: Props) => {
 
 const SwapTransactionConfirmation = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return {
+    '.alert-box': {
+      backgroundColor: token.colorWhite
+    },
+
     '.__quote-rate-wrapper': {
       display: 'flex'
     },

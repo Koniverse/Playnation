@@ -11,6 +11,10 @@ export interface AiTransactionData {
   data?: any;
 }
 
+export interface SwapAiRequest extends SwapRequest{
+  isTestnet: boolean;
+}
+
 const USDT_STORY_TOKEN_SLUG = 'story_protocol-ERC20-USDT-0x674843C06FF83502ddb4D37c2E09C01cdA38cbc8';
 const USDC_STORY_TOKEN_SLUG = 'story_protocol-ERC20-USDC-0xF1815bd50389c46847f0Bda824eC8da914045D14';
 const PIP_TOKEN_SLUG = 'storyOdyssey_testnet-ERC20-PIP-0x6e990040Fd9b06F98eFb62A147201696941680b5';
@@ -97,7 +101,8 @@ const transformSwapData = (message: string): AiTransactionData => {
     const jsonObject = JSON.parse(jsonMatch) as SwapAiResponse;
 
     const tokenTo = getTokenSlugBySymbol(jsonObject?.token_to_receive);
-    const tokenFrom = getTokenSlugBySymbol(jsonObject?.token_to_swap, TOKEN_SWAP_TESTNET.includes(tokenTo || ''));
+    const isTestnet = TOKEN_SWAP_TESTNET.includes(tokenTo || '');
+    const tokenFrom = getTokenSlugBySymbol(jsonObject?.token_to_swap, isTestnet);
     const amount = jsonObject?.amount;
     const slippageTolerance = jsonObject?.slippage_tolerance;
 
@@ -105,15 +110,16 @@ const transformSwapData = (message: string): AiTransactionData => {
       return defaultResult;
     }
 
-    const data: Omit<SwapRequest, 'address'> = {
+    const data: Omit<SwapAiRequest, 'address'> = {
       pair: {
         slug: _parseAssetRefKey(tokenFrom, tokenTo),
         from: tokenFrom,
         to: tokenTo
       },
-      fromAmount: amount?.toString(),
+      fromAmount: new BigN(amount).shiftedBy(18).toString(),
       slippage: (Number.parseInt(slippageTolerance)) / 100,
-      recipient: undefined
+      recipient: undefined,
+      isTestnet
     };
 
     return {

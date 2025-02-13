@@ -349,6 +349,7 @@ const Component: React.FC<Props> = (props: Props) => {
         {t('Cancel')}
       </Button>
       <Button
+        className={'button-approve'}
         disabled={showQuoteExpired || !canSign}
         icon={(
           <Icon
@@ -385,7 +386,11 @@ const Component: React.FC<Props> = (props: Props) => {
 };
 
 const EvmSignArea = styled(Component)<Props>(({ theme: { token } }: Props) => {
-  return {};
+  return {
+    '.button-approve': {
+      backgroundColor: token.colorBgSecondary
+    }
+  };
 });
 
 export default EvmSignArea;

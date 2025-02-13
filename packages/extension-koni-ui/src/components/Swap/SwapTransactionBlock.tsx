@@ -83,13 +83,15 @@ const Component: React.FC<Props> = (props: Props) => {
 
 const SwapTransactionBlock = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return {
+    width: '100%',
+    padding: `0px ${token.paddingXS}px`,
     '.__quote-estimate-swap-confirm-value': {
       display: 'flex'
     },
     '.__summary-quote': {
       display: 'flex',
       justifyContent: 'space-between',
-      backgroundColor: token.colorBgSecondary,
+      backgroundColor: token.colorWhite,
       gap: 12,
       paddingLeft: 12,
       paddingRight: 12,
@@ -118,10 +120,14 @@ const SwapTransactionBlock = styled(Component)<Props>(({ theme: { token } }: Pro
       lineHeight: token.lineHeightSM
     },
     '.__amount-destination': {
-      color: token.colorTextLight2,
+      color: token.colorTextDark4,
       fontSize: token.fontSizeLG,
       fontWeight: token.fontWeightStrong,
-      lineHeight: token.lineHeightLG
+      lineHeight: token.lineHeightLG,
+
+      '.ant-typography.ant-number-integer, .ant-typography.ant-number-decimal': {
+        color: `${token.colorTextDark4} !important`
+      }
     },
     '&.swap-confirmation-container .__swap-route-container': {
       marginBottom: 20
