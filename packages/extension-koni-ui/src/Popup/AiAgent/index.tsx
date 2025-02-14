@@ -18,7 +18,7 @@ import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/Wall
 import { useNotification, useSelector, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { useLocalStorage } from '@subwallet/extension-koni-ui/hooks/common/useLocalStorage';
 import { makeTransfer, subscribeTransactionById, wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
-import { handleSwapRequest, handleSwapStep } from '@subwallet/extension-koni-ui/messaging/transaction/swap';
+import { getLatestSwapQuote, handleSwapRequest, handleSwapStep, validateSwapProcess } from '@subwallet/extension-koni-ui/messaging/transaction/swap';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { AiTransactionData, noop, SwapAiRequest, transformAiMessageData, validateSignature } from '@subwallet/extension-koni-ui/utils';
@@ -67,6 +67,7 @@ const Component = (props: Props): React.ReactElement => {
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
 
   const chainInfoMap = useSelector((state: RootState) => state.chainStore.chainInfoMap);
+  const assetRegistry = useSelector((state: RootState) => state.assetRegistry.assetRegistry);
   const { activeModal } = useContext(ModalContext);
   const { goBack } = useDefaultNavigate();
   const [messages, setMessages] = useState<MessageType[]>([]);
@@ -95,6 +96,7 @@ const Component = (props: Props): React.ReactElement => {
   const { wcAccount } = useSelector((state) => state.accountState);
 
   const submitTxRef = useRef(false);
+  const assetRegistryMapCurrent = useRef(assetRegistry);
 
   const chatMessagesAreaRef = useRef<ChatMessagesAreaRef>(null);
   const chatMessagesAreaRefCurrent = chatMessagesAreaRef.current;
@@ -695,67 +697,111 @@ const Component = (props: Props): React.ReactElement => {
 
         const swapRequestResult = await handleSwapRequest(request);
 
-        if (swapRequestResult.quote.optimalQuote) {
-          submitFunc = handleSwapStep({
-            process: swapRequestResult.process,
-            currentStep: swapRequestResult.process.steps.length - 1,
-            quote: swapRequestResult.quote.optimalQuote,
-            address: wcAccount.address,
-            slippage: request.slippage
-          });
-        }
+        const submitData = async (step: number): Promise<SWTransactionResponse> => {
+          const isFirstStep = step === 0;
+          const isLastStep = step === swapRequestResult.process.steps.length - 1;
+          const currentOptimalSwapPath = swapRequestResult.process;
+          const currentQuote = swapRequestResult.quote.optimalQuote;
+
+          if (currentQuote) {
+            if (isFirstStep) {
+              const validatePromise = validateSwapProcess({
+                address: wcAccount.address,
+                process: currentOptimalSwapPath,
+                selectedQuote: currentQuote
+              });
+
+              const _errors = await validatePromise;
+
+              if (_errors.length) {
+                throw _errors[0];
+              } else {
+                return await submitData(step + 1);
+              }
+            } else {
+              let latestOptimalQuote = currentQuote;
+
+              if (swapRequestResult.process.steps.length > 2 && isLastStep) {
+                if (swapRequestResult.quote.optimalQuote) {
+                  const latestSwapQuote = await getLatestSwapQuote(request);
+
+                  if (latestSwapQuote.optimalQuote) {
+                    latestOptimalQuote = latestSwapQuote.optimalQuote;
+                  }
+                }
+              }
+
+              const responseSwapStep = await handleSwapStep({
+                process: currentOptimalSwapPath,
+                currentStep: step,
+                quote: latestOptimalQuote,
+                address: wcAccount.address,
+                slippage: request.slippage
+              });
+
+              if (isLastStep) {
+                return responseSwapStep;
+              } else {
+                return await submitData(step + 1);
+              }
+            }
+          } else {
+            throw new Error('No optimal quote');
+          }
+        };
+
+        submitFunc = submitData(0);
       }
 
       const isTestnet = (aiTransactionInfo.data as SwapAiRequest).isTestnet;
 
       if (submitFunc) {
-        submitFunc
-          .then((rs) => {
-            if (rs.errors.length) {
-              console.log('Tx error', rs.errors);
+        submitFunc.then((rs) => {
+          if (rs.errors.length) {
+            console.log('Tx error', rs.errors);
 
-              // Handle error
-              if (rs.errors[0].message.toLowerCase().includes('rejected by user')) {
-                addPendingMessage({ message: 'Hmm, seems like you cancelled the transaction. Let me know if you want to resume it!', type: 'apiMessage' });
+            // Handle error
+            if (rs.errors[0].message.toLowerCase().includes('rejected by user')) {
+              addPendingMessage({ message: 'Hmm, seems like you cancelled the transaction. Let me know if you want to resume it!', type: 'apiMessage' });
+            }
+
+            return;
+          }
+
+          if (rs.id) {
+            const handleResult = (data: SWTransactionBrief) => {
+              let messageToResponse: string | undefined;
+
+              if (data.status === ExtrinsicStatus.SUBMITTING) {
+                // Handle on submit
+                messageToResponse = 'Your transaction has been submitted! Let’s give it a moment for the network to process...';
+              } else if (data.status === ExtrinsicStatus.SUCCESS) {
+                // Handle on success
+                const explorerUrl = getExplorerUrl(data.extrinsicHash, isTestnet);
+
+                messageToResponse = `All done! Your transaction is completed, and here’s the link for you to view on the explorer: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>`;
+              } else if (data.status === ExtrinsicStatus.FAIL) {
+                const explorerUrl = getExplorerUrl(data.extrinsicHash, isTestnet);
+
+                messageToResponse = `Oops, the transaction has failed. You can view it on the explorer: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>. Would you like to try again?`;
+              } else if (data.status === ExtrinsicStatus.UNKNOWN) {
+                messageToResponse = 'Hmmm, there seems to be some unknown errors that get in the way. I’d suggest you come back at a later time and try again!';
+              } else if (data.status === ExtrinsicStatus.TIMEOUT) {
+                const explorerUrl = getExplorerUrl(data.extrinsicHash, isTestnet);
+
+                messageToResponse = `Uh oh, the transaction has timed out. This is due to the transaction taking much longer than expected. You can check your address on the explorer to see if the transaction is completed or not: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>`;
               }
 
-              return;
-            }
+              if (messageToResponse) {
+                addPendingMessage({ message: messageToResponse, type: 'apiMessage' });
+              }
+            };
 
-            if (rs.id) {
-              const handleResult = (data: SWTransactionBrief) => {
-                let messageToResponse: string | undefined;
-
-                if (data.status === ExtrinsicStatus.SUBMITTING) {
-                  // Handle on submit
-                  messageToResponse = 'Your transaction has been submitted! Let’s give it a moment for the network to process...';
-                } else if (data.status === ExtrinsicStatus.SUCCESS) {
-                  // Handle on success
-                  const explorerUrl = getExplorerUrl(data.extrinsicHash, isTestnet);
-
-                  messageToResponse = `All done! Your transaction is completed, and here’s the link for you to view on the explorer: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>`;
-                } else if (data.status === ExtrinsicStatus.FAIL) {
-                  const explorerUrl = getExplorerUrl(data.extrinsicHash, isTestnet);
-
-                  messageToResponse = `Oops, the transaction has failed. You can view it on the explorer: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>. Would you like to try again?`;
-                } else if (data.status === ExtrinsicStatus.UNKNOWN) {
-                  messageToResponse = 'Hmmm, there seems to be some unknown errors that get in the way. I’d suggest you come back at a later time and try again!';
-                } else if (data.status === ExtrinsicStatus.TIMEOUT) {
-                  const explorerUrl = getExplorerUrl(data.extrinsicHash, isTestnet);
-
-                  messageToResponse = `Uh oh, the transaction has timed out. This is due to the transaction taking much longer than expected. You can check your address on the explorer to see if the transaction is completed or not: <a href='${explorerUrl}' target='_blank'>${explorerUrl}</a>`;
-                }
-
-                if (messageToResponse) {
-                  addPendingMessage({ message: messageToResponse, type: 'apiMessage' });
-                }
-              };
-
-              subscribeTransactionById({ id: rs.id }, handleResult)
-                .then(handleResult)
-                .catch(console.error);
-            }
-          })
+            subscribeTransactionById({ id: rs.id }, handleResult)
+              .then(handleResult)
+              .catch(console.error);
+          }
+        })
           .catch((err: Error) => {
             // Handle error
             addPendingMessage({ message: `Oops, the transaction has failed. Would you like to try again?<pre>${err.message}</pre>`, type: 'apiMessage' });
@@ -814,6 +860,10 @@ const Component = (props: Props): React.ReactElement => {
       await onSubmitSwapTx(aiTransactionInfo);
     }
   }, [onSubmitSwapTx, onSubmitTransferTx]);
+
+  useEffect(() => {
+    assetRegistryMapCurrent.current = assetRegistry;
+  }, [assetRegistry]);
 
   useEffect(() => {
     const chatflowData = getLocalStorageChatflow(props.chatflowid);
@@ -1015,9 +1065,8 @@ const Component = (props: Props): React.ReactElement => {
           const lastMessage = messages[messages.length - 1];
 
           if (lastMessage.type === 'apiMessage') {
-            const converted = transformAiMessageData(lastMessage.message);
+            const converted = transformAiMessageData(lastMessage.message, assetRegistryMapCurrent.current);
 
-            console.log('converted', converted);
             setAiTransactionInfo({ ...converted, aiMessageId: lastMessage.messageId });
           } else {
             setAiTransactionInfo(undefined);

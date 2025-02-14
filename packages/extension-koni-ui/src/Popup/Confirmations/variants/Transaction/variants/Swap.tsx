@@ -219,21 +219,26 @@ const SwapTransactionConfirmation = styled(Component)<Props>(({ theme: { token }
       fontWeight: token.fontWeightStrong,
       lineHeight: token.lineHeight
     },
-    '.__recipient-item .__account-name': {
+    '.__recipient-item .__account-item-name': {
       fontSize: 14,
-      color: token.colorWhite,
+      color: `${token.colorTextDark2} !important`,
       fontWeight: token.bodyFontWeight,
       lineHeight: token.lineHeight
     },
-    '.__quote-rate-confirm .__value': {
+
+    '.__recipient-item .__account-item-address': {
+      color: `${token.colorTextDark2} !important`
+    },
+
+    '& .__quote-rate-confirm .__value': {
       fontSize: 14,
-      color: token.colorWhite,
+      color: `${token.colorTextDark2} !important`,
       fontWeight: token.bodyFontWeight,
       lineHeight: token.lineHeight
     },
     '.__estimate-transaction-fee .__value': {
       fontSize: 14,
-      color: token.colorWhite,
+      color: `${token.colorTextDark2} !important`,
       fontWeight: token.bodyFontWeight,
       lineHeight: token.lineHeight
     },
@@ -260,6 +265,10 @@ const SwapTransactionConfirmation = styled(Component)<Props>(({ theme: { token }
       color: token.colorTextLabel,
       fontWeight: token.bodyFontWeight,
       lineHeight: token.lineHeight
+    },
+
+    '.alert-title': {
+      color: `${token.colorText} !important`
     }
   };
 });

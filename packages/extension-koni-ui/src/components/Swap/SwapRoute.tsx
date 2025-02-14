@@ -121,7 +121,6 @@ const SwapRoute = styled(Component)<Props>(({ theme: { token } }: Props) => {
       fontWeight: token.bodyFontWeight,
       lineHeight: token.lineHeightSM,
       color: token.colorTextTertiary,
-      position: 'absolute',
       'white-space': 'nowrap',
       textOverflow: 'ellipsis',
       overflow: 'hidden',

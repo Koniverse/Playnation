@@ -1,9 +1,10 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { _parseAssetRefKey } from '@subwallet/extension-base/services/chain-service/utils';
+import { _getAssetDecimals, _parseAssetRefKey } from '@subwallet/extension-base/services/chain-service/utils';
 import { RequestTransfer, SwapRequest } from '@subwallet/extension-base/types';
 import { IpAssetParams } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { AssetRegistryStore } from '@subwallet/extension-koni-ui/stores/types';
 import BigN from 'bignumber.js';
 
 export interface AiTransactionData {
@@ -86,7 +87,7 @@ const transformTransferData = (message: string): AiTransactionData => {
   }
 };
 
-const transformSwapData = (message: string): AiTransactionData => {
+const transformSwapData = (message: string, assetRegistryMap: AssetRegistryStore['assetRegistry']): AiTransactionData => {
   const defaultResult: AiTransactionData = {
     type: 'unknown'
   };
@@ -110,13 +111,16 @@ const transformSwapData = (message: string): AiTransactionData => {
       return defaultResult;
     }
 
+    const chainAsset = assetRegistryMap[tokenFrom];
+    const decimals = _getAssetDecimals(chainAsset);
+
     const data: Omit<SwapAiRequest, 'address'> = {
       pair: {
         slug: _parseAssetRefKey(tokenFrom, tokenTo),
         from: tokenFrom,
         to: tokenTo
       },
-      fromAmount: new BigN(amount).shiftedBy(18).toString(),
+      fromAmount: new BigN(amount).shiftedBy(decimals).toString(),
       slippage: (Number.parseInt(slippageTolerance)) / 100,
       recipient: undefined,
       isTestnet
@@ -168,7 +172,7 @@ const transformMintData = (message: string): AiTransactionData => {
   }
 };
 
-export const transformAiMessageData = (message: string): AiTransactionData => {
+export const transformAiMessageData = (message: string, assetRegistryMap: AssetRegistryStore['assetRegistry']): AiTransactionData => {
   const isConfirmation = message.split('\n').some((line) => (line.startsWith('## IP') || line.startsWith('## Swap')) && line.includes('confirmation'));
 
   if (isConfirmation) {
@@ -179,7 +183,7 @@ export const transformAiMessageData = (message: string): AiTransactionData => {
     } else if (message.includes('asset minting')) {
       return transformMintData(message);
     } else if (message.includes('swap')) {
-      return transformSwapData(message);
+      return transformSwapData(message, assetRegistryMap);
     } else {
       return {
         type: 'unknown'
