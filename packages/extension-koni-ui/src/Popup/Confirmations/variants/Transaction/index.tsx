@@ -175,7 +175,12 @@ const TransactionConfirmation = styled(Component)<Props>(({ theme: { token } }: 
     marginTop: token.marginXS,
 
     '.network-box': {
-      marginTop: token.marginSM
+      marginTop: token.marginSM,
+      backgroundColor: token.colorWhite,
+
+      '.alert-title': {
+        color: `${token.colorText} !important`
+      }
     },
 
     '.-to-right': {
