@@ -471,23 +471,9 @@ const Component = (props: Props): React.ReactElement => {
       return messages;
     });
 
-    const chatflowData = getLocalStorageChatflow(props.chatflowid);
-    const chatMessage = (() => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      return Object.values(chatflowData)[0];
-    })();
-
-    const chatHistory = chatMessage?.chatHistory || [];
-
     const body: IncomingInput = {
       question: value,
-      chatId: chatId,
-      history: chatHistory.slice(chatHistory.length - 5).map((item) => {
-        return {
-          role: item.type,
-          content: item.message
-        };
-      })
+      chatId: chatId
     };
 
     if (props.chatflowConfig) {
