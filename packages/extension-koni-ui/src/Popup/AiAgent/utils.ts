@@ -102,6 +102,10 @@ export const getCurrentChatId = (chatflowid: string) => {
   return localStorage.getItem(getCurrentChatIdStorageKey(chatflowid));
 };
 
+export const clearCurrentChatId = (chatflowid: string) => {
+  localStorage.removeItem(getCurrentChatIdStorageKey(chatflowid));
+};
+
 export const setLocalStorageChatflow = (chatflowid: string, chatId: string, saveObj: Record<string, any> = {}) => {
   const chatDetails = localStorage.getItem(getChatLogsStorageKey(chatflowid));
   const obj = { ...saveObj };

@@ -20,13 +20,14 @@ import { useLocalStorage } from '@subwallet/extension-koni-ui/hooks/common/useLo
 import { makeTransfer, subscribeTransactionById, wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { getLatestSwapQuote, handleSwapRequest, handleSwapStep, validateSwapProcess } from '@subwallet/extension-koni-ui/messaging/transaction/swap';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
-import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { AiTransactionData, noop, SwapAiRequest, transformAiMessageData, validateSignature } from '@subwallet/extension-koni-ui/utils';
-import { ModalContext } from '@subwallet/react-ui';
+import { ButtonProps, Icon, ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { cloneDeep } from 'lodash';
+import { Trash } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 
 import { stringToHex } from '@polkadot/util';
@@ -35,7 +36,7 @@ import useDefaultNavigate from '../../hooks/router/useDefaultNavigate';
 import { ChatInputArea } from './parts/ChatInputArea';
 import { ChatMessagesArea, ChatMessagesAreaRef } from './parts/ChatMessagesArea';
 import { FileUpload, IAction, IAgentReasoning, IncomingInput, MessageType, messageType } from './types';
-import { getCurrentChatId, getLocalStorageChatflow, isStreamAvailableQuery, sendMessageQuery, setCurrentChatId, setLocalStorageChatflow } from './utils';
+import { clearCurrentChatId, getCurrentChatId, getLocalStorageChatflow, isStreamAvailableQuery, sendMessageQuery, setCurrentChatId, setLocalStorageChatflow } from './utils';
 
 type Props = ThemeProps & {
   apiHost: string;
@@ -65,7 +66,7 @@ const Component = (props: Props): React.ReactElement => {
   const { t } = useTranslation();
 
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
-
+  const { token } = useTheme() as Theme;
   const chainInfoMap = useSelector((state: RootState) => state.chainStore.chainInfoMap);
   const assetRegistry = useSelector((state: RootState) => state.assetRegistry.assetRegistry);
   const { activeModal } = useContext(ModalContext);
@@ -1085,6 +1086,21 @@ const Component = (props: Props): React.ReactElement => {
 
   const isAddressLinked = !!wcAccount?.address && isSameAddress(wcAccount.address, addressLinked || '') && completedFullStepConnectAccount;
 
+  const subHeaderButton: ButtonProps[] = [
+    {
+      icon: <Icon
+        customSize={`${token.fontSizeHeading3}px`}
+        phosphorIcon={Trash}
+        type='phosphor'
+        weight={'light'}
+      />,
+      onClick: () => {
+        clearCurrentChatId(props.chatflowid);
+        window.location.reload();
+      }
+    }
+  ];
+
   useEffect(() => {
     if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
       clearCurrentAiTransactionInfo();
@@ -1146,6 +1162,7 @@ const Component = (props: Props): React.ReactElement => {
       backgroundStyle={'primary'}
       className={CN(className)}
       onBack={goBack}
+      subHeaderIcons={subHeaderButton}
       title={'Tell Me Agent'}
     >
       <div className={CN('__message-area-wrapper', {
