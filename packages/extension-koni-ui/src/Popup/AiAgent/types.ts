@@ -35,6 +35,7 @@ export type IncomingInput = {
   question: string;
   uploads?: FileUpload[];
   overrideConfig?: Record<string, unknown>;
+  history?: any;
   socketIOClientId?: string;
   chatId?: string;
   fileName?: string; // Only for assistant
