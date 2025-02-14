@@ -19,6 +19,7 @@ export interface SwapAiRequest extends SwapRequest{
 const USDT_STORY_TOKEN_SLUG = 'story_protocol-ERC20-USDT-0x674843C06FF83502ddb4D37c2E09C01cdA38cbc8';
 const USDC_STORY_TOKEN_SLUG = 'story_protocol-ERC20-USDC-0xF1815bd50389c46847f0Bda824eC8da914045D14';
 const PIP_TOKEN_SLUG = 'storyOdyssey_testnet-ERC20-PIP-0x6e990040Fd9b06F98eFb62A147201696941680b5';
+const WETH_TOKEN_SLUG = 'story_protocol-ERC20-WETH-0xBAb93B7ad7fE8692A878B95a8e689423437cc500';
 const IP_MAINNET_TOKEN_SLUG = 'story_protocol-NATIVE-IP';
 const IP_TESTNET_TOKEN_SLUG = 'storyOdyssey_testnet-NATIVE-IP';
 
@@ -32,13 +33,15 @@ export interface SwapAiResponse {
 }
 
 const getTokenSlugBySymbol = (symbol: string, isTestnet = false): string | undefined => {
-  switch (symbol) {
+  switch (symbol.toUpperCase()) {
     case 'USDT':
       return USDT_STORY_TOKEN_SLUG;
     case 'USDC':
       return USDC_STORY_TOKEN_SLUG;
     case 'PIP':
       return PIP_TOKEN_SLUG;
+    case 'WETH':
+      return WETH_TOKEN_SLUG;
     case 'IP':
       return isTestnet ? IP_TESTNET_TOKEN_SLUG : IP_MAINNET_TOKEN_SLUG;
     default:
@@ -46,7 +49,7 @@ const getTokenSlugBySymbol = (symbol: string, isTestnet = false): string | undef
   }
 };
 
-const transformTransferData = (message: string): AiTransactionData => {
+const transformTransferData = (message: string, assetRegistryMap: AssetRegistryStore['assetRegistry']): AiTransactionData => {
   const defaultResult: AiTransactionData = {
     type: 'unknown'
   };
@@ -60,21 +63,32 @@ const transformTransferData = (message: string): AiTransactionData => {
   try {
     const jsonObject = JSON.parse(jsonMatch) as {
       recipient_address: string,
-      amount: number
+      amount: number,
+      token: string
     };
 
     const recipientAddress = jsonObject?.recipient_address;
     const amount = jsonObject?.amount;
+    const token = jsonObject?.token;
 
     if (!recipientAddress || typeof amount === undefined) {
       return defaultResult;
     }
 
+    const tokenSlug = getTokenSlugBySymbol(token);
+
+    if (!tokenSlug) {
+      return defaultResult;
+    }
+
+    const chainAsset = assetRegistryMap[tokenSlug];
+    const decimals = _getAssetDecimals(chainAsset);
+
     const data: Omit<RequestTransfer, 'from'> = {
-      value: BigN(amount).shiftedBy(18).toFixed(0),
+      value: BigN(amount).shiftedBy(decimals).toFixed(0),
       to: recipientAddress,
       networkKey: 'story_protocol',
-      tokenSlug: 'story_protocol-NATIVE-IP',
+      tokenSlug,
       ignoreWarnings: []
     };
 
@@ -178,7 +192,7 @@ export const transformAiMessageData = (message: string, assetRegistryMap: AssetR
   if (isConfirmation) {
     // is transfer
     if (message.includes('transfer')) {
-      return transformTransferData(message);
+      return transformTransferData(message, assetRegistryMap);
       // is minting
     } else if (message.includes('asset minting')) {
       return transformMintData(message);

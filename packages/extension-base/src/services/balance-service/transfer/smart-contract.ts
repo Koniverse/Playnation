@@ -93,8 +93,9 @@ export async function getERC20TransactionObject (
   const [gasLimit, priority] = await Promise.all([
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
     erc20Contract.methods.transfer(to, transferValue).estimateGas({ from })
-      .catch(() => {
-        throw Error('Unable to estimate fee for this transaction. Try again or contact support at agent@subwallet.app');
+      .catch((e: Error) => {
+        console.log(e);
+        throw Error('Unable to estimate fee for this transaction');
       }) as number,
     calculateGasFeeParams(evmApi, networkKey)
   ]);
