@@ -1209,7 +1209,7 @@ const Component = (props: Props): React.ReactElement => {
 };
 
 const WrapperComponent = (props: ThemeProps) => {
-  const chatflowid = 'dfcf9c3f-0f99-4bb9-8872-cac2329a5393';
+  const chatflowid = '2d375eae-3eab-4e59-9c8c-0907bddd765a';
 
   const chatId = useMemo(() => {
     let result = getCurrentChatId(chatflowid);
@@ -1224,7 +1224,7 @@ const WrapperComponent = (props: ThemeProps) => {
 
   return (
     <Component
-      apiHost='https://flowise-demo.koni.studio'
+      apiHost='https://agent-api.koni.studio'
       chatId={chatId}
       chatflowid={chatflowid}
       {...props}
