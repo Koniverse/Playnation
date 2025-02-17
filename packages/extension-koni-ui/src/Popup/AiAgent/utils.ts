@@ -102,6 +102,18 @@ export const getCurrentChatId = (chatflowid: string) => {
   return localStorage.getItem(getCurrentChatIdStorageKey(chatflowid));
 };
 
+export const clearCurrentChatId = (chatflowid: string) => {
+  localStorage.removeItem(getCurrentChatIdStorageKey(chatflowid));
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+
+    if (key?.startsWith('AGENT_AI') && key?.endsWith('CURRENT_CHAT_ID')) {
+      localStorage.removeItem(key);
+    }
+  }
+};
+
 export const setLocalStorageChatflow = (chatflowid: string, chatId: string, saveObj: Record<string, any> = {}) => {
   const chatDetails = localStorage.getItem(getChatLogsStorageKey(chatflowid));
   const obj = { ...saveObj };

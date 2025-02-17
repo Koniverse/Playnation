@@ -21,6 +21,7 @@ export const STORY_BADGE_HOST = process.env.STORY_BADGE_HOST || 'http://localhos
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
 
+const ACCOUNT_POINT_AVAILABLE_IN_BETA = 15000;
 // Increase of changing the cache version, we need to clear the cache
 // From version 1.2 use localStorage instead of cloudStorage for cache
 const cacheVersion = '1.2';
@@ -35,10 +36,6 @@ const CACHE_KEYS = {
   airdropCampaignList: 'data--airdrop-campaign-list-cache',
   airdropNftList: 'data--airdrop-nft-list-cache',
   accountIntegrationProfile: 'data--account-integration-profile-cache'
-};
-
-const CLOUD_KEYS = {
-  addressLinked: 'data--address-linked'
 };
 
 function parseCache<T> (key: string): T | undefined {
@@ -119,12 +116,6 @@ export class BookaSdk {
 
       localStorage.setItem('cache-version', cacheVersion);
     }
-
-    storage.getItem(CLOUD_KEYS.addressLinked).then((addressLinked_) => {
-      if (addressLinked_) {
-        this.addressLinkedSubject.next(addressLinked_);
-      }
-    }).catch(console.error);
   }
 
   public get waitForSync () {
@@ -612,6 +603,8 @@ export class BookaSdk {
       if (account) {
         this.accountSubject.next(account);
         localStorage.setItem(CACHE_KEYS.account, JSON.stringify(account));
+        this.addressLinkedSubject.next(account.info.address);
+
         this.syncHandler.resolve();
 
         await Promise.all([
@@ -1163,10 +1156,9 @@ export class BookaSdk {
     const data = await this.postRequest<{ status: boolean }>(`${GAME_API_HOST}/api/integrated-profile/set-account-address`, { address });
 
     if (!data.status) {
-      throw new Error('Failed to set address');
+      throw new Error('Address already registered');
     } else {
       this.addressLinkedSubject.next(address);
-      await storage.setItem(CLOUD_KEYS.addressLinked, address);
     }
   }
 
@@ -1179,6 +1171,42 @@ export class BookaSdk {
     }
 
     return data || {} as IntegratedProfileResult;
+  }
+
+  async checkAccountAvailableBetaVersion () {
+    try {
+      const checkWhiteList = async () => {
+        const data = await this.getRequest<{ status: boolean }>(`${GAME_API_HOST}/api/integrated-profile/check-telegram-whitelist`);
+
+        return true;
+      };
+
+      const checkAccountMinted = async () => {
+        return !!(await this.getMintedAddress());
+      };
+
+      const checkAccountPoint = async () => {
+        return new Promise<boolean>((resolve) => {
+          if (this.account) {
+            resolve((this.account.attributes.accumulatePoint >= ACCOUNT_POINT_AVAILABLE_IN_BETA));
+          } else {
+            this.subscribeAccount().subscribe((account) => {
+              if (account) {
+                resolve(account.attributes.accumulatePoint >= ACCOUNT_POINT_AVAILABLE_IN_BETA);
+              }
+            });
+          }
+        });
+      };
+
+      await this.waitForSync;
+
+      return (await Promise.all([checkWhiteList()])).some((condition) => condition);
+    } catch (e) {
+      console.error(e);
+
+      return false;
+    }
   }
 
   subscribeAccountIntegrationProfile () {

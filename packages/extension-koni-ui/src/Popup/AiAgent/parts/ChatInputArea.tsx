@@ -150,7 +150,11 @@ export const ChatInputArea = styled(Component)<Props>(({ theme: { token } }: Pro
 
     '.cs-message-input__content-editor': {
       color: token.colorTextDark1,
-      fontFamily: token.fontFamily
+      fontFamily: token.fontFamily,
+
+      '*': {
+        'white-space': 'normal !important'
+      }
     },
 
     '.cs-message-input__content-editor[data-placeholder]:empty:before': {

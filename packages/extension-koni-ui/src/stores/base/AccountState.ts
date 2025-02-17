@@ -3,7 +3,8 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AddressBookInfo, KeyringState } from '@subwallet/extension-base/background/KoniTypes';
-import { AccountJson, AccountsContext } from '@subwallet/extension-base/background/types';
+import { AccountsContext } from '@subwallet/extension-base/background/types';
+import { AccountJson, AccountProxy } from '@subwallet/extension-base/types';
 import { AccountState, ReduxStatus } from '@subwallet/extension-koni-ui/stores/types';
 import { isAccountAll } from '@subwallet/extension-koni-ui/utils';
 
@@ -14,6 +15,9 @@ const initialState: AccountState = {
   currentAccount: null,
   isAllAccount: false,
   wcAccount: null,
+
+  currentAccountProxy: null,
+  accountProxies: [],
 
   // KeyringState
   isReady: false,
@@ -34,6 +38,10 @@ const filterWcAccount = (accounts: AccountJson[]): AccountJson | null => {
   return accounts.find((account) => !!account.wcTopic) || null;
 };
 
+const filterWcAccountInAccountProxies = (accountProxies: AccountProxy[]): AccountJson | null => {
+  return accountProxies.map((ap) => ap.accounts).flat().find((account) => !!account.wcTopic) || null;
+};
+
 const accountStateSlice = createSlice({
   initialState,
   name: 'accountState',
@@ -47,6 +55,7 @@ const accountStateSlice = createSlice({
         reduxStatus: ReduxStatus.READY
       };
     },
+    // deprecated
     updateAccountsContext (state, action: PayloadAction<AccountsContext>) {
       const payload = action.payload;
 
@@ -57,6 +66,7 @@ const accountStateSlice = createSlice({
         reduxStatus: ReduxStatus.READY
       };
     },
+    // deprecated
     updateCurrentAccount (state, action: PayloadAction<AccountJson>) {
       const payload = action.payload;
 
@@ -64,6 +74,27 @@ const accountStateSlice = createSlice({
         ...state,
         currentAccount: payload,
         isAllAccount: isAccountAll(payload?.address),
+        reduxStatus: ReduxStatus.READY
+      };
+    },
+    updateCurrentAccountProxy (state, action: PayloadAction<AccountProxy>) {
+      const payload = action.payload;
+
+      return {
+        ...state,
+        currentAccountProxy: payload,
+        isAllAccount: isAccountAll(payload?.id),
+        reduxStatus: ReduxStatus.READY
+      };
+    },
+    updateAccountProxies (state, action: PayloadAction<AccountProxy[]>) {
+      const payload = action.payload;
+
+      return {
+        ...state,
+        accounts: payload.reduce((accounts, ap) => [...accounts, ...ap.accounts], [] as AccountJson[]),
+        accountProxies: payload,
+        wcAccount: filterWcAccountInAccountProxies(payload),
         reduxStatus: ReduxStatus.READY
       };
     },

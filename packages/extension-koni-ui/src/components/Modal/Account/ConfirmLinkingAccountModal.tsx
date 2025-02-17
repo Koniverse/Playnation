@@ -47,21 +47,27 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
         }
 
         await apiSDK.setAccountAddress(addressLinking);
+
+        setAddressLinking(undefined);
+        inactiveModal(modalId);
+        setLoading(false);
         await apiSDK.getStatsOfAddress();
       } catch (e) {
-        setLoading(false);
+        console.error(e);
 
         const error = e as Error;
 
+        inactiveModal(modalId);
+        setLoading(false);
+
         if (error.message.toLowerCase().includes('Address already registered'.toLowerCase()) ||
         error.message.toLowerCase().includes('minted address'.toLowerCase())) {
+          setAddressLinking('');
           onErrorHandler && onErrorHandler();
+        } else {
+          setAddressLinking(undefined);
         }
       }
-
-      setAddressLinking(undefined);
-      inactiveModal(modalId);
-      setLoading(false);
     };
 
     func().catch(console.error);
@@ -69,8 +75,9 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
 
   const onCancel = useCallback(() => {
     wcAccount && disconnectWithoutConfirmModal(wcAccount).catch(console.error);
+    setAddressLinking(undefined);
     inactiveModal(modalId);
-  }, [disconnectWithoutConfirmModal, inactiveModal, wcAccount]);
+  }, [disconnectWithoutConfirmModal, inactiveModal, setAddressLinking, wcAccount]);
 
   const footerModal = useMemo(() => {
     return (
@@ -80,6 +87,7 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
           disabled={loading}
           icon={(
             <Icon
+              customSize={'20px'}
               phosphorIcon={XCircle}
               weight='fill'
             />
@@ -87,6 +95,7 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
           onClick={onCancel}
           schema={'secondary'}
           shape={'round'}
+          size={'sm'}
         >
           {t('Cancel')}
         </Button>
@@ -94,6 +103,7 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
           block={true}
           icon={(
             <Icon
+              customSize={'20px'}
               phosphorIcon={CheckCircle}
               weight='fill'
             />
@@ -101,8 +111,9 @@ function Component ({ addressLinking, className, onErrorHandler, setAddressLinki
           loading={loading}
           onClick={onSubmitLinkingAccount}
           shape={'round'}
+          size={'sm'}
         >
-          {t('Agree')}
+          {t('Confirm')}
         </Button>
       </>
     );
@@ -162,6 +173,15 @@ const ConfirmLinkingAccountModal = styled(Component)<Props>(({ theme: { extendTo
       padding: `${token.padding}px ${token.paddingXS}px`
     },
 
+    '.ant-field-content-wrapper': {
+      display: 'flex',
+      justifyContent: 'center'
+    },
+
+    '.ant-sw-sub-header-title-content': {
+      lineHeight: token.lineHeightHeading3
+    },
+
     '.ant-sw-modal-confirm-body': {
       background: extendToken.colorBgGradient,
       borderRadius: 24,
@@ -211,8 +231,8 @@ const ConfirmLinkingAccountModal = styled(Component)<Props>(({ theme: { extendTo
     },
 
     '.__sub-title-modal': {
-      fontSize: token.fontSizeHeading6,
-      lineHeight: token.lineHeightHeading6,
+      fontSize: token.fontSizeSM,
+      lineHeight: token.lineHeightSM,
       fontWeight: 500,
       color: token.colorTextDark2,
       textAlign: 'center'

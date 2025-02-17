@@ -3,6 +3,7 @@
 
 import { _DEFAULT_CHAINS } from '@subwallet/chain-list';
 import { _SubstrateChainType } from '@subwallet/chain-list/types';
+import { SingleModeJson, ThemeNames } from '@subwallet/extension-base/background/KoniTypes';
 
 export const API_AUTO_CONNECT_MS = 3000;
 export const API_CONNECT_TIMEOUT = 30000;
@@ -43,8 +44,13 @@ export const _NFT_CHAIN_GROUP = {
   statemine: ['statemine'],
   statemint: ['statemint'],
   unique_network: ['unique_network', 'quartz', 'opal'],
+  unique_evm: ['unique_evm'],
   bitcountry: ['bitcountry', 'pioneer', 'continuum_network'],
-  vara: ['vara_network']
+  vara: ['vara_network'],
+  avail: ['avail_mainnet'],
+  ternoa: ['ternoa', 'ternoa_alphanet'],
+  rari: ['rari'],
+  story_odyssey: ['storyOdyssey', 'storyOdyssey_testnet']
 };
 
 // Staking--------------------------------------------------------------------------------------------------------------
@@ -88,7 +94,8 @@ export const _STAKING_ERA_LENGTH_MAP: Record<string, number> = { // in hours
   enjin_relaychain: 24,
   availTuringTest: 24,
   polkadex: 24,
-  avail_mainnet: 24
+  avail_mainnet: 24,
+  cere: 24
 };
 
 export const _EXPECTED_BLOCK_TIME: Record<string, number> = { // in seconds
@@ -119,7 +126,8 @@ export const _EXPECTED_BLOCK_TIME: Record<string, number> = { // in seconds
   manta_network: 12,
   enjin_relaychain: 6,
   availTuringTest: 20,
-  avail_mainnet: 20
+  avail_mainnet: 20,
+  dentnet: 3
 };
 
 export const _PARACHAIN_INFLATION_DISTRIBUTION: Record<string, Record<string, number>> = {
@@ -202,7 +210,9 @@ export const _KNOWN_CHAIN_INFLATION_PARAMS: Record<string, _SubstrateInflationPa
   nft_mart: { ..._SUBSTRATE_DEFAULT_INFLATION_PARAMS, falloff: 0.04, stakeTarget: 0.60 },
   polkadot: { ..._SUBSTRATE_DEFAULT_INFLATION_PARAMS, stakeTarget: 0.75 },
   vara_network: { ..._SUBSTRATE_DEFAULT_INFLATION_PARAMS, stakeTarget: 0.8 },
-  vara_testnet: { ..._SUBSTRATE_DEFAULT_INFLATION_PARAMS, stakeTarget: 0.8 }
+  vara_testnet: { ..._SUBSTRATE_DEFAULT_INFLATION_PARAMS, stakeTarget: 0.8 },
+  avail_mainnet: { ..._SUBSTRATE_DEFAULT_INFLATION_PARAMS, maxInflation: 0.05, minInflation: 0.01 },
+  dentnet: { ..._SUBSTRATE_DEFAULT_INFLATION_PARAMS, falloff: 0.5 }
 };
 
 // Send fund------------------------------------------------------------------------------------------------------------
@@ -214,12 +224,12 @@ export const _TRANSFER_CHAIN_GROUP = {
   kintsugi: ['kintsugi', 'kintsugi_test', 'interlay', 'mangatax_para'],
   genshiro: ['genshiro_testnet', 'genshiro', 'equilibrium_parachain'],
   // crab: ['crab', 'pangolin'],
-  bitcountry: ['pioneer', 'bitcountry', 'bifrost', 'bifrost_dot'],
+  bitcountry: ['pioneer', 'bitcountry'],
   statemine: ['statemint', 'statemine', 'darwinia2', 'astar', 'shiden', 'shibuya', 'parallel', 'liberland', 'liberlandTest', 'dentnet', 'dbcchain'],
   riochain: ['riochain'],
   sora_substrate: ['sora_substrate'],
   avail: ['kate', 'goldberg_testnet'],
-  pendulum: ['pendulum', 'amplitude', 'amplitude_test', 'hydradx_main'],
+  pendulum: ['pendulum', 'amplitude', 'amplitude_test', 'hydradx_main', 'bifrost', 'bifrost_dot'],
   centrifuge: ['centrifuge'],
   disable_transfer: ['invarch', 'crab', 'pangolin']
 };
@@ -237,10 +247,12 @@ export const _DEFAULT_MANTA_ZK_CHAIN = 'calamari';
 // XCM------------------------------------------------------------------------------------------------------------------
 
 export const _XCM_CHAIN_GROUP = {
-  polkadotXcm: ['astar', 'shiden', 'statemine', 'statemint', 'equilibrium_parachain', 'rococo_assethub'],
-  xcmPallet: ['polkadot', 'kusama']
+  polkadotXcm: ['statemine', 'statemint', 'equilibrium_parachain', 'rococo_assethub', 'mythos'],
+  polkadotXcmSpecialCases: ['astar', 'shiden'],
+  xcmPallet: ['polkadot', 'kusama', 'rococo']
   // default is xTokens pallet
 };
+export const SUFFICIENT_CHAIN = ['astar', 'calamari', 'parallel', 'darwinia2', 'crabParachain', 'pangolin', 'statemint', 'moonriver', 'shiden', 'moonbeam', 'statemine', 'liberland', 'dentnet', 'phala', 'crust', 'dbcchain', 'rococo_assethub'];
 
 export const _XCM_TYPE = {
   RP: `${_SubstrateChainType.RELAYCHAIN}-${_SubstrateChainType.PARACHAIN}`, // DMP
@@ -250,18 +262,28 @@ export const _XCM_TYPE = {
 
 export const _DEFAULT_ACTIVE_CHAINS = [
   ..._DEFAULT_CHAINS,
-  'vara_network'
+  'vara_network',
+  'ton'
 ];
 
 export const EVM_PASS_CONNECT_STATUS: Record<string, string[]> = {
   arbitrum_one: ['*'],
   okxTest: ['*'],
   astarZkEvm: ['*'],
-  xlayer: ['*']
+  xlayer: ['*'],
+  aleph_evm: ['*']
 };
 
 export const EVM_REFORMAT_DECIMALS = {
   acala: ['acala_evm', 'karura_evm']
+};
+
+export const _PREDEFINED_SINGLE_MODES: Record<string, SingleModeJson> = {
+  subspace: {
+    networkKeys: ['subspace_gemini_2a', 'subspace_test', 'subspace_gemini_3a'],
+    theme: ThemeNames.DEFAULT,
+    autoTriggerDomain: 'subspace.network'
+  }
 };
 
 export const LATEST_CHAIN_DATA_FETCHING_INTERVAL = 120000;

@@ -1,10 +1,11 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { ChainRecommendValidator } from '@subwallet/extension-base/constants';
 import { getValidatorLabel } from '@subwallet/extension-base/koni/api/staking/bonding/utils';
 import { _STAKING_CHAIN_GROUP } from '@subwallet/extension-base/services/earning-service/constants';
 import { YieldPoolType } from '@subwallet/extension-base/types';
-import { detectTranslate } from '@subwallet/extension-base/utils';
+import { detectTranslate, fetchStaticData } from '@subwallet/extension-base/utils';
 import { SelectValidatorInput, StakingValidatorItem } from '@subwallet/extension-koni-ui/components';
 import EmptyValidator from '@subwallet/extension-koni-ui/components/Account/EmptyValidator';
 import { BasicInputWrapper } from '@subwallet/extension-koni-ui/components/Field/Base';
@@ -14,6 +15,7 @@ import { SortingModal } from '@subwallet/extension-koni-ui/components/Modal/Sort
 import { VALIDATOR_DETAIL_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { useFilterModal, useGetPoolTargetList, useSelector, useSelectValidators, useYieldPositionDetail } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps, ValidatorDataType } from '@subwallet/extension-koni-ui/types';
+import { autoSelectValidatorOptimally } from '@subwallet/extension-koni-ui/utils';
 import { getValidatorKey } from '@subwallet/extension-koni-ui/utils/transaction/stake';
 import { Badge, Button, Icon, InputRef, ModalContext, SwList, SwModal, useExcludeModal } from '@subwallet/react-ui';
 import { SwListSectionRef } from '@subwallet/react-ui/es/sw-list';
@@ -100,6 +102,8 @@ const Component = (props: Props, ref: ForwardedRef<InputRef>) => {
   const isSingleSelect = useMemo(() => _isSingleSelect || !isRelayChain, [_isSingleSelect, isRelayChain]);
   const hasReturn = useMemo(() => items[0]?.expectedReturn !== undefined, [items]);
 
+  const [defaultPoolMap, setDefaultPoolMap] = useState<Record<string, ChainRecommendValidator>>({});
+
   const maxPoolMembersValue = useMemo(() => {
     if (poolInfo.type === YieldPoolType.NATIVE_STAKING) { // todo: should also check chain group for pool
       return poolInfo.maxPoolMembers;
@@ -150,6 +154,7 @@ const Component = (props: Props, ref: ForwardedRef<InputRef>) => {
 
   const [viewDetailItem, setViewDetailItem] = useState<ValidatorDataType | undefined>(undefined);
   const [sortSelection, setSortSelection] = useState<SortKey>(SortKey.DEFAULT);
+  const [autoValidator, setAutoValidator] = useState('');
   const { filterSelectionMap, onApplyFilter, onChangeFilterOption, onCloseFilterModal, onResetFilter, selectedFilters } = useFilterModal(FILTER_MODAL_ID);
 
   const fewValidators = changeValidators.length > 1;
@@ -309,14 +314,43 @@ const Component = (props: Props, ref: ForwardedRef<InputRef>) => {
   }, [activeModal, id]);
 
   useEffect(() => {
-    const _default = nominations?.map((item) => getValidatorKey(item.validatorAddress, item.validatorIdentity)).join(',') || '';
+    fetchStaticData<Record<string, ChainRecommendValidator>>('direct-nomination-validator').then((earningPoolRecommendation) => {
+      setDefaultPoolMap(earningPoolRecommendation);
+    }).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    const recommendValidator = defaultPoolMap[chain];
+
+    if (recommendValidator) {
+      setAutoValidator((old) => {
+        if (old) {
+          return old;
+        } else {
+          const selectedValidator = autoSelectValidatorOptimally(
+            items,
+            recommendValidator.maxCount,
+            true,
+            recommendValidator.preSelectValidators
+          );
+
+          return selectedValidator.map((item) => getValidatorKey(item.address, item.identity)).join(',');
+        }
+      });
+    } else {
+      setAutoValidator('');
+    }
+  }, [items, chain, defaultPoolMap]);
+
+  useEffect(() => {
+    const _default = nominations?.map((item) => getValidatorKey(item.validatorAddress, item.validatorIdentity)).join(',') || autoValidator || '';
     const selected = defaultValue || (isSingleSelect ? '' : _default);
 
     onInitValidators(_default, selected);
     onChange && onChange({ target: { value: selected } });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nominations, onInitValidators, isSingleSelect]);
+  }, [nominations, onInitValidators, isSingleSelect, autoValidator]);
 
   useEffect(() => {
     if (!isActive) {
@@ -338,6 +372,7 @@ const Component = (props: Props, ref: ForwardedRef<InputRef>) => {
       <SelectValidatorInput
         chain={chain}
         disabled={!chain || !from}
+        identPrefix={networkPrefix}
         label={t('Select') + ' ' + t(handleValidatorLabel)}
         loading={loading}
         onClick={onActiveValidatorSelector}

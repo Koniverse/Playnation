@@ -2,18 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
-import { WC_DEFAULT_CHAIN_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { WC_DEFAULT_CHAIN_TESTNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { createPromiseHandler, isSameAddress } from '@subwallet/extension-base/utils';
 import { GamePoint } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { ShareLeaderboard, Task } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { ALERT_CHANGE_ACCOUNT_CONNECT_MODAL, COMPLETED_CONNECT_WALLET } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useConfirmModal, useNotification, useSelector, useSetCurrentPage, useTranslation } from '@subwallet/extension-koni-ui/hooks';
+import { useLocalStorage } from '@subwallet/extension-koni-ui/hooks/common/useLocalStorage';
 import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { customFormatDate, noop, toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
+import { customFormatDate, noop, toDisplayNumber, validateSignature } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
-import { Button, Icon, Image, SwModalFuncProps } from '@subwallet/react-ui';
+import { Button, Icon, Image, ModalContext, SwModalFuncProps } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle, SmileySad } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -30,20 +33,21 @@ type Props = {
 
 const apiSDK = BookaSdk.instance;
 const telegramConnector = TelegramConnector.instance;
+const alertChangeAccountModalId = ALERT_CHANGE_ACCOUNT_CONNECT_MODAL;
 
 const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task }: Props): React.ReactElement => {
   useSetCurrentPage('/home/mission');
   const notify = useNotification();
 
   const { connectWC, requireWC, waitingSigningModal: { close: closeWaiting, open: openWaiting } } = useContext(WalletConnectContext);
-
   const { wcAccount } = useSelector((state) => state.accountState);
-
-  const [account, setAccount] = useState(apiSDK.account);
+  const { activeModal } = useContext(ModalContext);
+  const [, setAccount] = useState(apiSDK.account);
   const [taskLoading, setTaskLoading] = useState<boolean>(false);
   const { t } = useTranslation();
   const [completed, setCompleted] = useState(!!task.completedAt);
   const { token } = useTheme() as Theme;
+  const [completedFullStepConnectAccount, setCompletedFullStepConnectAccount] = useLocalStorage<boolean>(COMPLETED_CONNECT_WALLET, true);
 
   const [checking, setChecking] = useState(task && task.airlyftType && !completed);
 
@@ -112,17 +116,109 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
     }
   }), [className, t, token.colorIconHover]);
 
+  const getWcAddress = useCallback(async (): Promise<string | null> => {
+    if (wcAccount && isSameAddress(wcAccount.address, apiSDK.addressLinked || '') && completedFullStepConnectAccount) {
+      return wcAccount.address;
+    } else {
+      try {
+        if (apiSDK.addressLinked) {
+          setCompletedFullStepConnectAccount(false);
+        }
+
+        await requireWC();
+        const address = await connectWC();
+
+        const message = `Approve use this address to set linked address: ${address}`;
+
+        openWaiting();
+
+        const { signature } = await wcSignMessageRequest({
+          address: address,
+          chainId: WC_DEFAULT_CHAIN_TESTNET_ID,
+          payload: stringToHex(message),
+          method: 'personal_sign'
+        });
+
+        if (!validateSignature(address, message, signature)) {
+          throw new Error('Invalid signature');
+        }
+
+        closeWaiting();
+
+        if (apiSDK.addressLinked) {
+          localStorage.setItem(COMPLETED_CONNECT_WALLET, 'true');
+
+          if (apiSDK.addressLinked !== address) {
+            activeModal(alertChangeAccountModalId);
+
+            return null;
+          } else {
+            return address;
+          }
+        } else {
+          apiSDK.setAddressLinking(address);
+
+          const { promise, resolve } = createPromiseHandler<string>();
+
+          const accountLinkedSub = apiSDK.subscribeAddressLinked().subscribe((data) => {
+            if (data) {
+              resolve(data);
+            }
+          });
+
+          const accountLinkingSub = apiSDK.subscribeAddressLinking().subscribe((data) => {
+            if (data === undefined) {
+              resolve('');
+            }
+          });
+
+          return promise.then((data) => {
+            accountLinkedSub.unsubscribe();
+            accountLinkingSub.unsubscribe();
+
+            return data;
+          });
+        }
+      } catch (e) {
+        closeWaiting();
+        const error = e as Error;
+
+        setTaskLoading(false);
+
+        if (error.message.toLowerCase().includes('user rejected'.toLowerCase())) {
+          notify({
+            message: t('You’ve rejected this request'),
+            type: 'error',
+            duration: null
+          });
+        }
+
+        if (error.message.toLowerCase().includes('Invalid signature'.toLowerCase())) {
+          notify({
+            message: t('Invalid signature'),
+            type: 'error',
+            duration: null
+          });
+        }
+
+        if (error.message?.toLowerCase().includes('Unsupported chains'.toLowerCase())) {
+          telegramConnector.showPopup({
+            message: t('Your chosen wallet hasn’t supported Story Odyssey Testnet. Add network to your wallet or change to another wallet'),
+            buttons: [{ type: 'ok', text: t('Got it') }]
+          }, noop);
+        }
+
+        return null;
+      }
+    }
+  }, [activeModal, closeWaiting, completedFullStepConnectAccount, connectWC, notify, openWaiting, requireWC, setCompletedFullStepConnectAccount, t, wcAccount]);
+
   const { handleSimpleConfirmModal: handleNoNftFoundModalProps } = useConfirmModal(noNftFoundModalProps);
 
   const finishTask = useCallback(() => {
     (async () => {
       const taskId = task.id;
       const onChainType = task.onChainType;
-      const { address, telegramId = '' } = account?.info || {};
-
-      if (!address) {
-        return;
-      }
 
       setTaskLoading(true);
       let res: SWTransactionResponse | null = null;
@@ -131,31 +227,6 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
       const isNftTask = !!task.metadata?.contractAddress;
 
       payload.network = networkKey;
-
-      const getWcAddress = async (): Promise<string | null> => {
-        if (wcAccount) {
-          return wcAccount.address;
-        } else {
-          try {
-            await requireWC();
-
-            return await connectWC();
-          } catch (e) {
-            const error = e as Error;
-
-            setTaskLoading(false);
-
-            if (error.message?.toLowerCase().includes('Unsupported chains'.toLowerCase())) {
-              telegramConnector.showPopup({
-                message: t('Your chosen wallet hasn’t supported Story Odyssey Testnet. Add network to your wallet or change to another wallet'),
-                buttons: [{ type: 'ok', text: t('Got it') }]
-              }, noop);
-            }
-
-            return null;
-          }
-        }
-      };
 
       if (onChainType) {
         const wcAddress = await getWcAddress();
@@ -227,86 +298,67 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         payload.extrinsicHash = res.extrinsicHash || '';
       }
 
-      if (isNftTask) {
-        const wcAddress = await getWcAddress();
+      const submitTaskFinished = (taskId: number, payload: Record<string, unknown>, subErrorHandler?: () => Promise<void>) => {
+        apiSDK.finishTask(taskId, payload)
+          .then(async (result) => {
+            if (task.airlyftWidgetId && result.isOpenUrl) {
+              await openWidget(task.airlyftWidgetId, task.airlyftId ?? '');
+            }
 
-        if (!wcAddress) {
-          setTaskLoading(false);
+            setTaskLoading(false);
+            setCompleted(result.success);
 
-          return;
-        }
+            if (result.success) {
+              actionReloadPoint();
+            }
+          })
+          .catch((e) => {
+            const error = e as Error;
 
-        const message = `Check NFT Ownership ${telegramId}`;
+            if (subErrorHandler && error.message?.toLowerCase().includes('account not linked')) {
+              subErrorHandler().catch(console.error);
+            } else {
+              throw error;
+            }
+          }).catch((e) => {
+            const error = e as Error;
 
-        openWaiting();
+            setTaskLoading(false);
 
-        try {
-          const rs = await wcSignMessageRequest({
-            address: wcAddress,
-            chainId: WC_DEFAULT_CHAIN_ID,
-            payload: stringToHex(message),
-            method: 'personal_sign'
-          });
+            if (error.message?.toLowerCase().includes('not the owner of NFT'.toLowerCase())) {
+              handleNoNftFoundModalProps().catch(console.error);
 
-          closeWaiting();
-          payload.signature = rs.signature;
-          payload.address = wcAddress;
-        } catch (e) {
-          closeWaiting();
-          const error = e as Error;
+              return;
+            }
 
-          console.error('Fail to get signature', error);
+            let notifyMessage = error.message;
 
-          if (error.message.toLowerCase().includes('user rejected'.toLowerCase())) {
+            if (error.message?.toLowerCase().includes('This address has been used'.toLowerCase())) {
+              notifyMessage = t('Account already linked to another Telegram ID');
+            }
+
             notify({
-              message: t('You’ve rejected this request'),
+              message: notifyMessage,
               type: 'error',
               duration: null
             });
-          }
-
-          setTaskLoading(false);
-
-          return;
-        }
-      }
-
-      apiSDK.finishTask(taskId, payload)
-        .then(async (result) => {
-          if (task.airlyftWidgetId && result.isOpenUrl) {
-            await openWidget(task.airlyftWidgetId, task.airlyftId ?? '');
-          }
-
-          setTaskLoading(false);
-          setCompleted(result.success);
-
-          if (result.success) {
-            actionReloadPoint();
-          }
-        })
-        .catch((e) => {
-          const error = e as Error;
-
-          setTaskLoading(false);
-
-          if (error.message?.toLowerCase().includes('not the owner of NFT'.toLowerCase())) {
-            handleNoNftFoundModalProps().catch(console.error);
-
-            return;
-          }
-
-          let notifyMessage = error.message;
-
-          if (error.message?.toLowerCase().includes('This address has been used'.toLowerCase())) {
-            notifyMessage = t('Account already linked to another Telegram ID');
-          }
-
-          notify({
-            message: notifyMessage,
-            type: 'error',
-            duration: null
           });
+      };
+
+      if (isNftTask) {
+        submitTaskFinished(taskId, payload, async () => {
+          const wcAddress = await getWcAddress();
+
+          if (!wcAddress) {
+            setTaskLoading(false);
+          } else {
+            payload.address = wcAddress;
+            submitTaskFinished(taskId, payload);
+          }
         });
+      } else {
+        submitTaskFinished(taskId, payload);
+      }
 
       if (!task.airlyftId) {
         setTimeout(() => {
@@ -328,7 +380,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
         }, 100);
       }
     })().catch(console.error);
-  }, [task.id, task.onChainType, task.network, task.metadata?.contractAddress, task.share_leaderboard, task.airlyftId, task.airlyftWidgetId, task.url, task.gameId, account?.info, notify, t, wcAccount, openWaiting, requireWC, connectWC, closeWaiting, openWidget, actionReloadPoint, handleNoNftFoundModalProps]);
+  }, [task.id, task.onChainType, task.network, task.metadata?.contractAddress, task.airlyftId, task.airlyftWidgetId, task.url, task.share_leaderboard, task.gameId, getWcAddress, notify, t, openWidget, actionReloadPoint, handleNoNftFoundModalProps]);
 
   const { endTime,
     isDisabled,

@@ -4,29 +4,26 @@
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
 import { SWStorage } from '@subwallet/extension-base/storage';
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, ConfirmLinkingAccountModal, ExistedAddressModal, InitRewardsModal, InitRewardsModalProps, Layout, LoadingScreen, OnChainProfileModal } from '@subwallet/extension-koni-ui/components';
+import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, InitRewardsModal, InitRewardsModalProps, Layout, LoadingScreen, NewAiChatModal } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
-import { BookaAccount, NftMintingLog } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, ADDRESS_EXISTED_MODAL, CONFIRM_LINKING_ACCOUNT_MODAL, CONFIRM_SHOW_MINTING_FAILED_MODAL, homeScreensLayoutBackgroundImages, ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, homeScreensLayoutBackgroundImages, NEW_CHAT_AI_MODAL, ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
-import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
-import { useAccountBalance, useGetBannerByScreen, useGetChainSlugsByAccountType, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
-import useTranslation from '@subwallet/extension-koni-ui/hooks/common/useTranslation';
+import { useAccountBalance, useGetBannerByScreen, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
+import { useGetChainSlugsByAccountType } from '@subwallet/extension-koni-ui/hooks/screen/home/useGetChainSlugsByAccountType';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { CheckCircle, Gift } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Outlet } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useLocalStorage } from 'usehooks-ts';
 
 type Props = ThemeProps;
 
@@ -35,27 +32,26 @@ const apiSDK = BookaSdk.instance;
 const metadataHandler = MetadataHandler.instance;
 let isAddPointShowed = false; // Use let instead of ref to avoid reload all components
 const cloudStorage = SWStorage.instance;
-const cloudStorageKey = 'on-chain-profile-modal';
+const onNewChatAiCloudKey = 'new-chat-ai-modal';
+const onNewChatAiModal = NEW_CHAT_AI_MODAL;
 const onChainProfileAlterModal = ON_CHAIN_PROFILE_MODAL;
-const addressExitedModal = ADDRESS_EXISTED_MODAL;
-const confirmLinkingAddress = CONFIRM_LINKING_ACCOUNT_MODAL;
+const onChainProfileCloudKey = 'on-chain-profile-modal';
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const chainsByAccountType = useGetChainSlugsByAccountType();
   const tokenGroupStructure = useTokenGroup(chainsByAccountType);
   const accountBalance = useAccountBalance(tokenGroupStructure.tokenGroupMap);
-  const { activeModal, inactiveModal } = useContext(ModalContext);
-  const { disconnectWithoutConfirmModal } = useContext(WalletConnectContext);
-  const [addressLinking, setAddressLinking] = useState<string | undefined>(apiSDK.addressLinking);
+  const { activeModal, checkActive, inactiveModal } = useContext(ModalContext);
   const [containerClass, setContainerClass] = useState<string | undefined>();
   const [addRewardModalProps, setAddRewardModalProps] = useState<AddRewardsModalProps | undefined>();
   const [initRewardModalProps, setInitRewardModalProps] = useState<InitRewardsModalProps | undefined>();
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
-  const { alertModal } = useContext(WalletModalContext);
-  const { t } = useTranslation();
   const { wcAccount } = useSelector((state: RootState) => state.accountState);
-  const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>();
-  const [mintFailedLogIds, setMintFailedLogIds] = useLocalStorage<number[]>(CONFIRM_SHOW_MINTING_FAILED_MODAL, []);
+  const { disconnectWithoutConfirmModal } = useContext(WalletConnectContext);
+  // const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>();
+  // const [mintFailedLogIds, setMintFailedLogIds] = useLocalStorage<number[]>(CONFIRM_SHOW_MINTING_FAILED_MODAL, []);
+
+  const isGlobalModalActive = useMemo(() => checkActive(GlobalSearchTokenModalId), [checkActive]);
 
   const banners = useGetBannerByScreen('home');
 
@@ -102,42 +98,58 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     closeAddRewardsModal();
   }, [closeAddRewardsModal]);
 
-  const handleMintingFailedModal = useCallback(() => {
-    const handleConfirmOrCancel = () => {
-      setMintFailedLogIds((prevIds) => {
-        if (mintingLog?.id && !prevIds.includes(mintingLog.id)) {
-          return [...prevIds, mintingLog.id];
+  // const handleMintingFailedModal = useCallback(() => {
+  //   const handleConfirmOrCancel = () => {
+  //     setMintFailedLogIds((prevIds) => {
+  //       if (mintingLog?.id && !prevIds.includes(mintingLog.id)) {
+  //         return [...prevIds, mintingLog.id];
+  //       }
+  //
+  //       return prevIds;
+  //     });
+  //     alertModal.close();
+  //   };
+  //
+  //   alertModal.open({
+  //     className: 'general-confirmation-modal modal-revert-header',
+  //     title: t('Badge minting failed'),
+  //     iconProps: {
+  //       phosphorIcon: Gift,
+  //       weight: 'fill'
+  //     },
+  //     contentTitle: t('Mint your badge again'),
+  //     content: (
+  //       t('Due to technical issues, your badge wasn’t minted in Phase 1. Click the Mint tab to mint your badge again on December 6')
+  //     ),
+  //     okButton: {
+  //       icon: CheckCircle,
+  //       iconWeight: 'fill',
+  //       text: t('I understand'),
+  //       onClick: handleConfirmOrCancel
+  //     },
+  //     onCancel: handleConfirmOrCancel
+  //   });
+  // }, [alertModal, mintingLog, setMintFailedLogIds, t]);
+
+  const onShowNewChatAiModal = useCallback(async () => {
+    try {
+      const status = await cloudStorage.getItem(onNewChatAiCloudKey);
+
+      if (!status) {
+        const isPassed = await apiSDK.checkAccountAvailableBetaVersion();
+
+        if (isPassed) {
+          activeModal(onNewChatAiModal);
         }
-
-        return prevIds;
-      });
-      alertModal.close();
-    };
-
-    alertModal.open({
-      className: 'general-confirmation-modal modal-revert-header',
-      title: t('Badge minting failed'),
-      iconProps: {
-        phosphorIcon: Gift,
-        weight: 'fill'
-      },
-      contentTitle: t('Mint your badge again'),
-      content: (
-        t('Due to technical issues, your badge wasn’t minted in Phase 1. Click the Mint tab to mint your badge again on December 6')
-      ),
-      okButton: {
-        icon: CheckCircle,
-        iconWeight: 'fill',
-        text: t('I understand'),
-        onClick: handleConfirmOrCancel
-      },
-      onCancel: handleConfirmOrCancel
-    });
-  }, [alertModal, mintingLog, setMintFailedLogIds, t]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [activeModal]);
 
   const onShowOnChainProfileModal = useCallback(async () => {
     try {
-      const status = await cloudStorage.getItem(cloudStorageKey);
+      const status = await cloudStorage.getItem(onChainProfileCloudKey);
 
       if (!status) {
         if (wcAccount?.address) {
@@ -151,31 +163,29 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     }
   }, [activeModal, disconnectWithoutConfirmModal, wcAccount]);
 
-  const onShowAddressExistedModal = useCallback(() => {
-    inactiveModal(onChainProfileAlterModal);
-    inactiveModal(confirmLinkingAddress);
-    activeModal(addressExitedModal);
-  }, [activeModal, inactiveModal]);
+  // useEffect(() => {
+  //   const fetchMintingLog = async () => {
+  //     setPendingFetching(true);
+  //
+  //     try {
+  //       const mintingLog = await apiSDK.getNftMintingLog();
+  //
+  //       setMintingLog(mintingLog);
+  //     } catch (error) {
+  //       console.error('Error fetching minting log:', error);
+  //     }
+  //   };
+  //
+  //   fetchMintingLog().catch(console.error).finally(() => {
+  //     setPendingFetching(false);
+  //   });
+  // }, []);
 
-  useEffect(() => {
-    const fetchMintingLog = async () => {
-      try {
-        const mintingLog = await apiSDK.getNftMintingLog();
-
-        setMintingLog(mintingLog);
-      } catch (error) {
-        console.error('Error fetching minting log:', error);
-      }
-    };
-
-    fetchMintingLog().catch(console.error);
-  }, []);
-
-  useEffect(() => {
-    if (mintingLog?.notify && !mintFailedLogIds.includes(mintingLog.id)) {
-      handleMintingFailedModal();
-    }
-  }, [handleMintingFailedModal, mintFailedLogIds, mintingLog?.id, mintingLog?.notify, navigate]);
+  // useEffect(() => {
+  //   if (mintingLog?.notify && !mintFailedLogIds.includes(mintingLog.id)) {
+  //     handleMintingFailedModal();
+  //   }
+  // }, [handleMintingFailedModal, mintFailedLogIds, mintingLog?.id, mintingLog?.notify, navigate]);
 
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount()
@@ -183,14 +193,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         setAccount(data);
       });
 
-    const addressLinkingSub = apiSDK.subscribeAddressLinking()
-      .subscribe((data) => {
-        setAddressLinking(data);
-      });
-
     return () => {
       accountSub.unsubscribe();
-      addressLinkingSub.unsubscribe();
     };
   }, []);
 
@@ -277,14 +281,10 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   }, [account, closeInitRewardModal, onCancelRewardModal, onOkRewardModal, openInitRewardModal, openAddRewardsModal, closeAddRewardsModal]);
 
   useEffect(() => {
-    if (addressLinking) {
-      activeModal(confirmLinkingAddress);
-    }
-  }, [activeModal, addressLinking]);
-
-  useEffect(() => {
-    onShowOnChainProfileModal().catch(console.error);
-  }, [onShowOnChainProfileModal]);
+    onShowNewChatAiModal().then(async () => {
+      await onShowOnChainProfileModal();
+    }).catch(console.error);
+  }, [isGlobalModalActive, onShowNewChatAiModal, onShowOnChainProfileModal]);
 
   return (
     <>
@@ -313,17 +313,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         tokenBalanceMap={accountBalance.tokenBalanceMap}
       />
 
-      <OnChainProfileModal
-        onSubmitAddressLinking={setAddressLinking}
-      />
-      <ExistedAddressModal
-        onSubmitAddressLinking={setAddressLinking}
-      />
-      <ConfirmLinkingAccountModal
-        addressLinking={addressLinking}
-        onErrorHandler={onShowAddressExistedModal}
-        setAddressLinking={setAddressLinking}
-      />
+      <NewAiChatModal />
+
       {firstBanner && <CampaignBannerModal banner={firstBanner} />}
       {
         !!addRewardModalProps && (

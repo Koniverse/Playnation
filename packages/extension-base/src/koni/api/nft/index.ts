@@ -6,6 +6,7 @@ import { NftCollection, NftItem } from '@subwallet/extension-base/background/Kon
 import { AcalaNftApi } from '@subwallet/extension-base/koni/api/nft/acala_nft';
 import AssetHubUniquesPalletApi from '@subwallet/extension-base/koni/api/nft/assethub_unique';
 import { BitCountryNftApi } from '@subwallet/extension-base/koni/api/nft/bit.country';
+import { BlobInscriptionApi } from '@subwallet/extension-base/koni/api/nft/blobinscription';
 import { EvmNftApi } from '@subwallet/extension-base/koni/api/nft/evm_nft';
 import { KaruraNftApi } from '@subwallet/extension-base/koni/api/nft/karura_nft';
 import { BaseNftApi } from '@subwallet/extension-base/koni/api/nft/nft';
@@ -21,9 +22,12 @@ import { _isChainSupportEvmNft, _isChainSupportNativeNft, _isChainSupportWasmNft
 import { categoryAddresses, targetIsWeb } from '@subwallet/extension-base/utils';
 
 import AssetHubNftsPalletApi from './assethub_nft';
+import { RariNftApi } from './rari';
+import { OdysseyNftApi } from './story_odyssey_nft';
+import { TernoaNftApi } from './ternoa_nft';
 
 function createSubstrateNftApi (chain: string, substrateApi: _SubstrateApi | null, addresses: string[]): BaseNftApi[] | null {
-  const [substrateAddresses] = categoryAddresses(addresses);
+  const { evm: evmAddresses, substrate: substrateAddresses } = categoryAddresses(addresses);
 
   if (_NFT_CHAIN_GROUP.acala.includes(chain)) {
     return [new AcalaNftApi(substrateApi, substrateAddresses, chain)];
@@ -37,23 +41,33 @@ function createSubstrateNftApi (chain: string, substrateApi: _SubstrateApi | nul
     return [new AssetHubUniquesPalletApi(substrateApi, substrateAddresses, chain), new AssetHubNftsPalletApi(substrateApi, substrateAddresses, chain)];
   } else if (_NFT_CHAIN_GROUP.unique_network.includes(chain)) {
     return [new UniqueNftApi(chain, substrateAddresses)];
+  } else if (_NFT_CHAIN_GROUP.unique_evm.includes(chain)) {
+    return [new UniqueNftApi(chain, evmAddresses)];
   } else if (_NFT_CHAIN_GROUP.bitcountry.includes(chain)) {
     return [new BitCountryNftApi(substrateApi, substrateAddresses, chain)];
   } else if (_NFT_CHAIN_GROUP.vara.includes(chain)) {
     return [new VaraNftApi(chain, substrateAddresses)];
+  } else if (_NFT_CHAIN_GROUP.avail.includes(chain)) {
+    return [new BlobInscriptionApi(chain, substrateAddresses)];
+  } else if (_NFT_CHAIN_GROUP.ternoa.includes(chain)) {
+    return [new TernoaNftApi(substrateApi, substrateAddresses, chain)];
+  } else if (_NFT_CHAIN_GROUP.rari.includes(chain)) {
+    return [new RariNftApi(chain, evmAddresses)];
+  } else if (_NFT_CHAIN_GROUP.story_odyssey.includes(chain)) {
+    return [new OdysseyNftApi(chain, evmAddresses)];
   }
 
   return null;
 }
 
 function createWasmNftApi (chain: string, apiProps: _SubstrateApi | null, addresses: string[]): BaseNftApi | null {
-  const [substrateAddresses] = categoryAddresses(addresses);
+  const substrateAddresses = categoryAddresses(addresses).substrate;
 
   return new WasmNftApi(apiProps, substrateAddresses, chain);
 }
 
 function createWeb3NftApi (chain: string, evmApi: _EvmApi | null, addresses: string[]): BaseNftApi | null {
-  const [, evmAddresses] = categoryAddresses(addresses);
+  const evmAddresses = categoryAddresses(addresses).evm;
 
   return new EvmNftApi(evmApi, evmAddresses, chain);
 }
@@ -95,7 +109,7 @@ export class NftHandler {
   setAddresses (addresses: string[]) {
     this.addresses = addresses;
 
-    const [substrateAddresses, evmAddresses] = categoryAddresses(addresses);
+    const { evm: evmAddresses, substrate: substrateAddresses } = categoryAddresses(addresses);
 
     for (const handler of this.handlers) {
       const useAddresses = handler.isEthereum ? evmAddresses : substrateAddresses;
@@ -126,7 +140,7 @@ export class NftHandler {
     try {
       if (this.needSetupApi) { // setup connections for first time use
         this.handlers = [];
-        const [substrateAddresses, evmAddresses] = categoryAddresses(this.addresses);
+        const { evm: evmAddresses, substrate: substrateAddresses } = categoryAddresses(this.addresses);
 
         Object.entries(this.chainInfoMap).forEach(([chain, chainInfo]) => {
           if (_isChainSupportNativeNft(chainInfo)) {
@@ -146,6 +160,38 @@ export class NftHandler {
               if (handler) {
                 this.handlers.push(handler);
               }
+            }
+          }
+
+          if (chain === 'unique_evm') {
+            const handlers = createSubstrateNftApi(chain, null, evmAddresses);
+
+            if (handlers && !!handlers.length) {
+              this.handlers.push(...handlers);
+            }
+          }
+
+          if (chain === 'rari') {
+            const handlers = createSubstrateNftApi(chain, null, evmAddresses);
+
+            if (handlers && !!handlers.length) {
+              this.handlers.push(...handlers);
+            }
+          }
+
+          if (chain === 'ternoa') {
+            const handlers = createSubstrateNftApi(chain, this.substrateApiMap[chain], substrateAddresses);
+
+            if (handlers && !!handlers.length) {
+              this.handlers.push(...handlers);
+            }
+          }
+
+          if (chain === 'storyOdyssey_testnet') {
+            const handlers = createSubstrateNftApi(chain, null, evmAddresses);
+
+            if (handlers && !!handlers.length) {
+              this.handlers.push(...handlers);
             }
           }
 

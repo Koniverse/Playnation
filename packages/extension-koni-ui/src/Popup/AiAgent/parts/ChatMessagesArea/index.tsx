@@ -14,6 +14,7 @@ import { BotMessage } from './BotMessage';
 type Props = ThemeProps & {
   messages: MessageType[];
   loading?: boolean;
+  onClickConnectWallet: VoidFunction;
 };
 
 export interface ChatMessagesAreaRef {
@@ -21,7 +22,7 @@ export interface ChatMessagesAreaRef {
 }
 
 function Component (props: Props, ref: ForwardedRef<ChatMessagesAreaRef>): React.ReactElement<Props> {
-  const { className, loading, messages } = props;
+  const { className, loading, messages, onClickConnectWallet } = props;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollContainerRefCurrent = scrollContainerRef.current;
@@ -62,6 +63,7 @@ function Component (props: Props, ref: ForwardedRef<ChatMessagesAreaRef>): React
                   <BotMessage
                     className={'__message-wrapper -ai'}
                     message={message}
+                    onClickConnectWallet={onClickConnectWallet}
                   />
                 )
               }

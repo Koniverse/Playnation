@@ -1,19 +1,20 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { WC_DEFAULT_CHAIN_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { WC_DEFAULT_CHAIN_TESTNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { EmptyList, GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
 import WalletConnectStats from '@subwallet/extension-koni-ui/components/EmptyList/WalletConnectStats';
 import NFTListModal from '@subwallet/extension-koni-ui/components/Modal/NFTListModal';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount, IntegratedProfileResult } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { COMPLETED_CONNECT_WALLET } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useNotification, useSetCurrentPage } from '@subwallet/extension-koni-ui/hooks';
 import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { copyToClipboard, toDisplayNumber, toShort } from '@subwallet/extension-koni-ui/utils';
+import { copyToClipboard, toDisplayNumber, toShort, validateSignature } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext } from '@subwallet/react-ui';
 import { ArrowSquareIn, Copy, ShareNetwork, SmileySad } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -34,7 +35,7 @@ const Component: React.FC<Props> = (props: Props) => {
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
   const [addressLinked, setAddressLinked] = useState<string | undefined>(apiSDK.addressLinked);
   const { connectWC, requireWC, waitingSigningModal: { close: closeWaiting, open: openWaiting } } = useContext(WalletConnectContext);
-  const [accountIntegrationProfile, setAccountIntegrationProfile] = useState<IntegratedProfileResult | undefined>();
+  const [accountProfile, setAccountProfile] = useState<IntegratedProfileResult | undefined>();
   const { activeModal } = useContext(ModalContext);
   const notify = useNotification();
   const { t } = useTranslation();
@@ -42,11 +43,11 @@ const Component: React.FC<Props> = (props: Props) => {
   useSetCurrentPage('/home/account');
 
   const onCopyAddress = useCallback(() => {
-    copyToClipboard(wcAccount?.address || '');
+    copyToClipboard(addressLinked || '');
     notify({
       message: t('Copied to clipboard')
     });
-  }, [wcAccount?.address, notify, t]);
+  }, [addressLinked, notify, t]);
 
   const currentPoint = account?.attributes.accumulatePoint || 0;
 
@@ -55,22 +56,22 @@ const Component: React.FC<Props> = (props: Props) => {
   }, [activeModal]);
 
   const onClickShare = useCallback(() => {
-    if (!accountIntegrationProfile?.totalTransactions) {
+    if (!accountProfile?.totalTransactions) {
       return;
     }
 
     const inviteLink = apiSDK.getInviteURL();
 
-    const content = `Just checked my @koniverse Integrated Profile and found that I’ve made ${accountIntegrationProfile?.totalTransactions} transactions on @StoryProtocol Odyssey 🎉%0AWanna see yours? Join me now on @koniverse 👉`;
+    const content = `Just checked my @koniverse Integrated Profile and found that I’ve made ${accountProfile?.totalTransactions} transactions on @StoryProtocol Odyssey 🎉%0AWanna see yours? Join me now on @koniverse 👉`;
     const url = `http://x.com/share?text=${content}&url=${inviteLink}`;
 
     if (url) {
       telegramConnector.openLink(url);
     }
-  }, [accountIntegrationProfile?.totalTransactions]);
+  }, [accountProfile?.totalTransactions]);
 
   const remainingTransactionsValue = useMemo(() => {
-    const profile = accountIntegrationProfile;
+    const profile = accountProfile;
 
     if (!profile) {
       return 0;
@@ -79,27 +80,32 @@ const Component: React.FC<Props> = (props: Props) => {
     const remainingValue = profile.totalTransactions - profile.totalSwapPiperXTransactions - profile.totalStakeVerioTransactions;
 
     return remainingValue < 0 ? 0 : remainingValue;
-  }, [accountIntegrationProfile]);
+  }, [accountProfile]);
 
   const connectWalletConnect = useCallback(() => {
-    const fnc = async () => {
+    (async () => {
       try {
         await requireWC();
-        const address = await connectWC(true, true);
+        const address = await connectWC();
 
         const message = `Approve use this address to set linked address: ${address}`;
 
         openWaiting();
 
         try {
-          await wcSignMessageRequest({
+          const { signature } = await wcSignMessageRequest({
             address: address,
-            chainId: WC_DEFAULT_CHAIN_ID,
+            chainId: WC_DEFAULT_CHAIN_TESTNET_ID,
             payload: stringToHex(message),
             method: 'personal_sign'
           });
 
+          if (!validateSignature(address, message, signature)) {
+            throw new Error('Invalid signature');
+          }
+
           apiSDK.setAddressLinking(address);
+          localStorage.removeItem(COMPLETED_CONNECT_WALLET);
           closeWaiting();
         } catch (e) {
           closeWaiting();
@@ -115,13 +121,19 @@ const Component: React.FC<Props> = (props: Props) => {
               duration: null
             });
           }
+
+          if (error.message.toLowerCase().includes('Invalid signature'.toLowerCase())) {
+            notify({
+              message: t('Invalid signature'),
+              type: 'error',
+              duration: null
+            });
+          }
         }
       } catch (e) {
         console.error(e);
       }
-    };
-
-    fnc().catch(console.error);
+    })().catch(console.error);
   }, [closeWaiting, connectWC, notify, openWaiting, requireWC, t]);
 
   useEffect(() => {
@@ -146,7 +158,7 @@ const Component: React.FC<Props> = (props: Props) => {
       try {
         const data = await apiSDK.getStatsOfAddress();
 
-        setAccountIntegrationProfile(data);
+        setAccountProfile(data);
       } catch (error) {
         console.error('Error fetching stats:', error);
       }
@@ -158,7 +170,7 @@ const Component: React.FC<Props> = (props: Props) => {
   useEffect(() => {
     const profileSub = apiSDK.subscribeAccountIntegrationProfile()
       .subscribe((data) => {
-        setAccountIntegrationProfile(data);
+        setAccountProfile(data);
       });
 
     return () => {
@@ -208,56 +220,61 @@ const Component: React.FC<Props> = (props: Props) => {
         <div className={'block-info-account-separator'}></div>
         <div className={'right-block-info-account'}>
           <div className={'right-block-info-account-label'}>Active day</div>
-          <div className={'right-block-info-account-value'}>{toDisplayNumber(accountIntegrationProfile?.loginCount)}</div>
-          <div className={'right-block-info-account-unit'}>days</div>
+          <div className={'right-block-info-account-value'}>{!accountProfile?.loginCount || accountProfile?.loginCount === 0 ? '1' : toDisplayNumber(accountProfile?.loginCount)}</div>
+          <div className={'right-block-info-account-unit'}>{!accountProfile?.loginCount || accountProfile?.loginCount < 2 ? 'day' : 'days'}</div>
         </div>
       </div>
-      {!!addressLinked && accountIntegrationProfile && (
+      {!!addressLinked && accountProfile && (
         <div className='block-stats-info'>
           <div className={'block-stats'}>
             <div className={'block-stats-left'}>Your IPventure Stats</div>
             <div className={'block-stats-right'}>
-              <div className={'block-stats-right-value'}>{toDisplayNumber(accountIntegrationProfile?.totalTransactions)}</div>
-              <div className={'block-stats-right-unit'}>Transactions</div>
+              <div className={'block-stats-right-value'}>{toDisplayNumber(accountProfile?.totalTransactions)}</div>
+              <div className={'block-stats-right-unit'}>{accountProfile?.totalTransactions > 1 ? 'Transactions' : 'Transaction'}</div>
             </div>
           </div>
           <div className={'block-content-wrapper'}>
             <div className={'block-content1'}>
               <div className={'block-content-label'}>Stake</div>
-              <div className={'block-content-value'}>{toDisplayNumber(accountIntegrationProfile?.totalStakeVerioTransactions)}</div>
-              <div className={'block-content-unit'}>Transactions</div>
+              <div className={'block-content-value'}>{toDisplayNumber(accountProfile?.totalStakeVerioTransactions)}</div>
+              <div className={'block-content-unit'}>{accountProfile?.totalStakeVerioTransactions > 1 ? 'Transactions' : 'Transaction'}</div>
             </div>
             <div className={'block-content2'}>
               <div className={'block-content-label'}>Swap</div>
-              <div className={'block-content-value'}>{toDisplayNumber(accountIntegrationProfile?.totalSwapPiperXTransactions)}</div>
-              <div className={'block-content-unit'}>Transactions</div>
+              <div className={'block-content-value'}>{toDisplayNumber(accountProfile?.totalSwapPiperXTransactions)}</div>
+              <div className={'block-content-unit'}>{accountProfile?.totalSwapPiperXTransactions > 1 ? 'Transactions' : 'Transaction'}</div>
             </div>
             <div className={'block-content3'}>
               <div className={'block-content-label'}>
                 <div className={'nft-label'}>NFT</div>
-                <div
-                  className={'nft-arrow-icon'}
-                  onClick={openNftModal}
-                >
-                  <Icon
-                    customSize={'20px'}
-                    phosphorIcon={ArrowSquareIn}
-                    weight={'fill'}
-                  />
-                </div>
+                {!!accountProfile?.erc721ContractList?.length &&
+                  <div
+                    className={'nft-arrow-icon'}
+                    onClick={openNftModal}
+                  >
+                    <Icon
+                      customSize={'20px'}
+                      phosphorIcon={ArrowSquareIn}
+                      weight={'fill'}
+                    />
+                  </div>
+                }
               </div>
-              <div className={'block-content-value'}>{toDisplayNumber(accountIntegrationProfile?.totalBadgeNFTsOwned)}</div>
-              <div className={'block-content-unit'}>NFTs</div>
+              <div
+                className={'block-content-value'}
+              >{toDisplayNumber(accountProfile?.totalBadgeNFTsOwned)}</div>
+              <div className={'block-content-unit'}>{accountProfile?.totalBadgeNFTsOwned > 1 ? 'NFTs' : 'NFT'}</div>
             </div>
             <div className={'block-content4'}>
               <div className={'block-content-label'}>Others</div>
               <div className={'block-content-value'}>{toDisplayNumber(remainingTransactionsValue)}</div>
-              <div className={'block-content-unit'}>Transactions</div>
+              <div className={'block-content-unit'}>{remainingTransactionsValue > 1 ? 'Transactions' : 'Transaction'}</div>
             </div>
           </div>
           <Button
             block={true}
             className={'share-button'}
+            disabled={!accountProfile?.totalTransactions}
             icon={(
               <Icon
                 customSize={'20px'}
@@ -275,7 +292,7 @@ const Component: React.FC<Props> = (props: Props) => {
         </div>
       )}
 
-      {!accountIntegrationProfile && wcAccount && (
+      {!accountProfile && wcAccount && (
         <div className='block-stats-info'>
           <div className={'empty-list-label'}>Your IPventure Stats</div>
           <EmptyList
@@ -294,7 +311,9 @@ const Component: React.FC<Props> = (props: Props) => {
           />
         </div>
       )}
-      <NFTListModal />
+      <NFTListModal
+        erc721ContractList={accountProfile?.erc721ContractList}
+      />
     </div>
   );
 };
@@ -532,6 +551,7 @@ const AccountDetail = styled(Component)<Props>(({ theme: { extendToken, token } 
     },
 
     '.account-name': {
+      marginTop: 12,
       fontSize: token.fontSizeHeading4,
       lineHeight: token.lineHeightHeading3,
       fontWeight: token.headingFontWeight,

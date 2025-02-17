@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { _ChainInfo } from '@subwallet/chain-list/types';
-import { AccountJson } from '@subwallet/extension-base/background/types';
 import { _getSubstrateGenesisHash, _isChainEvmCompatible } from '@subwallet/extension-base/services/chain-service/utils';
 import { isLendingPool, isLiquidPool } from '@subwallet/extension-base/services/earning-service/utils';
-import { YieldPoolInfo, YieldPoolType } from '@subwallet/extension-base/types';
+import { AccountJson, YieldPoolInfo, YieldPoolType } from '@subwallet/extension-base/types';
 import { EarningPoolItem, EmptyList, FilterModal, Layout } from '@subwallet/extension-web-ui/components';
 import { CREATE_RETURN, DEFAULT_EARN_PARAMS, DEFAULT_ROUTER_PATH, EARN_TRANSACTION, EARNING_INSTRUCTION_MODAL, EVM_ACCOUNT_TYPE, SUBSTRATE_ACCOUNT_TYPE } from '@subwallet/extension-web-ui/constants';
 import { ScreenContext } from '@subwallet/extension-web-ui/contexts/ScreenContext';
@@ -96,7 +95,9 @@ function Component ({ poolGroup, symbol }: ComponentProps) {
       return [];
     }
 
-    const result = pools.filter((item) => !(item.chain === 'parallel' && item.type === YieldPoolType.LIQUID_STAKING));
+    const result = pools.filter((item) => !(
+      (item.chain === 'parallel' && item.type === YieldPoolType.LIQUID_STAKING) ||
+      (item.chain === 'interlay' && item.type === YieldPoolType.LENDING)));
 
     result.sort((a, b) => {
       const getType = (pool: YieldPoolInfo) => {

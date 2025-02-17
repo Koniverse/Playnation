@@ -3,14 +3,18 @@
 
 import { Layout } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { VISIT_INVITATION_SCREEN_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { CUSTOMIZE_MODAL } from '@subwallet/extension-koni-ui/constants/modal';
-import { ButtonProps, Icon, ModalContext, Tooltip } from '@subwallet/react-ui';
-import { Export, FadersHorizontal, MagnifyingGlass } from 'phosphor-react';
+import { useConfirmModal } from '@subwallet/extension-koni-ui/hooks';
+import { Theme } from '@subwallet/extension-koni-ui/themes';
+import { ButtonProps, Icon, ModalContext, SwModalFuncProps, Tooltip } from '@subwallet/react-ui';
+import CN from 'classnames';
+import { CheckCircle, Export, FadersHorizontal, MagnifyingGlass, SmileySad } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { useLocalStorage } from 'usehooks-ts';
 
 type Props = {
@@ -27,10 +31,13 @@ type Props = {
   className?: string;
 };
 
+const apiSDK = BookaSdk.instance;
+
 const Component = (props: Props) => {
   const { backgroundImages, backgroundStyle, children, className, onClickFilterIcon, onClickSearchIcon, onTabSelected, showFilterIcon, showGiftIcon, showSearchIcon, showTabBar } = props;
   const navigate = useNavigate();
   const [, setIsVisitedInvitationScreen] = useLocalStorage(VISIT_INVITATION_SCREEN_FLAG, false);
+  const { token } = useTheme() as Theme;
   const { t } = useTranslation();
   const { activeModal } = useContext(ModalContext);
 
@@ -100,9 +107,61 @@ const Component = (props: Props) => {
     return icons;
   }, [showFilterIcon, showSearchIcon, showGiftIcon, onClickFilterIcon, onOpenCustomizeModal, onClickSearchIcon, t, onOpenInvite]);
 
+  const featureNotAvailablePropsModal = useMemo((): Partial<SwModalFuncProps> => ({
+    id: 'feature_not_available',
+    className: CN('general-confirmation-modal modal-revert-header', className),
+    title: t('Feature not yet available'),
+    okText: t('Got it'),
+    okCancel: false,
+    content: (
+      <div className={'__description-modal'}>
+        <div className={'__title-modal'}>{t('Oops, your account is not eligible')}</div>
+        <div className={'__sub-title-modal'}>{t('This feature is currently available for whitelisted beta testers only. Stay tuned for public access!')}</div>
+      </div>
+    ),
+    icon: (
+      <div className={'__icon-modal'}>
+        <Icon
+          customSize={'60px'}
+          iconColor={token.colorIconHover}
+          phosphorIcon={SmileySad}
+          size='md'
+          weight={'fill'}
+        />
+      </div>
+    ),
+    closable: true,
+    maskClosable: true,
+    okButtonProps: {
+      icon: (
+        <Icon
+          phosphorIcon={CheckCircle}
+          size='md'
+          weight={'fill'}
+        />
+      ),
+      shape: 'round'
+    }
+  }), [className, t, token.colorIconHover]);
+
+  const { handleSimpleConfirmModal: handleFeatureNotAvailableModal } = useConfirmModal(featureNotAvailablePropsModal);
+
   const onClickLeftButton = useCallback(() => {
-    navigate('/ai-agent');
-  }, [navigate]);
+    const checkAvailableAccount = async () => {
+      return await apiSDK.checkAccountAvailableBetaVersion();
+    };
+
+    checkAvailableAccount().then((isPassed) => {
+      if (isPassed) {
+        navigate('/ai-agent');
+      } else {
+        throw new Error('Account is not available');
+      }
+    }).catch((error) => {
+      console.error(error);
+      handleFeatureNotAvailableModal().catch(console.error);
+    });
+  }, [handleFeatureNotAvailableModal, navigate]);
 
   return (
     <Layout.Base

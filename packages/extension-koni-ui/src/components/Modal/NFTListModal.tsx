@@ -47,8 +47,6 @@ function Component ({ className, erc721ContractList }: Props): React.ReactElemen
     return contractNames;
   }, [erc721ContractList]);
 
-  console.log('erc721ContractList', erc721ContractList);
-
   const footerModal = useMemo(() => {
     return (
       <>

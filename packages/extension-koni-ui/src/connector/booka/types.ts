@@ -152,6 +152,7 @@ export type TaskCategoryInfo = {
   id: number;
   completeCount: number;
   tasks: Task[];
+  minPoint?: number;
 }
 
 export interface GamePlay {
@@ -472,6 +473,7 @@ export interface NFTTokenData {
 
 export interface IntegratedProfileResult {
   totalTransactions: number;
+  accumulatePoint: number;
   totalStakeVerioTransactions: number;
   totalSwapPiperXTransactions: number;
   offset: number;
@@ -480,7 +482,12 @@ export interface IntegratedProfileResult {
   syncedAt?: Date | null;
   telegramId?: number;
   loginCount?: number;
-  erc721ContractList?: NFTTokenData[]
+  erc721ContractList?: NFTTokenData[];
+  nftLastUpdated?: Date;
+  transactionLastUpdated?: Date;
+  nftExisted: boolean;
+  transactionExisted: boolean;
+  transactionOffset: number;
 }
 
 export interface IpAssetParams {
@@ -490,31 +497,27 @@ export interface IpAssetParams {
 }
 
 export interface IpAssetResponse {
-  data: {
-    ipId: string;
-    ipMeta: {
-      tags: string[];
-      media: string[];
-      title: string;
-      ipType: string;
-      creators: string[];
-      createdAt: string;
-      attributes: any[];
-      description: string;
-      watermarkImg: string;
-      relationships: any[];
-    };
-    txHash: string;
-    address: string;
-    nftMeta: {
-      name: string;
-      image: string;
-      description: string;
-    };
-    pilType: number;
-    accountId: number;
-    ipExplorerURL: string;
+  ipId: string;
+  ipMeta: {
+    tags: string[];
+    media: string[];
+    title: string;
+    ipType: string;
+    creators: string[];
+    createdAt: string;
+    attributes: any[];
+    description: string;
+    watermarkImg: string;
+    relationships: any[];
   };
-  action: string;
-  timestamp: number;
+  txHash: string;
+  address: string;
+  nftMeta: {
+    name: string;
+    image: string;
+    description: string;
+  };
+  pilType: number;
+  accountId: number;
+  ipExplorerURL: string;
 }
