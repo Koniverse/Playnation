@@ -1,13 +1,14 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { WC_DEFAULT_CHAIN_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { WC_DEFAULT_CHAIN_TESTNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { ADDRESS_EXISTED_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useNotification, useSelector, useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { wcSignMessageRequest } from '@subwallet/extension-koni-ui/messaging';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { validateSignature } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle, SmileySad, XCircle } from 'phosphor-react';
@@ -67,18 +68,23 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
         openWaiting();
 
         try {
-          await wcSignMessageRequest({
+          const { signature } = await wcSignMessageRequest({
             address: _wcAddress,
-            chainId: WC_DEFAULT_CHAIN_ID,
+            chainId: WC_DEFAULT_CHAIN_TESTNET_ID,
             payload: stringToHex(message),
             method: 'personal_sign'
           });
+
+          if (!validateSignature(_wcAddress, message, signature)) {
+            throw new Error('Invalid signature');
+          }
 
           onSubmitAddressLinking(_wcAddress);
           closeWaiting();
         } catch (e) {
           closeWaiting();
           inactiveModal(modalId);
+          onSubmitAddressLinking(undefined);
           setLoading(false);
 
           const error = e as Error;
@@ -88,6 +94,14 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           if (error.message.toLowerCase().includes('user rejected'.toLowerCase())) {
             notify({
               message: t('You’ve rejected this request'),
+              type: 'error',
+              duration: null
+            });
+          }
+
+          if (error.message.toLowerCase().includes('Invalid signature'.toLowerCase())) {
+            notify({
+              message: t('Invalid signature'),
               type: 'error',
               duration: null
             });
@@ -103,9 +117,10 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
 
   const onCancel = useCallback(() => {
     wcAccount && disconnectWithoutConfirmModal(wcAccount).then(() => {
+      onSubmitAddressLinking(undefined);
       inactiveModal(modalId);
     }).catch(console.error);
-  }, [disconnectWithoutConfirmModal, inactiveModal, wcAccount]);
+  }, [disconnectWithoutConfirmModal, inactiveModal, onSubmitAddressLinking, wcAccount]);
 
   const footerModal = useMemo(() => {
     return (
@@ -135,6 +150,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           loading={loading}
           onClick={onCheckingLinkedAccount}
           shape={'round'}
+          size={'sm'}
         >
           {t('Change account')}
         </Button>
@@ -149,7 +165,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
       footer={footerModal}
       id={modalId}
       onCancel={onCancel}
-      title={t('Failed to complete')}
+      title={t('Wrong account')}
     >
       <div className='ant-sw-modal-confirm-body'>
         <div className={'__icon-modal'}>
@@ -166,7 +182,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
           <div
             className={'__sub-title-modal'}
           >
-            {t('Your Telegram ID is linked to account {wallet address}. Connect to this account and try again')}
+            {t('The account you’re using is linked to another Telegram ID. Change account and try again')}
           </div>
         </div>
       </div>
@@ -184,6 +200,10 @@ const ExistedAddressModal = styled(Component)<Props>(({ theme: { extendToken, to
 
     '.ant-sw-modal-body': {
       padding: `${token.padding}px ${token.paddingXS}px`
+    },
+
+    '.ant-sw-sub-header-title-content': {
+      lineHeight: token.lineHeightHeading3
     },
 
     '.ant-sw-modal-confirm-body': {
@@ -234,7 +254,7 @@ const ExistedAddressModal = styled(Component)<Props>(({ theme: { extendToken, to
     },
 
     '.__sub-title-modal': {
-      alignText: 'center',
+      textAlign: 'center',
       fontSize: token.fontSizeHeading6,
       lineHeight: token.lineHeightHeading6,
       fontWeight: 500,

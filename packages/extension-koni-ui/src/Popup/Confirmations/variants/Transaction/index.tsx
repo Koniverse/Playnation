@@ -134,7 +134,7 @@ const Component: React.FC<Props> = (props: Props) => {
     <>
       <div className={CN(className, 'confirmation-content')}>
         {renderContent(transaction)}
-        {!isMintNFTConfirmation && !!transaction.estimateFee?.tooHigh && (
+        {!isMintNFTConfirmation && !!transaction.estimateFee?.tooHigh && transaction.extrinsicType !== ExtrinsicType.SWAP && (
           <AlertBox
             className='network-box'
             description={t('Gas fees on {{networkName}} are high due to high demands, so gas estimates are less accurate.', { replace: { networkName: network?.name } })}
@@ -175,7 +175,12 @@ const TransactionConfirmation = styled(Component)<Props>(({ theme: { token } }: 
     marginTop: token.marginXS,
 
     '.network-box': {
-      marginTop: token.marginSM
+      marginTop: token.marginSM,
+      backgroundColor: token.colorWhite,
+
+      '.alert-title': {
+        color: `${token.colorText} !important`
+      }
     },
 
     '.-to-right': {

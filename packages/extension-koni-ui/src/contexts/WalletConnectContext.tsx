@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AccountJson } from '@subwallet/extension-base/background/types';
+import { AccountJson } from '@subwallet/extension-base/types';
 import { ConnectWalletSuccessModal, DisconnectWalletConnectModalContent, RequireConnectWalletModalContent, WalletConnectWaitingSigningModal } from '@subwallet/extension-koni-ui/components';
 import { CONNECT_WALLET_SUCCESS_MODAL, DISCONNECT_WALLET_CONNECT_MODAL, REQUIRE_CONNECT_WALLET_MODAL, WALLET_CONNECT_WAITING_SIGNING_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { useConfirmModal } from '@subwallet/extension-koni-ui/hooks';
@@ -27,7 +27,7 @@ interface ModalCtrlState {
 type SuccessCallback = (address: string) => void;
 
 export interface WalletConnectContextType {
-  connectWC: (showSuccessModal?: boolean, needConnectWhenCancel?: boolean) => Promise<string>;
+  connectWC: (showSuccessModal?: boolean) => Promise<string>;
   disconnectWC: (wcAccount: AccountJson) => (() => Promise<void>);
   disconnectWithoutConfirmModal: (wcAccount: AccountJson) => Promise<void>;
   requireWC: () => Promise<void>;
@@ -62,7 +62,6 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
   const { projectId } = useSelector((state: RootState) => state.walletConnect);
 
   const [wcModal, setWcModal] = useState<WalletConnectModal>();
-  const [needDisconnectWhenCancel, setNeedDisconnectWhenCancel] = useState(false);
   const [onSuccessCb, setOnSuccessCb] = useState<SuccessCallback>(noop);
 
   const disconnectModalProps = useMemo((): Partial<SwModalFuncProps> => ({
@@ -141,9 +140,7 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
   const { handleSimpleConfirmModal: handleDisconnectModal } = useConfirmModal(disconnectModalProps);
   const { handleSimpleConfirmModal: handleRequireModal } = useConfirmModal(requireAccountModalProps);
 
-  const connectWC = useCallback(async (showSuccessModal = true, needConnectWhenCancel = false): Promise<string> => {
-    setNeedDisconnectWhenCancel(needConnectWhenCancel);
-
+  const connectWC = useCallback(async (showSuccessModal = true): Promise<string> => {
     if (!wcModal) {
       setOnSuccessCb(() => {
         return noop;
@@ -293,7 +290,6 @@ export const WalletConnectContextProvider = ({ children }: Props) => {
       <ConnectWalletSuccessModal
         address={wcAccount?.address || ''}
         callback={onSuccessCb}
-        disconnectWhenCancel={needDisconnectWhenCancel ? disconnectWithoutConfirmModal : undefined}
       />
       <WalletConnectWaitingSigningModal
         address={wcAccount?.address || ''}

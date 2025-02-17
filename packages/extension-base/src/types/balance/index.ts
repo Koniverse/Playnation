@@ -3,9 +3,8 @@
 
 import { _ChainAsset, _ChainInfo } from '@subwallet/chain-list/types';
 import { _BalanceMetadata, APIItemState, ExtrinsicType } from '@subwallet/extension-base/background/KoniTypes';
-import { _EvmApi } from '@subwallet/extension-base/services/chain-service/types';
+import { _EvmApi, _SubstrateApi, _TonApi } from '@subwallet/extension-base/services/chain-service/types';
 
-import { ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
 export interface TokenBalanceRaw {
@@ -58,10 +57,14 @@ export interface SubscribeBasePalletBalance {
 }
 
 export interface SubscribeSubstratePalletBalance extends SubscribeBasePalletBalance {
-  substrateApi: ApiPromise;
+  substrateApi: _SubstrateApi;
   includeNativeToken?: boolean;
 }
 
 export interface SubscribeEvmPalletBalance extends SubscribeBasePalletBalance {
   evmApi: _EvmApi;
+}
+
+export interface SubscribeTonPalletBalance extends SubscribeBasePalletBalance {
+  tonApi: _TonApi;
 }

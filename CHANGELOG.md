@@ -1,5 +1,485 @@
 # CHANGELOG
 
+## 1.3.15
+Build date: Feb 06, 2025.
+
+Bug fixed:
+- Fix issue Don't open the extension related to Patch feature (#4002)
+- Fix bug Do not show earning position for Bittensor (#4006)
+
+
+## 1.3.14
+Build date: Jan 24, 2025.
+
+Features & Update:
+- Update chain-list stable (#3974)
+- Add staking support for CERE (#360)
+
+
+## 1.3.13
+Build date: Jan 21, 2025.
+
+Features & Update:
+- Re-enable search token feature (#3958)
+- Update signing flow with metadata (#3306)
+
+Bug fixed:
+- Fix bug setup validator related maxCount (#3971)
+
+
+## 1.3.12
+Build date: Jan 06, 2025.
+
+Features & Update:
+- Add referral code for Bifrost Liquid Staking (vDOT, vMANTA)
+- Support bridge ETH <-> POS (#3893)
+- Support Avail Recovery app (#3915)
+- Set up SubWallet validators (#2533)
+- Update chain-list (#3897)
+
+Bug fixed:
+- Fix max transferable for Avail Bridge (#3911)
+
+
+## 1.3.11
+Build date: Dec 23, 2024.
+
+Features & Update:
+- Support swap TAO on SimpleSwap (#3855)
+- Update content on unstake screen for some earning options (#3778)
+
+Bug fixed:
+- Fix errors when making transactions on Tangle mainnet (#3861)
+
+
+## 1.3.10
+Build date: Dec 12, 2024.
+
+Features & Update:
+- Update version polkadot api (#3888)
+- Unable to transfer local token on Bifrost (#3896)
+
+
+## 1.3.9
+Build date: Dec 09, 2024.
+
+Features & Update:
+- Allow Polkadot namespace use EVM address (#3870)
+- Support Generic ledger app for Vara network (#3835)
+
+Bug fixed:
+- Fixed bug validating recipient balance when sending Substrate token (#3713)
+- Fixed bug send NFT on Ethereum network (#3762)
+
+
+## 1.3.8
+Build date: Dec 03, 2024.
+
+Features & Update:
+- Improve chain-list online patch (#3132)
+- Support Unified bridge on Polygon (#3826)
+  - ETH: Ethereum -> Polygon zkEVM
+  - ETH: Polygon zkEVM -> Ethereum
+- Update chain-list
+  - Add support for G6 network testnet
+  - Add support for LOVA token (PAH, Hydration)
+  - Add support for PIP token (Storty Odyssey Testnet)
+  - Add support for Fraxtal Mainnet
+  - Add support for Cyber
+  - Update Aventus Block Explorer
+  - Delete Story Public Tesnet (Iliad testnet)
+
+
+## 1.3.7
+Build date: Nov 23, 2024.
+
+Features & Update:
+- Update chain-list (#3846)
+  - Add support for Gnosis
+  - Add support for Autonomys Mainnet
+  - Add support for KMA (Manta Pacific), USDC (Base Mainnet)
+  - Update information for some chains and tokens: add explorer, price-id, logo & name
+- Improve display collators list (#2751)
+- Improve block action online by environment (#3814)
+- Integration NFT for Story Protocol (#3854)
+
+Bug fixed:
+- Re-check transaction on Polkadot Asset Hub (#3852)
+
+## 1.3.6
+Build date: Nov 07, 2024.
+
+Features & Update:
+- Update chain-list (#3828)
+  - Add Polygon Amoy testnet
+  - Add Polygon zkEVM Cardona testnet
+  - Add WETH, POL, USDC (Amoy)
+  - Add ETH, MATIC, POL (Cardona)
+  - Update explorer for Tangle network
+
+Bug fixed:
+- Fixed error auto reset data on Pool field (#3001)
+
+## 1.3.5
+Build date: Oct 31, 2024.
+
+Features & Update:
+- Support ERC-1155 (#3726)
+- Refactor logic parsing data from contract response (#3070)
+- Re-check some old types from ExtrinsicType (#3654)
+- Update chain-list (#3815)
+  - Add support for World Chain
+  - Add support for Mode Mainnet
+  - Add support for Lisk mainnet
+  - Add support for Zircuit mainnet
+  - Add support for Tangle Network mainnet
+  - Add support Story Odyssey Testnet
+
+Bug fixed:
+- Fixed bug Do not show token (#3721)
+
+
+## 1.3.4
+Build date: Oct 28, 2024.
+
+Features & Update:
+- Integrate Avail Bridge (#3423)
+- Support Notification in app (#3507, #3515)
+- Allow importing assets on Asset Hub (#3636)
+- Update api key for TAO(Bittensor) (#3809)
+- Update chain-list (#3806)
+  - Add support for Unichain testnet
+  - Update address prefix for Bifrost
+
+
+## 1.3.3
+Build date: Oct 16, 2024.
+
+Features & Update:
+- Fix bug Do not show watch-only account on History (#3732)
+- Update Network details screen for TON (#3747)
+- Update chain-list
+  - Update logo for MATIC token
+  - Remove Tinkernet
+
+Bugs fixed:
+- Fix min stake for TAO(Bittensor) (#3788)
+- Fix bug show OG WUD BURN NFT Collection (#3791)
+
+
+## 1.3.2
+Build date: Oct 12, 2024.
+
+Features & Update:
+- Support TAO in-app staking (#2505)
+- Support Ternoa NFT (#3559)
+- Update default slippage for ChainFlip (#3634)
+- Support export for Derived account (#3751)
+- Update address for TON testnet in the token detail screen on All accounts mode (#3752)
+- Improve UI related to Account selector screen (#3755, #3772))
+- Improve UI related to Select token screen (#3756)
+- Add infobox about Wallet version for TON token (#3718)
+- Update chainlist (#3760)
+  - Add support for LogX token
+  - Add support for Mantle Network
+  - Add support for MATIC (Polygon zkEVM) and POL (Ethereum) token
+  - Add support for zkVerify Testnet
+  - Add support for RARI Chain
+  - Add support for Scroll mainnet
+  - Update some information:
+    - Update Avail group token
+    - Re-check enable TON (TON network) token
+- Add validate tokenOfOwnerByIndex when import NFT (#3609)
+
+## 1.3.1
+Build date: Oct 08, 2024.
+
+Features & Update:
+- Support Unified account
+
+## 1.2.32
+Build date: Oct 01, 2024.
+
+Features & Update:
+- Improve marketing campaign (#3461, #2807)
+
+Bugs fixed:
+- Hot fix handle API status (#3711)
+
+## 1.2.31
+Build date: Sep 28, 2024.
+
+Features & Update:
+- Block action online (#3635)
+- Update chain-list (#3680)
+  - Add XCM support for KSM between Bifrost KSM <> Kusama
+  - Update RPC for Cess Network
+- Add swap pairs for Hydration and ChainFlip (#3633, #3651)
+
+Bugs fixed:
+- Fix bug Do not show earning position for StellaSwap (#3647)
+- Fix bug Can't import JSON file containing Unified account (#3643)
+
+## 1.2.30
+Build date: Sep 20, 2024.
+
+Features & Update:
+- Add Chainflip broker (#3483)
+- Re-calculate max transferable for XCM native token (#3617)
+- Update chain-list (#3637)
+  - Add support for Tether's XAUt token
+  - Add support for BUNS token for PAH, Hydration
+  - Add support for Ternoa zkEVM + Testnet
+  - Update information for some chains (https://github.com/Koniverse/SubWallet-ChainList/issues/302)
+    - DOT <-> CFG
+    - CFG <-> USDT
+    - DOT <-> BNC
+    - BNC <-> USDT
+    - BNC <-> HDX
+  - Add support for new swap pairs on Hydration
+  - Hidden XCM on Pioneer
+
+Bugs fixed:
+- Fix bug not showing balance of VFT tokens (#3612)
+- Fix bug do not show balance (#3653)
+
+## 1.2.29
+Build date: Sep 13, 2024.
+
+Features & Update:
+- Support XCM for Ledger Polkadot generic app (#3458)
+- Adjust showing/validating address on Earning actions (#2703)
+- Update chain-list (#3558)
+  - Add support for Creditcoin CC3 Mainnet
+  - Add support for vASTR on Hydration
+  - Add support for Cypress tokens on Hydration, PAH
+  - Update some network and token information
+  - Add support for new swap pairs on Hydration
+- Support XCM channels (#3453)
+  - MYTH: Hydration --> Mythos
+  - MYTH: PAH --> Mythos
+
+Bugs fixed:
+- Fixed bug Do not show token when standing on All accounts mode in case token does not get balance (#2352)
+- Fix bug do not show lock balance in case account have Kusama nomination pool (#3579)
+- Fix bug XCM for channel: DOT: KAH -> PAH (#3561)
+- Fix bug display wrong APY for Polkadot staking option (#3601)
+
+## 1.2.28
+Build date: Sep 04, 2024.
+
+Features & Update:
+- Format error when connecting to dApp (#3445)
+- Update connector version (#3363)
+- Update substrate dApp connect interface to allow dApp connect with EVM account (#3401)
+- Improve Amount input field (#1905)
+- Improve fetching era stakers (#3467)
+- Add warning in case user earn for both nomination pool and direct (#3477)
+- Add Notice of need to unstake for users who are simultaneously staking for both Direct and Nomination Pool (#3484)
+- Improve condition for Marketing campaign (#3468)
+- Update chain-list (#3518)
+  - Add support for Polygon zkEVM
+  - Add support for Immutable zkEVM
+  - Add support for Story Public Testnet
+  - Add support for Soneium Testnet
+  - Update logo for some chains, tokens
+
+Bugs fixed:
+- Fix UI bug on the Transfer screen (#3452)
+- Fix bug XCM (#3519)
+
+
+## 1.2.27
+Build date: Aug 22, 2024.
+
+Features & Update:
+- Update balance calculation for DeepBrainChain (#3481)
+- Update chain-list (#3478)
+  - Add support for 5ireChain mainnet
+  - Update decimals for Litmus, Litentry
+  - Update ED for some token: USDT, USDC (PAH), LIT (Litmus), LIT (Litentry), WUD (Hydration)
+
+
+## 1.2.26
+Build date: Aug 19, 2024.
+
+Bugs fixed:
+- Update earning feature with cache from middleware service
+
+## 1.2.25
+Build date: Aug 17, 2024.
+
+Features & Update:
+- Update balance calculation for nomination pool runtime update (#3443)
+- Do not allow send to empty account (Native token balance = 0) (#2783)
+- Add validate for Solochain when receive, transfer with Generic ledger account (#3464)
+- Update chainlist (#3451)
+  - Add support for Blast Mainnet
+  - Add in-app staking support for DENTX
+
+Bugs fixed:
+- Fix Input overflow width issue (#3441)
+- Fix bug Do not show Signature popup in case not enough balance to cover gas fee (#2501)
+
+
+## 1.2.24
+Build date: Aug 09, 2024.
+
+Features & Update:
+- Allow to use Migration Polkadot App to attach Ledger account (#3307, #3402)
+- Hide direct api usage of polkadot/js (#3308)
+- Improve performance upon showing Marketing Campaign (#3414)
+- Update chainlist (#3425)
+  - Add support for Pendulum assets (ASTR, vDOT, BNC)
+  - Add support for Exosama network
+
+
+## 1.2.23
+Build date: Aug 03, 2024.
+
+Features & Update:
+- Update chain-list (#3403)
+  - Add support for ROUTE token
+  - Add support for Aleph Zero EVM (mainnet)
+  - Update price-id for AZERO EVM
+
+
+## 1.2.22
+Build date: Jul 31, 2024.
+
+Features & Update:
+- Update chain-list (#3385)
+- Integrate Avail Ledger app (#2982)
+
+Bugs fixed:
+- Fix bug Show incorrect withdrawal information of the Bifrost liquid staking when all accounts mode (#3327)
+- Fix bug do not show root screen after remove account (#3148)
+- Fix bug Show blank screen when attach account (#3054)
+
+
+## 1.2.21
+Build date: Jul 24, 2024.
+
+Bugs fixed:
+Fix a few bugs for Avail (#3378)
+  - Add AVAIL token on Ethereum
+  - Integrate Avail OG NFT
+  - Setup default nomination pool online
+  - Update Avail staking APY
+  - Fix bug when click "View details" on the Sign transaction from dApp
+
+## 1.2.20
+Build date: Jul 24, 2024.
+
+Features & Update:
+- Update chain-list for Avail
+
+
+## 1.2.19
+Build date: Jul 23, 2024.
+
+Features & Update:
+- Update chain-list for Avail
+
+## 1.2.18
+Build date: Jul 23, 2024.
+
+Features & Update:
+- Update chain-list for Avail (#3369)
+
+## 1.2.17
+Build date: Jul 22, 2024.
+
+Features & Update:
+- Set default pool and default validator for Avail (#3365)
+
+
+## 1.2.16
+Build date: Jul 19, 2024.
+
+Features & Update:
+- Move step shorten metadata and calculate metadataHash to client (#3305)
+- Add support Ledger for Polkadex (#3231)
+- Improve the staking reward information retrieval (#3326)
+- Update Vara token sdk version (#3270)
+- Update chain-list
+  - Remove Avail Goldberg testnet
+  - Add support for Aleph Zero EVM testnet
+  - Add support for Cere Network
+  - Add KOL / Kolkadot on PAH, Hydration
+
+Bugs fixed:
+- Fix bug connecting to uquid dapp with Wallet Connect (#3275)
+
+
+## 1.2.15
+Build date: Jul 12, 2024.
+
+Features & Update:
+- Update chain-list
+  - Add support for Aura Network
+  - Update SQD token logo
+  - Support Decoded collection from Unique
+  - Add multi-chain asset for some token
+- Update chain-list health-check and report RPC connect status (#3243)
+- Update fallback API for SubWallet API (Price, Exchange rate) (#3183)
+- Add validate account in case sign transaction with Ledger account (#3263)
+
+Bugs fixed:
+- Fix bug calculating balance for relaychain (#3312)
+- Fix bug show withdraw information for the Acala liquid staking (#2965)
+
+
+## 1.2.14
+Build date: Jul 09, 2024.
+
+Features & Update:
+- Add support Swap Asset Hub (#3272)
+
+Bugs fixed:
+- Fix bug Cannot read properties of undefined (reading 'filter') related to Mission pool (#3289)
+- Hotfix update chain-list stable version
+- Fix bug transaction has a bad signature when transfer AVL token (#3300)
+
+## 1.2.13
+Build date: Jul 05, 2024.
+
+Features & Update:
+- Update chain-list
+  - Add support for MYTH token
+  - Add support for WIFD token
+- Update UI for the Signature request screen from dApp (#3260)
+- Update UI for Mission pool feature (#3212)
+- Change token type from GRC-20 to VFT (#3268)
+
+Bugs fixed:
+- Fix bug Do not show account to get address when stand on All accounts mode (#3283)
+
+
+## 1.2.12
+Build date: Jul 03, 2024.
+
+Features & Update:
+- Update chainlist:
+  - Add support for Berachain testnet
+  - Add support for Atleta Testnet
+- Remove Interlay lending (#3226)
+
+Bugs fixed:
+- Fix bug Cannot read properties of undefined (reading 'includes') (#3259)
+- Fix bug Do not show Interlay's earning position (#3234)
+- Fix bug not showing popup Swap confirmation when swap with Injected account (#3230)
+
+## 1.2.11
+Build date: Jun 29, 2024.
+
+Features & Update:
+- Integrate Polkadot Ledger app from Zondax (#2453)
+
+Bugs fixed:
+- Fix bug Show incorrect screen when perform earning actions with Ledger's EVM account (#3254)
+
+
 ## 1.2.10
 Build date: Jun 25, 2024.
 
@@ -344,7 +824,6 @@ Features & Update:
 Build date: Mar 28, 2024.
 
 Features & Update:
-Nội dung release:
 - Integrate asset online (#2790)
 - Add Swap button (#2784)
 - Update chain-list (#2805)

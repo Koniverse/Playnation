@@ -1,9 +1,5 @@
 name: Build Story Protocol Odyssey MiniApp
 on:
-  pull_request:
-    branches:
-      - story-protocol-od-dev
-      - story-protocol-od-prod
   push:
     branches:
       - story-protocol-od-dev

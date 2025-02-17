@@ -4,11 +4,9 @@
 import { _getAssetDecimals, _getAssetOriginChain, _getAssetSymbol } from '@subwallet/extension-base/services/chain-service/utils';
 import { SwapTxData } from '@subwallet/extension-base/types/swap';
 import { swapCustomFormatter } from '@subwallet/extension-base/utils';
-import { BN_TEN } from '@subwallet/extension-koni-ui/constants';
 import { useSelector } from '@subwallet/extension-koni-ui/hooks';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Icon, Logo, Number } from '@subwallet/react-ui';
-import BigN from 'bignumber.js';
 import CN from 'classnames';
 import { ArrowRight } from 'phosphor-react';
 import React, { useMemo } from 'react';
@@ -31,8 +29,6 @@ const Component: React.FC<Props> = (props: Props) => {
   const fromAssetInfo = useMemo(() => {
     return assetRegistryMap[swapInfo.quote.pair.from] || undefined;
   }, [assetRegistryMap, swapInfo.quote.pair.from]);
-
-  const destinationValue = new BigN(swapInfo.quote.fromAmount).div(BN_TEN.pow(_getAssetDecimals(fromAssetInfo))).multipliedBy(swapInfo.quote.rate).multipliedBy(1 - swapInfo.slippage);
 
   return (
     <div className={CN(className, 'swap-confirmation-container')}>
@@ -73,10 +69,10 @@ const Component: React.FC<Props> = (props: Props) => {
           <Number
             className={'__amount-destination'}
             customFormatter={swapCustomFormatter}
-            decimal={0}
+            decimal={_getAssetDecimals(toAssetInfo)}
             formatType={'custom'}
             metadata={numberMetadata}
-            value={destinationValue}
+            value={swapInfo.quote.toAmount || 0}
           />
           <span className={'__quote-footer-label'}>{_getAssetSymbol(toAssetInfo)}</span>
         </div>
@@ -87,13 +83,15 @@ const Component: React.FC<Props> = (props: Props) => {
 
 const SwapTransactionBlock = styled(Component)<Props>(({ theme: { token } }: Props) => {
   return {
+    width: '100%',
+    padding: `0px ${token.paddingXS}px`,
     '.__quote-estimate-swap-confirm-value': {
       display: 'flex'
     },
     '.__summary-quote': {
       display: 'flex',
       justifyContent: 'space-between',
-      backgroundColor: token.colorBgSecondary,
+      backgroundColor: token.colorWhite,
       gap: 12,
       paddingLeft: 12,
       paddingRight: 12,
@@ -116,16 +114,19 @@ const SwapTransactionBlock = styled(Component)<Props>(({ theme: { token } }: Pro
       flex: 1
     },
     '.__quote-footer-label': {
-      color: token.colorTextTertiary,
+      color: token.colorTextLabel,
       fontSize: 12,
       fontWeight: token.bodyFontWeight,
       lineHeight: token.lineHeightSM
     },
     '.__amount-destination': {
-      color: token.colorTextLight2,
       fontSize: token.fontSizeLG,
       fontWeight: token.fontWeightStrong,
-      lineHeight: token.lineHeightLG
+      lineHeight: token.lineHeightLG,
+
+      '.ant-typography.ant-number-integer, .ant-typography.ant-number-decimal': {
+        color: `${token.colorTextDark2} !important`
+      }
     },
     '&.swap-confirmation-container .__swap-route-container': {
       marginBottom: 20

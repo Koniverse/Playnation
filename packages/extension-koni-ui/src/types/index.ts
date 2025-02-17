@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { NotificationType } from '@subwallet/extension-base/background/KoniTypes';
-import { AccountJson } from '@subwallet/extension-base/background/types';
+import { AccountJson } from '@subwallet/extension-base/types';
 import { ButtonSchema } from '@subwallet/react-ui/es/button/button';
 import { PageIconProps } from '@subwallet/react-ui/es/page-icon/PageIcon';
 import { Icon as _PhosphorIcon, IconProps } from 'phosphor-react';
@@ -68,6 +68,10 @@ export interface AddressProxy {
   isUnlockCached: boolean;
   signAddress: string | null;
   signPassword: string;
+}
+
+export interface SubstrateSigData extends SigData {
+  signedTransaction?: `0x${string}`;
 }
 
 export interface TxHandler {
@@ -140,3 +144,4 @@ export * from './walletConnect';
 export * from './earning';
 export * from './missionPool';
 export * from './localStorage';
+export * from './component';

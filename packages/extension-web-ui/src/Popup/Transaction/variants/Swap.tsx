@@ -8,7 +8,7 @@ import { _getAssetDecimals, _getAssetOriginChain, _getAssetSymbol, _getChainNati
 import { getSwapAlternativeAsset } from '@subwallet/extension-base/services/swap-service/utils';
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
 import { CommonFeeComponent, CommonOptimalPath, CommonStepType } from '@subwallet/extension-base/types/service-base';
-import { SlippageType, SwapFeeType, SwapProviderId, SwapQuote, SwapRequest } from '@subwallet/extension-base/types/swap';
+import { CHAINFLIP_SLIPPAGE, SIMPLE_SWAP_SLIPPAGE, SlippageType, SwapFeeType, SwapProviderId, SwapQuote, SwapRequest } from '@subwallet/extension-base/types/swap';
 import { formatNumberString, isAccountAll, swapCustomFormatter } from '@subwallet/extension-base/utils';
 import { AccountSelector, AddMoreBalanceModal, AddressInput, AlertBox, ChooseFeeTokenModal, HiddenInput, MetaInfo, PageWrapper, QuoteResetTime, SlippageModal, SwapFromField, SwapIdleWarningModal, SwapQuotesSelectorModal, SwapRoute, SwapTermsOfServiceModal, SwapToField } from '@subwallet/extension-web-ui/components';
 import { BN_TEN, BN_ZERO, CONFIRM_SWAP_TERM, DEFAULT_SWAP_PARAMS, SWAP_ALL_QUOTES_MODAL, SWAP_CHOOSE_FEE_TOKEN_MODAL, SWAP_IDLE_WARNING_MODAL, SWAP_MORE_BALANCE_MODAL, SWAP_SLIPPAGE_MODAL, SWAP_TERMS_OF_SERVICE_MODAL } from '@subwallet/extension-web-ui/constants';
@@ -18,7 +18,7 @@ import { WebUIContext } from '@subwallet/extension-web-ui/contexts/WebUIContext'
 import { useChainConnection, useNotification, usePreCheckAction, useSelector, useTransactionContext, useWatchTransaction } from '@subwallet/extension-web-ui/hooks';
 import { getLatestSwapQuote, handleSwapRequest, handleSwapStep, validateSwapProcess } from '@subwallet/extension-web-ui/messaging/transaction/swap';
 import { FreeBalance, FreeBalanceToEarn, TransactionContent, TransactionFooter } from '@subwallet/extension-web-ui/Popup/Transaction/parts';
-import { DEFAULT_SWAP_PROCESS, SwapActionType, swapReducer } from '@subwallet/extension-web-ui/reducer';
+import { CommonActionType, commonProcessReducer, DEFAULT_COMMON_PROCESS } from '@subwallet/extension-web-ui/reducer';
 import { RootState } from '@subwallet/extension-web-ui/stores';
 import { Theme } from '@subwallet/extension-web-ui/themes';
 import { FormCallbacks, FormFieldData, SwapParams, ThemeProps, TokenSelectorItemType } from '@subwallet/extension-web-ui/types';
@@ -144,7 +144,7 @@ const Component = () => {
   const { checkChainConnected, turnOnChain } = useChainConnection();
   const onPreCheck = usePreCheckAction(fromValue);
 
-  const [processState, dispatchProcessState] = useReducer(swapReducer, DEFAULT_SWAP_PROCESS);
+  const [processState, dispatchProcessState] = useReducer(commonProcessReducer, DEFAULT_COMMON_PROCESS);
 
   const fromAndToTokenMap = useMemo<Record<string, string[]>>(() => {
     const result: Record<string, string[]> = {};
@@ -209,6 +209,20 @@ const Component = () => {
     return chainInfoMap[toChain] && isEthereumAddress(fromValue) === _isChainEvmCompatible(chainInfoMap[toChain]);
   }, [chainInfoMap, fromAndToTokenMap, fromValue, toAssetInfo, toTokenSlugValue]);
 
+  // Unable to use useEffect due to infinity loop caused by conflict setCurrentSlippage and currentQuote
+  const slippage = useMemo(() => {
+    const providerId = currentQuote?.provider?.id;
+    const slippageMap = {
+      [SwapProviderId.CHAIN_FLIP_MAINNET]: CHAINFLIP_SLIPPAGE,
+      [SwapProviderId.CHAIN_FLIP_TESTNET]: CHAINFLIP_SLIPPAGE,
+      [SwapProviderId.SIMPLE_SWAP]: SIMPLE_SWAP_SLIPPAGE
+    };
+
+    return providerId && providerId in slippageMap
+      ? slippageMap[providerId as keyof typeof slippageMap]
+      : currentSlippage.slippage.toNumber();
+  }, [currentQuote?.provider?.id, currentSlippage.slippage]);
+
   const recipientAddressValidator = useCallback((rule: Rule, _recipientAddress: string): Promise<void> => {
     if (!_recipientAddress) {
       return Promise.reject(t('Recipient address is required'));
@@ -265,8 +279,18 @@ const Component = () => {
     form.setFieldValue('toTokenSlug', tokenSlug);
   }, [form]);
 
-  const supportSlippageSelection = useMemo(() => {
-    if (currentQuote?.provider.id === SwapProviderId.CHAIN_FLIP_TESTNET || currentQuote?.provider.id === SwapProviderId.CHAIN_FLIP_MAINNET) {
+  const notSupportSlippageSelection = useMemo(() => {
+    const unsupportedProviders = [
+      SwapProviderId.CHAIN_FLIP_TESTNET,
+      SwapProviderId.CHAIN_FLIP_MAINNET,
+      SwapProviderId.SIMPLE_SWAP
+    ];
+
+    return currentQuote?.provider.id ? unsupportedProviders.includes(currentQuote.provider.id) : false;
+  }, [currentQuote?.provider.id]);
+
+  const isSimpleSwapSlippage = useMemo(() => {
+    if (currentQuote?.provider.id === SwapProviderId.SIMPLE_SWAP) {
       return true;
     }
 
@@ -274,10 +298,10 @@ const Component = () => {
   }, [currentQuote?.provider.id]);
 
   const onOpenSlippageModal = useCallback(() => {
-    if (!supportSlippageSelection) {
+    if (!notSupportSlippageSelection) {
       activeModal(SWAP_SLIPPAGE_MODAL);
     }
-  }, [activeModal, supportSlippageSelection]);
+  }, [activeModal, notSupportSlippageSelection]);
 
   const openAllQuotesModal = useCallback(() => {
     activeModal(SWAP_ALL_QUOTES_MODAL);
@@ -291,6 +315,17 @@ const Component = () => {
     setCurrentQuote(quote);
     setFeeOptions(quote.feeInfo.feeOptions);
     setCurrentFeeOption(quote.feeInfo.feeOptions?.[0]);
+
+    setCurrentQuoteRequest((oldRequest) => {
+      if (!oldRequest) {
+        return undefined;
+      }
+
+      return {
+        ...oldRequest,
+        currentQuote: quote.provider
+      };
+    });
   }, []);
 
   const onSelectFeeOption = useCallback((slug: string) => {
@@ -364,7 +399,7 @@ const Component = () => {
     const feeTypeMap: Record<SwapFeeType, FeeItem> = {
       NETWORK_FEE: { label: 'Network fee', value: new BigN(0), prefix: `${(currencyData.isPrefix && currencyData.symbol) || ''}`, suffix: `${(!currencyData.isPrefix && currencyData.symbol) || ''}`, type: SwapFeeType.NETWORK_FEE },
       PLATFORM_FEE: { label: 'Protocol fee', value: new BigN(0), prefix: `${(currencyData.isPrefix && currencyData.symbol) || ''}`, suffix: `${(!currencyData.isPrefix && currencyData.symbol) || ''}`, type: SwapFeeType.PLATFORM_FEE },
-      WALLET_FEE: { label: 'Wallet commission', value: new BigN(0), suffix: '%', type: SwapFeeType.WALLET_FEE }
+      WALLET_FEE: { label: 'Wallet commission', value: new BigN(0), prefix: `${(currencyData.isPrefix && currencyData.symbol) || ''}`, suffix: `${(!currencyData.isPrefix && currencyData.symbol) || ''}`, type: SwapFeeType.WALLET_FEE }
     };
 
     currentQuote?.feeInfo.feeComponent.forEach((feeItem) => {
@@ -373,10 +408,11 @@ const Component = () => {
       feeTypeMap[feeType].value = feeTypeMap[feeType].value.plus(getConvertedBalance(feeItem));
     });
 
-    result.push(
-      feeTypeMap.NETWORK_FEE,
-      feeTypeMap.PLATFORM_FEE
-    );
+    Object.values(feeTypeMap).forEach((fee) => {
+      if (!fee.value.lte(new BigN(0))) {
+        result.push(fee);
+      }
+    });
 
     return result;
   }, [currencyData.isPrefix, currencyData.symbol, currentQuote?.feeInfo.feeComponent, getConvertedBalance]);
@@ -474,9 +510,8 @@ const Component = () => {
         type: 'error',
         duration: 8
       });
-
       dispatchProcessState({
-        type: SwapActionType.STEP_ERROR_ROLLBACK,
+        type: CommonActionType.STEP_ERROR_ROLLBACK,
         payload: error
       });
     },
@@ -510,7 +545,7 @@ const Component = () => {
             return false;
           } else {
             dispatchProcessState({
-              type: needRollback ? SwapActionType.STEP_ERROR_ROLLBACK : SwapActionType.STEP_ERROR,
+              type: needRollback ? CommonActionType.STEP_ERROR_ROLLBACK : CommonActionType.STEP_ERROR,
               payload: _errors[0]
             });
 
@@ -518,7 +553,7 @@ const Component = () => {
           }
         } else if (id) {
           dispatchProcessState({
-            type: SwapActionType.STEP_COMPLETE,
+            type: CommonActionType.STEP_COMPLETE,
             payload: rs
           });
 
@@ -576,7 +611,7 @@ const Component = () => {
 
       const submitData = async (step: number): Promise<boolean> => {
         dispatchProcessState({
-          type: SwapActionType.STEP_SUBMIT,
+          type: CommonActionType.STEP_SUBMIT,
           payload: null
         });
 
@@ -601,11 +636,11 @@ const Component = () => {
               return false;
             } else {
               dispatchProcessState({
-                type: SwapActionType.STEP_COMPLETE,
+                type: CommonActionType.STEP_COMPLETE,
                 payload: true
               });
               dispatchProcessState({
-                type: SwapActionType.STEP_SUBMIT,
+                type: CommonActionType.STEP_SUBMIT,
                 payload: null
               });
 
@@ -632,7 +667,7 @@ const Component = () => {
               currentStep: step,
               quote: latestOptimalQuote,
               address: from,
-              slippage: [SwapProviderId.CHAIN_FLIP_MAINNET, SwapProviderId.CHAIN_FLIP_TESTNET].includes(latestOptimalQuote.provider.id) ? 0 : currentSlippage.slippage.toNumber(),
+              slippage: slippage,
               recipient
             });
 
@@ -685,32 +720,16 @@ const Component = () => {
     }
   }, [accounts, chainValue, checkChainConnected, closeAlert, currentOptimalSwapPath, currentQuote, currentQuoteRequest, currentSlippage.slippage, notify, onError, onSuccess, openAlert, processState.currentStep, processState.steps.length, t]);
 
-  const destinationSwapValue = useMemo(() => {
-    if (currentQuote) {
-      const decimals = _getAssetDecimals(fromAssetInfo);
-
-      return new BigN(fromAmountValue || 0)
-        .div(BN_TEN.pow(decimals))
-        .multipliedBy(currentQuote.rate);
-    }
-
-    return BN_ZERO;
-  }, [currentQuote, fromAmountValue, fromAssetInfo]);
-
   const minimumReceived = useMemo(() => {
-    const calcMinimumReceived = (value: BigN) => {
-      const adjustedValue = supportSlippageSelection
-        ? value
-        : value.multipliedBy(new BigN(1).minus(currentSlippage.slippage));
+    const adjustedValue = new BigN(currentQuote?.toAmount || '0').multipliedBy(new BigN(1).minus(new BigN(slippage))).integerValue(BigN.ROUND_DOWN);
 
-      return adjustedValue.toString().includes('e')
-        ? formatNumberString(adjustedValue.toString())
-        : adjustedValue.toString();
-    };
+    const adjustedValueStr = adjustedValue.toString();
 
-    return calcMinimumReceived(destinationSwapValue);
-  }, [supportSlippageSelection, destinationSwapValue, currentSlippage.slippage]);
-
+    return adjustedValueStr.includes('e')
+      ? formatNumberString(adjustedValueStr)
+      : adjustedValueStr;
+  }, [slippage, currentQuote?.toAmount]);
+  
   const onAfterConfirmTermModal = useCallback(() => {
     return setConfirmedTerm('swap-term-confirmed');
   }, [setConfirmedTerm]);
@@ -741,6 +760,9 @@ const Component = () => {
     return undefined;
   }, [currentPair]);
 
+  const slippageTitle = isSimpleSwapSlippage ? 'Slippage can be up to 5% due to market conditions' : '';
+  const slippageContent = isSimpleSwapSlippage ? `Up to ${(slippage * 100).toString()}%` : `${(slippage * 100).toString()}%`;
+
   const renderSlippage = () => {
     return (
       <>
@@ -749,43 +771,23 @@ const Component = () => {
             className='__slippage-action'
             onClick={onOpenSlippageModal}
           >
-            {supportSlippageSelection
-              ? (<>
                 <Tooltip
                   placement={'topRight'}
-                  title={'Chainflip uses Just In Time AMM to optimize swap quote without setting slippage'}
+                  title={slippageTitle}
                 >
-                  <div className={'__slippage-title-wrapper'}>Slippage
+                  <div className='__slippage-title-wrapper'>Slippage
                     <Icon
-                      customSize={'16px'}
+                      customSize='16px'
                       iconColor={token.colorSuccess}
                       phosphorIcon={Info}
                       size='sm'
                       weight='fill'
                     />
-                :
+                        : &nbsp;<span>{slippageContent}</span>
                   </div>
                 </Tooltip>
-                      &nbsp;<span>0%</span>
-              </>
-              )
-              : (
-                <>
-                  <div className={'__slippage-title-wrapper'}>Slippage
-                    <Icon
-                      customSize={'16px'}
-                      iconColor={token.colorSuccess}
-                      phosphorIcon={Info}
-                      size='sm'
-                      weight='fill'
-                    />
-                    :
-                  </div>
-                    &nbsp;<span>{currentSlippage.slippage.multipliedBy(100).toString()}%</span>
-                </>
-              )}
 
-            {!supportSlippageSelection && (
+            {!notSupportSlippageSelection && (
               <div className='__slippage-editor-button'>
                 <Icon
                   className='__slippage-editor-button-icon'
@@ -804,6 +806,12 @@ const Component = () => {
     return processState.steps.some((item) => item.type === CommonStepType.XCM);
   }, [processState.steps]);
 
+  const isSwapAssetHub = useMemo(() => {
+    const providerId = currentQuote?.provider?.id;
+
+    return providerId ? [SwapProviderId.KUSAMA_ASSET_HUB, SwapProviderId.POLKADOT_ASSET_HUB, SwapProviderId.ROCOCO_ASSET_HUB].includes(providerId) : false;
+  }, [currentQuote?.provider?.id]);
+
   const renderAlertBox = () => {
     const multichainAsset = fromAssetInfo?.multiChainAsset;
     const fromAssetName = multichainAsset && multiChainAssetMap[multichainAsset]?.name;
@@ -811,7 +819,15 @@ const Component = () => {
 
     return (
       <>
-        {isSwapXCM && fromAssetName && toAssetName && (
+        {isSwapAssetHub && !isFormInvalid && (
+          <AlertBox
+            className={'__assethub-notification'}
+            description={'Swapping on Asset Hub is in beta with a limited number of pairs and low liquidity. Continue at your own risk'}
+            title={'Pay attention!'}
+            type='warning'
+          />
+        )}
+        {isSwapXCM && fromAssetName && toAssetName && !isFormInvalid && (
           <AlertBox
             className={'__xcm-notification'}
             description={`The amount you entered is higher than your available balance on ${toAssetName} network. You need to first transfer cross-chain from ${fromAssetName} network to ${toAssetName} network to continue swapping`}
@@ -948,7 +964,7 @@ const Component = () => {
                   steps: result.process.steps,
                   feeStructure: result.process.totalFee
                 },
-                type: SwapActionType.STEP_CREATE
+                type: CommonActionType.STEP_CREATE
               });
 
               setQuoteOptions(result.quote.quotes);
@@ -1195,9 +1211,10 @@ const Component = () => {
                   </div>
 
                   <SwapToField
+                    decimals={_getAssetDecimals(toAssetInfo)}
                     loading={handleRequestLoading && showQuoteArea}
                     onSelectToken={onSelectToToken}
-                    swapValue={destinationSwapValue}
+                    swapValue={currentQuote?.toAmount || 0}
                     toAsset={toAssetInfo}
                     tokenSelectorItems={toTokenItems}
                     tokenSelectorValue={toTokenSlugValue}
@@ -1393,8 +1410,7 @@ const Component = () => {
                       shape='squircle'
                       size={24}
                     />
-
-                    {currentQuote.provider.name}
+                    <span className={'__provider-name'}>{currentQuote.provider.name}</span>
                   </MetaInfo.Default>
 
                   <MetaInfo.Default
@@ -1406,7 +1422,7 @@ const Component = () => {
                   <div className={'__minimum-received'}>
                     <MetaInfo.Number
                       customFormatter={swapCustomFormatter}
-                      decimals={0}
+                      decimals={_getAssetDecimals(toAssetInfo)}
                       formatType={'custom'}
                       label={
                         <Tooltip
@@ -1588,8 +1604,13 @@ const Swap = styled(Wrapper)<Props>(({ theme: { token } }: Props) => {
       alignItems: 'center',
       cursor: 'pointer'
     },
-    '.__xcm-notification': {
+    '.__xcm-notification, .__assethub-notification': {
       marginBottom: token.marginSM
+    },
+    '.__provider-name': {
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden'
     },
     '.__fee-paid-token': {
       display: 'flex',
@@ -1607,7 +1628,10 @@ const Swap = styled(Wrapper)<Props>(({ theme: { token } }: Props) => {
     },
     '.__swap-provider .__value ': {
       display: 'flex',
-      gap: 8
+      gap: 8,
+      justifyContent: 'flex-end',
+      alignSelf: 'stretch',
+      overflow: 'hidden'
     },
     '.ant-background-icon': {
       width: 24,

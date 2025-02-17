@@ -113,7 +113,7 @@ const Component = function ({ className }: Props) {
       }
     }
 
-    if (confirmation.item.isInternal && confirmation.type !== 'connectWCRequest') {
+    if (confirmation.item.isInternal && confirmation.type !== 'connectWCRequest' && confirmation.type !== 'evmSignatureRequest') {
       return (
         <TransactionConfirmation
           closeAlert={closeAlert}
@@ -299,11 +299,12 @@ const Confirmations = styled(Component)<Props>(({ theme: { token } }: ThemeProps
   display: 'flex',
   flexDirection: 'column',
   height: '100%',
+  backgroundColor: token.colorBgSecondary,
+  borderRadius: 24,
 
   '.confirmation-header': {
     paddingTop: token.sizeXS,
     paddingBottom: token.sizeXS,
-    backgroundColor: 'transparent',
     marginBottom: token.marginXS,
 
     h4: {
