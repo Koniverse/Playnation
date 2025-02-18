@@ -542,10 +542,11 @@ export class BookaSdk {
    * Telegram login actions
    * */
   async login (address?: string) {
+    await this.cacheHandler.promise;
+
     const initData = telegramConnector.initData || DEFAULT_INIT_DATA;
     const referralCode = telegramConnector.getStartParam() || '';
 
-    await this.cacheHandler.promise;
     let account = this.account;
 
     const syncData = {

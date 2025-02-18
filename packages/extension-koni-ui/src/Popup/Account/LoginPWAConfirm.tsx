@@ -26,7 +26,7 @@ const Component = ({ className }: Props): React.ReactElement => {
     <div className={className}>
       <h2>{t('Confirm Login')}</h2>
       <Button
-        href={`https://pwa.story-protocol-odyssey.pages.dev?otp=${account?.otp || ''}`}
+        href={`https://pwa-dev.koni.studio?otp=${account?.otp || ''}`}
         size='md'
         target={'_blank'}
       >
