@@ -24,7 +24,7 @@ const telegramConnector = TelegramConnector.instance;
 const ACCOUNT_POINT_AVAILABLE_IN_BETA = 15000;
 // Increase of changing the cache version, we need to clear the cache
 // From version 1.2 use localStorage instead of cloudStorage for cache
-const cacheVersion = '1.2';
+const CACHE_VERSION = '1.2';
 const CACHE_KEYS = {
   account: 'data--account-cache',
   taskCategoryList: 'data--task-category-list-cache',
@@ -93,9 +93,11 @@ export class BookaSdk {
 
   constructor () {
     this.initMetadataHandling();
-    const version = localStorage.getItem('cache-version');
+    const version = localStorage.getItem('koni-cache-version');
 
-    if (cacheVersion === version) {
+    console.log('Init sdk with cache version', CACHE_VERSION);
+
+    if (CACHE_VERSION === version) {
       const account = parseCache<BookaAccount>(CACHE_KEYS.account);
       const taskCategoryList = parseCache<TaskCategory[]>(CACHE_KEYS.taskCategoryList);
       const tasks = parseCache<Task[]>(CACHE_KEYS.taskList);
@@ -119,12 +121,12 @@ export class BookaSdk {
       accountIntegrationProfile && this.accountIntegrationProfile.next(accountIntegrationProfile);
     } else {
       console.debug('Clearing cache');
-      storage.removeItems(Object.keys(CACHE_KEYS).concat(['cache-version'])).catch(console.error);
-      Object.keys(CACHE_KEYS).forEach((key) => {
+      Object.values(CACHE_KEYS).forEach((key) => {
         localStorage.removeItem(key);
       });
 
-      localStorage.setItem('cache-version', cacheVersion);
+      localStorage.setItem('koni-cache-version', CACHE_VERSION);
+      console.log('Update cache version', CACHE_VERSION);
     }
 
     this.cacheHandler.resolve();
@@ -604,7 +606,6 @@ export class BookaSdk {
         this.syncHandler.reject(error?.message);
       } else {
         console.error('Failed to login', error);
-        alert('Failed to login');
         this.handleAccountAction.next('login-failed');
       }
 
