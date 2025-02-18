@@ -207,13 +207,17 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
     const unsub1 = metadataHandler.maintenanceSubject.subscribe(handleMaintenance);
 
-    const handleBanedAccount = (isEnabled: boolean) => {
-      if (!isEnabled) {
+    const handleAccountAction = (action: string) => {
+      if (action === 'banned') {
         navigate('/account-banned');
+      } else if (action === 'login-pwa-confirm') {
+        navigate('/login-pwa-confirm');
+      } else if (action === 'login-failed') {
+        navigate('/login-select');
       }
     };
 
-    const unsub2 = apiSDK.isAccountEnable.subscribe(handleBanedAccount);
+    const unsub2 = apiSDK.handleAccountAction.subscribe(handleAccountAction);
 
     return () => {
       unsub1.unsubscribe();

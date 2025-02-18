@@ -141,8 +141,10 @@ const ConnectionList = new LazyLoader('ConnectionList', () => import('@subwallet
 const ConnectionDetail = new LazyLoader('ConnectionDetail', () => import('@subwallet/extension-koni-ui/Popup/WalletConnect/ConnectionDetail'));
 
 const NotFound = new LazyLoader('NotFound', () => import('@subwallet/extension-koni-ui/Popup/NotFound'));
-const AccountBanned = new LazyLoader('AccountBaned', () => import('@subwallet/extension-koni-ui/Popup/Account/AccountBanned'));
-const Maintenance = new LazyLoader('AccountBaned', () => import('@subwallet/extension-koni-ui/Popup/Maintenance'));
+const AccountBanned = new LazyLoader('AccountBanned', () => import('@subwallet/extension-koni-ui/Popup/Account/AccountBanned'));
+const LoginSelect = new LazyLoader('LoginSelect', () => import('@subwallet/extension-koni-ui/Popup/Account/LoginSelect'));
+const LoginPWAConfirm = new LazyLoader('LoginPWAConfirm', () => import('@subwallet/extension-koni-ui/Popup/Account/LoginPWAConfirm'));
+const Maintenance = new LazyLoader('Maintenance', () => import('@subwallet/extension-koni-ui/Popup/Maintenance'));
 
 // A Placeholder page
 export function Example () {
@@ -309,6 +311,8 @@ export const router = createBrowserRouter([
       },
       NotFound.generateRouterObject('*'),
       AccountBanned.generateRouterObject('account-banned'),
+      LoginSelect.generateRouterObject('login-select'),
+      LoginPWAConfirm.generateRouterObject('login-pwa-confirm'),
       Maintenance.generateRouterObject('maintenance'),
       PhishingDetected.generateRouterObject(`${PHISHING_PAGE_REDIRECT}/:website`)
     ]

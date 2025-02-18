@@ -17,7 +17,7 @@ import useUILock from '@subwallet/extension-koni-ui/hooks/common/useUILock';
 import { subscribeNotifications } from '@subwallet/extension-koni-ui/messaging';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { isAccountAll, isNoAccount, removeStorage } from '@subwallet/extension-koni-ui/utils';
+import { isNoAccount, removeStorage } from '@subwallet/extension-koni-ui/utils';
 import { changeHeaderLogo } from '@subwallet/react-ui';
 import { NotificationProps } from '@subwallet/react-ui/es/notification/NotificationProvider';
 import CN from 'classnames';
@@ -100,7 +100,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const { isUILocked } = useUILock();
   const needUnlock = isUILocked || (isLocked && unlockType === WalletUnlockType.ALWAYS_REQUIRED);
 
-  const syncAddress = useRef<string | undefined>(undefined);
+  const [loginStatus, setLoginStatus] = useState('');
 
   useEffect(() => {
     let cancel = false;
@@ -110,24 +110,23 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
         return;
       }
 
-      const currentAddress = currentAccount?.address;
-
-      const targetAddress = (currentAddress && !isAccountAll(currentAddress)) ? currentAddress : accounts[0].address;
-
-      if (targetAddress !== syncAddress.current) {
-        BookaSdk.instance.login(targetAddress)
+      if (!loginStatus) {
+        BookaSdk.instance.login()
           .then(() => {
-            console.log(BookaSdk.instance.account);
+            // Login successfully
+            setLoginStatus('success');
           })
-          .catch(console.error);
-        syncAddress.current = targetAddress;
+          .catch(() => {
+            // Login failed or can not login
+            setLoginStatus('failed');
+          });
       }
     }).catch(console.error);
 
     return () => {
       cancel = true;
     };
-  }, [accounts, currentAccount?.address]);
+  }, [accounts, loginStatus]);
 
   const needMigrate = useMemo(
     () => !!accounts
@@ -249,7 +248,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     } else {
       return null;
     }
-  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, openPModal]);
+  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, loginStatus, openPModal]);
 
   // Remove transaction persist state
   useEffect(() => {
