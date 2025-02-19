@@ -57,6 +57,7 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
           )}
           shape={'round'}
           size='md'
+          target={'_blank'}
         >
           {t('Continue')}
         </Button>
