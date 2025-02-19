@@ -15,7 +15,7 @@ import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeCo
 import { useAccountBalance, useGetBannerByScreen, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
 import { useGetChainSlugsByAccountType } from '@subwallet/extension-koni-ui/hooks/screen/home/useGetChainSlugsByAccountType';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { isMobile } from '@subwallet/extension-koni-ui/utils';
+import { isMobile, isPWABrowser } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -114,6 +114,12 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         navigate('/login-pwa-confirm');
       } else if (action === 'login-failed') {
         navigate('/login-select');
+      } else if (action === 'login-success') {
+        const isShowInstruction = localStorage.getItem(instructionLocalKey);
+
+        if (!Telegram?.WebApp?.initData && !isShowInstruction && !isPWABrowser() && isMobile()) {
+          activeModal(instructionPWAModalId);
+        }
       }
     };
 
@@ -123,7 +129,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       unsub1.unsubscribe();
       unsub2.unsubscribe();
     };
-  }, [navigate]);
+  }, [activeModal, navigate]);
 
   const onTabSelected = useCallback(
     (key: string) => {
@@ -135,14 +141,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     },
     []
   );
-
-  useEffect(() => {
-    const isShowedInstruction = localStorage.getItem(instructionLocalKey);
-
-    if (isMobile() && !isShowedInstruction && !Telegram?.WebApp?.initData) {
-      activeModal(instructionPWAModalId);
-    }
-  }, [activeModal]);
 
   useEffect(() => {
     const initNps = account?.initNps || [];

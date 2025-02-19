@@ -17,6 +17,7 @@ type Props = ThemeProps & {
 };
 
 const modalId = ACCESS_HOME_SCREEN_MODAL;
+const appUrl = process.env.STORY_PROTOCOL_APP_URL || 'https://dev.story-protocol-odyssey.pages.dev';
 
 function Component ({ className, otp }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
@@ -47,7 +48,7 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
         </Button>
         <Button
           block={true}
-          href={`https://pwa.story-protocol-odyssey.pages.dev?otp=${otp || ''}`}
+          href={`${appUrl}?otp=${otp || ''}`}
           icon={(
             <Icon
               customSize={'20px'}
