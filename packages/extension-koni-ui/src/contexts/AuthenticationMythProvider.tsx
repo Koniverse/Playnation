@@ -154,6 +154,43 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     }
   }, [authContext.token, onLogoutMythAccount, tokenData?.email]);
 
+  const onUpdateAddressMythicalAccount = useCallback(async (oldAddress: string | null) => {
+    if (!tokenData?.email || !authContext.token) {
+      return;
+    }
+
+    let address = '';
+
+    try {
+      await bookaSDK.fetchMythicalBalance(authContext.token);
+      const mythicalBalance = bookaSDK.getMythicalWallet();
+
+      address = mythicalBalance.address;
+    } catch (error) {
+      console.error(error);
+    }
+
+    if (address && address !== oldAddress) {
+      const rs = await linkSDK.submitLink({
+        initData,
+        linkInfo: {
+          email: tokenData?.email as string,
+          token: authContext.token,
+          address
+        }
+      });
+
+      if (rs.success) {
+        setIsLinked(rs.success);
+        setLinkData(rs.data);
+      }
+
+      if (!isSameAddress(bookaSDK.account?.info.address || '', address)) {
+        onLoginWithTelegramAccount(address).catch(console.error);
+      }
+    }
+  }, [authContext.token, onLoginWithTelegramAccount, tokenData?.email]);
+
   const linkMythAccount = useCallback(async (path: string) => {
     if (!tokenData?.email || !authContext.token) {
       if (path) {
@@ -232,12 +269,14 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
               onLogoutMythAccount();
             });
           }
+
+          onUpdateAddressMythicalAccount(rs.data?.link_address ?? null).catch(console.error);
         } else {
           onSubmitMythAccount().catch(console.error);
         }
       }).catch(console.error);
     }
-  }, [authContext.token, onLogoutMythAccount, onSubmitMythAccount, tokenData]);
+  }, [authContext.token, onLogoutMythAccount, onSubmitMythAccount, onUpdateAddressMythicalAccount, tokenData]);
 
   const authenticationValue: AuthenticationMythContextProps = {
     account,
