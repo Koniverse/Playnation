@@ -23,13 +23,6 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
   const { inactiveModal } = useContext(ModalContext);
   const { token } = useTheme() as Theme;
 
-  const onContinue = useCallback(() => {
-    inactiveModal(modalId);
-
-    window.open(`https://pwa.story-protocol-odyssey.pages.dev?otp=${otp || ''}`, '_blank');
-    TelegramWebApp?.close();
-  }, [otp, inactiveModal]);
-
   const onCancel = useCallback(() => {
     inactiveModal(modalId);
     TelegramWebApp?.close();
@@ -54,6 +47,7 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
         </Button>
         <Button
           block={true}
+          href={`https://pwa.story-protocol-odyssey.pages.dev?otp=${otp || ''}`}
           icon={(
             <Icon
               customSize={'20px'}
@@ -61,15 +55,14 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
               weight='fill'
             />
           )}
-          onClick={onContinue}
           shape={'round'}
-          size={'sm'}
+          size='md'
         >
           {t('Continue')}
         </Button>
       </>
     );
-  }, [onCancel, onContinue, t]);
+  }, [onCancel, otp, t]);
 
   return (
     <SwModal
