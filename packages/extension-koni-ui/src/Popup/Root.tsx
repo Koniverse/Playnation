@@ -248,7 +248,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     } else {
       return null;
     }
-  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, loginStatus, openPModal]);
+  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, openPModal]);
 
   // Remove transaction persist state
   useEffect(() => {
