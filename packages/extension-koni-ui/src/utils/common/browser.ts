@@ -29,6 +29,17 @@ export const isIos = (): boolean => {
   return BOWER_PARSER.getOSName(true) === 'ios';
 };
 
+export const isPWABrowser = (): boolean => {
+  if (isAndroid()) {
+    return window.matchMedia('(display-mode: standalone)')?.matches;
+  } else if (isIos()) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return !!(window.navigator as any).standalone;
+  }
+
+  return false;
+};
+
 export const isDesktop = (): boolean => {
   return ['window', 'macos', 'linux'].includes(BOWER_PARSER.getOSName(true));
 };

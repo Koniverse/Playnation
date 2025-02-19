@@ -57,11 +57,12 @@ const _additionalEnv = {
   TRANSAK_TEST_MODE: JSON.stringify(false),
   BANXA_TEST_MODE: JSON.stringify(false),
   INFURA_API_KEY: JSON.stringify(process.env.INFURA_API_KEY),
+  INFURA_API_KEY_SECRET: JSON.stringify(process.env.INFURA_API_KEY_SECRET),
+  DEFAULT_INIT_DATA: JSON.stringify(process.env.DEFAULT_INIT_DATA),
   GAME_API_HOST: JSON.stringify(process.env.GAME_API_HOST),
   TELEGRAM_WEBAPP_LINK: JSON.stringify(process.env.TELEGRAM_WEBAPP_LINK),
   KARURA_PLAYDROP_START_DATE: JSON.stringify(process.env.KARURA_PLAYDROP_START_DATE),
   KARURA_PLAYDROP_END_DATE: JSON.stringify(process.env.KARURA_PLAYDROP_END_DATE),
-  INFURA_API_KEY_SECRET: JSON.stringify(process.env.INFURA_API_KEY_SECRET),
   CHAINFLIP_BROKER_API: JSON.stringify(process.env.CHAINFLIP_BROKER_API),
   BITTENSOR_API_KEY_1: JSON.stringify(process.env.BITTENSOR_API_KEY_1),
   BITTENSOR_API_KEY_2: JSON.stringify(process.env.BITTENSOR_API_KEY_2),
@@ -123,7 +124,9 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
     },
     output: {
       chunkFilename: '[name]-[contenthash].js',
-      filename: '[name]-[contenthash].js',
+      filename: (x) => {
+        return x.chunk.name === 'service-worker' ? 'service-worker.js' : '[name]-[contenthash].js';
+      },
       globalObject: '(typeof self !== \'undefined\' ? self : this)',
       path: path.join(__dirname, 'build'),
       publicPath: '/'
@@ -219,6 +222,7 @@ const createConfig = (entry, alias = {}, useSplitChunk = false) => {
 };
 
 module.exports = createConfig({
+  'service-worker': './src/serviceWorker.ts',
   fallback: ['./src/fallback.ts', './src/webRunner.ts', './src/index.tsx']
 }, {
   'manta-extension-sdk': './manta-extension-sdk-empty.ts'

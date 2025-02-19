@@ -218,6 +218,7 @@ export interface BookaAccount {
   },
   gameData: GameData[];
   token: string;
+  otp?: string;
 }
 
 export interface AccountPublicInfo {

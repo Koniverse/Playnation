@@ -14,7 +14,8 @@ import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
 import fetch from 'cross-fetch';
 import { BehaviorSubject } from 'rxjs';
 
-export const GAME_API_HOST = 'https://sp-odyssey-dev-api.playnation.app';
+export const DEFAULT_INIT_DATA = process.env.DEFAULT_INIT_DATA;
+export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
 export const STORY_BADGE_HOST = process.env.STORY_BADGE_HOST || 'http://localhost:3000';
 const storage = SWStorage.instance;
@@ -23,7 +24,7 @@ const telegramConnector = TelegramConnector.instance;
 const ACCOUNT_POINT_AVAILABLE_IN_BETA = 15000;
 // Increase of changing the cache version, we need to clear the cache
 // From version 1.2 use localStorage instead of cloudStorage for cache
-const cacheVersion = '1.2';
+const CACHE_VERSION = '1.2';
 const CACHE_KEYS = {
   account: 'data--account-cache',
   taskCategoryList: 'data--task-category-list-cache',
@@ -36,6 +37,15 @@ const CACHE_KEYS = {
   airdropNftList: 'data--airdrop-nft-list-cache',
   accountIntegrationProfile: 'data--account-integration-profile-cache'
 };
+
+// Get login token from url search params in location
+export function getLoginTokenFromUrl (): string | null {
+  const urlParams = new URLSearchParams(window.location.search);
+
+  return urlParams.get('otp');
+}
+
+const OTP = getLoginTokenFromUrl();
 
 function parseCache<T> (key: string): T | undefined {
   const data = localStorage.getItem(key);
@@ -55,6 +65,7 @@ const metadataHandler = MetadataHandler.instance;
 
 export class BookaSdk {
   private syncHandler = createPromiseHandler<void>();
+  private cacheHandler = createPromiseHandler<void>();
   private accountSubject = new BehaviorSubject<BookaAccount | undefined>(undefined);
   private taskListSubject = new BehaviorSubject<Task[]>([]);
   private taskCategoryListSubject = new BehaviorSubject<TaskCategory[]>([]);
@@ -78,13 +89,15 @@ export class BookaSdk {
 
   // Special cases
   // Check if the account is banned
-  isAccountEnable = new BehaviorSubject<boolean>(true);
+  handleAccountAction = new BehaviorSubject<string>('');
 
   constructor () {
     this.initMetadataHandling();
-    const version = localStorage.getItem('cache-version');
+    const version = localStorage.getItem('koni-cache-version');
 
-    if (cacheVersion === version) {
+    console.log('Init sdk with cache version', CACHE_VERSION);
+
+    if (CACHE_VERSION === version) {
       const account = parseCache<BookaAccount>(CACHE_KEYS.account);
       const taskCategoryList = parseCache<TaskCategory[]>(CACHE_KEYS.taskCategoryList);
       const tasks = parseCache<Task[]>(CACHE_KEYS.taskList);
@@ -108,13 +121,15 @@ export class BookaSdk {
       accountIntegrationProfile && this.accountIntegrationProfile.next(accountIntegrationProfile);
     } else {
       console.debug('Clearing cache');
-      storage.removeItems(Object.keys(CACHE_KEYS).concat(['cache-version'])).catch(console.error);
-      Object.keys(CACHE_KEYS).forEach((key) => {
+      Object.values(CACHE_KEYS).forEach((key) => {
         localStorage.removeItem(key);
       });
 
-      localStorage.setItem('cache-version', cacheVersion);
+      localStorage.setItem('koni-cache-version', CACHE_VERSION);
+      console.log('Update cache version', CACHE_VERSION);
     }
+
+    this.cacheHandler.resolve();
   }
 
   public get waitForSync () {
@@ -523,72 +538,16 @@ export class BookaSdk {
     return this.referralListSubject;
   }
 
-  // Deprecated use login instead
-  async sync (address: string) {
-    const userInfo = telegramConnector.userInfo;
-    const message = `Login as ${userInfo?.username || 'booka'}`;
-    const signature = await this.requestSignature(address, message);
-    const referralCode = telegramConnector.getStartParam() || '';
-
-    this.accountSubject.next(undefined);
-
-    const syncData = {
-      address,
-      signature,
-      referralCode,
-      telegramId: userInfo?.id || 111,
-      telegramUsername: userInfo?.username || 'booka',
-      isBot: !!userInfo?.is_bot,
-      addedToAttachMenu: !!userInfo?.added_to_attachment_menu,
-      firstName: userInfo?.first_name || 'Booka',
-      lastName: userInfo?.last_name || '',
-      photoUrl: userInfo?.photo_url,
-      isPremium: userInfo?.is_premium,
-      languageCode: userInfo?.language_code || 'en'
-    };
-
-    try {
-      const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/sync`, syncData);
-
-      if (account) {
-        this.accountSubject.next(account);
-        localStorage.setItem(CACHE_KEYS.account, JSON.stringify(account));
-        this.syncHandler.resolve();
-
-        await Promise.all([
-          this.fetchEnergyConfig(),
-          this.fetchRankInfoMap(),
-          this.fetchGameList(),
-          this.fetchTaskCategoryList(),
-          this.fetchTaskList(),
-          this.fetchLeaderboardConfigList()
-          // this.fetchGameItemMap(),
-          // this.fetchGameInventoryItemList(),
-          // this.fetchGameItemInGameList()
-        ]);
-
-        await Promise.all([this.fetchGameList(), this.fetchTaskList(), this.fetchAirdropCampaign()]);
-      }
-    } catch (error: any) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (error?.message === 'ACCOUNT_BANNED') {
-        this.isAccountEnable.next(false);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        this.syncHandler.reject(error?.message);
-      }
-
-      throw error;
-    }
-  }
-
   /**
    * Telegram login actions
    * */
-  async login (address: string) {
-    const initData = telegramConnector.initData;
+  async login (address?: string) {
+    await this.cacheHandler.promise;
+
+    const initData = telegramConnector.initData || DEFAULT_INIT_DATA;
     const referralCode = telegramConnector.getStartParam() || '';
 
-    this.accountSubject.next(undefined);
+    let account = this.account;
 
     const syncData = {
       address,
@@ -597,7 +556,23 @@ export class BookaSdk {
     };
 
     try {
-      const account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login`, syncData);
+      // Re-login with new data
+      if (initData) {
+        this.accountSubject.next(undefined);
+        account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login`, {
+          ...syncData,
+          requestOTP: true
+        });
+        this.accountSubject.next(account);
+        this.handleAccountAction.next('login-pwa-confirm');
+
+        return;
+      } else if (this.account) {
+        // Todo: Check limit time to access to latest token
+        account = this.account;
+      } else if (OTP) {
+        account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login-by-otp`, { otp: OTP });
+      }
 
       if (account) {
         this.accountSubject.next(account);
@@ -621,13 +596,18 @@ export class BookaSdk {
         ]);
 
         this.autoSyncMintingLog();
+      } else {
+        throw new Error('CANNOT_LOGIN');
       }
     } catch (error: any) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (error?.message === 'ACCOUNT_BANNED') {
-        this.isAccountEnable.next(false);
+        this.handleAccountAction.next('baned');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         this.syncHandler.reject(error?.message);
+      } else {
+        console.error('Failed to login', error);
+        this.handleAccountAction.next('login-failed');
       }
 
       throw error;

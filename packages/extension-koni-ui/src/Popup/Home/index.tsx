@@ -2,25 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
-import { SWStorage } from '@subwallet/extension-base/storage';
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, InitRewardsModal, InitRewardsModalProps, Layout, LoadingScreen, NewAiChatModal } from '@subwallet/extension-koni-ui/components';
+import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, InitRewardsModal, InitRewardsModalProps, Layout, LoadingScreen } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
+import PWAInstruction from '@subwallet/extension-koni-ui/components/Modal/PWA/PWAIntruction';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, homeScreensLayoutBackgroundImages, NEW_CHAT_AI_MODAL, ON_CHAIN_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, homeScreensLayoutBackgroundImages, PWA_INSTRUCTION_MODAL, SHOW_INSTRUCTION_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
-import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useAccountBalance, useGetBannerByScreen, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
 import { useGetChainSlugsByAccountType } from '@subwallet/extension-koni-ui/hooks/screen/home/useGetChainSlugsByAccountType';
-import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { isMobile, isPWABrowser } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { Outlet } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -31,27 +29,18 @@ export const GlobalSearchTokenModalId = 'globalSearchToken';
 const apiSDK = BookaSdk.instance;
 const metadataHandler = MetadataHandler.instance;
 let isAddPointShowed = false; // Use let instead of ref to avoid reload all components
-const cloudStorage = SWStorage.instance;
-const onNewChatAiCloudKey = 'new-chat-ai-modal';
-const onNewChatAiModal = NEW_CHAT_AI_MODAL;
-const onChainProfileAlterModal = ON_CHAIN_PROFILE_MODAL;
-const onChainProfileCloudKey = 'on-chain-profile-modal';
+const instructionPWAModalId = PWA_INSTRUCTION_MODAL;
+const instructionLocalKey = SHOW_INSTRUCTION_MODAL;
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const chainsByAccountType = useGetChainSlugsByAccountType();
   const tokenGroupStructure = useTokenGroup(chainsByAccountType);
   const accountBalance = useAccountBalance(tokenGroupStructure.tokenGroupMap);
-  const { activeModal, checkActive, inactiveModal } = useContext(ModalContext);
+  const { activeModal, inactiveModal } = useContext(ModalContext);
   const [containerClass, setContainerClass] = useState<string | undefined>();
   const [addRewardModalProps, setAddRewardModalProps] = useState<AddRewardsModalProps | undefined>();
   const [initRewardModalProps, setInitRewardModalProps] = useState<InitRewardsModalProps | undefined>();
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
-  const { wcAccount } = useSelector((state: RootState) => state.accountState);
-  const { disconnectWithoutConfirmModal } = useContext(WalletConnectContext);
-  // const [mintingLog, setMintingLog] = useState<NftMintingLog | undefined>();
-  // const [mintFailedLogIds, setMintFailedLogIds] = useLocalStorage<number[]>(CONFIRM_SHOW_MINTING_FAILED_MODAL, []);
-
-  const isGlobalModalActive = useMemo(() => checkActive(GlobalSearchTokenModalId), [checkActive]);
 
   const banners = useGetBannerByScreen('home');
 
@@ -98,95 +87,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     closeAddRewardsModal();
   }, [closeAddRewardsModal]);
 
-  // const handleMintingFailedModal = useCallback(() => {
-  //   const handleConfirmOrCancel = () => {
-  //     setMintFailedLogIds((prevIds) => {
-  //       if (mintingLog?.id && !prevIds.includes(mintingLog.id)) {
-  //         return [...prevIds, mintingLog.id];
-  //       }
-  //
-  //       return prevIds;
-  //     });
-  //     alertModal.close();
-  //   };
-  //
-  //   alertModal.open({
-  //     className: 'general-confirmation-modal modal-revert-header',
-  //     title: t('Badge minting failed'),
-  //     iconProps: {
-  //       phosphorIcon: Gift,
-  //       weight: 'fill'
-  //     },
-  //     contentTitle: t('Mint your badge again'),
-  //     content: (
-  //       t('Due to technical issues, your badge wasn’t minted in Phase 1. Click the Mint tab to mint your badge again on December 6')
-  //     ),
-  //     okButton: {
-  //       icon: CheckCircle,
-  //       iconWeight: 'fill',
-  //       text: t('I understand'),
-  //       onClick: handleConfirmOrCancel
-  //     },
-  //     onCancel: handleConfirmOrCancel
-  //   });
-  // }, [alertModal, mintingLog, setMintFailedLogIds, t]);
-
-  const onShowNewChatAiModal = useCallback(async () => {
-    try {
-      const status = await cloudStorage.getItem(onNewChatAiCloudKey);
-
-      if (!status) {
-        const isPassed = await apiSDK.checkAccountAvailableBetaVersion();
-
-        if (isPassed) {
-          activeModal(onNewChatAiModal);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }, [activeModal]);
-
-  const onShowOnChainProfileModal = useCallback(async () => {
-    try {
-      const status = await cloudStorage.getItem(onChainProfileCloudKey);
-
-      if (!status) {
-        if (wcAccount?.address) {
-          await disconnectWithoutConfirmModal(wcAccount);
-        }
-
-        activeModal(onChainProfileAlterModal);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }, [activeModal, disconnectWithoutConfirmModal, wcAccount]);
-
-  // useEffect(() => {
-  //   const fetchMintingLog = async () => {
-  //     setPendingFetching(true);
-  //
-  //     try {
-  //       const mintingLog = await apiSDK.getNftMintingLog();
-  //
-  //       setMintingLog(mintingLog);
-  //     } catch (error) {
-  //       console.error('Error fetching minting log:', error);
-  //     }
-  //   };
-  //
-  //   fetchMintingLog().catch(console.error).finally(() => {
-  //     setPendingFetching(false);
-  //   });
-  // }, []);
-
-  // useEffect(() => {
-  //   if (mintingLog?.notify && !mintFailedLogIds.includes(mintingLog.id)) {
-  //     handleMintingFailedModal();
-  //   }
-  // }, [handleMintingFailedModal, mintFailedLogIds, mintingLog?.id, mintingLog?.notify, navigate]);
-
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount()
       .subscribe((data) => {
@@ -207,19 +107,29 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
     const unsub1 = metadataHandler.maintenanceSubject.subscribe(handleMaintenance);
 
-    const handleBanedAccount = (isEnabled: boolean) => {
-      if (!isEnabled) {
+    const handleAccountAction = (action: string) => {
+      if (action === 'banned') {
         navigate('/account-banned');
+      } else if (action === 'login-pwa-confirm') {
+        navigate('/login-pwa-confirm');
+      } else if (action === 'login-failed') {
+        navigate('/login-select');
+      } else if (action === 'login-success') {
+        const isShowInstruction = localStorage.getItem(instructionLocalKey);
+
+        if (!Telegram?.WebApp?.initData && !isShowInstruction && !isPWABrowser() && isMobile()) {
+          activeModal(instructionPWAModalId);
+        }
       }
     };
 
-    const unsub2 = apiSDK.isAccountEnable.subscribe(handleBanedAccount);
+    const unsub2 = apiSDK.handleAccountAction.subscribe(handleAccountAction);
 
     return () => {
       unsub1.unsubscribe();
       unsub2.unsubscribe();
     };
-  }, [navigate]);
+  }, [activeModal, navigate]);
 
   const onTabSelected = useCallback(
     (key: string) => {
@@ -280,12 +190,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     }
   }, [account, closeInitRewardModal, onCancelRewardModal, onOkRewardModal, openInitRewardModal, openAddRewardsModal, closeAddRewardsModal]);
 
-  useEffect(() => {
-    onShowNewChatAiModal().then(async () => {
-      await onShowOnChainProfileModal();
-    }).catch(console.error);
-  }, [isGlobalModalActive, onShowNewChatAiModal, onShowOnChainProfileModal]);
-
   return (
     <>
       {!account && <LoadingScreen />}
@@ -313,7 +217,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         tokenBalanceMap={accountBalance.tokenBalanceMap}
       />
 
-      <NewAiChatModal />
+      <PWAInstruction />
 
       {firstBanner && <CampaignBannerModal banner={firstBanner} />}
       {
