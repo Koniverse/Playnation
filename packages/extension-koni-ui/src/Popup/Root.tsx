@@ -106,7 +106,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     let cancel = false;
 
     initDataRef.current.then(() => {
-      if (cancel || accounts.length === 0) {
+      if (cancel || noAccount) {
         return;
       }
 
@@ -126,7 +126,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     return () => {
       cancel = true;
     };
-  }, [accounts, loginStatus]);
+  }, [noAccount, loginStatus]);
 
   const needMigrate = useMemo(
     () => !!accounts
