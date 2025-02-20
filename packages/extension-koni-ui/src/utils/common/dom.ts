@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import copy from 'copy-to-clipboard';
+import { toText } from 'hast-util-to-text';
+import rehypeParse from 'rehype-parse';
+import rehypeRaw from 'rehype-raw';
+import { unified } from 'unified';
 
 export const waitForElement = (selector: string, callback: (element: Element) => any) => {
   let count = 0;
@@ -47,4 +51,13 @@ export const clickOutside = (selector: string, callback: () => void, enable: boo
 
 export const renderModalSelector = (className?: string): string => {
   return `.${(className || '').replace(' ', '.')}.ant-sw-modal`;
+};
+
+export const stripHtml = (text: string): string => {
+  const value = unified()
+    .use(rehypeParse, { fragment: true }) // Parse HTML
+    .use(rehypeRaw) // Convert back to a string
+    .parse(text);
+
+  return toText(value).trim();
 };
