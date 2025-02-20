@@ -92,6 +92,9 @@ export class BookaSdk {
   // Check if the account is banned
   handleAccountAction = new BehaviorSubject<string>('');
 
+  // need remaining to renew token
+  needRenewOTP = false;
+
   constructor () {
     this.initMetadataHandling();
     const version = localStorage.getItem('koni-cache-version');
@@ -547,6 +550,35 @@ export class BookaSdk {
   /**
    * Telegram login actions
    * */
+
+  async renewOTP () {
+    await this.cacheHandler.promise;
+
+    if (!this.needRenewOTP && this.account?.otp) {
+      return this.account?.otp;
+    }
+
+    const initData = telegramConnector.initData || DEFAULT_INIT_DATA;
+    const referralCode = telegramConnector.getStartParam() || '';
+
+    let account = this.account;
+
+    const syncData = {
+      address: undefined,
+      referralCode,
+      initData
+    };
+
+    this.accountSubject.next(undefined);
+    account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login`, {
+      ...syncData,
+      requestOTP: true
+    });
+    this.accountSubject.next(account);
+
+    return account.otp;
+  }
+
   async login (address?: string) {
     await this.cacheHandler.promise;
 
@@ -571,6 +603,9 @@ export class BookaSdk {
         });
         this.accountSubject.next(account);
         this.handleAccountAction.next('login-pwa-confirm');
+        setTimeout(() => {
+          this.needRenewOTP = true;
+        }, 1000 * 60 * 2.5);
 
         return;
       } else if (OTP) {

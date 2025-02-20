@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { TelegramWebApp } from '@subwallet/extension-base/utils/telegram';
+import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { ACCESS_HOME_SCREEN_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
@@ -9,25 +10,57 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, ModalContext, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { ArrowFatLinesUp, CheckCircle, XCircle } from 'phosphor-react';
-import React, { useCallback, useContext, useMemo } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 
 type Props = ThemeProps & {
   otp: string;
 };
 
+const apiSdk = BookaSdk.instance;
 const modalId = ACCESS_HOME_SCREEN_MODAL;
 const appUrl = process.env.STORY_PROTOCOL_APP_URL || 'https://dev.story-protocol-odyssey.pages.dev';
 
 function Component ({ className, otp }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const { inactiveModal } = useContext(ModalContext);
+  const { checkActive, inactiveModal } = useContext(ModalContext);
   const { token } = useTheme() as Theme;
+  const [otpValue, setOtpValue] = useState(otp);
+
+  const isActive = useMemo(() => checkActive(modalId), [checkActive]);
 
   const onCancel = useCallback(() => {
     inactiveModal(modalId);
     TelegramWebApp?.close();
   }, [inactiveModal]);
+
+  const onContinue = useCallback(() => {
+    setTimeout(() => {
+      TelegramWebApp?.close();
+    }, 3000);
+  }, []);
+
+  useEffect(() => {
+    setOtpValue(otp);
+  }, [otp]);
+
+  useEffect(() => {
+    let interval = 0;
+
+    if (isActive) {
+      interval = setInterval(() => {
+        apiSdk.renewOTP().then((newOtp) => {
+          newOtp && setOtpValue(newOtp);
+        }).catch(console.error);
+      }, 1000 * 60 * 2.5) as unknown as number;
+    } else {
+      clearInterval(interval);
+    }
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [isActive]);
 
   const footerModal = useMemo(() => {
     return (
@@ -48,7 +81,7 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
         </Button>
         <Button
           block={true}
-          href={`${appUrl}?otp=${otp || ''}`}
+          href={`${appUrl}?otp=${otpValue || ''}`}
           icon={(
             <Icon
               customSize={'20px'}
@@ -56,6 +89,7 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
               weight='fill'
             />
           )}
+          onClick={onContinue}
           shape={'round'}
           size='md'
           target={'_blank'}
@@ -64,7 +98,7 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
         </Button>
       </>
     );
-  }, [onCancel, otp, t]);
+  }, [onCancel, onContinue, otpValue, t]);
 
   return (
     <SwModal
