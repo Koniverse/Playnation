@@ -8,6 +8,7 @@ import { createPromiseHandler, detectTranslate, wait } from '@subwallet/extensio
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, APIResponse, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, IAirdropNftMinting, IntegratedProfileResult, IpAssetParams, IpAssetResponse, LeaderboardPerson, NftMintingEligibility, NftMintingLog, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
+import { SHOW_INSTRUCTION_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
 import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
@@ -538,6 +539,11 @@ export class BookaSdk {
     return this.referralListSubject;
   }
 
+  clearAccountData () {
+    localStorage.removeItem(SHOW_INSTRUCTION_MODAL);
+    this.accountSubject.next(undefined);
+  }
+
   /**
    * Telegram login actions
    * */
@@ -567,11 +573,13 @@ export class BookaSdk {
         this.handleAccountAction.next('login-pwa-confirm');
 
         return;
+      } else if (OTP) {
+        this.clearAccountData();
+        account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login-by-otp`, { otp: OTP });
+        this.handleAccountAction.next('login-success');
       } else if (this.account) {
         // Todo: Check limit time to access to latest token
         account = this.account;
-      } else if (OTP) {
-        account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login-by-otp`, { otp: OTP });
       }
 
       if (account) {
