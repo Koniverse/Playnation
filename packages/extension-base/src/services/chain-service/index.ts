@@ -31,24 +31,6 @@ const forceChainInfoMap = (() => {
   ];
 
   return Object.fromEntries(enableList.map((slug) => {
-    if (slug === 'storyOdyssey_testnet') {
-      return [slug, {
-        ...ChainInfoMap[slug],
-        providers: {
-          'Story Odyssey': 'https://evm-rpc.story.testnet.dteam.tech'
-        }
-      }];
-    }
-
-    if (slug === 'storyOdyssey_testnet') {
-      return [slug, {
-        ...ChainInfoMap[slug],
-        providers: {
-          Story: 'https://story-evm-rpc.cdmteck.com'
-        }
-      }];
-    }
-
     return [slug, ChainInfoMap[slug]];
   }));
 })();
@@ -406,24 +388,6 @@ export class ChainService {
   }
 
   public getChainInfoByKey (key: string): _ChainInfo {
-    if (key === 'storyOdyssey_testnet') {
-      return {
-        ...this.dataMap.chainInfoMap[key],
-        providers: {
-          'Story Odyssey': 'https://evm-rpc.story.testnet.dteam.tech'
-        }
-      };
-    }
-
-    if (key === 'story_protocol') {
-      return {
-        ...this.dataMap.chainInfoMap[key],
-        providers: {
-          Story: 'https://story-evm-rpc.cdmteck.com'
-        }
-      };
-    }
-
     return this.dataMap.chainInfoMap[key];
   }
 
