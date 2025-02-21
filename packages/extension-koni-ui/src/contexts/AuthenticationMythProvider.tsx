@@ -122,12 +122,74 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     });
 
     if (rs.error) {
+      // Cast the type because the error is a string but the data is actually an object
+      let errorObject: { message?: string; status?: number; name?: string } | null = null;
+
+      if (typeof rs.error === 'string') {
+        errorObject = { message: rs.error };
+      } else {
+        errorObject = rs.error as { message?: string; status?: number; name?: string };
+      }
+
+      const errorMessage = errorObject?.message;
+
+      if (errorMessage && (errorMessage.includes('Email existed linked') || errorMessage.includes('Cannot change email'))) {
+        telegramConnector.showPopup({
+          message: 'This email is used by another Telegram ID. Use another email and try again'
+        }, () => {
+          onLogoutMythAccount();
+        });
+      } else {
+        telegramConnector.showPopup({
+          message: errorMessage || ''
+        }, () => {
+          onLogoutMythAccount();
+        });
+      }
+
       console.error(rs.error);
     } else if (rs.success) {
       setIsLinked(rs.success);
       setLinkData(rs.data);
     }
-  }, [authContext.token, tokenData?.email]);
+  }, [authContext.token, onLogoutMythAccount, tokenData?.email]);
+
+  const onUpdateAddressMythicalAccount = useCallback(async (oldAddress: string | null) => {
+    if (!tokenData?.email || !authContext.token) {
+      return;
+    }
+
+    let address = '';
+
+    try {
+      await bookaSDK.fetchMythicalBalance(authContext.token);
+      const mythicalBalance = bookaSDK.getMythicalWallet();
+
+      address = mythicalBalance.address;
+    } catch (error) {
+      console.error(error);
+    }
+
+    if (address && address !== oldAddress) {
+      const rs = await linkSDK.submitLink({
+        initData,
+        linkInfo: {
+          email: tokenData?.email as string,
+          token: authContext.token,
+          address
+        }
+      });
+
+      if (rs.success) {
+        setIsLinked(rs.success);
+        setLinkData(rs.data);
+      }
+
+      if (!isSameAddress(bookaSDK.account?.info.address || '', address)) {
+        onLoginWithTelegramAccount(address).catch(console.error);
+      }
+    }
+  }, [authContext.token, onLoginWithTelegramAccount, tokenData?.email]);
 
   const linkMythAccount = useCallback(async (path: string) => {
     if (!tokenData?.email || !authContext.token) {
@@ -207,12 +269,14 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
               onLogoutMythAccount();
             });
           }
+
+          onUpdateAddressMythicalAccount(rs.data?.link_address ?? null).catch(console.error);
         } else {
           onSubmitMythAccount().catch(console.error);
         }
       }).catch(console.error);
     }
-  }, [authContext.token, onLogoutMythAccount, onSubmitMythAccount, tokenData]);
+  }, [authContext.token, onLogoutMythAccount, onSubmitMythAccount, onUpdateAddressMythicalAccount, tokenData]);
 
   const authenticationValue: AuthenticationMythContextProps = {
     account,

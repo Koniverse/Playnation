@@ -75,6 +75,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   const onClickCard = useCallback((cardSrc: NFLRivalCard) => {
     return () => {
       setSelectedCard(cardSrc);
+      sendEventGA('mythical-card-details-click');
       activeModal(cardDetailModalId);
     };
   }, [activeModal]);
