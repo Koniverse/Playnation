@@ -7,7 +7,7 @@ import { ACCESS_HOME_SCREEN_MODAL } from '@subwallet/extension-koni-ui/constants
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { isAndroid, isIos, isMobile } from '@subwallet/extension-koni-ui/utils';
+import { isAndroid } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { ArrowCircleRight, ArrowFatLinesUp, HandPointing } from 'phosphor-react';
@@ -70,44 +70,32 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
   }, [isActive]);
 
   const { content, subtitle, title } = useMemo<PWAWelcomeModal>(() => {
-    if (isMobile()) {
-      if (isAndroid()) {
-        return {
-          content: (
-            <ul className={CN('__content-modal', '-flex-box')}>
-              <li>
-                {t('By adding Koni Story to your home screen, you can quickly access the bot as a mobile app')}
-              </li>
-              <li>
-                {t('To add, hold button ')}<b>“Hold to continue”</b>{t(' then click ')}<b>“Open with...”</b>{t('to open Koni Story in your browser')}
-              </li>
-            </ul>
-          ),
-          subtitle: t('Access Koni Story from your home screen'),
-          title: t('Koni Story app is here!')
-        };
-      } else {
-        return {
-          content: (
-            <div className={'__content-modal'}>
-              <>
-                {t('You can now enjoy all features of Koni Story on your favorite browser. Click ')}<b>“Continue to browser”</b>{t(' and try out now!')}
-              </>
-            </div>
-          ),
-          subtitle: t('Access Koni Story from your browser'),
-          title: t('Koni Story is on browser!')
-        };
-      }
+    if (isAndroid()) {
+      return {
+        content: (
+          <ul className={CN('__content-modal', '-flex-box')}>
+            <li>
+              {t('By adding Koni Story to your home screen, you can quickly access the bot as a mobile app')}
+            </li>
+            <li>
+              {t('To add, hold button ')}<b>“Hold to continue”</b>{t(' then click ')}<b>“Open with...”</b>{t('to open Koni Story in your browser')}
+            </li>
+          </ul>
+        ),
+        subtitle: t('Access Koni Story from your home screen'),
+        title: t('Koni Story app is here!')
+      };
     } else {
       return {
         content: (
           <div className={'__content-modal'}>
-            {'213123123123123'}
+            <>
+              {t('You can now enjoy all features of Koni Story on your favorite browser. Click ')}<b>“Continue to browser”</b>{t(' and try out now!')}
+            </>
           </div>
         ),
-        subtitle: t('Access Koni Story from your home screen'),
-        title: t('Koni Story app is here!')
+        subtitle: t('Access Koni Story from your browser'),
+        title: t('Koni Story is on browser!')
       };
     }
   }, [t]);
@@ -116,23 +104,22 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
     let icon = (
       <Icon
         customSize={'20px'}
-        phosphorIcon={HandPointing}
-        weight='bold'
+        phosphorIcon={ArrowCircleRight}
+        weight='fill'
       />
     );
 
-    let btnLabel = t('Hold to continue');
+    let btnLabel = t('Continue to browser');
 
-    if (isIos()) {
+    if (isAndroid()) {
       icon = (
         <Icon
           customSize={'20px'}
-          phosphorIcon={ArrowCircleRight}
-          weight='fill'
+          phosphorIcon={HandPointing}
+          weight='bold'
         />
       );
-
-      btnLabel = t('Continue to browser');
+      btnLabel = t('Hold to continue');
     }
 
     return (

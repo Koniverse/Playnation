@@ -5,7 +5,7 @@ import { PWA_INSTRUCTION_MODAL, SHOW_INSTRUCTION_MODAL } from '@subwallet/extens
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { isAndroid, isMobile } from '@subwallet/extension-koni-ui/utils';
+import { isAndroid } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { CheckCircle, DotsThree, Export, Info } from 'phosphor-react';
@@ -29,7 +29,7 @@ function Component ({ className }: Props): React.ReactElement<Props> {
   }, [inactiveModal]);
 
   const contentModal = useMemo(() => {
-    if (isAndroid() || !isMobile()) {
+    if (isAndroid()) {
       return (
         <>
           <div className={'__list-item'}>

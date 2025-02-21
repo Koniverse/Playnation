@@ -15,7 +15,7 @@ import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeCo
 import { useAccountBalance, useGetBannerByScreen, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
 import { useGetChainSlugsByAccountType } from '@subwallet/extension-koni-ui/hooks/screen/home/useGetChainSlugsByAccountType';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { isIos, isPWABrowser } from '@subwallet/extension-koni-ui/utils';
+import { isAndroid, isPWABrowser } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -117,7 +117,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       } else if (action === 'login-success') {
         const isShowInstruction = localStorage.getItem(instructionLocalKey);
 
-        if (!Telegram?.WebApp?.initData && !isShowInstruction && !isPWABrowser() && !isIos()) {
+        if (!Telegram?.WebApp?.initData && !isShowInstruction && !isPWABrowser() && isAndroid()) {
           activeModal(instructionPWAModalId);
         }
       }

@@ -1200,7 +1200,7 @@ export class BookaSdk {
       const checkWhiteList = async () => {
         const data = await this.getRequest<{ status: boolean }>(`${GAME_API_HOST}/api/integrated-profile/check-telegram-whitelist`);
 
-        return true;
+        return !!data?.status;
       };
 
       const checkAccountMinted = async () => {
