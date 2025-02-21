@@ -7,15 +7,22 @@ import { ACCESS_HOME_SCREEN_MODAL } from '@subwallet/extension-koni-ui/constants
 import { useTranslation } from '@subwallet/extension-koni-ui/hooks';
 import { Theme } from '@subwallet/extension-koni-ui/themes';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
+import { isAndroid, isIos, isMobile } from '@subwallet/extension-koni-ui/utils';
 import { Button, Icon, ModalContext, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
-import { ArrowFatLinesUp, CheckCircle, XCircle } from 'phosphor-react';
+import { ArrowCircleRight, ArrowFatLinesUp, HandPointing } from 'phosphor-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 
 type Props = ThemeProps & {
   otp: string;
 };
+
+interface PWAWelcomeModal {
+  title: string;
+  subtitle: string;
+  content: React.ReactNode;
+}
 
 const apiSdk = BookaSdk.instance;
 const modalId = ACCESS_HOME_SCREEN_MODAL;
@@ -62,43 +69,88 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
     };
   }, [isActive]);
 
+  const { content, subtitle, title } = useMemo<PWAWelcomeModal>(() => {
+    if (isMobile()) {
+      if (isAndroid()) {
+        return {
+          content: (
+            <ul className={CN('__content-modal', '-flex-box')}>
+              <li>
+                {t('By adding Koni Story to your home screen, you can quickly access the bot as a mobile app')}
+              </li>
+              <li>
+                {t('To add, hold button ')}<b>“Hold to continue”</b>{t(' then click ')}<b>“Open with...”</b>{t('to open Koni Story in your browser')}
+              </li>
+            </ul>
+          ),
+          subtitle: t('Access Koni Story from your home screen'),
+          title: t('Koni Story app is here!')
+        };
+      } else {
+        return {
+          content: (
+            <div className={'__content-modal'}>
+              <>
+                {t('You can now enjoy all features of Koni Story on your favorite browser. Click ')}<b>“Continue to browser”</b>{t(' and try out now!')}
+              </>
+            </div>
+          ),
+          subtitle: t('Access Koni Story from your browser'),
+          title: t('Koni Story is on browser!')
+        };
+      }
+    } else {
+      return {
+        content: (
+          <div className={'__content-modal'}>
+            {'213123123123123'}
+          </div>
+        ),
+        subtitle: t('Access Koni Story from your home screen'),
+        title: t('Koni Story app is here!')
+      };
+    }
+  }, [t]);
+
   const footerModal = useMemo(() => {
+    let icon = (
+      <Icon
+        customSize={'20px'}
+        phosphorIcon={HandPointing}
+        weight='bold'
+      />
+    );
+
+    let btnLabel = t('Hold to continue');
+
+    if (isIos()) {
+      icon = (
+        <Icon
+          customSize={'20px'}
+          phosphorIcon={ArrowCircleRight}
+          weight='fill'
+        />
+      );
+
+      btnLabel = t('Continue to browser');
+    }
+
     return (
       <>
         <Button
           block={true}
-          icon={(
-            <Icon
-              phosphorIcon={XCircle}
-              weight='fill'
-            />
-          )}
-          onClick={onCancel}
-          schema={'secondary'}
-          shape={'round'}
-        >
-          {t('Cancel')}
-        </Button>
-        <Button
-          block={true}
           href={`${appUrl}?otp=${otpValue || ''}`}
-          icon={(
-            <Icon
-              customSize={'20px'}
-              phosphorIcon={CheckCircle}
-              weight='fill'
-            />
-          )}
+          icon={icon}
           onClick={onContinue}
           shape={'round'}
           size='md'
           target={'_blank'}
         >
-          {t('Continue')}
+          {btnLabel}
         </Button>
       </>
     );
-  }, [onCancel, onContinue, otpValue, t]);
+  }, [onContinue, otpValue, t]);
 
   return (
     <SwModal
@@ -107,7 +159,7 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
       footer={footerModal}
       id={modalId}
       onCancel={onCancel}
-      title={t('Koni Story PWA is here')}
+      title={title}
     >
       <div className='ant-sw-modal-confirm-body'>
         <div className={'__icon-modal'}>
@@ -120,12 +172,8 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
           />
         </div>
         <div className={'__description-modal'}>
-          <div className={'__title-modal'}>{t('Access Koni Story from your home screen')}</div>
-          <div
-            className={'__sub-title-modal'}
-          >
-            {t('By using Koni Story on PWA, you can quickly access the bot from your smartphone’s home screen as a mobile app and seamlessly connect with other ecosystems beyond TON')}
-          </div>
+          <div className={'__sub-title-modal'}>{subtitle}</div>
+          {content}
         </div>
       </div>
     </SwModal>
@@ -188,7 +236,7 @@ const PWAWelcome = styled(Component)<Props>(({ theme: { extendToken, token } }: 
       gap: token.size
     },
 
-    '.__title-modal': {
+    '.__sub-title-modal': {
       fontSize: token.fontSizeHeading5,
       lineHeight: token.lineHeightHeading3,
       color: token.colorText,
@@ -196,12 +244,23 @@ const PWAWelcome = styled(Component)<Props>(({ theme: { extendToken, token } }: 
       textAlign: 'center'
     },
 
-    '.__sub-title-modal': {
+    '.__content-modal': {
       fontSize: token.fontSizeHeading6,
       lineHeight: token.lineHeightSM,
       fontWeight: 500,
       color: token.colorTextDark2,
-      textAlign: 'center'
+      textAlign: 'center',
+
+      '&.-flex-box': {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: token.size
+      },
+
+      li: {
+        listStyle: 'disc',
+        textAlign: 'start'
+      }
     },
 
     '.ant-sw-modal-footer': {

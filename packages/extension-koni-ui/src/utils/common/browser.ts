@@ -30,14 +30,7 @@ export const isIos = (): boolean => {
 };
 
 export const isPWABrowser = (): boolean => {
-  if (isAndroid()) {
-    return window.matchMedia('(display-mode: standalone)')?.matches;
-  } else if (isIos()) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return !!(window.navigator as any).standalone;
-  }
-
-  return false;
+  return window.matchMedia('(display-mode: standalone)')?.matches;
 };
 
 export const isDesktop = (): boolean => {
