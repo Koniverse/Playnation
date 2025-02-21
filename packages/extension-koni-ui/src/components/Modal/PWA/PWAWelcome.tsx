@@ -78,7 +78,7 @@ function Component ({ className, otp }: Props): React.ReactElement<Props> {
               {t('By adding Koni Story to your home screen, you can quickly access the bot as a mobile app')}
             </li>
             <li>
-              {t('To add, hold button ')}<b>“Hold to continue”</b>{t(' then click ')}<b>“Open with...”</b>{t('to open Koni Story in your browser')}
+              {t('To add, hold button ')}<b>“Hold to continue”</b>{t(' then click ')}<b>“Open in...”</b>{t('to open Koni Story in your browser')}
             </li>
           </ul>
         ),
