@@ -26,7 +26,7 @@ interface PWAWelcomeModal {
 
 const apiSdk = BookaSdk.instance;
 const modalId = ACCESS_HOME_SCREEN_MODAL;
-const appUrl = process.env.STORY_PROTOCOL_APP_URL || 'https://dev.story-protocol-odyssey.pages.dev';
+const appUrl = process.env.STORY_PROTOCOL_APP_URL || 'https://ip.koni.studio';
 
 function Component ({ className, otp }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
