@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EmptyListContent, EventDifficulty, EventItem, EventItemType, EventState } from '@subwallet/extension-koni-ui/components/Mythical';
-import { GameEvent } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { GameEvent, GameEventStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { EventTab } from '@subwallet/extension-koni-ui/Popup/Home/Events/shared';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { customFormatDate, getTimeRemaining } from '@subwallet/extension-koni-ui/utils';
@@ -38,7 +38,7 @@ function isEventExpired (gameEvent: GameEvent, dateNow: number): boolean {
 function isEventCompleted (gameEvent: GameEvent, dateNow: number): boolean {
   const endTime = new Date(gameEvent.endTime).getTime();
 
-  return dateNow >= endTime || ((gameEvent.gamePlays?.length || 0) >= (gameEvent.tossUpInfo?.gameplayPerEvent || 1));
+  return gameEvent.status === GameEventStatus.COMPLETED || dateNow >= endTime;
 }
 
 function isEventOngoing (gameEvent: GameEvent, dateNow: number): boolean {
@@ -146,6 +146,7 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab, serverTime
         }
       });
 
+      // console.log("_completedItems: ", _completedItems);
       _completedItems.sort((a: GameEvent, b: GameEvent) => {
         // most recently completed events appear first
         return new Date(getEventGameEndTime(b)).getTime() - new Date(getEventGameEndTime(a)).getTime();
