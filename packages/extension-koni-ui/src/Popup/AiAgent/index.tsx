@@ -21,7 +21,7 @@ import { makeTransfer, subscribeTransactionById, wcSignMessageRequest } from '@s
 import { getLatestSwapQuote, handleSwapRequest, handleSwapStep, validateSwapProcess } from '@subwallet/extension-koni-ui/messaging/transaction/swap';
 import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { Theme, ThemeProps } from '@subwallet/extension-koni-ui/types';
-import { AiTransactionData, noop, SwapAiRequest, transformAiMessageData, validateSignature } from '@subwallet/extension-koni-ui/utils';
+import { AiTransactionData, noop, stripHtml, SwapAiRequest, transformAiResponseUseTools, validateSignature } from '@subwallet/extension-koni-ui/utils';
 import { ButtonProps, Icon, ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
 import { cloneDeep } from 'lodash';
@@ -35,7 +35,7 @@ import { stringToHex } from '@polkadot/util';
 import useDefaultNavigate from '../../hooks/router/useDefaultNavigate';
 import { ChatInputArea } from './parts/ChatInputArea';
 import { ChatMessagesArea, ChatMessagesAreaRef } from './parts/ChatMessagesArea';
-import { FileUpload, IAction, IAgentReasoning, IncomingInput, MessageType, messageType } from './types';
+import { FileUpload, IAction, IAgentReasoning, IncomingInput, MessageType, messageType, ToolInfoType } from './types';
 import { clearCurrentChatId, getCurrentChatId, getLocalStorageChatflow, isStreamAvailableQuery, sendMessageQuery, setCurrentChatId, setLocalStorageChatflow } from './utils';
 
 type Props = ThemeProps & {
@@ -101,6 +101,7 @@ const Component = (props: Props): React.ReactElement => {
 
   const chatMessagesAreaRef = useRef<ChatMessagesAreaRef>(null);
   const chatMessagesAreaRefCurrent = chatMessagesAreaRef.current;
+  const [responseUsedTools, setResponseUsedTools] = useState<ToolInfoType[] | undefined>(undefined);
 
   const scrollToBottom = useCallback((delay?: number) => {
     chatMessagesAreaRefCurrent?.scrollToBottom(delay);
@@ -271,35 +272,37 @@ const Component = (props: Props): React.ReactElement => {
   }, [addChatMessage]);
 
   const updateLastMessageSourceDocuments = useCallback((sourceDocuments: any) => {
-    setMessages((data) => {
-      const updated = data.map((item, i) => {
-        if (i === data.length - 1) {
-          return { ...item, sourceDocuments };
-        }
+    // setMessages((data) => {
+    //   const updated = data.map((item, i) => {
+    //     if (i === data.length - 1) {
+    //       return { ...item, sourceDocuments };
+    //     }
+    //
+    //     return item;
+    //   });
+    //
+    //   addChatMessage(updated);
+    //
+    //   return [...updated];
+    // });
+  }, []);
 
-        return item;
-      });
+  const updateLastMessageUsedTools = useCallback((usedTools: ToolInfoType[]) => {
+    // setMessages((prevMessages) => {
+    //   const allMessages = [...cloneDeep(prevMessages)];
+    //
+    //   if (allMessages[allMessages.length - 1].type === 'userMessage') {
+    //     return allMessages;
+    //   }
+    //
+    //   allMessages[allMessages.length - 1].usedTools = usedTools;
+    //   addChatMessage(allMessages);
+    //
+    //   return allMessages;
+    // });
 
-      addChatMessage(updated);
-
-      return [...updated];
-    });
-  }, [addChatMessage]);
-
-  const updateLastMessageUsedTools = useCallback((usedTools: any[]) => {
-    setMessages((prevMessages) => {
-      const allMessages = [...cloneDeep(prevMessages)];
-
-      if (allMessages[allMessages.length - 1].type === 'userMessage') {
-        return allMessages;
-      }
-
-      allMessages[allMessages.length - 1].usedTools = usedTools;
-      addChatMessage(allMessages);
-
-      return allMessages;
-    });
-  }, [addChatMessage]);
+    setResponseUsedTools(usedTools);
+  }, []);
 
   const updateLastMessageFileAnnotations = useCallback((fileAnnotations: any) => {
     setMessages((prevMessages) => {
@@ -336,19 +339,19 @@ const Component = (props: Props): React.ReactElement => {
   }, [addChatMessage]);
 
   const updateLastMessageArtifacts = useCallback((artifacts: FileUpload[]) => {
-    setMessages((prevMessages) => {
-      const allMessages = [...cloneDeep(prevMessages)];
-
-      if (allMessages[allMessages.length - 1].type === 'userMessage') {
-        return allMessages;
-      }
-
-      allMessages[allMessages.length - 1].artifacts = artifacts;
-      addChatMessage(allMessages);
-
-      return allMessages;
-    });
-  }, [addChatMessage]);
+    // setMessages((prevMessages) => {
+    //   const allMessages = [...cloneDeep(prevMessages)];
+    //
+    //   if (allMessages[allMessages.length - 1].type === 'userMessage') {
+    //     return allMessages;
+    //   }
+    //
+    //   allMessages[allMessages.length - 1].artifacts = artifacts;
+    //   addChatMessage(allMessages);
+    //
+    //   return allMessages;
+    // });
+  }, []);
 
   const updateLastMessageAction = useCallback((action: IAction) => {
     setMessages((data) => {
@@ -471,8 +474,10 @@ const Component = (props: Props): React.ReactElement => {
       return messages;
     });
 
+    const _value = stripHtml(value);
+
     const body: IncomingInput = {
-      question: value,
+      question: _value,
       chatId: chatId
     };
 
@@ -1020,6 +1025,21 @@ const Component = (props: Props): React.ReactElement => {
     );
   }, [account?.info?.firstName, account?.info?.lastName]);
 
+  const subHeaderButton: ButtonProps[] = [
+    {
+      icon: <Icon
+        customSize={`${token.fontSizeHeading3}px`}
+        phosphorIcon={Trash}
+        type='phosphor'
+        weight={'light'}
+      />,
+      onClick: () => {
+        clearCurrentChatId(props.chatflowid);
+        window.location.reload();
+      }
+    }
+  ];
+
   useEffect(() => {
     const accountSub = apiSDK.subscribeAccount().subscribe((data) => {
       setAccount(data);
@@ -1062,16 +1082,25 @@ const Component = (props: Props): React.ReactElement => {
       // do some logic after stream end
 
       const updateAiTransactionInfo = () => {
-        if (messages.length) {
-          const lastMessage = messages[messages.length - 1];
+        // if (messages.length) {
+        //   const lastMessage = messages[messages.length - 1];
+        //
+        //   if (lastMessage.type === 'apiMessage') {
+        //     const converted = transformAiMessageData(lastMessage.message, assetRegistryMapCurrent.current);
+        //
+        //     setAiTransactionInfo({ ...converted, aiMessageId: lastMessage.messageId });
+        //   } else {
+        //     setAiTransactionInfo(undefined);
+        //   }
+        // } else {
+        //   setAiTransactionInfo(undefined);
+        // }
 
-          if (lastMessage.type === 'apiMessage') {
-            const converted = transformAiMessageData(lastMessage.message, assetRegistryMapCurrent.current);
+        if (responseUsedTools) {
+          setResponseUsedTools(undefined);
+          const converted = transformAiResponseUseTools(responseUsedTools, assetRegistryMapCurrent.current);
 
-            setAiTransactionInfo({ ...converted, aiMessageId: lastMessage.messageId });
-          } else {
-            setAiTransactionInfo(undefined);
-          }
+          setAiTransactionInfo({ ...converted });
         } else {
           setAiTransactionInfo(undefined);
         }
@@ -1085,21 +1114,6 @@ const Component = (props: Props): React.ReactElement => {
   }, [endStreamTrigger]);
 
   const isAddressLinked = !!wcAccount?.address && isSameAddress(wcAccount.address, addressLinked || '') && completedFullStepConnectAccount;
-
-  const subHeaderButton: ButtonProps[] = [
-    {
-      icon: <Icon
-        customSize={`${token.fontSizeHeading3}px`}
-        phosphorIcon={Trash}
-        type='phosphor'
-        weight={'light'}
-      />,
-      onClick: () => {
-        clearCurrentChatId(props.chatflowid);
-        window.location.reload();
-      }
-    }
-  ];
 
   useEffect(() => {
     if (aiTransactionInfo && aiTransactionInfo.type !== 'unknown' && !submitTxRef.current && startChat) {
@@ -1209,7 +1223,7 @@ const Component = (props: Props): React.ReactElement => {
 };
 
 const WrapperComponent = (props: ThemeProps) => {
-  const chatflowid = '2d375eae-3eab-4e59-9c8c-0907bddd765a';
+  const chatflowid = '1d81db5d-8cdc-4587-bc51-4baba02380f2';
 
   const chatId = useMemo(() => {
     let result = getCurrentChatId(chatflowid);

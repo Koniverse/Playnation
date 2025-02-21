@@ -108,7 +108,7 @@ export const clearCurrentChatId = (chatflowid: string) => {
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
 
-    if (key?.startsWith('AGENT_AI') && key?.endsWith('CURRENT_CHAT_ID')) {
+    if (key?.startsWith('AGENT_AI_')) {
       localStorage.removeItem(key);
     }
   }

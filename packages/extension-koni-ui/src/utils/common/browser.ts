@@ -29,6 +29,10 @@ export const isIos = (): boolean => {
   return BOWER_PARSER.getOSName(true) === 'ios';
 };
 
+export const isPWABrowser = (): boolean => {
+  return window.matchMedia('(display-mode: standalone)')?.matches;
+};
+
 export const isDesktop = (): boolean => {
   return ['window', 'macos', 'linux'].includes(BOWER_PARSER.getOSName(true));
 };

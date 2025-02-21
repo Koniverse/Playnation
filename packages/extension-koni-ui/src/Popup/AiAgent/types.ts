@@ -59,6 +59,12 @@ export type IAction = {
   };
 };
 
+export type ToolInfoType = {
+  tool: string;
+  toolInput: unknown,
+  toolOutput: string
+};
+
 export type MessageType = {
   messageId?: string;
   message: string;
@@ -68,7 +74,7 @@ export type MessageType = {
   fileUploads?: Partial<FileUpload>[];
   artifacts?: Partial<FileUpload>[];
   agentReasoning?: IAgentReasoning[];
-  usedTools?: any[];
+  usedTools?: ToolInfoType[];
   action?: IAction | null;
   rating?: FeedbackRatingType;
   id?: string;

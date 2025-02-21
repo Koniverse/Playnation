@@ -4,6 +4,7 @@
 import { _getAssetDecimals, _parseAssetRefKey } from '@subwallet/extension-base/services/chain-service/utils';
 import { RequestTransfer, SwapRequest } from '@subwallet/extension-base/types';
 import { IpAssetParams } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { ToolInfoType } from '@subwallet/extension-koni-ui/Popup/AiAgent/types';
 import { AssetRegistryStore } from '@subwallet/extension-koni-ui/stores/types';
 import BigN from 'bignumber.js';
 
@@ -49,19 +50,19 @@ const getTokenSlugBySymbol = (symbol: string, isTestnet = false): string | undef
   }
 };
 
-const transformTransferData = (message: string, assetRegistryMap: AssetRegistryStore['assetRegistry']): AiTransactionData => {
+const transformTransferData = (jsonString: string, assetRegistryMap: AssetRegistryStore['assetRegistry']): AiTransactionData => {
   const defaultResult: AiTransactionData = {
     type: 'unknown'
   };
 
-  const jsonMatch = message.match(/```json([\s\S]*?)```/)?.[1]?.trim();
-
-  if (!jsonMatch) {
-    return defaultResult;
-  }
+  // const jsonMatch = message.match(/```json([\s\S]*?)```/)?.[1]?.trim();
+  //
+  // if (!jsonMatch) {
+  //   return defaultResult;
+  // }
 
   try {
-    const jsonObject = JSON.parse(jsonMatch) as {
+    const jsonObject = JSON.parse(jsonString) as {
       recipient_address: string,
       amount: number,
       token: string
@@ -101,19 +102,19 @@ const transformTransferData = (message: string, assetRegistryMap: AssetRegistryS
   }
 };
 
-const transformSwapData = (message: string, assetRegistryMap: AssetRegistryStore['assetRegistry']): AiTransactionData => {
+const transformSwapData = (jsonString: string, assetRegistryMap: AssetRegistryStore['assetRegistry']): AiTransactionData => {
   const defaultResult: AiTransactionData = {
     type: 'unknown'
   };
 
-  const jsonMatch = message.match(/```json([\s\S]*?)```/)?.[1]?.trim();
-
-  if (!jsonMatch) {
-    return defaultResult;
-  }
+  // const jsonMatch = message.match(/```json([\s\S]*?)```/)?.[1]?.trim();
+  //
+  // if (!jsonMatch) {
+  //   return defaultResult;
+  // }
 
   try {
-    const jsonObject = JSON.parse(jsonMatch) as SwapAiResponse;
+    const jsonObject = JSON.parse(jsonString) as SwapAiResponse;
 
     const tokenTo = getTokenSlugBySymbol(jsonObject?.token_to_receive);
     const isTestnet = TOKEN_SWAP_TESTNET.includes(tokenTo || '');
@@ -149,19 +150,19 @@ const transformSwapData = (message: string, assetRegistryMap: AssetRegistryStore
   }
 };
 
-const transformMintData = (message: string): AiTransactionData => {
+const transformMintData = (jsonString: string): AiTransactionData => {
   const defaultResult: AiTransactionData = {
     type: 'unknown'
   };
 
-  const jsonMatch = message.match(/```json([\s\S]*?)```/)?.[1]?.trim();
-
-  if (!jsonMatch) {
-    return defaultResult;
-  }
+  // const jsonMatch = message.match(/```json([\s\S]*?)```/)?.[1]?.trim();
+  //
+  // if (!jsonMatch) {
+  //   return defaultResult;
+  // }
 
   try {
-    const jsonObject = JSON.parse(jsonMatch) as {
+    const jsonObject = JSON.parse(jsonString) as {
       name: string,
       description?: string,
       asset_link: string
@@ -186,23 +187,65 @@ const transformMintData = (message: string): AiTransactionData => {
   }
 };
 
-export const transformAiMessageData = (message: string, assetRegistryMap: AssetRegistryStore['assetRegistry']): AiTransactionData => {
-  const isConfirmation = message.split('\n').some((line) => (line.startsWith('## IP') || line.startsWith('## Swap')) && line.includes('confirmation'));
+// export const transformAiMessageData = (message: string, assetRegistryMap: AssetRegistryStore['assetRegistry']): AiTransactionData => {
+//   const isConfirmation = message.split('\n').some((line) => (line.startsWith('## IP') || line.startsWith('## Swap')) && line.includes('confirmation'));
+//
+//   if (isConfirmation) {
+//     // is transfer
+//     if (message.includes('transfer')) {
+//       return transformTransferData(message, assetRegistryMap);
+//       // is minting
+//     } else if (message.includes('asset minting')) {
+//       return transformMintData(message);
+//     } else if (message.includes('swap')) {
+//       return transformSwapData(message, assetRegistryMap);
+//     } else {
+//       return {
+//         type: 'unknown'
+//       };
+//     }
+//   } else {
+//     return {
+//       type: 'unknown'
+//     };
+//   }
+// };
 
-  if (isConfirmation) {
-    // is transfer
-    if (message.includes('transfer')) {
-      return transformTransferData(message, assetRegistryMap);
-      // is minting
-    } else if (message.includes('asset minting')) {
-      return transformMintData(message);
-    } else if (message.includes('swap')) {
-      return transformSwapData(message, assetRegistryMap);
-    } else {
+type AnalysisUsedToolsResult = {
+  swap?: string;
+  transfer?: string;
+  mint?: string;
+};
+
+const analysisUsedTools = (usedTools: ToolInfoType[]): AnalysisUsedToolsResult => {
+  for (const toolInfo of usedTools) {
+    if (toolInfo.tool === 'swap-tool') {
       return {
-        type: 'unknown'
+        swap: toolInfo.toolOutput
+      };
+    } else if (toolInfo.tool === 'transfer-tool') {
+      return {
+        transfer: toolInfo.toolOutput
+      };
+    } else if (toolInfo.tool === ' register-ip-tool') {
+      return {
+        mint: toolInfo.toolOutput
       };
     }
+  }
+
+  return {};
+};
+
+export const transformAiResponseUseTools = (usedTools: ToolInfoType[], assetRegistryMap: AssetRegistryStore['assetRegistry']): AiTransactionData => {
+  const { mint, swap, transfer } = analysisUsedTools(usedTools);
+
+  if (swap) {
+    return transformSwapData(swap, assetRegistryMap);
+  } else if (transfer) {
+    return transformTransferData(transfer, assetRegistryMap);
+  } else if (mint) {
+    return transformMintData(mint);
   } else {
     return {
       type: 'unknown'

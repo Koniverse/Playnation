@@ -106,7 +106,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     let cancel = false;
 
     initDataRef.current.then(() => {
-      if (cancel || accounts.length === 0) {
+      if (cancel || noAccount) {
         return;
       }
 
@@ -126,7 +126,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     return () => {
       cancel = true;
     };
-  }, [accounts, loginStatus]);
+  }, [noAccount, loginStatus]);
 
   const needMigrate = useMemo(
     () => !!accounts
@@ -248,7 +248,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     } else {
       return null;
     }
-  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, loginStatus, openPModal]);
+  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, openPModal]);
 
   // Remove transaction persist state
   useEffect(() => {

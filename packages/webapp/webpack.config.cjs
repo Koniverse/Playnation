@@ -69,6 +69,7 @@ const _additionalEnv = {
   BITTENSOR_API_KEY_3: JSON.stringify(process.env.BITTENSOR_API_KEY_3),
   BITTENSOR_API_KEY_4: JSON.stringify(process.env.BITTENSOR_API_KEY_4),
   BITTENSOR_API_KEY_5: JSON.stringify(process.env.BITTENSOR_API_KEY_5),
+  STORY_PROTOCOL_APP_URL: JSON.stringify(process.env.STORY_PROTOCOL_APP_URL),
   BITTENSOR_API_KEY_6: JSON.stringify(process.env.BITTENSOR_API_KEY_6),
   BITTENSOR_API_KEY_7: JSON.stringify(process.env.BITTENSOR_API_KEY_7),
   BITTENSOR_API_KEY_8: JSON.stringify(process.env.BITTENSOR_API_KEY_8),
