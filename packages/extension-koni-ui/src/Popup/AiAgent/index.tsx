@@ -1025,6 +1025,7 @@ const Component = (props: Props): React.ReactElement => {
     );
   }, [account?.info?.firstName, account?.info?.lastName]);
 
+  // @ts-ignore
   const subHeaderButton: ButtonProps[] = [
     {
       icon: <Icon
@@ -1176,7 +1177,7 @@ const Component = (props: Props): React.ReactElement => {
       backgroundStyle={'primary'}
       className={CN(className)}
       onBack={goBack}
-      subHeaderIcons={subHeaderButton}
+      // subHeaderIcons={subHeaderButton}
       title={'Tell Me Agent'}
     >
       <div className={CN('__message-area-wrapper', {
