@@ -48,15 +48,14 @@ export const GameAccountListArea = ({ isLoading, leaderboardPersonItems }: Props
       }];
     }
 
-    const mineRank = leaderboardPersonItems[indexOfMine].rank;
     const rankGap = 20;
-    let firstItemRank = mineRank - rankGap;
+    let firstItemRank = indexOfMine - rankGap + 1;
 
     if (firstItemRank <= 0) {
       firstItemRank = 1;
     }
 
-    let lastItemRank = mineRank + rankGap;
+    let lastItemRank = indexOfMine + rankGap + 1;
 
     if (lastItemRank >= leaderboardPersonItems.length) {
       lastItemRank = leaderboardPersonItems.length;
