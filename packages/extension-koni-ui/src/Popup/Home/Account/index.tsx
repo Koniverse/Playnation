@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @subwallet/extension-koni-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { WC_DEFAULT_CHAIN_TESTNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { WC_DEFAULT_CHAIN_MAINNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { EmptyList, GameAccountAvatar } from '@subwallet/extension-koni-ui/components';
 import WalletConnectStats from '@subwallet/extension-koni-ui/components/EmptyList/WalletConnectStats';
 import NFTListModal from '@subwallet/extension-koni-ui/components/Modal/NFTListModal';
@@ -95,7 +95,7 @@ const Component: React.FC<Props> = (props: Props) => {
         try {
           const { signature } = await wcSignMessageRequest({
             address: address,
-            chainId: WC_DEFAULT_CHAIN_TESTNET_ID,
+            chainId: WC_DEFAULT_CHAIN_MAINNET_ID,
             payload: stringToHex(message),
             method: 'personal_sign'
           });

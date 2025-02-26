@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { WC_DEFAULT_CHAIN_TESTNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { WC_DEFAULT_CHAIN_MAINNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { ADDRESS_EXISTED_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { WalletConnectContext } from '@subwallet/extension-koni-ui/contexts/WalletConnectContext';
 import { useNotification, useSelector, useTranslation } from '@subwallet/extension-koni-ui/hooks';
@@ -70,7 +70,7 @@ function Component ({ className, onSubmitAddressLinking }: Props): React.ReactEl
         try {
           const { signature } = await wcSignMessageRequest({
             address: _wcAddress,
-            chainId: WC_DEFAULT_CHAIN_TESTNET_ID,
+            chainId: WC_DEFAULT_CHAIN_MAINNET_ID,
             payload: stringToHex(message),
             method: 'personal_sign'
           });
