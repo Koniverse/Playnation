@@ -1045,7 +1045,7 @@ export class BookaSdk {
   }
 
   async submitState ({ gamePlayId, stateData }: {gamePlayId: number, stateData: GameState<any>}) {
-    return await this.postRequest<{success: boolean, gamePlay?: GamePlay}>(`${GAME_API_HOST}/api/game/submit-state`, {
+    return await this.postRequest<{success: boolean, gamePlay?: GamePlay, error?: string}>(`${GAME_API_HOST}/api/game/submit-state`, {
       gamePlayId,
       stateData
     });
