@@ -15,3 +15,4 @@ export { default as ConfirmLinkingAccountModal } from './ConfirmLinkingAccountMo
 export { default as NewAiChatModal } from './NewAiChatModal';
 export { default as ConnectFailedAccountLinkedModal } from './AlertChangeAccountConnectModal';
 export { default as AccountNameModal } from './AccountNameModal';
+export { default as MainnetProfileModal } from './MainnetProfileModal';

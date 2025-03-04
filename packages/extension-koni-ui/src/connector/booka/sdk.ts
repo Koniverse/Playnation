@@ -8,7 +8,7 @@ import { createPromiseHandler, detectTranslate, wait } from '@subwallet/extensio
 import { AppMetadata, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { AccountRankType, AirdropCampaign, AirdropEligibility, AirdropRaffle, AirdropRewardHistoryLog, APIResponse, BookaAccount, EnergyConfig, Game, GameInventoryItem, GameItem, GamePlay, IAirdropNftMinting, IntegratedProfileResult, IpAssetParams, IpAssetResponse, LeaderboardPerson, NftMintingEligibility, NftMintingLog, RankInfo, ReferralRecord, Task, TaskCategory } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegram';
-import { SHOW_INSTRUCTION_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { SHOW_INSTRUCTION_MODAL, SHOW_MAINNET_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { signRaw } from '@subwallet/extension-koni-ui/messaging';
 import { populateTemplateString } from '@subwallet/extension-koni-ui/utils';
 import { formatDateFully } from '@subwallet/extension-koni-ui/utils/date';
@@ -21,6 +21,7 @@ export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnat
 export const STORY_BADGE_HOST = process.env.STORY_BADGE_HOST || 'http://localhost:3000';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
+const dataNeedClearWhenChangeAccount = [SHOW_INSTRUCTION_MODAL, SHOW_MAINNET_PROFILE_MODAL];
 
 const ACCOUNT_POINT_AVAILABLE_IN_BETA = 15000;
 // Increase of changing the cache version, we need to clear the cache
@@ -543,7 +544,10 @@ export class BookaSdk {
   }
 
   clearAccountData () {
-    localStorage.removeItem(SHOW_INSTRUCTION_MODAL);
+    dataNeedClearWhenChangeAccount.forEach((key) => {
+      localStorage.removeItem(key);
+    });
+
     this.accountSubject.next(undefined);
   }
 

@@ -16,7 +16,7 @@ const apiSDK = BookaSdk.instance;
 const mintingLogSubscription = apiSDK.subscribeNftMintingLog();
 
 const Component = ({ className }: Props): React.ReactElement => {
-  useSetCurrentPage('/home/leaderboard');
+  useSetCurrentPage('/home/mint');
   const [nftAirdropList, setNftAirdropList] = useState<IAirdropNftMinting[]>(apiSDK.airdropNftMintList);
   const [mintSuccess, setMintSuccess] = useState(false);
   const [mintedAddress, setMintedAddress] = useState<string | undefined>(undefined);
@@ -102,7 +102,7 @@ const Component = ({ className }: Props): React.ReactElement => {
   );
 };
 
-const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
+const MintPage = styled(Component)<ThemeProps>(({ theme: { extendToken, token } }: ThemeProps) => {
   return {
     display: 'flex',
     flexDirection: 'column',
@@ -120,4 +120,4 @@ const Leaderboard = styled(Component)<ThemeProps>(({ theme: { extendToken, token
   };
 });
 
-export default Leaderboard;
+export default MintPage;
