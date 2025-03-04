@@ -314,8 +314,11 @@ export class GameApp {
     this.onExit('/home/leaderboard');
   }
 
+  // Todo: Rename this function to onNavigateToSupportWebsite
   onShowShop () {
-    console.log('open shop');
+    telegramConnector.openLink('https://support.rivals.game/hc/en-us/requests/new');
+
+    this.onExit();
   }
 
   async onGetLeaderboard (req: GetLeaderboardRequest): Promise<GetLeaderboardResponse> {
