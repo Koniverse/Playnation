@@ -29,7 +29,7 @@ function Component ({ className, erc721ContractList }: Props): React.ReactElemen
       return [];
     }
 
-    const contractNames = erc721ContractList?.map((item) => item.erc721_contract.name);
+    const contractNames = erc721ContractList?.map((item) => item.erc721_contract?.name);
 
     contractNames?.sort((a, b) => {
       // Kiểm tra nếu tên chứa "Koni Story Badge"
