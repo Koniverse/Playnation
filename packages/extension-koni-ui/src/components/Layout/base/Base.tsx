@@ -84,17 +84,17 @@ const Component = ({ backgroundImages, backgroundStyle, children, className, hea
       label: t('Leaderboard'),
       key: 'leaderboard',
       url: '/home/leaderboard'
-    },
-    {
-      icon: {
-        type: 'phosphor',
-        phosphorIcon: Gift,
-        weight: 'fill'
-      },
-      label: t('Mint'),
-      key: 'mint',
-      url: '/home/mint'
     }
+    // {
+    //   icon: {
+    //     type: 'phosphor',
+    //     phosphorIcon: Gift,
+    //     weight: 'fill'
+    //   },
+    //   label: t('Mint'),
+    //   key: 'mint',
+    //   url: '/home/mint'
+    // }
     // {
     //   icon: {
     //     type: 'phosphor',

@@ -281,7 +281,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
           }
 
           if (message.toLowerCase().includes('Returned error: insufficient funds'.toLowerCase())) {
-            message = t('You don’t have enough IP to check-in. Get faucet and try again');
+            message = t('You don’t have enough IP to check-in. Top up your balance and try again');
           }
 
           notify({
