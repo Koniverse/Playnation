@@ -12,12 +12,12 @@ import React, { useCallback, useContext, useMemo } from 'react';
 import styled, { useTheme } from 'styled-components';
 
 type Props = ThemeProps & {
-  handleSuccess?: () => void;
+  closeCallback?: () => void;
 }
 
 const modalId = MAINNET_PROFILE_MODAL;
 
-function Component ({ className, handleSuccess }: Props): React.ReactElement<Props> {
+function Component ({ className, closeCallback }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const { inactiveModal } = useContext(ModalContext);
   const { token } = useTheme() as Theme;
@@ -25,8 +25,8 @@ function Component ({ className, handleSuccess }: Props): React.ReactElement<Pro
   const onCancelModal = useCallback(() => {
     localStorage.setItem(SHOW_MAINNET_PROFILE_MODAL, 'true');
     inactiveModal(modalId);
-    handleSuccess && handleSuccess();
-  }, [handleSuccess, inactiveModal]);
+    closeCallback && closeCallback();
+  }, [closeCallback, inactiveModal]);
 
   const footerModal = useMemo(() => {
     return (

@@ -44,7 +44,10 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const [addRewardModalProps, setAddRewardModalProps] = useState<AddRewardsModalProps | undefined>();
   const [initRewardModalProps, setInitRewardModalProps] = useState<InitRewardsModalProps | undefined>();
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
-  const waitMainnetProfileModal = useRef<VoidFunction| undefined>(undefined);
+
+  // This is a ref to store the callback to close the mainnet profile modal,
+  // to ensure that the modal is closed before opening another modal
+  const waitMainnetProfileModalClose = useRef<VoidFunction| undefined>(undefined);
 
   const banners = useGetBannerByScreen('home');
 
@@ -132,7 +135,9 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
         if (!isShowMainnetProfile) {
           const { promise, resolve } = createPromiseHandler<void>();
 
-          waitMainnetProfileModal.current = resolve;
+          // Wait for the mainnet profile modal to close
+          // to ensure that the modal is closed before opening another modal
+          waitMainnetProfileModalClose.current = resolve;
           await promise;
         }
 
@@ -241,7 +246,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       />
 
       <PWAInstruction />
-      <MainnetProfileModal handleSuccess={waitMainnetProfileModal?.current} />
+      <MainnetProfileModal closeCallback={waitMainnetProfileModalClose?.current} />
 
       {firstBanner && <CampaignBannerModal banner={firstBanner} />}
       {
