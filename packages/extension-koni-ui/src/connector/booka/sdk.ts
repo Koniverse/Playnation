@@ -613,8 +613,12 @@ export class BookaSdk {
 
         return;
       } else if (OTP) {
-        this.clearAccountData();
         account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login-by-otp`, { otp: OTP });
+
+        if (account?.info.telegramId !== this.account?.info.telegramId) {
+          this.clearAccountData();
+        }
+
         this.handleAccountAction.next('login-success');
       } else if (this.account) {
         // Todo: Check limit time to access to latest token
