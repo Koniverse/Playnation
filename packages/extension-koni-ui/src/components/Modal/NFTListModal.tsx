@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CloseIcon } from '@subwallet/extension-koni-ui/components';
-import { NFTTokenData } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { NFTData } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { Button, Icon, ModalContext, SwModal } from '@subwallet/react-ui';
 import CN from 'classnames';
@@ -12,11 +12,11 @@ import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 type Props = ThemeProps & {
-  erc721ContractList?: NFTTokenData[]
+  erc721ContractList?: NFTData[]
 };
 const nftListModalId = 'nft-list-modal';
 
-function Component ({ className, erc721ContractList }: Props): React.ReactElement<Props> {
+function Component ({ className, erc721ContractList }: Props) {
   const { t } = useTranslation();
   const { inactiveModal } = useContext(ModalContext);
 
@@ -29,7 +29,7 @@ function Component ({ className, erc721ContractList }: Props): React.ReactElemen
       return [];
     }
 
-    const contractNames = erc721ContractList?.map((item) => item.erc721_contract?.name);
+    const contractNames = erc721ContractList?.map((item) => item.token?.name);
 
     contractNames?.sort((a, b) => {
       // Kiểm tra nếu tên chứa "Koni Story Badge"
@@ -49,53 +49,49 @@ function Component ({ className, erc721ContractList }: Props): React.ReactElemen
 
   const footerModal = useMemo(() => {
     return (
-      <>
-        <Button
-          block={true}
-          className={'footer-close-button'}
-          icon={(
-            <Icon
-              phosphorIcon={XCircle}
-              weight={'fill'}
-            />
-          )}
-          onClick={onClose}
-          shape={'circle'}
-          size={'sm'}
-        >
-          {t('Close')}
-        </Button>
-      </>
+      <Button
+        block={true}
+        className={'footer-close-button'}
+        icon={(
+          <Icon
+            phosphorIcon={XCircle}
+            weight={'fill'}
+          />
+        )}
+        onClick={onClose}
+        shape={'circle'}
+        size={'sm'}
+      >
+        {t('Close')}
+      </Button>
     );
   }, [onClose, t]);
 
   return (
-    <>
-      <SwModal
-        className={CN(className, 'nft-modal')}
-        closable={false}
-        footer={footerModal}
-        id={nftListModalId}
-        maskClosable={false}
-        // onCancel={onClose}
-        rightIconProps={{
-          icon: <CloseIcon />,
-          onClick: onClose
-        }}
-        title={t('NFT list')}
-      >
-        <div className={'nft-list-wrapper'}>
-          {sortContractNames?.map((item, index) => (
-            <div
-              className='nft-list-item'
-              key={index}
-            >
-              <div className={'nft-list-item-label'}>{item}</div>
-            </div>
-          ))}
-        </div>
-      </SwModal>
-    </>
+    <SwModal
+      className={CN(className, 'nft-modal')}
+      closable={false}
+      footer={footerModal}
+      id={nftListModalId}
+      maskClosable={false}
+      // onCancel={onClose}
+      rightIconProps={{
+        icon: <CloseIcon />,
+        onClick: onClose
+      }}
+      title={t('NFT list')}
+    >
+      <div className={'nft-list-wrapper'}>
+        {sortContractNames?.map((item, index) => (
+          <div
+            className='nft-list-item'
+            key={index}
+          >
+            <div className={'nft-list-item-label'}>{item}</div>
+          </div>
+        ))}
+      </div>
+    </SwModal>
   );
 }
 
