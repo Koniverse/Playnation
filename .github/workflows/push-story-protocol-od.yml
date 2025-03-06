@@ -4,6 +4,7 @@ on:
     branches:
       - story-protocol-od-dev
       - story-protocol-od-prod
+      - story-protocol-od-preview
 
 jobs:
   master:
