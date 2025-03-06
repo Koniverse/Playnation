@@ -43,7 +43,6 @@ export const WALLET_CONNECT_SUPPORT_NAMESPACES: string[] = [WALLET_CONNECT_EIP15
 
 export const WC_REQUIRE_CHAIN_IDS: number[] = [1516, 1514];
 export const WC_OPTIONAL_CHAIN_IDS: number[] = [];
-export const WC_DEFAULT_CHAIN_TESTNET_ID = 1516;
 export const WC_DEFAULT_CHAIN_MAINNET_ID = 1514;
 
 export const WC_USER_REJECT_CODE = getSdkError('USER_REJECTED').code;

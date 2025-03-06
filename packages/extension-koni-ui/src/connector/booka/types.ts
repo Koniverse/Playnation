@@ -460,16 +460,33 @@ export enum AccountIntegratedProfileStatus {
   SYNCED = 'synced',
 }
 
-interface ERC721Contract {
-  name: string;
-  address: string;
+interface NFTTokenData {
+  circulating_market_cap?: string,
+  icon_url?: string,
+  name?: string,
+  decimals: string,
+  symbol: string,
+  address: string,
+  type: string,
+  holders: string,
+  exchange_rate: string,
+  total_supply: string,
 }
 
-export interface NFTTokenData {
-  owner: string;
-  token_id: string;
-  created_at: string;
-  erc721_contract: ERC721Contract;
+export interface NFTData {
+  animation_url?: string;
+  external_app_url?: string;
+  id: string;
+  image_url?: string;
+  is_unique: boolean;
+  media_type?: string;
+  media_url?: string;
+  metadata?: string;
+  owner?: string;
+  thumbnails?: string;
+  token: NFTTokenData;
+  token_type: string;
+  value: string;
 }
 
 export interface IntegratedProfileResult {
@@ -483,7 +500,7 @@ export interface IntegratedProfileResult {
   syncedAt?: Date | null;
   telegramId?: number;
   loginCount?: number;
-  erc721ContractList?: NFTTokenData[];
+  erc721ContractList?: NFTData[];
   nftLastUpdated?: Date;
   transactionLastUpdated?: Date;
   nftExisted: boolean;

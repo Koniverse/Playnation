@@ -43,3 +43,4 @@ export const VISIT_INVITATION_SCREEN_FLAG = 'general.visit-invitation-screen-fla
 export const COMPLETED_CONNECT_WALLET = 'general.completed-connect-wallet';
 export const ADDRESS_INPUT_AUTO_FORMAT_VALUE = 'component.address-input.auto-format-value'; // value: boolean
 export const SHOW_INSTRUCTION_MODAL = 'general.show_instruction_modal';
+export const SHOW_MAINNET_PROFILE_MODAL = 'general.show_mainnet_profile_modal';

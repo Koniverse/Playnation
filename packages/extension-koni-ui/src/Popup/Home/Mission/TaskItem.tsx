@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SWTransactionResponse } from '@subwallet/extension-base/services/transaction-service/types';
-import { WC_DEFAULT_CHAIN_TESTNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
+import { WC_DEFAULT_CHAIN_MAINNET_ID } from '@subwallet/extension-base/services/wallet-connect-service/constants';
 import { createPromiseHandler, isSameAddress } from '@subwallet/extension-base/utils';
 import { GamePoint } from '@subwallet/extension-koni-ui/components';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
@@ -134,7 +134,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
 
         const { signature } = await wcSignMessageRequest({
           address: address,
-          chainId: WC_DEFAULT_CHAIN_TESTNET_ID,
+          chainId: WC_DEFAULT_CHAIN_MAINNET_ID,
           payload: stringToHex(message),
           method: 'personal_sign'
         });
@@ -203,7 +203,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
 
         if (error.message?.toLowerCase().includes('Unsupported chains'.toLowerCase())) {
           telegramConnector.showPopup({
-            message: t('Your chosen wallet hasn’t supported Story Odyssey Testnet. Add network to your wallet or change to another wallet'),
+            message: t('Your chosen wallet hasn’t supported Story Protocol. Add network to your wallet or change to another wallet'),
             buttons: [{ type: 'ok', text: t('Got it') }]
           }, noop);
         }
@@ -223,7 +223,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
       setTaskLoading(true);
       let res: SWTransactionResponse | null = null;
       const payload: Record<string, unknown> = {};
-      const networkKey = task.network || 'storyOdyssey_testnet';
+      const networkKey = task.network || 'story_protocol';
       const isNftTask = !!task.metadata?.contractAddress;
 
       payload.network = networkKey;
@@ -281,7 +281,7 @@ const _TaskItem = ({ actionReloadPoint, className, openWidget, reloadTask, task 
           }
 
           if (message.toLowerCase().includes('Returned error: insufficient funds'.toLowerCase())) {
-            message = t('You don’t have enough IP to check-in. Get faucet and try again');
+            message = t('You don’t have enough IP to check-in. Top up your balance and try again');
           }
 
           notify({

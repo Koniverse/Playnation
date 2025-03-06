@@ -2,15 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
+import { createPromiseHandler } from '@subwallet/extension-base/utils';
 import DefaultLogosMap from '@subwallet/extension-koni-ui/assets/logo';
-import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, InitRewardsModal, InitRewardsModalProps, Layout, LoadingScreen } from '@subwallet/extension-koni-ui/components';
+import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, InitRewardsModal, InitRewardsModalProps, Layout, LoadingScreen, MainnetProfileModal } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
 import PWAInstruction from '@subwallet/extension-koni-ui/components/Modal/PWA/PWAIntruction';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
-import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, homeScreensLayoutBackgroundImages, PWA_INSTRUCTION_MODAL, SHOW_INSTRUCTION_MODAL } from '@subwallet/extension-koni-ui/constants';
+import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, homeScreensLayoutBackgroundImages, MAINNET_PROFILE_MODAL, PWA_INSTRUCTION_MODAL, SHOW_INSTRUCTION_MODAL, SHOW_MAINNET_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
 import { HomeContext } from '@subwallet/extension-koni-ui/contexts/screen/HomeContext';
 import { useAccountBalance, useGetBannerByScreen, useTokenGroup } from '@subwallet/extension-koni-ui/hooks';
 import { useGetChainSlugsByAccountType } from '@subwallet/extension-koni-ui/hooks/screen/home/useGetChainSlugsByAccountType';
@@ -18,7 +19,7 @@ import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { isAndroid, isPWABrowser } from '@subwallet/extension-koni-ui/utils';
 import { ModalContext } from '@subwallet/react-ui';
 import CN from 'classnames';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Outlet } from 'react-router';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -31,6 +32,8 @@ const metadataHandler = MetadataHandler.instance;
 let isAddPointShowed = false; // Use let instead of ref to avoid reload all components
 const instructionPWAModalId = PWA_INSTRUCTION_MODAL;
 const instructionLocalKey = SHOW_INSTRUCTION_MODAL;
+const mainnetProfileLocalKey = SHOW_MAINNET_PROFILE_MODAL;
+const mainnetProfileModalId = MAINNET_PROFILE_MODAL;
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const chainsByAccountType = useGetChainSlugsByAccountType();
@@ -41,6 +44,10 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const [addRewardModalProps, setAddRewardModalProps] = useState<AddRewardsModalProps | undefined>();
   const [initRewardModalProps, setInitRewardModalProps] = useState<InitRewardsModalProps | undefined>();
   const [account, setAccount] = useState<BookaAccount | undefined>(apiSDK.account);
+
+  // This is a ref to store the callback to close the mainnet profile modal,
+  // to ensure that the modal is closed before opening another modal
+  const waitMainnetProfileModalClose = useRef<VoidFunction| undefined>(undefined);
 
   const banners = useGetBannerByScreen('home');
 
@@ -99,6 +106,14 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   }, []);
 
   useEffect(() => {
+    const isShowMainnetProfile = localStorage.getItem(mainnetProfileLocalKey);
+
+    if (!Telegram?.WebApp?.initData && !isShowMainnetProfile) {
+      activeModal(mainnetProfileModalId);
+    }
+  }, [activeModal]);
+
+  useEffect(() => {
     const handleMaintenance = (info: MaintenanceInfo) => {
       if (info.isMaintenance) {
         navigate('/maintenance');
@@ -107,7 +122,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
 
     const unsub1 = metadataHandler.maintenanceSubject.subscribe(handleMaintenance);
 
-    const handleAccountAction = (action: string) => {
+    const handleAccountAction = async (action: string) => {
       if (action === 'banned') {
         navigate('/account-banned');
       } else if (action === 'login-pwa-confirm') {
@@ -115,6 +130,17 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       } else if (action === 'login-failed') {
         navigate('/login-select');
       } else if (action === 'login-success') {
+        const isShowMainnetProfile = localStorage.getItem(mainnetProfileLocalKey);
+
+        if (!isShowMainnetProfile) {
+          const { promise, resolve } = createPromiseHandler<void>();
+
+          // Wait for the mainnet profile modal to close
+          // to ensure that the modal is closed before opening another modal
+          waitMainnetProfileModalClose.current = resolve;
+          await promise;
+        }
+
         const isShowInstruction = localStorage.getItem(instructionLocalKey);
 
         if (!Telegram?.WebApp?.initData && !isShowInstruction && !isPWABrowser() && isAndroid()) {
@@ -123,7 +149,9 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       }
     };
 
-    const unsub2 = apiSDK.handleAccountAction.subscribe(handleAccountAction);
+    const unsub2 = apiSDK.handleAccountAction.subscribe((action: string) => {
+      handleAccountAction(action).catch(console.error);
+    });
 
     return () => {
       unsub1.unsubscribe();
@@ -218,6 +246,7 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
       />
 
       <PWAInstruction />
+      <MainnetProfileModal closeCallback={waitMainnetProfileModalClose?.current} />
 
       {firstBanner && <CampaignBannerModal banner={firstBanner} />}
       {

@@ -63,7 +63,7 @@ const BuyTokens = new LazyLoader('BuyTokens', () => import('@subwallet/extension
 const Games = new LazyLoader('Games', () => import('@subwallet/extension-koni-ui/Popup/Home/Games'));
 const Mission = new LazyLoader('Mission', () => import('@subwallet/extension-koni-ui/Popup/Home/Mission'));
 const Leaderboard = new LazyLoader('Leaderboard', () => import('@subwallet/extension-koni-ui/Popup/Home/Leaderboard'));
-const Mint = new LazyLoader('Mint', () => import('@subwallet/extension-koni-ui/Popup/Home/Mint'));
+// const Mint = new LazyLoader('Mint', () => import('@subwallet/extension-koni-ui/Popup/Home/Mint'));
 const Invite = new LazyLoader('Games', () => import('@subwallet/extension-koni-ui/Popup/Home/Invite'));
 const Tokens = new LazyLoader('Tokens', () => import('@subwallet/extension-koni-ui/Popup/Home/Tokens'));
 const TokenDetailList = new LazyLoader('TokenDetailList', () => import('@subwallet/extension-koni-ui/Popup/Home/Tokens/DetailList'));
@@ -183,7 +183,7 @@ export const router = createBrowserRouter([
         children: [
           Games.generateRouterObject('games'),
           Mission.generateRouterObject('mission'),
-          Mint.generateRouterObject('mint'),
+          // Mint.generateRouterObject('mint'),
           Leaderboard.generateRouterObject('leaderboard'),
           Invite.generateRouterObject('invite'),
           HomeAccount.generateRouterObject('account'),

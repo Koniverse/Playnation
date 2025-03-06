@@ -21,6 +21,7 @@ export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnat
 export const STORY_BADGE_HOST = process.env.STORY_BADGE_HOST || 'http://localhost:3000';
 const storage = SWStorage.instance;
 const telegramConnector = TelegramConnector.instance;
+const dataNeedClearWhenChangeAccount = [SHOW_INSTRUCTION_MODAL];
 
 const ACCOUNT_POINT_AVAILABLE_IN_BETA = 15000;
 // Increase of changing the cache version, we need to clear the cache
@@ -543,7 +544,10 @@ export class BookaSdk {
   }
 
   clearAccountData () {
-    localStorage.removeItem(SHOW_INSTRUCTION_MODAL);
+    dataNeedClearWhenChangeAccount.forEach((key) => {
+      localStorage.removeItem(key);
+    });
+
     this.accountSubject.next(undefined);
   }
 
@@ -611,6 +615,7 @@ export class BookaSdk {
       } else if (OTP) {
         this.clearAccountData();
         account = await this.postRequest<BookaAccount>(`${GAME_API_HOST}/api/account/login-by-otp`, { otp: OTP });
+
         this.handleAccountAction.next('login-success');
       } else if (this.account) {
         // Todo: Check limit time to access to latest token
