@@ -319,6 +319,7 @@ export class BookaSdk {
 
     if (account && newAccountData) {
       account.attributes = newAccountData.attributes;
+      account.info.address = newAccountData.info.address;
       // @ts-ignore
       account.gameData = newAccountData.gameData;
     }
@@ -1186,6 +1187,7 @@ export class BookaSdk {
       throw new Error('Address already registered');
     } else {
       this.addressLinkedSubject.next(address);
+      await this.reloadAccount();
     }
   }
 
