@@ -143,12 +143,18 @@ export class GameApp {
       throw newError('Not enought energy', ErrorCode.NOT_ENOUGH_ENERGY);
     }
 
-    const gamePlay = await this.apiSDK.playGame({
+    const gamePlayPromise = this.apiSDK.playGame({
       gameId: currentGame.id,
       gameEventId: currentEvent?.id,
       energyUsed: currentGame.energyPerGame,
       gameInitData: payload?.gameInitData as object
     });
+
+    const gamePlay = await Promise.race([
+      gamePlayPromise,
+      new Promise<never>((resolve, reject) =>
+        setTimeout(() => reject(newError('Request timed out', ErrorCode.SYSTEM_ERROR)), 15000))
+    ]);
 
     console.log('gamePlay', gamePlay);
 
@@ -219,14 +225,28 @@ export class GameApp {
 
     if (currentGamePlay?.id && this.theLastSignature !== state.signature) {
       this.theLastSignature = state.signature;
-      const response = await this.apiSDK.submitState({
+      const submitPromise = this.apiSDK.submitState({
         gamePlayId: currentGamePlay.id,
         stateData: state
-      }).catch(console.error);
+      }).catch((e: Error) => {
+        console.error(e.message);
+
+        return {
+          error: e.message,
+          success: false,
+          gamePlay: undefined
+        };
+      });
+
+      const timeoutPromise = new Promise<never>((resolve, reject) =>
+        setTimeout(() => reject(newError('Request timed out', ErrorCode.SYSTEM_ERROR)), 15000)
+      );
+
+      const response = await Promise.race([submitPromise, timeoutPromise]);
 
       return {
-        success: !!response,
-        stateData: response?.gamePlay?.stateData,
+        success: !!response?.success,
+        stateData: response?.gamePlay?.stateData || response?.error,
         point: response?.gamePlay?.point
       };
     }
@@ -294,8 +314,11 @@ export class GameApp {
     this.onExit('/home/leaderboard');
   }
 
+  // Todo: Rename this function to onNavigateToSupportWebsite
   onShowShop () {
-    console.log('open shop');
+    telegramConnector.openLink('https://support.rivals.game/hc/en-us/requests/new');
+
+    this.onExit();
   }
 
   async onGetLeaderboard (req: GetLeaderboardRequest): Promise<GetLeaderboardResponse> {
