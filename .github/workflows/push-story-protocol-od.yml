@@ -11,6 +11,7 @@ jobs:
     if: "!startsWith(github.event.head_commit.message, '[CI Skip]')"
     name: Deploy Telegram MiniApp
     runs-on: ubuntu-22.04
+    environment: ${{ github.ref_name }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -29,8 +30,8 @@ jobs:
         NFT_MINTING_HOST: ${{ secrets.NFT_MINTING_HOST }}
         STORY_PROTOCOL_APP_URL: ${{ vars.STORY_PROTOCOL_APP_URL }}
         BRANCH_NAME: master
-        GAME_API_HOST: ${{ github.ref_name == 'story-protocol-od-prod' && 'https://sp-odyssey-api.playnation.app' || 'https://sp-odyssey-dev-api.playnation.app' }}
-        TELEGRAM_WEBAPP_LINK: ${{ github.ref_name == 'story-protocol-od-prod' && 'KoniStory_bot/app' || 'story_protocol_odyssey_dev_bot/app' }}
+        GAME_API_HOST: ${{ vars.GAME_API_HOST }}
+        TELEGRAM_WEBAPP_LINK: ${{ vars.TELEGRAM_WEBAPP_LINK }}
       run: |
         yarn install --immutable | grep -v 'YN0013'
         yarn webapp:build
@@ -42,7 +43,7 @@ jobs:
         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         projectName: story-protocol-odyssey
         gitHubToken: ${{ secrets.GH_AUTOMATION_TOKEN }}
-        branch: ${{ github.ref_name == 'story-protocol-od-prod' && 'main' || 'dev' }}
+        branch: ${{ vars.CF_PAGE_BRANCH }}
         directory: './packages/webapp/build'
         wranglerVersion: '3'
     - name: Notify to Discord
@@ -54,6 +55,6 @@ jobs:
         username: Story Protocol Odyssey Deployment Worker
         title: ${{ github.workflow }}
         description: |
-          The deployment is completed.
+          The deployment is completed!
             - URL: ${{ steps.cloudflare_deployment.outputs.url }}
             - Alias: ${{ steps.cloudflare_deployment.outputs.alias }}
