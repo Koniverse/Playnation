@@ -3,7 +3,6 @@
 
 import { Layout } from '@subwallet/extension-koni-ui/components';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
-import { Theme } from '@subwallet/extension-koni-ui/themes';
 import CN from 'classnames';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -39,52 +38,51 @@ function Component ({ className }: Props): React.ReactElement<Props> {
       showBackButton={false}
       subHeaderPaddingVertical={true}
     >
-      <div className='sub-title h3-text'>{maintenance?.title}</div>
-      <div
-        className='h5-text description'
-        dangerouslySetInnerHTML={{ __html: maintenance?.message || '' }}
-      ></div>
+      <div className={'__body'}>
+        <div className='__title'>
+          {maintenance?.title}
+        </div>
+
+        <div className='__content'>
+          {maintenance?.message}
+        </div>
+      </div>
     </Layout.Base>
   );
 }
 
-const Maintenance = styled(Component)<Props>(({ theme }) => {
-  const { token } = theme as Theme;
-
+const Maintenance = styled(Component)<Props>(({ theme: { extendToken, token } }: Props) => {
   return ({
-    position: 'relative',
-    border: `1px solid ${token.colorBgInput}`,
-
-    '.ant-sw-screen-layout-body-inner': {
+    '.__body': {
+      textAlign: 'center',
+      height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
-      paddingTop: 128
+      justifyContent: 'center',
+      paddingLeft: token.padding,
+      paddingRight: token.padding,
+      gap: 8
     },
 
-    '.ant-sw-sub-header-title-content': {
-      zIndex: 1
+    '.__title': {
+      color: token.colorWhite,
+      fontFamily: extendToken.fontDruk,
+      fontSize: '20px',
+      fontStyle: 'italic',
+      fontWeight: 500,
+      lineHeight: '22px',
+      letterSpacing: '-0.6px',
+      textTransform: 'uppercase'
     },
 
-    '.title': {
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center'
-    },
-
-    '.sub-title': {
-      paddingTop: token.paddingXL,
-      paddingBottom: token.padding,
-      color: token.colorWarning
-    },
-
-    '.description': {
-      textAlign: 'center',
-      paddingLeft: token.paddingXL,
-      paddingRight: token.paddingXL,
-      wordBreak: 'break-all',
-      color: token.colorTextSecondary,
-      fontWeight: token.bodyFontWeight
+    '.__content': {
+      color: token.colorWhite,
+      fontFamily: extendToken.fontBarlowCondensed,
+      fontSize: '16px',
+      fontStyle: 'normal',
+      fontWeight: 400,
+      lineHeight: '18px',
+      letterSpacing: '0.32px'
     }
   });
 });

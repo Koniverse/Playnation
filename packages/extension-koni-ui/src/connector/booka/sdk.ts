@@ -887,7 +887,8 @@ export class BookaSdk {
           this.fetchGameList(),
           this.fetchGameEventList(),
           this.fetchAchievementList(),
-          this.fetchRewardList()
+          this.fetchRewardList(),
+          this.fetchMetadata()
           // this.fetchNFLRivalCardList(), // Run in the mythical login to get token
           // this.fetchTaskCategoryList(),
           // this.fetchTaskList(),
