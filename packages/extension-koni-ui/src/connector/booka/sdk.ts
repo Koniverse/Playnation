@@ -17,9 +17,9 @@ import { BehaviorSubject } from 'rxjs';
 
 import { stringToU8a, u8aToString } from '@polkadot/util';
 
-export const DEFAULT_INIT_DATA = process.env.DEFAULT_INIT_DATA;
+export const DEFAULT_INIT_DATA = 'query_id=AAGzui49AgAAALO6Lj18K-fm&user=%7B%22id%22%3A5321439923%2C%22first_name%22%3A%22Y%E1%BA%BFn%22%2C%22last_name%22%3A%22V%C5%A9%20%F0%9F%90%BE%22%2C%22username%22%3A%22yenxiu23%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FETQilvAtiIWRoU2Y8WsrmcaWZambYRZa1YvIpso3d7Kkp9tKkZZIGP_VuhJpyP7C.svg%22%7D&auth_date=1741336868&signature=znM_JbE3iwNBztYsI9jXDCnfBPyTQXkm6qj4UBt8pyAf_uR49RTn50QR0z5msJIpAr9UQHH33mfz_UqH-_URAg&hash=3a1d499b130700e5ea87d4b7fafdf1f312ed0a87cb257fe033cef08314649333';
 export const DEBUG_REPORT_URL = process.env.DEBUG_REPORT_URL || '';
-export const GAME_API_HOST = process.env.GAME_API_HOST || 'https://game-api.anhmtv.xyz';
+export const GAME_API_HOST = 'http://localhost:3000';
 export const MYTHICAL_API_HOST = process.env.MYTHICAL_API_HOST || 'https://nflrivals.client.mythical.dev';
 export const TELEGRAM_WEBAPP_LINK = process.env.TELEGRAM_WEBAPP_LINK || 'Playnation_bot/app';
 const storage = SWStorage.instance;
