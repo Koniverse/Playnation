@@ -27,7 +27,7 @@ function Component ({ className }: Props): React.ReactElement<Props> {
   }, []);
 
   useEffect(() => {
-    if (maintenance && !maintenance.isMaintenance) {
+    if (!maintenance || !maintenance.isMaintenance) {
       navigate('/');
     }
   }, [maintenance, navigate]);
