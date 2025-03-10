@@ -4,7 +4,6 @@
 import { CampaignBanner } from '@subwallet/extension-base/background/KoniTypes';
 import { AlertModal, CampaignBannerModal, Layout, MythicalAlertRewardModal } from '@subwallet/extension-koni-ui/components';
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
-import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { Reward, RewardStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { MYTHICAL_ALERT_LINKING_TO_REWARDS_MODAL, MYTHICAL_ALERT_REWARD_MODAL } from '@subwallet/extension-koni-ui/constants';
@@ -28,7 +27,6 @@ export const GlobalSearchTokenModalId = 'globalSearchToken';
 const apiSDK = BookaSdk.instance;
 const alertLinkingToRewardModal = MYTHICAL_ALERT_LINKING_TO_REWARDS_MODAL;
 const alertRewardModal = MYTHICAL_ALERT_REWARD_MODAL;
-const metadataHandler = MetadataHandler.instance;
 
 function Component ({ className = '' }: Props): React.ReactElement<Props> {
   const navigate = useNavigate();
@@ -119,29 +117,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   useEffect(() => {
     handleAlertReward(rewardsEligible).catch(console.error);
   }, [handleAlertReward, rewardsEligible]);
-
-  useEffect(() => {
-    const handleMaintenance = (info: MaintenanceInfo) => {
-      if (info.isMaintenance) {
-        navigate('/maintenance');
-      }
-    };
-
-    const unsub1 = metadataHandler.maintenanceSubject.subscribe(handleMaintenance);
-
-    const handleBanedAccount = (isEnabled: boolean) => {
-      if (!isEnabled) {
-        navigate('/account-banned');
-      }
-    };
-
-    const unsub2 = apiSDK.isAccountEnable.subscribe(handleBanedAccount);
-
-    return () => {
-      unsub1.unsubscribe();
-      unsub2.unsubscribe();
-    };
-  }, [navigate]);
 
   return (
     <>
