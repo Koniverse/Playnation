@@ -3,19 +3,20 @@
 
 import { Layout } from '@subwallet/extension-koni-ui/components';
 import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
+import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import CN from 'classnames';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-interface Props {
+interface Props extends ThemeProps {
   className?: string;
 }
 
 const metaDataHandler = MetadataHandler.instance;
 
 function Component ({ className }: Props): React.ReactElement<Props> {
-  const [maintenance, setMaintenance] = React.useState<MaintenanceInfo|undefined>();
+  const [maintenance, setMaintenance] = React.useState<MaintenanceInfo|undefined>(metaDataHandler.maintenanceSubject.value);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,10 +28,10 @@ function Component ({ className }: Props): React.ReactElement<Props> {
   }, []);
 
   useEffect(() => {
-    if (!maintenance || !maintenance.isMaintenance) {
+    if (!maintenance?.isMaintenance) {
       navigate('/');
     }
-  }, [maintenance, navigate]);
+  }, [maintenance?.isMaintenance, navigate]);
 
   return (
     <Layout.Base
