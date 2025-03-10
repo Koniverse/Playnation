@@ -109,6 +109,10 @@ export class MetadataHandler extends EventEmitter<MetadataEvents> {
       newMetadata.maintenanceInfo.isMaintenance = now >= startTime && now <= endTime;
 
       this.maintenanceSubject.next(newMetadata.maintenanceInfo);
+    } else {
+      this.maintenanceSubject.next({
+        isMaintenance: false
+      } as MaintenanceInfo);
     }
 
     if (newMetadata.versions && newMetadata.versions && dataLoaded) {
