@@ -8,7 +8,6 @@ import { AddRewardsModal, AddRewardsModalProps, CampaignBannerModal, InitRewards
 import { LayoutBaseProps } from '@subwallet/extension-koni-ui/components/Layout/base/Base';
 import { GlobalSearchTokenModal } from '@subwallet/extension-koni-ui/components/Modal/GlobalSearchTokenModal';
 import PWAInstruction from '@subwallet/extension-koni-ui/components/Modal/PWA/PWAIntruction';
-import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { BookaAccount } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { ACCOUNT_ADD_POINT_MODAL, ACCOUNT_INIT_POINT_MODAL, homeScreensLayoutBackgroundImages, MAINNET_PROFILE_MODAL, PWA_INSTRUCTION_MODAL, SHOW_INSTRUCTION_MODAL, SHOW_MAINNET_PROFILE_MODAL } from '@subwallet/extension-koni-ui/constants';
@@ -28,7 +27,6 @@ type Props = ThemeProps;
 
 export const GlobalSearchTokenModalId = 'globalSearchToken';
 const apiSDK = BookaSdk.instance;
-const metadataHandler = MetadataHandler.instance;
 let isAddPointShowed = false; // Use let instead of ref to avoid reload all components
 const instructionPWAModalId = PWA_INSTRUCTION_MODAL;
 const instructionLocalKey = SHOW_INSTRUCTION_MODAL;
@@ -114,18 +112,8 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
   }, [activeModal]);
 
   useEffect(() => {
-    const handleMaintenance = (info: MaintenanceInfo) => {
-      if (info.isMaintenance) {
-        navigate('/maintenance');
-      }
-    };
-
-    const unsub1 = metadataHandler.maintenanceSubject.subscribe(handleMaintenance);
-
     const handleAccountAction = async (action: string) => {
-      if (action === 'banned') {
-        navigate('/account-banned');
-      } else if (action === 'login-pwa-confirm') {
+      if (action === 'login-pwa-confirm') {
         navigate('/login-pwa-confirm');
       } else if (action === 'login-failed') {
         navigate('/login-select');
@@ -154,7 +142,6 @@ function Component ({ className = '' }: Props): React.ReactElement<Props> {
     });
 
     return () => {
-      unsub1.unsubscribe();
       unsub2.unsubscribe();
     };
   }, [activeModal, navigate]);

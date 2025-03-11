@@ -3,7 +3,7 @@
 
 import { deepCopy } from '@playnation/game-sdk';
 import EventEmitter from 'eventemitter3';
-import {BehaviorSubject} from "rxjs";
+import { BehaviorSubject } from 'rxjs';
 
 export interface RecordVersionInfo {
   id: number
@@ -97,6 +97,10 @@ export class MetadataHandler extends EventEmitter<MetadataEvents> {
       newMetadata.maintenanceInfo.isMaintenance = now >= startTime && now <= endTime;
 
       this.maintenanceSubject.next(newMetadata.maintenanceInfo);
+    } else {
+      this.maintenanceSubject.next({
+        isMaintenance: false
+      } as MaintenanceInfo);
     }
 
     if (newMetadata.versions && newMetadata.versions && dataLoaded) {
