@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
+import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { AUTHENTICATE_LOGOUT_REDIRECT, AUTHENTICATE_REDIRECT_URI, AUTHORIZATION_ENDPOINT, CLIENT_ID, LOGOUT_ENDPOINT, TOKEN_ENDPOINT, VISIT_LOGIN_CTA_FLAG } from '@subwallet/extension-koni-ui/constants';
 import { VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE } from '@subwallet/extension-koni-ui/constants/localStorageDefaultValue';
 import { AuthenticationMythProvider, LOCAL_LOGGED_IN_PROMISE_KEY, LOCAL_NAVIGATE_AFTER_LOGIN_KEY } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
@@ -21,6 +22,11 @@ import styled from 'styled-components';
 import { useLocalStorage } from 'usehooks-ts';
 
 import { BookaSdk } from '../connector/booka/sdk';
+
+interface ForceRedirectConditions {
+  isMaintenance: boolean;
+  isAccountBanned: boolean;
+}
 
 changeHeaderLogo(<Logo2D />);
 
@@ -77,6 +83,10 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const [dataLoaded, setDataLoaded] = useState(false);
   const firstRender = useRef(true);
   const [isVisitedLoginCTA, setIsVisitedLoginCTA] = useLocalStorage(VISIT_LOGIN_CTA_FLAG, VISIT_LOGIN_CTA_FLAG_DEFAULT_VALUE);
+  const [forceRedirectConditions, setForceRedirectConditions] = useState<ForceRedirectConditions>({
+    isMaintenance: false,
+    isAccountBanned: false
+  });
 
   useSubscribeLanguage();
 
@@ -126,6 +136,47 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     RouteState.lastPathName = location.pathname;
   }, [location]);
 
+  useEffect(() => {
+    const handleMaintenance = (info: MaintenanceInfo) => {
+      setForceRedirectConditions((prev) => {
+        return {
+          ...prev,
+          isMaintenance: !!info?.isMaintenance
+        };
+      });
+    };
+
+    const unsub1 = MetadataHandler.instance.maintenanceSubject.subscribe(handleMaintenance);
+
+    const handleBanedAccount = (isEnabled: boolean) => {
+      setForceRedirectConditions((prev) => {
+        return {
+          ...prev,
+          isAccountBanned: !isEnabled
+        };
+      });
+    };
+
+    const unsub2 = BookaSdk.instance.isAccountEnable.subscribe(handleBanedAccount);
+
+    return () => {
+      unsub1.unsubscribe();
+      unsub2.unsubscribe();
+    };
+  }, []);
+
+  const forceRedirectTarget = useMemo<string | null>(() => {
+    if (forceRedirectConditions.isAccountBanned) {
+      return '/account-banned';
+    }
+
+    if (forceRedirectConditions.isMaintenance) {
+      return '/maintenance';
+    }
+
+    return null;
+  }, [forceRedirectConditions]);
+
   const redirectPath = useMemo<string | null>(() => {
     const pathName = location.pathname;
     let redirectTarget: string | null = null;
@@ -157,8 +208,11 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       return false;
     });
 
-    // Check if account is newly created and shoe login CTA
-    if (pathName === '/' && !redirectTarget) {
+    // Force redirect
+    if (forceRedirectTarget) {
+      redirectTarget = forceRedirectTarget;
+    } else if (pathName === '/' && !redirectTarget) {
+      // Check if account is newly created and shoe login CTA
       let shouldShowLoginCTA = !isVisitedLoginCTA;
       const userCreated = BookaSdk.instance.account?.info?.createdAt;
 
@@ -190,7 +244,7 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     } else {
       return null;
     }
-  }, [location.pathname, dataLoaded, isVisitedLoginCTA, setIsVisitedLoginCTA]);
+  }, [location.pathname, dataLoaded, forceRedirectTarget, isVisitedLoginCTA, setIsVisitedLoginCTA]);
 
   if (rootLoading || redirectPath) {
     return <>{redirectPath && <Navigate to={redirectPath} />}</>;
