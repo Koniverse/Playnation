@@ -5,6 +5,7 @@ import { WalletUnlockType } from '@subwallet/extension-base/background/KoniTypes
 import { ALL_ACCOUNT_KEY } from '@subwallet/extension-base/constants';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { Logo2D } from '@subwallet/extension-koni-ui/components/Logo';
+import { MaintenanceInfo, MetadataHandler } from '@subwallet/extension-koni-ui/connector/booka/metadata';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { DEFAULT_HOMEPAGE, TRANSACTION_STORAGES } from '@subwallet/extension-koni-ui/constants';
 import { DEFAULT_ROUTER_PATH } from '@subwallet/extension-koni-ui/constants/router';
@@ -25,6 +26,11 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+
+interface ForceRedirectConditions {
+  isMaintenance: boolean;
+  isAccountBanned: boolean;
+}
 
 changeHeaderLogo(<Logo2D />);
 
@@ -89,6 +95,10 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
   const initDataRef = useRef<Promise<boolean>>(dataContext.awaitStores(['accountState', 'chainStore', 'assetRegistry', 'requestState', 'settings', 'mantaPay', 'walletConnect']));
   // const currentPage = useGetCurrentPage();
   const firstRender = useRef(true);
+  const [forceRedirectConditions, setForceRedirectConditions] = useState<ForceRedirectConditions>({
+    isMaintenance: false,
+    isAccountBanned: false
+  });
 
   useSubscribeLanguage();
 
@@ -180,6 +190,47 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
     RouteState.lastPathName = location.pathname;
   }, [location]);
 
+  useEffect(() => {
+    const handleMaintenance = (info: MaintenanceInfo) => {
+      setForceRedirectConditions((prev) => {
+        return {
+          ...prev,
+          isMaintenance: !!info?.isMaintenance
+        };
+      });
+    };
+
+    const unsub1 = MetadataHandler.instance.maintenanceSubject.subscribe(handleMaintenance);
+
+    const handleAccountAction = (action: string) => {
+      setForceRedirectConditions((prev) => {
+        return {
+          ...prev,
+          isAccountBanned: action === 'banned'
+        };
+      });
+    };
+
+    const unsub2 = BookaSdk.instance.handleAccountAction.subscribe(handleAccountAction);
+
+    return () => {
+      unsub1.unsubscribe();
+      unsub2.unsubscribe();
+    };
+  }, []);
+
+  const forceRedirectTarget = useMemo<string | null>(() => {
+    if (forceRedirectConditions.isAccountBanned) {
+      return '/account-banned';
+    }
+
+    if (forceRedirectConditions.isMaintenance) {
+      return '/maintenance';
+    }
+
+    return null;
+  }, [forceRedirectConditions]);
+
   const redirectPath = useMemo<string | null>(() => {
     const pathName = location.pathname;
     let redirectTarget: string | null = null;
@@ -243,12 +294,16 @@ function DefaultRoute ({ children }: { children: React.ReactNode }): React.React
       return false;
     });
 
+    if (forceRedirectTarget) {
+      redirectTarget = forceRedirectTarget;
+    }
+
     if (redirectTarget && redirectTarget !== pathName) {
       return redirectTarget;
     } else {
       return null;
     }
-  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, openPModal]);
+  }, [location.pathname, dataLoaded, needMigrate, hasMasterPassword, needUnlock, useCustomPassword, noAccount, hasInternalConfirmations, hasConfirmations, isOpenPModal, forceRedirectTarget, openPModal]);
 
   // Remove transaction persist state
   useEffect(() => {
