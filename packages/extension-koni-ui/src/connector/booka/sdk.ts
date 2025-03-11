@@ -638,7 +638,8 @@ export class BookaSdk {
           this.fetchTaskList(),
           this.fetchLeaderboardConfigList(),
           this.fetchAirdropCampaign(),
-          this.fetchNftAirdrop()
+          this.fetchNftAirdrop(),
+          this.fetchMetadata()
           // this.fetchGameItemMap(),
           // this.fetchGameInventoryItemList(),
           // this.fetchGameItemInGameList()
