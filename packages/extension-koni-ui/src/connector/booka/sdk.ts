@@ -607,6 +607,7 @@ export class BookaSdk {
           requestOTP: true
         });
         this.accountSubject.next(account);
+        await this.fetchMetadata();
         this.handleAccountAction.next('login-pwa-confirm');
         setTimeout(() => {
           this.needRenewOTP = true;
