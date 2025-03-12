@@ -247,14 +247,10 @@ export class BookaSdk {
   }
 
   initMetadataHandling () {
-    this.fetchMetadata().then((metadata) => {
-      metadata && metadataHandler.updateMetadata(metadata);
-    }).catch(console.error);
+    this.fetchMetadata().catch(console.error);
 
     setInterval(() => {
-      this.fetchMetadata().then((metadata) => {
-        metadata && metadataHandler.updateMetadata(metadata);
-      }).catch(console.error);
+      this.fetchMetadata().catch(console.error);
     }, 30000);
 
     // Listen to metadata changes
@@ -298,7 +294,11 @@ export class BookaSdk {
   }
 
   async fetchMetadata () {
-    return await this.getRequest<AppMetadata>(`${GAME_API_HOST}/api/metadata/fetch`);
+    const metadata = await this.getRequest<AppMetadata>(`${GAME_API_HOST}/api/metadata/fetch`);
+
+    metadata && metadataHandler.updateMetadata(metadata);
+
+    return metadata;
   }
 
   subscribeAddressLinking (): BehaviorSubject<string | undefined> {
