@@ -1,7 +1,7 @@
 // Copyright 2019-2022 @polkadot/extension-ui authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import TelegramBotLink, { LinkConfig, LinkResult } from '@koniverse/telegram-bot-link';
+import TelegramBotLink, { LinkConfig, LinkResult, RequestResult } from '@koniverse/telegram-bot-link';
 import { isSameAddress } from '@subwallet/extension-base/utils';
 import { BookaSdk } from '@subwallet/extension-koni-ui/connector/booka/sdk';
 import { AccountPublicInfo, MythicalWallet } from '@subwallet/extension-koni-ui/connector/booka/types';
@@ -60,16 +60,6 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
   const tokenData = authContext.tokenData;
 
   useEffect(() => {
-    // if (localStorage.getItem(LOCAL_LOGGED_IN_PROMISE_KEY) === 'logged' && !authContext.token) {
-    //   authContext.logIn();
-    // }
-
-    bookaSDK.pushDebugLog('fetch_data_with_token', { token: authContext?.token?.length });
-    bookaSDK.fetchNFLRivalCardList(authContext.token).catch(console.error);
-    bookaSDK.fetchMythicalBalance(authContext.token).catch(console.error);
-  }, [authContext.token]);
-
-  useEffect(() => {
     bookaSDK.pushDebugLog('init-authentication-myth', mythicalWallet);
     const unsub = bookaSDK.subscribeMythicalWallet().subscribe((data) => {
       bookaSDK.pushDebugLog('update-authentication-myth', mythicalWallet);
@@ -96,14 +86,64 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
     localStorage.setItem(LOCAL_LOGGED_IN_PROMISE_KEY, 'logout');
   }, [authContext]);
 
-  const onSubmitMythAccount = useCallback(async () => {
-    if (!tokenData?.email || !authContext.token) {
+  const validateEmailLinking = useCallback(async (newEmail: string, telegramId: number, linkedInfo?: RequestResult<LinkResult>) => {
+    try {
+      const { data, success } = await linkSDK.findLink({ email: newEmail });
+
+      // Check Email is already linked to another Telegram ID
+      // If the email is difference from Telegram ID, return false
+      if (success) {
+        return data?.telegram_id === telegramId;
+      }
+
+      let emailLinked = newEmail;
+
+      // Check if Telegram has linked the address. If it has, is it the same as this new address?
+      if (linkedInfo?.success && linkedInfo.data?.link_email) {
+        emailLinked = linkedInfo.data.link_email;
+      } else {
+        const rs = await linkSDK.findLink({ telegram_id: telegramId });
+
+        if (rs.success) {
+          emailLinked = rs.data?.link_email || newEmail;
+        }
+      }
+
+      return emailLinked === newEmail;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const handleAfterLoginSuccess = useCallback((rs: RequestResult<LinkResult>) => {
+    setIsLinked(rs.success);
+    setLinkData(rs.data);
+
+    // Only fetch on-chain data when the link is successful to avoid fetching with an invalid email,
+    // which could cause the data to be cached on the server.
+    bookaSDK.pushDebugLog('fetch_data_with_token', { token: authContext?.token?.length });
+    bookaSDK.fetchNFLRivalCardList(authContext.token).catch(console.error);
+    bookaSDK.fetchMythicalBalance(authContext.token).catch(console.error);
+  }, [authContext.token]);
+
+  const onSubmitMythAccount = useCallback(async (linkedTelegramInfo?: RequestResult<LinkResult>) => {
+    if (!tokenData?.email || !authContext.token || !startData?.user?.id) {
       return;
     }
 
     let address = '';
 
     try {
+      const isEmailPassed = await validateEmailLinking(tokenData.email as string, startData.user.id, linkedTelegramInfo);
+
+      if (!isEmailPassed) {
+        telegramConnector.showPopup({ message: 'This email is used by another Telegram ID. Use another email and try again' }, () => {
+          onLogoutMythAccount();
+        });
+
+        return;
+      }
+
       await bookaSDK.fetchMythicalBalance(authContext.token);
       const mythicalBalance = bookaSDK.getMythicalWallet();
 
@@ -149,10 +189,9 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
 
       console.error(rs.error);
     } else if (rs.success) {
-      setIsLinked(rs.success);
-      setLinkData(rs.data);
+      handleAfterLoginSuccess(rs);
     }
-  }, [authContext.token, onLogoutMythAccount, tokenData?.email]);
+  }, [authContext.token, handleAfterLoginSuccess, onLogoutMythAccount, tokenData?.email, validateEmailLinking]);
 
   const onUpdateAddressMythicalAccount = useCallback(async (oldAddress: string | null) => {
     if (!tokenData?.email || !authContext.token) {
@@ -181,15 +220,14 @@ export const AuthenticationMythProvider = ({ children }: AuthenticationMythProvi
       });
 
       if (rs.success) {
-        setIsLinked(rs.success);
-        setLinkData(rs.data);
+        handleAfterLoginSuccess(rs);
       }
 
       if (!isSameAddress(bookaSDK.account?.info.address || '', address)) {
         onLoginWithTelegramAccount(address).catch(console.error);
       }
     }
-  }, [authContext.token, onLoginWithTelegramAccount, tokenData?.email]);
+  }, [authContext.token, handleAfterLoginSuccess, onLoginWithTelegramAccount, tokenData?.email]);
 
   const linkMythAccount = useCallback(async (path: string) => {
     if (!tokenData?.email || !authContext.token) {
