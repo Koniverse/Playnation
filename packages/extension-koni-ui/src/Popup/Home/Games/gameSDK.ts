@@ -219,6 +219,8 @@ export class GameApp {
   }
 
   async onSubmitAction ({ gamePlayId, state }: {gamePlayId: string, state: GameState<any>}) {
+    // If the game is resumed, the game information will be fetched and used to update currentGamePlay,
+    // since currentGamePlay is only updated when a new game is created — and in a resumed game, this step is skipped because the gamePlay already exists.
     if (!this.apiSDK.currentGamePlay) {
       await this.apiSDK.getGamePlayById(Number.parseInt(gamePlayId));
     }
