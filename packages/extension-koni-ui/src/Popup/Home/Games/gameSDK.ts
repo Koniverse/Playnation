@@ -219,6 +219,10 @@ export class GameApp {
   }
 
   async onSubmitAction ({ gamePlayId, state }: {gamePlayId: string, state: GameState<any>}) {
+    if (!this.apiSDK.currentGamePlay) {
+      await this.apiSDK.getGamePlayById(Number.parseInt(gamePlayId));
+    }
+
     const currentGamePlay = this.apiSDK.currentGamePlay;
 
     console.log('onSubmitAction', gamePlayId, state);

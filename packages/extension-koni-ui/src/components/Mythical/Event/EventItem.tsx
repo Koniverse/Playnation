@@ -17,6 +17,7 @@ export enum EventDifficulty {
 export enum EventState {
   AVAILABLE = 'available',
   COMPLETED = 'completed',
+  RESUME = 'resume',
   COMING_SOON = 'comingSoon',
   UNKNOWN = 'unknown',
 }
@@ -55,7 +56,7 @@ function Component ({ bonusText, className, datetime, difficulty, id, isExpired,
   }, [difficulty, t]);
 
   const stateText = useMemo(() => {
-    if (state === EventState.AVAILABLE) {
+    if (state === EventState.AVAILABLE || state === EventState.RESUME) {
       return t('Time remaining');
     }
 
@@ -75,6 +76,10 @@ function Component ({ bonusText, className, datetime, difficulty, id, isExpired,
       return t('Start event');
     }
 
+    if (state === EventState.RESUME) {
+      return t('Resume event');
+    }
+
     if (state === EventState.COMING_SOON) {
       return t('Coming soon');
     }
@@ -88,7 +93,7 @@ function Component ({ bonusText, className, datetime, difficulty, id, isExpired,
   }, [score, state, t]);
 
   const _onClickPlayEvent = useCallback(() => {
-    if (state === EventState.AVAILABLE) {
+    if (state === EventState.AVAILABLE || state === EventState.RESUME) {
       onPlayEvent(id);
     }
   }, [id, onPlayEvent, state]);
@@ -188,7 +193,8 @@ function Component ({ bonusText, className, datetime, difficulty, id, isExpired,
               className={CN('__item-button', {
                 '-available': state === EventState.AVAILABLE,
                 '-coming-soon': state === EventState.COMING_SOON,
-                '-completed': state === EventState.COMPLETED
+                '-completed': state === EventState.COMPLETED,
+                '-resume': state === EventState.RESUME
               })}
               onClick={_onClickPlayEvent}
             >
@@ -484,7 +490,7 @@ export const EventItem = styled(Component)<Props>(({ difficulty,
       }
     },
 
-    '.__item-button.-available': {
+    '.__item-button.-available, .__item-button.-resume': {
       cursor: 'pointer',
 
       '.__button-content': {

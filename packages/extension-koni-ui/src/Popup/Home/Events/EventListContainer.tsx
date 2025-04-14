@@ -52,6 +52,26 @@ function isEventOngoing (gameEvent: GameEvent, dateNow: number): boolean {
   return dateNow < endTime && dateNow >= startTime;
 }
 
+function isEventRemuse (gameEvent: GameEvent, dateNow: number): boolean {
+  if (!isEventOngoing(gameEvent, dateNow)) {
+    return false;
+  }
+
+  const lastGamePlay = gameEvent.gamePlays?.length ? gameEvent.gamePlays[gameEvent.gamePlays.length - 1] : undefined;
+
+  if (lastGamePlay) {
+    const stateGameData = lastGamePlay.stateData as { state: string };
+
+    if (stateGameData.state === 'finished') {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function isEventUpcoming (gameEvent: GameEvent, dateNow: number): boolean {
   const startTime = new Date(gameEvent.startTime).getTime();
 
@@ -64,6 +84,10 @@ function getEventState (gameEvent: GameEvent, dateNow: number): EventState {
   }
 
   if (isEventOngoing(gameEvent, dateNow)) {
+    if (isEventRemuse(gameEvent, dateNow)) {
+      return EventState.RESUME;
+    }
+
     return EventState.AVAILABLE;
   }
 
@@ -180,6 +204,10 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab, serverTime
 
         if (eventState === EventState.COMPLETED) {
           return customFormatDate(getEventGameEndTime(eventInfo), '#MM#/#DD#/#YY# #hhhh#:#mm#');
+        }
+
+        if (eventState === EventState.RESUME) {
+          return getTimeRemaining(dateNow, eventInfo.endTime);
         }
 
         return '---';
