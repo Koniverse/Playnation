@@ -564,6 +564,13 @@ export interface GameEvent {
   tossUpInfo: TossUpInfo;
   tossUpBonus: TossUpBonus[];
   gamePlays: Pick<GamePlay, 'id' | 'startTime' | 'success' | 'point' | 'gamePoint' | 'endTime' | 'stateData'>[];
+  repeatable: RepeatableType;
+  status: string;
+}
+
+export enum GameEventStatus {
+  NOT_COMPLETED = 'not_completed',
+  COMPLETED = 'completed'
 }
 
 interface TossUpBonus {

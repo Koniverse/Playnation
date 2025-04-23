@@ -1009,6 +1009,21 @@ export class BookaSdk {
     return gamePlay;
   }
 
+  async getGamePlayById (gamePlayId: number) {
+    await this.waitForSync;
+    const gamePlay = await this.postRequest<GamePlay>(`${GAME_API_HOST}/api/game/get-game-play`, {
+      gamePlayId
+    });
+
+    if (!gamePlay) {
+      throw new Error('Failed to join event');
+    }
+
+    this.currentGamePlaySubject.next(gamePlay);
+
+    return gamePlay;
+  }
+
   async submitGame ({ gamePlayId, point, signature }: {gamePlayId: number, point: number, signature: string}) {
     let success = false;
 
