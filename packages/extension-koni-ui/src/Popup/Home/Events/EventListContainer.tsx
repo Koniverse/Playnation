@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EmptyListContent, EventDifficulty, EventItem, EventItemType, EventState } from '@subwallet/extension-koni-ui/components/Mythical';
-import { GameEvent, GameEventStatus } from '@subwallet/extension-koni-ui/connector/booka/types';
+import { GameEvent } from '@subwallet/extension-koni-ui/connector/booka/types';
 import { EventTab } from '@subwallet/extension-koni-ui/Popup/Home/Events/shared';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { customFormatDate, getTimeRemaining } from '@subwallet/extension-koni-ui/utils';
@@ -38,7 +38,25 @@ function isEventExpired (gameEvent: GameEvent, dateNow: number): boolean {
 function isEventCompleted (gameEvent: GameEvent, dateNow: number): boolean {
   const endTime = new Date(gameEvent.endTime).getTime();
 
-  return gameEvent.status === GameEventStatus.COMPLETED || dateNow >= endTime;
+  // Completed when:
+  // - The user continues playing and finishes all required Rounds of the Event and gamePlay is finished
+  // - The user stops playing but the Event has expired and the event will be marked as completed at the moment the event expires.
+
+  if (dateNow >= endTime) {
+    return true;
+  }
+
+  const lastGamePlay = gameEvent.gamePlays?.length ? gameEvent.gamePlays[gameEvent.gamePlays.length - 1] : undefined;
+
+  if (lastGamePlay) {
+    const stateGameData = lastGamePlay.stateData as { state: string };
+
+    if (stateGameData.state === 'finished') {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function isEventOngoing (gameEvent: GameEvent, dateNow: number): boolean {
