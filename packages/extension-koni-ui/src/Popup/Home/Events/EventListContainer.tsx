@@ -38,7 +38,25 @@ function isEventExpired (gameEvent: GameEvent, dateNow: number): boolean {
 function isEventCompleted (gameEvent: GameEvent, dateNow: number): boolean {
   const endTime = new Date(gameEvent.endTime).getTime();
 
-  return dateNow >= endTime || ((gameEvent.gamePlays?.length || 0) >= (gameEvent.tossUpInfo?.gameplayPerEvent || 1));
+  // Completed when:
+  // - The user continues playing and finishes all required Rounds of the Event and gamePlay is finished
+  // - The user stops playing but the Event has expired and the event will be marked as completed at the moment the event expires.
+
+  if (dateNow >= endTime) {
+    return true;
+  }
+
+  const lastGamePlay = gameEvent.gamePlays?.length ? gameEvent.gamePlays[gameEvent.gamePlays.length - 1] : undefined;
+
+  if (lastGamePlay) {
+    const stateGameData = lastGamePlay.stateData as { state: string };
+
+    if (stateGameData.state === 'finished') {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function isEventOngoing (gameEvent: GameEvent, dateNow: number): boolean {
@@ -50,6 +68,26 @@ function isEventOngoing (gameEvent: GameEvent, dateNow: number): boolean {
   const endTime = new Date(gameEvent.endTime).getTime();
 
   return dateNow < endTime && dateNow >= startTime;
+}
+
+function isEventRemuse (gameEvent: GameEvent, dateNow: number): boolean {
+  if (!isEventOngoing(gameEvent, dateNow)) {
+    return false;
+  }
+
+  const lastGamePlay = gameEvent.gamePlays?.length ? gameEvent.gamePlays[gameEvent.gamePlays.length - 1] : undefined;
+
+  if (lastGamePlay) {
+    const stateGameData = lastGamePlay.stateData as { state: string };
+
+    if (stateGameData.state === 'finished') {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function isEventUpcoming (gameEvent: GameEvent, dateNow: number): boolean {
@@ -64,6 +102,10 @@ function getEventState (gameEvent: GameEvent, dateNow: number): EventState {
   }
 
   if (isEventOngoing(gameEvent, dateNow)) {
+    if (isEventRemuse(gameEvent, dateNow)) {
+      return EventState.RESUME;
+    }
+
     return EventState.AVAILABLE;
   }
 
@@ -146,6 +188,7 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab, serverTime
         }
       });
 
+      // console.log("_completedItems: ", _completedItems);
       _completedItems.sort((a: GameEvent, b: GameEvent) => {
         // most recently completed events appear first
         return new Date(getEventGameEndTime(b)).getTime() - new Date(getEventGameEndTime(a)).getTime();
@@ -179,6 +222,10 @@ const Component = ({ className, gameEvents, onPlayEvent, selectedTab, serverTime
 
         if (eventState === EventState.COMPLETED) {
           return customFormatDate(getEventGameEndTime(eventInfo), '#MM#/#DD#/#YY# #hhhh#:#mm#');
+        }
+
+        if (eventState === EventState.RESUME) {
+          return getTimeRemaining(dateNow, eventInfo.endTime);
         }
 
         return '---';
