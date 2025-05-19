@@ -119,8 +119,10 @@ function getEventState (gameEvent: GameEvent, dateNow: number): EventState {
 function getEventGameEndTime (gameEvent: GameEvent) {
   const latestGamePlay = gameEvent.gamePlays?.length ? gameEvent.gamePlays[gameEvent.gamePlays.length - 1] : undefined;
 
+  // if the gamePlay is finished, we will use the endTime of the gamePlay
+  // otherwise we will use the endTime of the event
   if (latestGamePlay) {
-    return latestGamePlay.endTime || latestGamePlay.startTime;
+    return latestGamePlay.endTime || gameEvent.endTime;
   }
 
   return gameEvent.endTime;
