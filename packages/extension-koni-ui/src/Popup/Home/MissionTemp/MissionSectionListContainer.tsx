@@ -263,7 +263,7 @@ const Component = ({ accountInfo,
     await new Promise((resolve) => setTimeout(resolve, 3000));
   }, [navigate]);
 
-  const handleCheckBalanceAction = useCallback(async (taskId?: number) => {
+  const handleCheckAchievementAction = useCallback(async (taskId?: number) => {
     if (!taskId) {
       return;
     }
@@ -327,8 +327,8 @@ const Component = ({ accountInfo,
         await handleDirectAction(action as TaskActionDirect);
       } else if (actionType === TaskActionComponent.SHARE) {
         await handleShareAction(action as TaskActionShare);
-      } else if (actionType === TaskActionComponent.CHECK_BALANCE) {
-        await handleCheckBalanceAction(taskId);
+      } else if ([TaskActionComponent.CHECK_BALANCE, TaskActionComponent.CHECK_ACCOUNT_NFL_LEVEL, TaskActionComponent.CHECK_CARD].includes(actionType)) {
+        await handleCheckAchievementAction(taskId);
       }
 
       // Finish the task
@@ -337,7 +337,7 @@ const Component = ({ accountInfo,
         networkKey
       };
     })();
-  }, [handleDirectAction, handleOnChainAction, handleOpenScreenAction, handleShareAction, handleUrlAction, handleCheckBalanceAction]);
+  }, [handleDirectAction, handleOnChainAction, handleOpenScreenAction, handleShareAction, handleUrlAction, handleCheckAchievementAction]);
 
   const doTaskAction = useCallback((task: Task) => {
     const action = task.action;

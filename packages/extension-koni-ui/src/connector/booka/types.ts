@@ -107,6 +107,8 @@ export enum TaskActionComponent {
   ONCHAIN = 'task.action-onchain',
   DIRECT = 'task.action-direct',
   CHECK_BALANCE = 'task.action-check-balance',
+  CHECK_ACCOUNT_NFL_LEVEL = 'task.action-check-account-nfl-level',
+  CHECK_CARD = 'task.action-check-card',
 }
 
 export interface TaskAction {
