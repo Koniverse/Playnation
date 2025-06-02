@@ -9,14 +9,12 @@ import { TelegramConnector } from '@subwallet/extension-koni-ui/connector/telegr
 import { AuthenticationMythContext } from '@subwallet/extension-koni-ui/contexts/AuthenticationMythProvider';
 import { WalletModalContext } from '@subwallet/extension-koni-ui/contexts/WalletModalContextProvider';
 import { useNotification } from '@subwallet/extension-koni-ui/hooks';
-import { RootState } from '@subwallet/extension-koni-ui/stores';
 import { ThemeProps } from '@subwallet/extension-koni-ui/types';
 import { toDisplayNumber } from '@subwallet/extension-koni-ui/utils';
 import { actionTaskOnChain } from '@subwallet/extension-koni-ui/utils/game/task';
 import { Check, X } from 'phosphor-react';
 import React, { useCallback, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -268,6 +266,16 @@ const Component = ({ accountInfo,
       return;
     }
 
+    if (!isLinkedMyth) {
+      handleLinkAccountModal();
+
+      return;
+    } else if (!mythicalWallet.address) {
+      handleMythicalAddressModal();
+
+      return;
+    }
+
     const checkAchievement = await apiSDK.checkAchievement(taskId);
 
     if (checkAchievement) {
@@ -275,15 +283,7 @@ const Component = ({ accountInfo,
         return;
       }
 
-      if (!isLinkedMyth) {
-        handleLinkAccountModal();
-
-        return;
-      } else if (!mythicalWallet.address) {
-        handleMythicalAddressModal();
-
-        return;
-      } else if (checkAchievement.message?.startsWith('Mythical Balance hold is less')) {
+      if (checkAchievement.message?.startsWith('Mythical Balance hold is less')) {
         const parts = checkAchievement.message?.split('less than');
         const balanceRequired = parts[1]?.trim();
 
