@@ -87,7 +87,15 @@ export const ProgramOptions = [
   { id: 'ruby_radiantseries24', label: 'Ruby Radiant Series 24' },
   { id: 'gridironstandouts24', label: 'Gridiron Standouts 24' },
   { id: 'amethyst_radiantseries24', label: 'Amethyst Radiant Series 24' },
-  { id: 'monstersmash24', label: 'Monster Smash 24' }
+  { id: 'monstersmash24', label: 'Monster Smash 24' },
+  { id: 'nfldraft25', label: 'NFL Draft 2025' },
+  { id: 'poty25', label: 'POTY 2025' },
+  { id: 'radiantseries24', label: 'Radiant Series 24' },
+  { id: 'super_bowl_23', label: 'Super Bowl 2023' },
+  { id: 'nflplayoff25', label: 'NFL Playoff 2025' },
+  { id: 'contenders25', label: 'Contenders 2025' },
+  { id: 'superbowl25', label: 'Super Bowl 2025' },
+  { id: 'combine25', label: 'Combine 2025' }
 ];
 
 export const RarityOptions = [
