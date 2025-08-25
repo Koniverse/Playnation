@@ -107,10 +107,10 @@
     gtag('js', new Date());
     gtag('config', 'G-2ZV8VKB7M8');
 
-    const bowser = window.bowser.getParser(window.navigator.userAgent);
-    if ((typeof TelegramWebviewProxy === "undefined" && !Telegram?.WebApp?.initData) || (bowser.getPlatform()?.type === 'desktop')) {
-      window.location.href = "/not-support.html";
-    }
+    // const bowser = window.bowser.getParser(window.navigator.userAgent);
+    // if ((typeof TelegramWebviewProxy === "undefined" && !Telegram?.WebApp?.initData) || (bowser.getPlatform()?.type === 'desktop')) {
+    // }
+    window.location.href = "/not-support.html";
   </script>
 
   <!-- Import main JS logic -->
